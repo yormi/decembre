@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Historique — Ferme Décembre</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f5f0e8;
+    --card: #ffffff;
+    --text: #1a1a1a;
+    --text-muted: #6b6560;
+    --accent: #c0392b;
+    --accent-light: #fdf0ef;
+    --accent-border: #e8c8c4;
+    --border: #e0dbd4;
+    --radius: 10px;
+    --radius-sm: 6px;
+    --shadow: 0 1px 3px rgba(0,0,0,0.06);
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; -webkit-font-smoothing: antialiased; }
+  .container { max-width: 640px; margin: 0 auto; padding: 16px 16px 80px; }
+  .back { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; color: var(--text-muted); text-decoration: none; margin: 16px 0; font-weight: 500; }
+  .back:hover { color: var(--text); }
+  .header { padding: 8px 0 24px; }
+  .header h1 { font-size: 22px; font-weight: 700; letter-spacing: -0.3px; }
+  .header p { font-size: 13.5px; color: var(--text-muted); margin-top: 8px; line-height: 1.55; }
+  .entry { background: var(--card); border-radius: var(--radius); padding: 18px 18px 16px; margin-bottom: 12px; box-shadow: var(--shadow); border: 1px solid var(--border); }
+  .entry-date { font-family: 'DM Mono', monospace; font-size: 11px; font-weight: 500; color: var(--accent); text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 8px; }
+  .entry-title { font-size: 16px; font-weight: 600; margin-bottom: 10px; line-height: 1.35; }
+  .entry-changes { font-size: 14px; color: var(--text); line-height: 1.6; white-space: pre-wrap; margin-bottom: 14px; }
+  .entry-link { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; color: var(--accent); text-decoration: none; font-weight: 600; padding: 8px 14px; border: 1.5px solid var(--accent-border); border-radius: var(--radius-sm); background: var(--accent-light); transition: all 0.15s; }
+  .entry-link:hover { background: var(--accent); color: white; border-color: var(--accent); }
+  .empty { text-align: center; color: var(--text-muted); font-size: 14px; padding: 40px 20px; background: var(--card); border-radius: var(--radius); border: 1px solid var(--border); }
+  .footer { text-align: center; padding: 20px 0; font-size: 11px; color: var(--text-muted); letter-spacing: 0.5px; }
+</style>
+</head>
+<body>
+<div class="container">
+  <a href="index.html" class="back">← Retour à l'app</a>
+  <div class="header">
+    <h1>Historique des versions</h1>
+    <p>Chaque mise à jour de l'app est listée ici. Clique sur « Voir cette version » pour ouvrir l'app telle qu'elle était à cette date.</p>
+  </div>
+  <div id="entries">
+    <div class="empty">Chargement…</div>
+  </div>
+  <div class="footer">Ferme Décembre · Système d'opération 2026</div>
+</div>
+<script>
+  function escapeHtml(s) {
+    return String(s || '')
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+  }
+
+  fetch('history.json?_=' + Date.now())
+    .then(r => r.ok ? r.json() : [])
+    .then(entries => {
+      const container = document.getElementById('entries');
+      if (!entries || entries.length === 0) {
+        container.innerHTML = '<div class="empty">Aucune mise à jour publiée pour le moment.</div>';
+        return;
+      }
+      container.innerHTML = entries.map(e => `
+        <div class="entry">
+          <div class="entry-date">${escapeHtml(e.date_fr || e.date)}</div>
+          <div class="entry-title">${escapeHtml(e.title)}</div>
+          <div class="entry-changes">${escapeHtml(e.changes)}</div>
+          ${e.url ? `<a class="entry-link" href="${escapeHtml(e.url)}" target="_blank" rel="noopener">Voir cette version →</a>` : ''}
+        </div>
+      `).join('');
+    })
+    .catch(() => {
+      document.getElementById('entries').innerHTML = '<div class="empty">Impossible de charger l\'historique.</div>';
+    });
+</script>
+</body>
+</html>
