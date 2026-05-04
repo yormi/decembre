@@ -128,6 +128,7 @@ jobs:
               ]
             }' > payload.json
 
+          WEBHOOK=$(printf '%s' "$SLACK_WEBHOOK" | tr -d '\r\n[:space:]')
           curl -fsS -X POST -H 'Content-Type: application/json' \
             --data @payload.json \
-            "$SLACK_WEBHOOK"
+            "$WEBHOOK"
