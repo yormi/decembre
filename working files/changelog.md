@@ -4,6 +4,11 @@ Append-only log of substantive changes (recipe edits, REQ additions, model archi
 
 Format: `YYYY-MM-DD HH:MM — brief description`. One line per change. Most recent at the top.
 
+## 2026-05-09
+
+- 09:55 — requirements.md split into nutrition/{spec, tomato/spec, tomato/app/spec, lettuce/spec, lettuce/app/spec, nursery/spec, nursery/app/spec}. 33 REQs migrated (28 cross-crop nutrition, 4 tomato model, 1 tomato Nutrition page UI; lettuce + nursery files scaffold-only). 5 cross-app REQs (REQ-001/005/006/007/008) stay in requirements.md. Verifier scripts updated (check-requirements.sh DOCUMENTED_REQS now scans requirements.md + nutrition/**/spec.md for the union). 56/56 PASS, REQs wired 37/38 unchanged. "Spec" terminology adopted in body content (was "requirement"); filenames requirements.md / check-requirements.sh kept as-is per user.
+- 09:50 — nutrition/info/ created; moved 11 farm-info docs; nutrition/info/CLAUDE.md index written
+
 ## 2026-05-08
 
 - afternoon — `FP_RECIPE_T5.fertigation` rewritten mass-balance pure (no SME credit): K2SO4 0→5167 g, MgSO4-7H2O 0→1379 g, **Solubore 9 g added** (boric acid non-ionic, single-channel for B; Ecocert validated). Foliaire Solubore stays 0. `calcNutrSupply` FP-mode branch updated: (a) `fertMixFactor = 1.0` instead of 0.5 (no SME pool to coexist with), (b) reads `FP_RECIPE_T5.fertigation['Solubore']` → `supply.fert.B`, (c) `soil[el] = 0` for everything except Ca and P (mass-balance philosophy: replenish offtake regardless of bank; soil is a verification target, not a supply credit). Block 4 rendering shows Solubore line + FP-mode "no mixing factor" note when `nutrRecipeMode === 'fp'`. Pourquoi modals updated for K/Mg/B with mode-aware equations. Stored-mode behavior unchanged. 56/56 PASS.
