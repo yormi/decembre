@@ -2,10 +2,13 @@
   "name": "decembre-checks",
   "private": true,
   "version": "0.0.0",
-  "description": "Dev-only: jsdom is needed by scripts/check-recipes.mjs (Phase 2 release-candidate verifier). The main app is a static index.html with no runtime npm deps.",
+  "description": "Dev-only: jsdom is needed by scripts/check-recipes.mjs (Phase 2 release-candidate verifier). The main app is a static index.html — build artifact assembled from app/index.html + per-domain partials by scripts/build.mjs.",
   "type": "module",
   "scripts": {
-    "check": "bash scripts/check-requirements.sh"
+    "check": "bash scripts/check-requirements.sh",
+    "build": "node scripts/build.mjs",
+    "build:watch": "node scripts/build.mjs --watch",
+    "dev": "bash scripts/dev-server.sh"
   },
   "devDependencies": {
     "jsdom": "^22.1.0"
