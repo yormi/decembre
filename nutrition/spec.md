@@ -294,20 +294,6 @@ would not be.
 
 ---
 
-## REQ-028 — Cert annotation on every empirical constant
-
-**Statement:** Every constant in the model (demand value, base efficiency,
-pH response curve point, EC factor, envelope band, Ksp threshold) carries
-a `cert: 0-5` annotation in code (inline comment acceptable).
-
-**Rationale:** Cert needs to be in the source data so the UI can read it.
-Cert 1-2 numbers shouldn't drive the same UI confidence as cert 4-5.
-
-**Verification:** Script greps the relevant constant blocks for `cert`
-annotations; counts vs total entries; fails if coverage < 90%.
-
----
-
 ## REQ-029 — In-tank Ksp check (precipitation guard)
 
 **Statement:** For every recipe (any tank), the predicted concentrations of

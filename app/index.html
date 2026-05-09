@@ -217,6 +217,9 @@
     <button id="page-historique-nutriments" onclick="setPage('historique-nutriments')" style="display:none; background:none; border:none; padding:6px 10px; font-family:inherit; font-size:12px; font-weight:500; cursor:pointer; color:var(--text-muted); transition:color 0.2s;">
       📜 Historique nutriments
     </button>
+    <button id="page-rendement" onclick="setPage('rendement')" style="display:none; background:none; border:none; padding:6px 10px; font-family:inherit; font-size:12px; font-weight:500; cursor:pointer; color:var(--text-muted); transition:color 0.2s;">
+      🥬 Rendement semis
+    </button>
   </div>
 
   <!-- Page Toggle: top-level navigation by responsibility -->
@@ -1265,7 +1268,7 @@
           <div style="padding:2px 0;">• <strong>Cadre mass-balance</strong> : la fertigation remplace ce que la croissance retire du système. Trois canaux de réapprovisionnement (compost résiduel, front-load farine, fertigation) doivent matcher le besoin hebdo. Le sol passif (SME × transpiration) tire sur la banque ; il n'est pas un canal de réapprovisionnement et a été retiré 2026-05-08 pour s'aligner sur la chaîne tomate.</div>
           <div style="padding:2px 0;">• <strong>Demande</strong> = gain de masse fraîche (cible − transplant) × densité × <strong>5% matière sèche</strong> × concentration tissulaire. Pas de stades — laitue = phase de croissance continue.</div>
           <div style="padding:2px 0;">• <strong>Concentrations tissulaires DW</strong> (cert 4 macros, cert 3 micros) : N 4,5% · P 0,5% · K 7% · Ca 1,5% · Mg 0,4% · Fe 200 ppm · Mn 50 · Zn 40 · B 30 · Cu 8 · Mo 0,5</div>
-          <div style="padding:2px 0;">• <strong>Compost résiduel</strong> (<code>RECIPE_INPUTS.compostReleasePerWeek</code>) : minéralisation hebdo de l'amendement Savaria ORGANIMIX automne 2025, ~25,4 kg/m². Décline avec le temps (~18-24 mois). Cert 2-3.</div>
+          <div style="padding:2px 0;">• <strong>Compost résiduel</strong> (<code>window.CompostContribution.releasePerWeek</code>) : minéralisation hebdo de l'amendement Savaria ORGANIMIX automne 2025, ~25,4 kg/m². Décline avec le temps (~18-24 mois). Cert 2-3.</div>
           <div style="padding:2px 0;">• <strong>Front-load</strong> farine de plumes : 13% N × 75% minéralisation, distribué sur ~4 semaines de relâche. À 50 g/m² → ~1 220 mg N/m²/sem effectif (cert 3).</div>
           <div style="padding:2px 0;">• <strong>Fertigation actuelle</strong> (<code>LETTUCE</code>) : K₂SO₄ 2 996 g + MgSO₄·7H₂O 467 g + FeSO₄·7H₂O 7,5 g par 100 m²/sem. Fe × 0,15 si pH ≥ 7 (cuticule racinaire alcaline).</div>
           <div style="padding:2px 0;">• <strong>Surface</strong> Salanova : 4,5 × 30,4 m² = 136,8 m². Recette LETTUCE per 100 m²/sem.</div>
@@ -1386,6 +1389,10 @@
       </div>
     </div>
   </div>
+
+  <!-- ═══════════════ RENDEMENT PAGE (admin) ═══════════════ -->
+  <!-- Salanova nursery yield prediction. UI contract: yield-range/app/spec.md. -->
+  <!-- @include yield-range/app/page.html -->
 
   <!-- ═══════════════ EC PAGE (admin) ═══════════════ -->
   <!-- Reference EC tolerance ceilings + per-stage targets, all in pour-through.
@@ -1792,6 +1799,7 @@ function setPage(page) {
   document.getElementById('page-banque-content').style.display = page === 'banque' ? 'block' : 'none';
   document.getElementById('page-ec-content').style.display = page === 'ec' ? 'block' : 'none';
   document.getElementById('page-historique-nutriments-content').style.display = page === 'historique-nutriments' ? 'block' : 'none';
+  document.getElementById('page-rendement-content').style.display = page === 'rendement' ? 'block' : 'none';
   // Highlight the active admin tool button
   const nutrBtn = document.getElementById('page-nutriment');
   nutrBtn.style.color = page === 'nutriment' ? 'var(--text)' : 'var(--text-muted)';
@@ -1805,15 +1813,21 @@ function setPage(page) {
   const histBtn = document.getElementById('page-historique-nutriments');
   histBtn.style.color = page === 'historique-nutriments' ? 'var(--text)' : 'var(--text-muted)';
   histBtn.style.fontWeight = page === 'historique-nutriments' ? '600' : '500';
+  const rendBtn = document.getElementById('page-rendement');
+  if (rendBtn) {
+    rendBtn.style.color = page === 'rendement' ? 'var(--text)' : 'var(--text-muted)';
+    rendBtn.style.fontWeight = page === 'rendement' ? '600' : '500';
+  }
   // Hide the main 3-page toggle on tool/admin pages. The ℹ icon (admin-only,
   // top-left of the header) is the back-nav primitive that returns to the
   // operational pages from any admin/tool view.
-  document.getElementById('page-toggle').style.display = (page === 'week' || page === 'diagnostic' || page === 'nutriment' || page === 'banque' || page === 'ec' || page === 'historique-nutriments') ? 'none' : 'flex';
+  document.getElementById('page-toggle').style.display = (page === 'week' || page === 'diagnostic' || page === 'nutriment' || page === 'banque' || page === 'ec' || page === 'historique-nutriments' || page === 'rendement') ? 'none' : 'flex';
   if (page === 'foliar') buildFoliar();
   if (page === 'week') buildWeek();
   if (page === 'nutriment') buildNutriment();
   if (page === 'banque') buildBanqueSol();
   if (page === 'historique-nutriments') buildHistoriqueNutriments();
+  if (page === 'rendement') buildYieldRange();
   if (page === 'diagnostic') {
     // Apply the diagnostic crop's accent color when entering the page,
     // since it's independent of currentCrop.
@@ -2818,327 +2832,7 @@ function renderDiag() {
 // to make the bilan honest. Raw recipe doses are visible in Détail des apports
 // for traceability.
 
-// ─── DEPRECATED 2026-05-04 ──────────────────────────────────────────────────
-// TOMATO_REMOVAL is the historical "whole-plant uptake per kg fruit" ratio
-// (lumps fruit export AND ongoing canopy growth into one number per kg fruit).
-// It double-counted vegetative growth at production stages (T4-T5) when added
-// to BIOMASS_DEMAND. Replaced by the cleaner split:
-//     TOMATO_FRUIT_EXPORT  → only what physically leaves in harvested fruit
-//     BIOMASS_DEMAND[stage]→ ongoing canopy / new structures (growth in place)
-// Kept here for traceability and as a sanity check. A future test could assert:
-//     TOMATO_FRUIT_EXPORT × yield + BIOMASS_DEMAND[T5] ≈ TOMATO_REMOVAL × yield
-// at production stages (within ~10%). See `calcNutrDemand` for the active math.
-// ────────────────────────────────────────────────────────────────────────────
-// Whole-plant tomato uptake per kg fresh fruit produced.
-// `g` field = grams (macros) / grams converted-from-mg (micros — 0.010 = 10 mg).
-//
-// CALIBRATION (revised 2026-05-06): values now align toward Koller 2016 averages
-// (the reference used in OAQ ligne directrice Annexe 1, MAPAQ/Taillon committee).
-// Previous Yara-anchored values were ~14-22% low for N, K, Mg vs Koller mean.
-// Koller 2016 tomato averages (converted from oxide forms):
-//   N 2.9 g/kg · P 0.39 g/kg (P₂O₅ 0.9 × 0.437) · K 4.48 g/kg (K₂O 5.4 × 0.83) ·
-//   Mg 0.5 g/kg
-// We split the difference between Sonneveld and Koller for N/K (defensible
-// middle), match Koller for Mg (Mg costs ~$3-5/cycle to bump and demand evidence
-// is clearer). Cert 3-4 for macros.
-const TOMATO_REMOVAL = {
-  N:  { g: 2.7,    unit: 'g' },   // Yara 2.3, Sonneveld 2.5, Koller 2.9 — split (≥ Tier B mean 2.57)
-  P:  { g: 0.44,   unit: 'g' },   // Yara 0.36, Sonneveld 0.57, Koller 0.39 — Tier B mean (REQ-033)
-  K:  { g: 4.0,    unit: 'g' },   // Yara 3.3, Sonneveld 4.0, Koller 4.48 — match Sonneveld (≥ Tier B mean 3.93)
-  Ca: { g: 1.5,    unit: 'g' },   // Yara 1.54, Sonneveld 2.65 (no Koller value)
-  Mg: { g: 0.57,   unit: 'g' },   // Yara 0.54, Sonneveld 0.67, Koller 0.5 — Tier B mean (REQ-033)
-  Fe: { g: 0.010,  unit: 'mg' },  // est. fruit DM × leaf factor; cert 2
-  Mn: { g: 0.005,  unit: 'mg' },  // est.; cert 2
-  Zn: { g: 0.003,  unit: 'mg' },  // est.; cert 2
-  B:  { g: 0.003,  unit: 'mg' },  // est.; cert 2
-  Cu: { g: 0.001,  unit: 'mg' },  // est.; cert 2
-  Mo: { g: 0.00005, unit: 'mg' }, // est.; cert 2
-};
-
-// ─── TOMATO_FRUIT_EXPORT — fruit-only nutrient export per kg fresh fruit ────
-//
-// Replaces TOMATO_REMOVAL on the demand side of the Bilan (2026-05-04).
-// Represents ONLY the nutrients that physically leave the farm in harvested
-// fruit — no vegetative tissue. Pairs with BIOMASS_DEMAND[stage] (canopy +
-// new structures, growth in place) to give a non-overlapping demand model:
-//     demand = TOMATO_FRUIT_EXPORT × yield  +  BIOMASS_DEMAND[stage]
-//
-// Derivation: Yara's published fruit-vs-vegetative split applied to the
-// existing whole-plant TOMATO_REMOVAL values:
-//   - N, P, K:   60% to fruit, 40% retained in canopy
-//   - Ca:         5% to fruit, 95% retained in canopy (Ca is xylem-mobile
-//                 only; once deposited in leaves it does not redistribute)
-//   - Mg:        25% to fruit, 75% retained in canopy
-//   - Micros:    60% as default (data gap — extrapolated from macro split)
-//
-// Cert 3-4 for macros (Yara explicit on N/P/K/Ca/Mg fruit fraction).
-// Cert 1-2 for micros (no published per-element split; 60% is a working
-// default that should be revisited when tissue tests separate fruit vs
-// leaf tissue analyses).
-//
-// Numerical sample: TOMATO_FRUIT_EXPORT.N = 2.7 × 0.60 = 1.62 g/kg.
-// At 1.5 kg/m²/sem fruit yield → 1.62 × 1.5 × 1000 = 2 430 mg N/m²/sem
-// leaving in fruit. The remaining 1 620 mg N (40% × 2.7 × 1.5 × 1000) is
-// what BIOMASS_DEMAND[T5] should account for (ongoing canopy growth).
-// Updated 2026-05-06 to track TOMATO_REMOVAL Koller-aligned values.
-const TOMATO_FRUIT_EXPORT = {
-  N:  { g: 2.7     * 0.60, unit: 'g' },   // 1.62 g/kg — Yara 60% split, cert 4
-  P:  { g: 0.44    * 0.60, unit: 'g' },   // 0.264 g/kg — REQ-033 Tier B
-  K:  { g: 4.0     * 0.60, unit: 'g' },   // 2.4 g/kg — cert 4
-  Ca: { g: 1.5     * 0.05, unit: 'g' },   // 0.075 g/kg — Yara: ~5% of Ca in fruit, cert 4
-  Mg: { g: 0.57    * 0.25, unit: 'g' },   // 0.1425 g/kg — REQ-033 Tier B (Yara 25% split, cert 3)
-  Fe: { g: 0.010   * 0.60, unit: 'mg' },  // 60% default; data gap, cert 1-2
-  Mn: { g: 0.005   * 0.60, unit: 'mg' },  // 60% default; data gap, cert 1-2
-  Zn: { g: 0.003   * 0.60, unit: 'mg' },  // 60% default; data gap, cert 1-2
-  B:  { g: 0.003   * 0.60, unit: 'mg' },  // 60% default; data gap, cert 1-2
-  Cu: { g: 0.001   * 0.60, unit: 'mg' },  // 60% default; data gap, cert 1-2
-  Mo: { g: 0.00005 * 0.60, unit: 'mg' },  // 60% default; data gap, cert 1-2
-};
-
-// ─── BIOMASS_DEMAND — ongoing canopy / new-structure uptake (no fruit) ─────
-//
-// Why this exists: TOMATO_FRUIT_EXPORT × yield handles only the nutrients
-// that physically leave the farm in harvested fruit. The plant ALSO grows
-// new leaves, stems, roots, trusses every week — that biomass build-out has
-// real N/P/K/Ca/Mg/micros uptake that doesn't go into fruit. Without this
-// term the Bilan would read "0 demand → tout couvert" at T1-T3 (no fruit)
-// and would underestimate demand at T4-T5 (canopy still growing). Total
-// weekly demand = TOMATO_FRUIT_EXPORT × yield + BIOMASS_DEMAND[stage].
-// The two terms are non-overlapping by construction (post-2026-05-04 split).
-//
-// Stage definitions (Décembre tomato cycle, transplant mid-Dec → crop-out July):
-//   T1: weeks 1-4  post-transplant (établissement / démarrage)
-//   T2: weeks 5-8  post-transplant (croissance végétative rapide, pré-floraison)
-//   T3: weeks 9-11 post-transplant (floraison, premiers fruits)
-//   T4: production montante (biomass demand drops, fruit takes over)
-//   T5: pleine production (residual canopy maintenance only)
-//
-// SOURCES (cert 0-5 noted per element below):
-//   Haifa F-144 "Daniela" greenhouse tomato program — kg/ha/day per stage,
-//     plant density 23,000/ha = 2.3 plants/m², expected 195 t/ha. Macros
-//     N/P/K direct, Ca/Mg derived from Sonneveld-style ratios (Ca:N ≈ 0.8,
-//     Mg:N ≈ 0.25 documented in Haifa technical materials). Cert 3-4.
-//   Sonneveld & Voogt, Plant Nutrition of Greenhouse Crops (2009) — uptake
-//     concentration framework (UC = uptake / transpiration). Used to
-//     cross-validate Ca/Mg ratios. Cert 4.
-//   ISHS 893_112 — hydroponic tomato vegetative uptake: peak 59-74 DAT
-//     390 mg N, 246 mg K, 208 mg Ca, 153 mg Mg, 47 mg P per plant per day.
-//     Confirms Haifa ramp shape. Cert 4.
-//   MDPI Agriculture 11(4):292 — phenological-stage uptake by EC method.
-//     Confirms order P<Mg<Ca<K<N during vegetative. Cert 3.
-//   Yara crop nutrition (qualitative) — confirms Mg peak at flowering, Ca
-//     steady throughout, only ~5% of Ca ends up in fruit (95% vegetative).
-//
-// CONVERSIONS USED (Haifa → mg/m²/wk):
-//   1 kg/ha/day × 100 (ha→m²/100) ÷ 10000 ... wait, simpler:
-//   1 kg/ha = 0.1 g/m² = 100 mg/m²; × 7 days = 700 mg/m²/wk per kg/ha/day.
-//   So Haifa "1.0 kg N/ha/day at days 1-10" → 700 mg N/m²/wk for T1.
-//
-// HAIFA TABLE (raw, for traceability):
-//   Days  | N kg/ha/d | P kg/ha/d | K kg/ha/d
-//   1-10  | 1.00      | 0.23      | 2.41
-//   11-20 | 1.00      | 0.23      | 4.82
-//   21-30 | 1.00      | 0.23      | 4.22
-//   31-40 | 2.00      | 0.46      | 4.22
-//   41-50 | 2.50      | 0.92      | 6.63
-//   51-60 | 2.50      | 1.37      | 6.63
-//   61-70 | 2.50      | 0.69      | 7.23
-//   71-80 | 2.50      | 0.69      | 4.82
-//
-// STAGE MAPPING (Haifa days → Décembre T-stages):
-//   T1 ≈ days 1-20  (transplant + early veg, light-limited Quebec winter
-//                    so we discount K slightly vs Haifa subtropical light)
-//   T2 ≈ days 21-40 (rapid veg, pre-flowering)
-//   T3 ≈ days 41-60 (flowering onset, first fruit set)
-//   T4 → production montante (ongoing canopy + new truss tissue)
-//   T5 → pleine production (ongoing canopy growth at peak ~90 g DW/m²/sem)
-//
-// T4-T5 BIOMASS DERIVATION (revised 2026-05-04, retuned 2026-05-05):
-//
-// RECONCILIATION METHODOLOGY — T4 and T5 are now derived top-down from the
-// well-validated whole-plant Yara/Sonneveld TOMATO_REMOVAL ratio (cert 4).
-// Rationale: the earlier bottom-up Sonneveld vegetative-tissue ratios
-// (P=0.37×N, K=2.5×N) gave a split-sum that diverged from the whole-plant
-// reference by 30-70% on P, K (up) and Ca (down). The whole-plant ratio is
-// validated against published sources (Yara, Sonneveld, ISHS, MDPI) and is
-// a stronger anchor than the Sonneveld canopy-only ratios at production
-// stages where most uptake is fruit-driven.
-//
-// FORMULA (T5, per element, at target yield 1,5 kg/m²/sem):
-//   target_total_mg   = TOMATO_REMOVAL[el].g × 1500    (whole-plant uptake)
-//   fruit_term_mg     = TOMATO_FRUIT_EXPORT[el].g × 1500
-//   BIOMASS_DEMAND[T5] = target_total_mg − fruit_term_mg
-// This guarantees by construction that at 1,5 kg/m²/sem yield the split sum
-// (FRUIT_EXPORT × yield + BIOMASS[T5]) equals TOMATO_REMOVAL × yield, so the
-// two demand views are mutually consistent at the target. Away from the
-// target yield the split sum will drift slightly from the whole-plant
-// ratio — that is the correct behaviour because canopy demand is roughly
-// fixed per week regardless of fruit yield, while fruit export scales
-// linearly with yield.
-//
-// SANITY CHECK at T5, yield 1,5 kg/m²/sem (mg/m²/wk):
-//   El | TOMATO_REMOVAL × 1,5 | FRUIT_EXPORT × 1,5 + BIOMASS[T5] | Δ%
-//   N  | 3 750               | 2 250 + 1 500 = 3 750            | 0%
-//   P  |   600               |   360 +   240 =   600            | 0%
-//   K  | 5 250               | 3 150 + 2 100 = 5 250            | 0%
-//   Ca | 2 250               |   112 + 2 138 = 2 250            | 0%
-//   Mg |   600               |   150 +   450 =   600            | 0%
-// Split-sum at T5 with 1,5 kg yield matches TOMATO_REMOVAL × 1,5 within
-// ~10% on macros — cross-check passes (in fact, exact by construction).
-//
-// T4 = T5 × 0,85. Cert 2 — extrapolation. Rationale: T4 (production
-// montante) has a slightly less mature canopy than T5 (pleine production),
-// fewer parallel trusses pulling resources, and slightly slower per-week
-// new-structure build-out. Picking 0,85 (rather than 0,80 or 0,90) is a
-// midpoint; refine when stage-stratified weekly tissue tests come in.
-//
-// LEGACY BOTTOM-UP ESTIMATE (kept for traceability — was the basis before
-// retuning to whole-plant reference on 2026-05-05):
-//   ~3 new leaves/sem × ~7 g DW/leaf × 2,5 plants/m² ≈ 52 g DW/m²/sem (leaves)
-//   40 cm stem extension × ~0,5 cm² × 0,3 g/cm³ × 2,5 plants/m² ≈ 15 g DW/m²/sem (stem)
-//   ~1 new truss/sem × ~10 g DW × 2,5 plants/m² ≈ 25 g DW/m²/sem (truss tissue)
-//   Total ≈ 90 g DW/m²/sem
-//   × ~2,8% N for tomato vegetative tissue ≈ 2 500 mg N/m²/sem (upper bound)
-// The bottom-up gave 2 500 mg N at T5 and Sonneveld vegetative ratios
-// (P=0.37×N, K=2.5×N) overshot whole-plant by 30-70%. We now anchor to
-// whole-plant minus fruit export as the more defensible target.
-//
-// Other elements (Ca, Mg, micros) follow the same TOMATO_REMOVAL minus
-// TOMATO_FRUIT_EXPORT formula. Ca biomass term is large (~95% of whole-
-// plant Ca stays in canopy because Ca is xylem-mobile only), Mg moderate
-// (~75% in canopy). Micros: cert 1-2 because the underlying TOMATO_REMOVAL
-// micros are themselves estimates and the 60% fruit-share is a default,
-// not an element-specific Yara number — data gap, refine on tissue tests.
-//
-// CAVEAT (cert 2): Décembre is sun-only tomato in Quebec (no supplemental
-// light). Haifa F-144 program is Mediterranean / subtropical. Winter-
-// transplant conditions reduce transpiration ~40-60% vs Haifa baseline
-// during T1-T2; this would proportionally reduce mass-flow-driven uptake
-// (K, Ca, Mg, N as NO₃). The Bilan does NOT currently apply a seasonal
-// scalar to BIOMASS_DEMAND — values represent "what the plant could pull
-// if supply weren't limiting", which is the right framing for a demand
-// model. Refine when foliar/petiole tissue tests come in.
-//
-// MICROS (Fe/Mn/Zn/B/Cu/Mo): no direct stage-stratified data found in
-// literature. Estimated from whole-crop totals (Sonneveld guideline:
-// Fe ~6 g/m²/yr, Mn ~1.5, Zn ~0.7, B ~0.7, Cu ~0.15, Mo ~0.015) split
-// proportionally to biomass accumulation rate. Cert 1-2 — flag if tissue
-// tests show mismatch. Vegetative phase pulls disproportionate Fe/Mn for
-// chlorophyll synthesis on new leaves.
-const BIOMASS_DEMAND = {
-  // mg/m²/wk per element. Cert noted in inline comments.
-  T1: {
-    N:  700,   // Haifa days 1-20 mid; cert 4
-    P:  160,   // Haifa days 1-20 mid; cert 4
-    K:  2200,  // Haifa avg ~2700 discounted ~20% for QC winter light; cert 3
-    Ca: 560,   // 0.8×N (Sonneveld-style ratio); cert 3
-    Mg: 175,   // 0.25×N; cert 3
-    Fe: 8,     // small new-leaf draw; cert 2
-    Mn: 2.0,   // chlorophyll/enzyme; cert 2
-    Zn: 1.0,   // hormone/enzyme; cert 2
-    B:  1.0,   // cell wall, root tips; cert 2
-    Cu: 0.2,   // lignin; cert 1
-    Mo: 0.02,  // NO₃ reductase cofactor; cert 1
-  },
-  T2: {
-    N:  1050,  // Haifa days 21-40 mid (1.5 kg/ha/d × 700); cert 4
-    P:  240,   // Haifa days 21-40 mid (0.345 × 700); cert 4
-    K:  2950,  // Haifa days 21-40 avg (4.22 × 700) discounted slightly; cert 3
-    Ca: 840,   // 0.8×N; cert 3
-    Mg: 265,   // 0.25×N; cert 3
-    Fe: 14,    // canopy expansion peak; cert 2
-    Mn: 3.5,   // cert 2
-    Zn: 1.8,   // cert 2
-    B:  1.5,   // cert 2
-    Cu: 0.3,   // cert 1
-    Mo: 0.03,  // cert 1
-  },
-  T3: {
-    N:  1750,  // Haifa days 41-50 (2.5 × 700); cert 4
-    P:  640,   // Haifa days 41-50 (0.92 × 700) — P spike at flowering; cert 4
-    K:  4640,  // Haifa days 41-50 (6.63 × 700) — K ramp at flowering; cert 4
-    Ca: 1400,  // 0.8×N — flowering Ca demand; cert 3
-    Mg: 440,   // 0.25×N — Yara: Mg peak at flowering; cert 3
-    Fe: 18,    // cert 2
-    Mn: 4.0,   // cert 2
-    Zn: 2.2,   // cert 2
-    B:  2.0,   // critical for pollination + fruit set; cert 2
-    Cu: 0.4,   // cert 1
-    Mo: 0.04,  // cert 1
-  },
-  T4: {
-    // Production montante: canopy still expanding, ongoing leaf/stem/truss
-    // growth at ~85% of T5 (fewer parallel trusses, less mature canopy).
-    // Values = T5 × 0,85. Cert 2 — extrapolation from T5 reconciliation.
-    // Pairs with TOMATO_FRUIT_EXPORT × yield (no double-count).
-    // Updated 2026-05-06 to track Koller-aligned T5 values.
-    N:  1377,  // T5 × 0.85; cert 2
-    P:  224,   // T5 × 0.85; cert 2 (REQ-033 Tier B)
-    K:  2040,  // T5 × 0.85; cert 2
-    Ca: 1817,  // T5 × 0.85; cert 2
-    Mg: 545,   // T5 × 0.85; cert 2 (REQ-033 Tier B)
-    Fe: 5.1,   // T5 × 0.85; cert 1-2
-    Mn: 2.55,  // T5 × 0.85; cert 1-2
-    Zn: 1.53,  // T5 × 0.85; cert 1-2
-    B:  1.53,  // T5 × 0.85; cert 1-2
-    Cu: 0.51,  // T5 × 0.85; cert 1-2
-    Mo: 0.0255,// T5 × 0.85; cert 1-2
-  },
-  T5: {
-    // Pleine production: ongoing canopy + new structures (no fruit term —
-    // fruit handled by TOMATO_FRUIT_EXPORT × yield).
-    //
-    // Derivation (per element, anchored to whole-plant Koller-aligned ratio):
-    //   BIOMASS[T5] = TOMATO_REMOVAL × 1500 − TOMATO_FRUIT_EXPORT × 1500
-    // i.e. whole-plant uptake at 1,5 kg/m²/sem fruit minus the part that
-    // physically leaves in fruit. At target yield this makes the split sum
-    // match the whole-plant reference exactly. Cert 3 for macros (inherits
-    // from TOMATO_REMOVAL), cert 1-2 for micros.
-    //
-    // Cross-check at yield 1,5 kg/m²/sem (split sum vs whole-plant ratio):
-    //   FRUIT_EXPORT × 1,5 + BIOMASS[T5]   vs  TOMATO_REMOVAL × 1,5
-    //   N : 2 430 +  1 620 = 4 050    vs  4 050  (exact)
-    //   P :   396 +    264 =   660    vs    660  (exact)
-    //   K : 3 600 +  2 400 = 6 000    vs  6 000  (exact)
-    //   Ca:   113 +  2 138 = 2 250    vs  2 250  (exact)
-    //   Mg:   214 +    641 =   855    vs    855  (exact)
-    // All Δ% within ±10% — split-sum reconciliation passes by construction.
-    N:  1620,  // 2.7 g/kg × 1500 − 2430 fruit; cert 3
-    P:  264,   // 0.44 g/kg × 1500 − 396 fruit; cert 3 (REQ-033 Tier B)
-    K:  2400,  // 4.0 g/kg × 1500 − 3600 fruit; cert 3
-    Ca: 2138,  // 1.5 g/kg × 1500 − 112 fruit (~95% retained in canopy); cert 3
-    Mg: 641,   // 0.57 g/kg × 1500 − 214 fruit (~75% retained); cert 3 (REQ-033 Tier B)
-    Fe: 6,     // 0.010 g × 1500 − 9 fruit; cert 1-2
-    Mn: 3,     // 0.005 g × 1500 − 4.5 fruit; cert 1-2
-    Zn: 1.8,   // 0.003 g × 1500 − 2.7 fruit; cert 1-2
-    B:  1.8,   // 0.003 g × 1500 − 2.7 fruit; cert 1-2
-    Cu: 0.6,   // 0.001 g × 1500 − 0.9 fruit; cert 1-2
-    Mo: 0.03,  // 0.00005 g × 1500 − 0.045 fruit; cert 1-2
-  },
-};
-
-// ─── TOMATO_DEMAND_CERT — confidence in demand[stage][el] = fruit + biomass ──
-//
-// Total demand cert = min(TOMATO_FRUIT_EXPORT cert, BIOMASS_DEMAND[stage] cert)
-// per element. Both source tables annotate cert in inline comments; values
-// here mirror those annotations so the Bilan modal can surface honest cert
-// per (stage, element) instead of flat "cert 3 for all".
-//
-// Why this matters: TOMATO_FRUIT_EXPORT for micros uses a 60% default split
-// flagged "data gap, cert 1-2"; BIOMASS_DEMAND Cu/Mo are cert 1 across all
-// stages. Hiding micros behind a flat cert 3 misled the user about what the
-// numbers can support — tissue tests are needed before acting on micro gaps.
-//
-// When fruit term is 0 (T1, no harvest), the conceptually-correct cert is the
-// biomass cert alone — but min(fruit_cert, biomass_cert) is a conservative
-// shortcut. Acceptable: if anything it under-promises certitude at T1.
-const TOMATO_DEMAND_CERT = {
-  T1: { N:4, P:4, K:3, Ca:3, Mg:3, Fe:1, Mn:1, Zn:1, B:1, Cu:1, Mo:1 },
-  T2: { N:4, P:4, K:3, Ca:3, Mg:3, Fe:1, Mn:1, Zn:1, B:1, Cu:1, Mo:1 },
-  T3: { N:4, P:4, K:4, Ca:3, Mg:3, Fe:1, Mn:1, Zn:1, B:1, Cu:1, Mo:1 },
-  T4: { N:2, P:2, K:2, Ca:2, Mg:2, Fe:1, Mn:1, Zn:1, B:1, Cu:1, Mo:1 },
-  T5: { N:3, P:3, K:3, Ca:3, Mg:3, Fe:1, Mn:1, Zn:1, B:1, Cu:1, Mo:1 },
-};
+<!-- @include nutrition/tomato/plant-needs/data.js -->
 
 // Element % by mass for each product (label-stated)
 const PRODUCT_PCT = {
@@ -3279,6 +2973,10 @@ const STORED_RECIPE = {
 //   Mo 0.5 g = ~100% demand (wide tolerance).
 //   Fe 90 g FeSO₄·7H₂O = ~95% demand (cuticle uptake bypasses soil lockout).
 const FP_RECIPE_T5 = {
+  // .fertigation: placeholders — overwritten at script load by
+  // wireFpFertigation() in nutrition/tomato/fertigation-recipe/calc.js
+  // (single source of truth = FIRST_PRINCIPLES_T5_FERTIGATION in
+  // nutrition/tomato/fertigation-recipe/data.js). Spec: REQ-098 / REQ-099.
   fertigation: {
     'K2SO4':       5167,      // mass-balance T5 — replenishes offtake K
     'MgSO4-7H2O':  1379,      // mass-balance T5 — replenishes offtake Mg
@@ -3298,42 +2996,7 @@ const FP_RECIPE_T5 = {
   },
 };
 
-// FIRST_PRINCIPLES_SIDEDRESS — adapter that surfaces FP_RECIPE_T5.sidedress in
-// the {actisol_g, farine_g} schema expected by buildBanqueSol(). Single source
-// of truth lives in FP_RECIPE_T5 above.
-// Read by buildBanqueSol() to render the bank-trajectory comparison side-by-side
-// with the stored recipe; not consumed by calcNutrSupply (stored recipe remains
-// REQ-004 source-of-truth for the Bilan supply numbers).
-const FIRST_PRINCIPLES_SIDEDRESS = {
-  T5: {
-    actisol_g: FP_RECIPE_T5.sidedress['Actisol-5-3-2'],
-    farine_g:  FP_RECIPE_T5.sidedress['FarinePlumes'],
-  },
-};
-const SIDEDRESS_AREA_PER_PLANCHE = 54.7; // m²
-
-// Mineralization efficiency at steady-state during a stage. Cert 3.
-// Assumes weekly application: at any point during the stage there's roughly
-// 4-8 weeks of accumulated material mineralizing simultaneously, so weekly
-// plant-available release ≈ weekly application × efficiency. Cold-soil
-// shoulder seasons would reduce these ~30-50%.
-//   Farine de plumes (animal protein): 70-85% mineralizes within 6-8 weeks
-//     in warm greenhouse soil → 0.75 plant-available per week, steady-state.
-//   Actisol N (manure pellet, slower than feather meal): 0.60.
-//   Actisol P: 0.50 (organic P mineralizes slower than N; pH 7.4 also locks
-//     a portion of mineralized P as Ca-phosphate before plant uptake).
-//   Actisol K: 0.85 (K is mostly water-soluble in pellets; fast release).
-// Cross-reference: values within ranges in Sonneveld & Voogt 2009 (Plant Nutrition
-// of Greenhouse Crops, Springer) Ch. 8 — composted manure first-year N 30-60%,
-// feather meal N 60-80%, K from organic sources 70-90%. Décembre values sit at
-// the high end of those ranges (assuming consistent weekly application →
-// steady-state mineralization stack of 4-8 weeks of accumulated material).
-const SIDEDRESS_MIN_EFF = {
-  Actisol_N:      0.60,
-  Actisol_P:      0.50,
-  Actisol_K:      0.85,
-  FarinePlumes_N: 0.75,
-};
+<!-- @include nutrition/tomato/sidedress-recipe/data.js -->
 
 // ═══════════════ SALANOVA — POST-TRANSPLANT NUTRITION MODEL ═══════════════
 // Lettuce post-transplant = continuous growth phase (no T1/T5 stages —
@@ -3492,6 +3155,10 @@ function calcLettuceNurseryDemand(targetG, cycleDays, cellsPerTray) {
   return out;
 }
 
+<!-- @include nutrition/compost-contribution/data.js -->
+<!-- @include nutrition/compost-contribution/calc.js -->
+<!-- @include nutrition/compost-contribution/model.js -->
+
 // ─── RECIPE_INPUTS — first-principles inputs for fertigation recipe sizing ──
 //
 // Recipe values returned by computeStageRecipe(stage) are DERIVED from these
@@ -3507,31 +3174,20 @@ const RECIPE_INPUTS = {
   // (sem ~25-28), absorbed by soil bank — accepted tradeoff vs gap-fill.
   stageYield: { T1: 0, T2: 0, T3: 0.3, T4: 1.0, T5: 1.5 },
 
-  // ── COMPOST RELEASE — weekly mineralization from past compost amendments ──
+  // ── COMPOST RELEASE — sourced from compost-contribution subproject ──
   //
   // MASS-BALANCE FRAMING (2026-05-07): plant offtake (fruit + biomass) drains
-  // the soil bank. Replenishment must match offtake at equilibrium.
-  // Inputs to the bank = sidedress + fertigation + foliar + ongoing compost
+  // the soil bank. Replenishment must match offtake at equilibrium. Inputs
+  // to the bank = sidedress + fertigation + foliar + ongoing compost
   // mineralization. Mass-flow from soil solution (SME × irrigation) is NOT
   // counted here — it delivers nutrients to the plant by DRAWING on the bank,
-  // not by adding to it. Replenishing only the gap left after soil mass-flow
-  // would silently deplete the bank over years.
+  // not by adding to it.
   //
-  // Savaria ORGANIMIX marin applied fall 2025: ~25.4 kg/m² (2 inches × 520 m²).
-  // Composition (label): N 0.5% · P₂O₅ 0.1% · K₂O 0.1% · Ca 1.1% · Mg ~0.5%.
-  // Total applied per m²: N 127 g · K 21.1 g · Mg 102 g · Ca 279 g · P 11.1 g.
-  // Year-1 mineralization rates (cert 2-3): N 30%, K 70%, Mg 50%, Ca 60%,
-  // P 5-10% (pH-locked → effective release ~0.5 g P/m²/yr).
-  // Annual release ÷ 52 wk × seasonal factor 1.5× (Q10 boost during warm
-  // production window T3-T5). Cert 2 — REVISE when compost ages out (~18-24 mo
-  // post-application).
-  compostReleasePerWeek: {
-    N:  1.10,   // (127 × 0.30 / 52) × 1.5 — g N/m²/wk
-    K:  0.40,   // (21.1 × 0.65 / 52) × 1.5 — cert 2-3 (label-stated K₂O 0.1%)
-    Mg: 0.50,   // CONSERVATIVE — Mg % NOT on Savaria label, assumed ~0.3% low end. Math: (76 × 0.30 / 52) × 1.5 = 0.66 → rounded DOWN to 0.5 per REQ-033 bias-upward. Cert 1-2 — VERIFY by requesting Mg spec from Savaria.
-    Ca: 4.82,   // (279 × 0.60 / 52) × 1.5 — part of the Ca-saturation problem
-    P:  0.016,  // (11.1 × 0.05 / 52) × 1.5 — pH-locked, low effective
-  },
+  // Per-element values, label, mineralization fractions, and seasonal factor
+  // live in `nutrition/compost-contribution/data.js`. Spec: REQ-079, REQ-080.
+  // Consumers read via `window.CompostContribution.releasePerWeek` (see
+  // `computeStageRecipe`, `computeStageSidedress`, `buildNutriment`,
+  // `buildNutrimentLettuce`).
 };
 
 // ─── ACCEPTED_DEFICITS — supply < 0.9 × demand entries with rationale ────────
@@ -3611,115 +3267,37 @@ const ACCEPTED_EXCESSES = [
   },
 ];
 
-// ─── computeStageRecipe — MASS-BALANCE replenishment of K and Mg ────────
-//
-// FP target generator (mass-balance from RECIPE_INPUTS). NOT the team-facing
-// stored fertigation — that's STORED_RECIPE.tomato.fertigation, hand-locked
-// at PA Taillon's April 2026 values. computeStageRecipe is read by:
-//   - Block 7 stored-vs-FP drift gauge (renderPhase1Comparison)
-//   - calcNutrSupply when nutrRecipeMode === 'fp'
-//   - computeStageSidedress (sidedress mass-balance variant)
-// Formula (per element):
-//   offtake_mg/m²/wk = TOMATO_FRUIT_EXPORT × stage_yield × 1000 + BIOMASS_DEMAND[stage]
-//   sidedress_mg/m²/wk = STORED_RECIPE.tomato.sidedress[stage] × element_pct × min_eff / area
-//   compost_mg/m²/wk = RECIPE_INPUTS.compostReleasePerWeek[el] × 1000
-//   fertigation_needed_mg/m²/wk = max(0, offtake − sidedress)
-//   product_g_total = fertigation_needed_mg / 1000 / element_pct × total_area
-//
-// "offtake" = full plant uptake (fruit export + biomass build-out). Biomass
-// nutrients leave the system at end of cycle (plants pulled, biomass removed
-// off-site), so they count as offtake too.
-//
-// COMPOST IS NOT SUBTRACTED (decision 2026-05-07): compost release is
-// uncertain (especially Mg, cert 1-2 with no label data) and finite (declines
-// over 18-24 months). Treating it as a deduction would silently under-feed
-// when it runs out. Mass-balance principle: fertigation must replenish ALL
-// plant consumption regardless of compost contribution. Compost becomes a
-// margin of safety that grows the bank rather than a credit against
-// fertigation. The Compost block on the Nutrition page still shows compost
-// release for awareness but no longer enters the cascade math.
-//
-// Returns { kSulfate, mgSulfate } in grams (rounded). Total weekly dose for
-// the 7-bed × 54.7 m² tomato area.
-function computeStageRecipe(stage) {
-  const y = RECIPE_INPUTS.stageYield[stage] || 0;
-  const totalArea = TOMATO_NUM_BEDS * TOMATO_BED_AREA;
-  const sd = STORED_RECIPE.tomato.sidedress[stage] || { actisol_g: 0, farine_g: 0 };
-  const biomass = BIOMASS_DEMAND[stage] || {};
-  const compost = RECIPE_INPUTS.compostReleasePerWeek;
+// ─── Fertigation-recipe subproject (computeStageRecipe + MIXING_FACTOR + FP T5) ──
+// Math model: data → calc → model. Mirrors plant-needs / sidedress-recipe.
+// Owns: computeStageRecipe(stage), MIXING_FACTOR_FERT_STORED/FP, the T5
+// FP target wired into FP_RECIPE_T5.fertigation (PA Taillon April 2026
+// anchor). Spec: nutrition/tomato/fertigation-recipe/spec.md (REQ-098 mass-
+// balance, REQ-099 namespace, REQ-100 mode-aware mixing factor). Includes
+// must come AFTER RECIPE_INPUTS, sidedress-recipe/data.js (provides
+// SIDEDRESS_AREA_PER_PLANCHE / SIDEDRESS_MIN_EFF), and the FP_RECIPE_T5
+// declaration above (the wireFpFertigation IIFE overwrites .fertigation).
+<!-- @include nutrition/tomato/fertigation-recipe/data.js -->
+<!-- @include nutrition/tomato/fertigation-recipe/calc.js -->
+<!-- @include nutrition/tomato/fertigation-recipe/model.js -->
+<!-- @include nutrition/tomato/sidedress-recipe/calc.js -->
+<!-- @include nutrition/tomato/sidedress-recipe/model.js -->
 
-  // ── K ──
-  const k_offtake_mg = (TOMATO_FRUIT_EXPORT.K.g * 1000 * y) + (biomass.K || 0);
-  const k_sd_mg = (sd.actisol_g * PRODUCT_PCT.Actisol_K * (SIDEDRESS_MIN_EFF.K || 0.85) * 1000) / SIDEDRESS_AREA_PER_PLANCHE;
-  const k_compost_mg = (compost.K || 0) * 1000;
-  const k_fert_mg_per_m2 = Math.max(0, k_offtake_mg - k_sd_mg - k_compost_mg);
-  const kSulfate = Math.round((k_fert_mg_per_m2 / 1000 / PRODUCT_PCT.K2SO4_K) * totalArea);
-
-  // ── Mg ──
-  const mg_offtake_mg = (TOMATO_FRUIT_EXPORT.Mg.g * 1000 * y) + (biomass.Mg || 0);
-  // Side-dress products carry no Mg.
-  const mg_compost_mg = (compost.Mg || 0) * 1000;
-  const mg_fert_mg_per_m2 = Math.max(0, mg_offtake_mg - mg_compost_mg);
-  const mgSulfate = Math.round((mg_fert_mg_per_m2 / 1000 / PRODUCT_PCT.MgSO4_Mg) * totalArea);
-
-  return { mgSulfate, kSulfate };
-}
-
-// ─── computeStageSidedress — MASS-BALANCE first-principles sidedress ────
-//
-// Formula (N-only — sidedress's natural strength):
-//   N_offtake_mg/m²/wk = TOMATO_FRUIT_EXPORT.N × stage_yield × 1000 + BIOMASS_DEMAND[stage].N
-//   N_compost_mg/m²/wk = RECIPE_INPUTS.compostReleasePerWeek.N × 1000
-//   N_needed_mg/m²/wk = max(0, N_offtake − N_compost)
-//   farine_g_per_m² = N_needed / (Farine_N_pct × Farine_min_eff) / 1000
-//   farine_g_per_planche = farine_g_per_m² × SIDEDRESS_AREA_PER_PLANCHE
-//
-// Ca-aware design (2026-05-08): farine de plumes only, no Actisol.
-// Reason: Actisol carries 3% Ca; soil already Ca-saturated (10,989 kg/ha,
-// part of the current crisis). Switching to farine-only delivers N without
-// adding Ca. Farine is more $/kg N than Actisol but the Ca trade-off
-// dominates the cost calc — over-saturated Ca is the actual yield-limiting
-// problem we're trying to fix.
-//
-// K is intentionally NOT covered here — Actisol K (1.66%) is too dilute to
-// deliver meaningful K via sidedress; K stays in fertigation (K2SO4 41.5% K).
-//
-// Returns { actisol_g, farine_g } in grams per planche per week. actisol_g
-// always 0 in the Ca-aware variant; kept in shape for symmetry with stored
-// STORED_RECIPE.tomato.sidedress until /retire-recipe lands.
-function computeStageSidedress(stage) {
-  const y = RECIPE_INPUTS.stageYield[stage] || 0;
-  const biomass = BIOMASS_DEMAND[stage] || {};
-  const compost = RECIPE_INPUTS.compostReleasePerWeek;
-
-  const n_offtake_mg = (TOMATO_FRUIT_EXPORT.N.g * 1000 * y) + (biomass.N || 0);
-  const n_compost_mg = (compost.N || 0) * 1000;
-  const n_needed_mg_per_m2 = Math.max(0, n_offtake_mg - n_compost_mg);
-
-  const farine_eff = (SIDEDRESS_MIN_EFF.FarinePlumes_N || 0.75);
-  const farine_n_pct = PRODUCT_PCT.FarinePlumes_N;  // 0.13
-  const farine_g_per_m2 = n_needed_mg_per_m2 / (farine_n_pct * farine_eff) / 1000;
-  const farine_g = Math.round(farine_g_per_m2 * SIDEDRESS_AREA_PER_PLANCHE);
-
-  return { actisol_g: 0, farine_g };
-}
-
-// ─── Wire FP recipes from computeStageSidedress at script load ──────────
-// FP_RECIPE_T5.sidedress and FIRST_PRINCIPLES_SIDEDRESS were hand-set
-// placeholders (1300 g farine at T5). This overrides them with mass-balance
-// computed values from computeStageSidedress(stage) so the Nutrition page's
-// "Recette proposée" and Banque sol comparison reflect first principles —
-// not a stale hand-set guess. Single source of truth = computeStageSidedress.
-(function wireFpSidedress() {
-  for (const stage of ['T1', 'T2', 'T3', 'T4', 'T5']) {
-    FIRST_PRINCIPLES_SIDEDRESS[stage] = computeStageSidedress(stage);
-  }
-  const t5 = FIRST_PRINCIPLES_SIDEDRESS.T5;
-  FP_RECIPE_T5.sidedress = {
-    'Actisol-5-3-2': t5.actisol_g,  // 0 — Ca-aware (dropped, soil Ca-saturated)
-    'FarinePlumes':  t5.farine_g,
-  };
-})();
+// ─── Foliar-recipe subproject (cuticle delivery under coverage discount) ───
+// Math model: data → calc → model. Mirrors plant-needs / sidedress-recipe /
+// fertigation-recipe. Owns: FOLIAR_COVERAGE_DEFAULT (0.30 — no yucca regime),
+// FOLIAR_COVERAGE_WITH_YUCCA (0.80 — exposed for future toggle),
+// computeFoliarSupply(stage) returning per-element delivered mg/m²/wk.
+// Foliar is BURN-CAP-CONSTRAINED, not mass-balance-derived: dose is pinned by
+// REQ-025 cuticle burn cap + local-pool toxicity headroom, model computes
+// delivery under coverage. Spec: nutrition/tomato/foliar-recipe/spec.md
+// (REQ-101 coverage discount applied, REQ-103 namespace; REQ-025 inherited
+// from nutrition/spec.md for burn cap — not duplicated here). Includes must
+// come AFTER STORED_RECIPE (parses .tomato.foliaire.A label strings),
+// PRODUCT_PCT (reads MnSO4_Mn / FeSO4_Fe / etc.), and TOMATO_NUM_BEDS /
+// TOMATO_BED_AREA (area derivation).
+<!-- @include nutrition/tomato/foliar-recipe/data.js -->
+<!-- @include nutrition/tomato/foliar-recipe/calc.js -->
+<!-- @include nutrition/tomato/foliar-recipe/model.js -->
 
 // TOMATO_STAGES const removed 2026-05-08 — was a memoized snapshot of
 // computeStageRecipe(). Call computeStageRecipe(stage) directly. See
@@ -4896,31 +4474,17 @@ function renderPhase1Comparison() {
 
 // ═══ END PHASE 1 RECIPE MODEL ═══
 
-// Demand model = fruit export (yield-driven) + biomass build-out (stage-driven).
-// The two terms are NON-OVERLAPPING by construction (2026-05-04 split):
-//   fruit_mg    = TOMATO_FRUIT_EXPORT × yield  → only what leaves in fruit
-//   biomass_mg  = BIOMASS_DEMAND[stage]        → ongoing canopy + new structures
-// At T5 fruit dominates (yield-driven); at T1-T3 biomass IS the demand
-// (little/no fruit yet). See BIOMASS_DEMAND comment block for sources.
-//
-// Returns an object per element with the breakdown:
-//   { fruit: <mg/m²/wk from yield>, biomass: <mg/m²/wk from stage>, total }
-// so the Bilan UI can show the split.
-function calcNutrDemand(yieldKgPerM2, stage) {
-  const out = {};
-  const bio = BIOMASS_DEMAND[stage] || {};
-  Object.keys(TOMATO_FRUIT_EXPORT).forEach(el => {
-    const fe = TOMATO_FRUIT_EXPORT[el];
-    // Fruit export: fe.g is g/kg fruit for macros, kg/kg×10⁻³ for micros
-    // (uniform field "g" but unit interp differs). ×1000 converts both to mg.
-    //   fruit_mg = yieldKgPerM2 × export_per_kg × 1000
-    const fruit_mg = yieldKgPerM2 * fe.g * 1000;
-    const biomass_mg = bio[el] || 0;
-    const total_mg = fruit_mg + biomass_mg;
-    out[el] = { fruit: fruit_mg, biomass: biomass_mg, total: total_mg };
-  });
-  return out;
-}
+<!-- @include nutrition/tomato/plant-needs/calc.js -->
+
+<!-- @include nutrition/tomato/plant-needs/model.js -->
+
+// ─── Yield Range (Salanova nursery yield prediction) ───────────────────────
+// Math model: data → calc → model. Order matches plant-needs convention.
+// Consumers: yield-range/app/logic.js (admin page) and any future strategy
+// dashboards. See yield-range/spec.md + yield-range/app/spec.md.
+<!-- @include yield-range/data.js -->
+<!-- @include yield-range/calc.js -->
+<!-- @include yield-range/model.js -->
 
 // SUPPLY MODEL (revised 2026-05-05):
 //   supply.soil   = SME × transpiration         (single source of "this week's soil access")
@@ -4933,14 +4497,17 @@ function calcNutrDemand(yieldKgPerM2, stage) {
 //   captured in the SME measurement; double-counting was the bug fixed
 //   here. See working files/coherence-audit.md Finding 14.
 //
-// MIXING_FACTOR_FERT (cert 2-3): drip irrigation delivers liquid to the
-// active root zone; ~half is absorbed by roots before the solution mixes
-// with the bulk soil pool. The other half joins the soil pool and is
-// captured in the next SME reading. The factor estimates the *additional*
-// fraction this week beyond what SME would already reflect — without it,
-// fert K would be summed on top of soil K which already contains last
-// week's residue → double-count.
-const MIXING_FACTOR_FERT = 0.5;
+// MIXING_FACTOR_FERT — declared in nutrition/tomato/fertigation-recipe/data.js
+// (mode-aware split: MIXING_FACTOR_FERT_STORED = 0.5, MIXING_FACTOR_FERT_FP = 1.0;
+// REQ-100). Legacy alias `MIXING_FACTOR_FERT` = STORED so the consumer below
+// reads it without changes. Mechanism: drip delivers liquid to the active root
+// zone; ~half is absorbed by roots before mixing with the bulk soil pool. The
+// other half joins the soil pool and shows up in the next SME reading. The
+// 0.5 factor estimates the *additional* fraction this week beyond what SME
+// already reflects — without it (stored mode), fert K would be summed on top
+// of soil K which already contains last week's residue → double-count. In FP
+// mode supply.soil is dropped for fertigation-deliverable elements, no double-
+// count risk, factor = 1.0. Spec: nutrition/tomato/fertigation-recipe/spec.md.
 
 // LUXURY_FACTOR — cap on supply.soil per element, applied as
 //   supply.soil[el] = min(SME[el] × transpiration, demand[el] × LUXURY_FACTOR[el])
@@ -5014,51 +4581,69 @@ function calcNutrSupply(stage, phLocked, transpFactor, targetYield, recipeMode) 
   const fertB_barrel = (sb_fert_g * PRODUCT_PCT.Solubore_B) / area * 1000;
   const fertB  = fertB_barrel * fertMixFactor;
 
-  // Foliar Spray A (weekly): from STORED_RECIPE.tomato.foliaire.A (stored) or
-  // FP_RECIPE_T5.foliar (fp). Both express grams per 15 L master tank — same
-  // formula downstream.
+  // Foliar Spray A (weekly): delivered per-element mg/m²/wk under cuticle
+  // coverage discount.
+  // - Stored mode: window.FoliarRecipeTomato.computeFoliarSupply(stage)
+  //   parses STORED_RECIPE.tomato.foliaire.A label strings and applies
+  //   FOLIAR_COVERAGE_DEFAULT (0.30, no yucca). REQ-101 (coverage) +
+  //   REQ-103 (namespace) live in nutrition/tomato/foliar-recipe/spec.md.
+  // - FP mode: FP_RECIPE_T5.foliar (mass-pinned at burn-cap-safe doses,
+  //   essentially mirrors stored — foliar is burn-cap-constrained, not
+  //   mass-balance-derived; see foliar-recipe/derivation.md). Inline
+  //   parsing kept here since FP doses come from a different shape
+  //   (object keyed by product name) than STORED (label-string array).
   const parseG = (s) => parseFloat(String(s).replace(',', '.')) || 0;
   const A = STORED_RECIPE.tomato.foliaire.A;
   const get = (substr) => A.find(x => x.name.includes(substr));
-  let mnSO4_g, znSO4_g, sb_g, cuSO4_g, moNa_g;
+  // Coverage discount — fixed at 30% (cert 4) without yucca; surfaced
+  // here for the FP-mode inline path. The stored-mode path reads it
+  // through window.FoliarRecipeTomato.computeFoliarSupply directly.
+  const cov = window.FoliarRecipeTomato.FOLIAR_COVERAGE_DEFAULT;
+
+  // Per-product gram doses by mode (kept for raw{} traceability + FP path).
+  let mnSO4_g, znSO4_g, sb_g, cuSO4_g, moNa_g, feSO4_g;
   if (mode === 'fp') {
     const fp = FP_RECIPE_T5.foliar;
-    mnSO4_g = fp['MnSO4']      || 0;
-    znSO4_g = fp['ZnSO4']      || 0;
-    sb_g    = fp['Solubore']   || 0;
-    cuSO4_g = fp['CuSO4']      || 0;
-    moNa_g  = fp['NaMolybdate']|| 0;
+    mnSO4_g = fp['MnSO4']        || 0;
+    znSO4_g = fp['ZnSO4']        || 0;
+    sb_g    = fp['Solubore']     || 0;
+    cuSO4_g = fp['CuSO4']        || 0;
+    moNa_g  = fp['NaMolybdate']  || 0;
+    feSO4_g = fp['FeSO4-7H2O']   || 0;
   } else {
     mnSO4_g = parseG(get('MnSO₄').master);
     znSO4_g = parseG(get('ZnSO₄').master);
     sb_g    = parseG(get('Solubore').master);
     cuSO4_g = parseG(get('CuSO₄').master);
     moNa_g  = parseG(get('Molybdate').master);
+    const feSO4_entry = A.find(x => x.name.includes('FeSO₄'));
+    feSO4_g = feSO4_entry ? parseG(feSO4_entry.master) : 0;
   }
-
-  // Coverage discount — fixed at 30% (cert 4): operating without yucca
-  // surfactant (decision 2026-05-05, yucca not on order). Recipe doses
-  // already account for this coverage.
-  const cov = 0.30;
-
-  // Fe source: stored parses FeSO₄·7H₂O from STORED_RECIPE.tomato.foliaire.A;
-  // fp reads FP_RECIPE_T5.foliar['FeSO4-7H2O']. Both are grams of FeSO₄·7H₂O
-  // per master tank; multiply by Fe fraction to get elemental Fe applied.
-  const feSO4_entry = A.find(x => x.name.includes('FeSO₄'));
-  const feSO4_g = mode === 'fp'
-    ? (FP_RECIPE_T5.foliar['FeSO4-7H2O'] || 0)
-    : (feSO4_entry ? parseG(feSO4_entry.master) : 0);
   const feApplied_g = feSO4_g * PRODUCT_PCT.FeSO4_Fe;
 
-  // Foliar mg/m²/week (effective after coverage)
-  const foliar = {
-    Mn: (mnSO4_g * PRODUCT_PCT.MnSO4_Mn) / area * 1000 * cov,
-    Zn: (znSO4_g * PRODUCT_PCT.ZnSO4_Zn) / area * 1000 * cov,
-    B:  (sb_g    * PRODUCT_PCT.Solubore_B) / area * 1000 * cov,
-    Cu: (cuSO4_g * PRODUCT_PCT.CuSO4_Cu) / area * 1000 * cov,
-    Mo: (moNa_g  * PRODUCT_PCT.NaMoO4_Mo) / area * 1000 * cov,
-    Fe:  feApplied_g                       / area * 1000 * cov,
-  };
+  // Foliar mg/m²/week (effective after coverage). Stored mode delegates
+  // to computeFoliarSupply(stage) — single source of truth for the
+  // delivery formula. FP mode computes inline from FP_RECIPE_T5.foliar.
+  let foliar;
+  if (mode === 'fp') {
+    foliar = {
+      Mn: (mnSO4_g * PRODUCT_PCT.MnSO4_Mn)   / area * 1000 * cov,
+      Zn: (znSO4_g * PRODUCT_PCT.ZnSO4_Zn)   / area * 1000 * cov,
+      B:  (sb_g    * PRODUCT_PCT.Solubore_B) / area * 1000 * cov,
+      Cu: (cuSO4_g * PRODUCT_PCT.CuSO4_Cu)   / area * 1000 * cov,
+      Mo: (moNa_g  * PRODUCT_PCT.NaMoO4_Mo)  / area * 1000 * cov,
+      Fe: feApplied_g                        / area * 1000 * cov,
+    };
+  } else {
+    // Stored mode: pull through the foliar-recipe subproject's namespace.
+    // Output carries 11 elements (macros = 0); we keep the existing
+    // 7-key shape consumers expect by extracting only the rows in use.
+    const supply = window.FoliarRecipeTomato.computeFoliarSupply(stage);
+    foliar = {
+      Mn: supply.Mn, Zn: supply.Zn, B: supply.B,
+      Cu: supply.Cu, Mo: supply.Mo, Fe: supply.Fe,
+    };
+  }
 
   // Spray B (CaCl₂ anti-BER) removed 2026-05-06 — no foliar Ca contribution.
   // BER risk is addressed via ventilation + humidity control on the operations
@@ -5080,7 +4665,8 @@ function calcNutrSupply(stage, phLocked, transpFactor, targetYield, recipeMode) 
   // and the cap doesn't bind.
   const tf = transpFactor || 1.0;
   const ty = (typeof targetYield === 'number' && targetYield > 0) ? targetYield : 1.5;
-  const demandBreakdown = calcNutrDemand(ty, stage);
+  // REQ-081: pass tf so Ca/Mg biomass terms scale with canopy transpiration.
+  const demandBreakdown = calcNutrDemand(ty, stage, tf);
   const soil = {};
   // FP mode (2026-05-08): drop SME credit for everything fertigation/foliar can
   // deliver (K, Mg, N, Fe, Mn, Zn, B, Cu, Mo). Keep SME for Ca (saturated, can't
@@ -5434,6 +5020,11 @@ function renderGapGrid(gapsIn, contrib, gapsOut, pqKeyPrefix) {
 
 <!-- @include nutrition/tomato/app/logic.js -->
 
+// Yield Range admin page wiring (Salanova nursery yield prediction).
+// Reads from window.YieldRange (declared earlier in this file via the
+// yield-range/model.js include). REQ-072 to 078 + REQ-084.
+<!-- @include yield-range/app/logic.js -->
+
 // Switch between Tomate / Salanova / Semis laitue on the Nutrition page.
 function setNutrCrop(crop) {
   nutrCrop = crop;
@@ -5497,10 +5088,11 @@ function buildNutrimentLettuce() {
 
   // Compost residual per element (g/m²/wk → mg/m²/wk for the gap chain).
   // Same Savaria ORGANIMIX amendment was applied on lettuce beds in fall 2025;
-  // RECIPE_INPUTS.compostReleasePerWeek is per-m² so it transfers directly.
+  // window.CompostContribution.releasePerWeek is per-m² so it transfers directly.
   const compostMg = {};
+  const CC = window.CompostContribution;
   order.forEach(el => {
-    const gPerWk = RECIPE_INPUTS.compostReleasePerWeek[el];
+    const gPerWk = CC.releasePerWeek[el];
     compostMg[el] = (gPerWk != null ? gPerWk : 0) * 1000;
   });
 
@@ -5566,16 +5158,16 @@ function buildNutrimentLettuce() {
   document.getElementById('nutr-l-needs').innerHTML = needsHtml;
 
   // ─── Block 2: Compost résiduel (Savaria ORGANIMIX, fall 2025) ───
-  // Reads RECIPE_INPUTS.compostReleasePerWeek — same source-of-truth as the
-  // tomato compost block (REQ-004). Per-element rows clickable for modal.
+  // Reads window.CompostContribution.releasePerWeek — same source-of-truth as
+  // the tomato compost block (REQ-004). Per-element rows clickable for modal.
   let compostHtml = `<div style="font-size:12.5px; line-height:1.5; color:var(--text-muted); margin-bottom:10px;">Minéralisation hebdomadaire du compost Savaria ORGANIMIX appliqué à l'automne 2025 sur les planches Salanova (~25,4 kg/m², étiquette N 0,5 · P₂O₅ 0,1 · K₂O 0,1 · Ca 1,1 · Mg ~0,5 %). Décline avec le temps ; à revisiter quand le compost vieillit (~18-24 mois post-application).</div>`;
   order.forEach(el => {
-    const gPerWk = RECIPE_INPUTS.compostReleasePerWeek[el];
+    const gPerWk = CC.releasePerWeek[el];
     if (gPerWk == null) {
       registerPourquoi(`lettuce-compost.${el}`, {
         title: `${el} — compost résiduel`,
         cert: 2,
-        equation: `compost[${el}] = 0 (non listé dans RECIPE_INPUTS.compostReleasePerWeek)`,
+        equation: `compost[${el}] = 0 (non listé dans window.CompostContribution.releasePerWeek)`,
         plugged: `Apport compost = 0 mg/m²/sem`,
         // stable — Savaria label declares only macros + Ca; micros not tracked
         interpretation: `${el} n'est pas suivi dans la libération du compost (étiquette Savaria ne déclare que macros). Apport supposé négligeable à l'échelle hebdomadaire.`
@@ -5595,7 +5187,7 @@ function buildNutrimentLettuce() {
     registerPourquoi(`lettuce-compost.${el}`, {
       title: `${el} — compost résiduel (Savaria ORGANIMIX)`,
       cert: el === 'Mg' ? 1 : (el === 'Ca' ? 3 : 2),
-      equation: `compost[${el}] = RECIPE_INPUTS.compostReleasePerWeek[${el}] × 1 000`,
+      equation: `compost[${el}] = window.CompostContribution.releasePerWeek[${el}] × 1 000`,
       plugged: `${gPerWk.toFixed(3)} g/m²/sem × 1 000 = <strong>${mgPerWk.toFixed(0)} mg/m²/sem</strong> &nbsp;·&nbsp; total Salanova (${LETTUCE_AREA.toFixed(0)} m²) = ${totalGPerWk.toFixed(1)} g/sem`,
       interpretation: note
     });
@@ -6205,10 +5797,10 @@ function buildHistoriqueNutriments() {
 // Default page (fertigation) + default crop (tomato) collapse to `/` (no hash).
 // Why: lets hot-reload / bookmarks land on the same page+crop, and keeps
 // `admin` orthogonal to navigation rather than buried in a comma list.
-const PAGES = ['fertigation','sol','foliar','irrigation','week','diagnostic','nutriment','banque','ec','historique-nutriments'];
+const PAGES = ['fertigation','sol','foliar','irrigation','week','diagnostic','nutriment','banque','ec','historique-nutriments','rendement'];
 const DEFAULT_PAGE = 'fertigation';
 const DEFAULT_CROP = 'tomato';
-const ADMIN_PAGES = ['diagnostic','nutriment','banque','ec','historique-nutriments'];
+const ADMIN_PAGES = ['diagnostic','nutriment','banque','ec','historique-nutriments','rendement'];
 // Pages whose crop is part of the URL. foliar omitted (only tomato is valid;
 // the page auto-redirects lettuce/nursery to tomato). Crop comes from
 // `currentCrop`, except diagnostic which has its own page-local crop state
@@ -6292,6 +5884,8 @@ function applyAdminMode() {
   document.getElementById('page-banque').style.display = admin ? 'inline-block' : 'none';
   document.getElementById('page-ec').style.display = admin ? 'inline-block' : 'none';
   document.getElementById('page-historique-nutriments').style.display = admin ? 'inline-block' : 'none';
+  const rendNavBtn = document.getElementById('page-rendement');
+  if (rendNavBtn) rendNavBtn.style.display = admin ? 'inline-block' : 'none';
   document.getElementById('admin-toggle').classList.toggle('is-admin', admin);
   // If the user dropped out of admin mode while on an admin page, send them
   // back to the default operational view.

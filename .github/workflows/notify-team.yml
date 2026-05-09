@@ -74,8 +74,8 @@ jobs:
           CHANGES=$(printf '%s\n' "$PR_BODY" | awk '/^## Ce qui change/{flag=1; next} /^## /{flag=0} flag' | grep -vE '^<!--|^$' || true)
           if [ -z "$CHANGES" ]; then CHANGES="(aucun résumé fourni)"; fi
 
-          if [ ! -f history.json ]; then
-            echo '[]' > history.json
+          if [ ! -f app/history.json ]; then
+            echo '[]' > app/history.json
           fi
 
           jq --arg date "$DATE_ISO" \
@@ -86,17 +86,17 @@ jobs:
              --arg pr "$PR_NUMBER" \
              --arg sha "$MERGE_SHA" \
              '[ {date: $date, date_fr: $date_fr, title: $title, changes: $changes, url: $url, pr: ($pr | tonumber), sha: $sha} ] + .' \
-             history.json > history.tmp
-          mv history.tmp history.json
+             app/history.json > app/history.tmp
+          mv app/history.tmp app/history.json
 
       - name: Commit et push de history.json
         run: |
           set -euo pipefail
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add history.json
+          git add app/history.json
           if git diff --cached --quiet; then
-            echo "Aucun changement à history.json"
+            echo "Aucun changement à app/history.json"
           else
             git commit -m "Mise à jour historique [skip ci]"
             git push

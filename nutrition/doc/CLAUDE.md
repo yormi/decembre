@@ -43,6 +43,28 @@ Reach for this when: explaining the root cause of the calcium saturation (~2,788
 EZ-Gro Océan fish-protein hydrolysate datasheet — 15-1-1 NPK, 80% amino acids, 65% peptides. Foliar/soil/hydroponic application rates by crop type.
 Reach for this when: comparing/sourcing N-foliar or soil products, confirming application rates for greenhouse vegetables (1-2 kg/ha every 10-14 days), or evaluating whether to swap Acadie Poisson Hydrolysé (current nursery fish) for this alternative.
 
+### `selectus-1-organic-4-2-5/` (Plant Products)
+Granular organic fertilizer evaluated as a potential pre-plant or top-dress option. Contains 4 docs:
+- `fiche technique.pdf` — French datasheet. Guaranteed analysis 4-2-5 NPK + 3.7% Ca, 1.0% Mg, 2.3% S. Ingredients: farine de luzerne, farine de plume, poudre d'os, sulfate de potasse de mine, farine de crustacés, extrait d'algue, phosphate de roche, gypse. Mineralizes over ~6 weeks. Rates: 6-12 kg/m³ pre-plant substrate; 1-2 kg per 10 m² garden, max once/month.
+- `label.pdf` — bilingual product label (Ca declared 4.5% on label vs 3.7% on French datasheet — minor discrepancy worth noting).
+- `Ecocert Canada FR EXP2026-11-13-1.pdf` — Ecocert evaluation Nº 164357-20250917-1246, valid through 2026-11-13. Listed under CAN/CGSB-32.311 §4.2 as **Amendement de sol** (soil amendment), no restrictions noted. Confirmed organic-allowed.
+- `FDS.pdf` — Safety data sheet (March 2023). Non-hazardous per WHMIS 2015; trace quartz (0-0.2%, non-dusty granules).
+
+Reach for this when: evaluating a granular organic fertilizer/amendment for tomato or lettuce beds, comparing to other top-dress products (Acti-Sol, etc.), or sourcing a slow-release N+K product with bone-meal P.
+
+⚠️ **Crisis-relevant caveat**: this product adds 3.7-4.5% Ca + gypsum + bone meal — applying it to current Ca-saturated, high-pH beds (Ca ~10,800 kg/ha, pH 7.3-7.5) is exactly the wrong direction until the bank is drawn down and pH brought below 6.5. The S (2.3%) from gypsum is acidifying-neutral (CaSO₄ doesn't lower pH like elemental S does — it just exchanges Ca onto the CEC). Do NOT recommend as pre-plant or top-dress until soil bank/pH normalizes; once it does, the 4-2-5 + Mg + slow-release profile becomes attractive vs. fish-based alternatives.
+
+### Eco-luzerne 3-0.5-2 (Acti-Sol) — *no datasheet in repo yet*
+Granulated pure-alfalfa pellet fertilizer, Quebec-made (Acti-Sol). Guaranteed analysis 3-0.5-2 NPK — single-ingredient alfalfa meal, no animal by-products, no Ca-loading amendments. Slow-release N (mostly water-insoluble, mineralizes over weeks via microbial activity); modest K; trace P. Already referenced in `app/index.html:534+` as the alfalfa half of the proposition tomato sidedress recipe (Actisol → luzerne T1-T2; luzerne + frass 50/50 T3-T5; cycle ~61 kg luzerne / 7 planches).
+
+Reach for this when: comparing low-Ca organic N sources, building/maintaining the proposition sidedress recipe, or evaluating alfalfa-only top-dress options for lettuce or tomato beds.
+
+✅ **Crisis-relevant fit (vs. Selectus above)**: pure alfalfa = no Ca, no bone meal, no gypsum. Compatible with current Ca-saturated, high-pH soil — does not push the crisis worse. The N comes from plant-only protein, K from plant tissue, no calcitic carriers.
+
+⚠️ **Open items before adoption**: (a) Ecocert / CAN/CGSB-32.311 status — likely allowed (Acti-Sol catalog is heavily certified) but **organic-cert status unverified in this repo** until the datasheet + Ecocert evaluation are dropped here. (b) Verify guaranteed analysis on the bag matches 3-0.5-2 (older Acti-Sol alfalfa skews "luzerne moulue 3-1-2" — see `working files/nutrient-model-reference.md:507`). (c) Confirm non-GMO source per existing app annotation.
+
+When PDFs land, drop them in `nutrition/doc/eco-luzerne-3-0-5-2/` (mirroring the Selectus folder pattern) and upgrade this entry.
+
 ### `Ligne directrice - fertilisation serres plein-sol.pdf`
 External reference document: Quebec guidelines for fertilization of soil-based greenhouses. Large/graphical PDF.
 Reach for this when: needing province-specific guidance on plein-sol greenhouse nutrition (vs. soilless/hydro defaults), checking whether a recommendation aligns with Quebec extension service positions.

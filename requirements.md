@@ -32,6 +32,11 @@ utilities). Domain-specific specs live alongside the app code they govern:
 | `nutrition/lettuce/app/spec.md` | Salanova admin subpage UI |
 | `nutrition/nursery/spec.md` | Semis laitue nutrition (seedling DW%, cell volume cap) |
 | `nutrition/nursery/app/spec.md` | Semis admin subpage UI |
+| `yield-range/spec.md` | Salanova nursery yield prediction model (RGR-multiplier + RootCap) |
+| `yield-range/derivation.md` | Yield Range math model formulas, stress functions, constants history, calibration anchors |
+| `yield-range/calibration-data.md` | Observed cohort weights anchoring the yield model |
+| `yield-range/app/spec.md` | Yield Range admin page UI specs |
+| `yield-range/app/derivation.md` | Yield Range app source rationale + design history |
 
 Other domains (irrigation, IPM, harvest, climate, etc.) currently live in
 this file. They will be split out into their own `<domain>/spec.md` files

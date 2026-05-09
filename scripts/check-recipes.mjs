@@ -31,7 +31,7 @@
 //   REQ-017, REQ-018 (effective efficiency at current pH)
 //   REQ-020 (lockout gate)
 //   REQ-021 (solubility cap)
-//   REQ-024, REQ-025, REQ-028..REQ-032 (CE bands, precipitation logic, mix order, stock stability)
+//   REQ-024, REQ-025, REQ-029..REQ-032 (CE bands, precipitation logic, mix order, stock stability)
 //   REQ-053..REQ-055 (pH envelope, chelate stability, foliar pH curve)
 //
 // Exit code: 0 on full pass, 1 on any failure. If jsdom is missing, exits 0
@@ -44,7 +44,7 @@ import { dirname, join } from 'node:path';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = join(__dirname, '..');
-const INDEX_HTML_PATH = join(REPO_ROOT, 'index.html');
+const INDEX_HTML_PATH = join(REPO_ROOT, 'dist', 'index.html');
 
 const useColor = process.stdout.isTTY === true;
 const c = {
@@ -169,10 +169,34 @@ const exposeNames = [
   'RECIPE_HISTORY', 'RECIPE_INPUTS',
   'ACCEPTED_DEFICITS', 'ACCEPTED_EXCESSES',
   'PRODUCT_PCT', 'SIDEDRESS_AREA_PER_PLANCHE', 'SIDEDRESS_MIN_EFF',
+  'SIDEDRESS_PRODUCTS',
   'TOMATO_NUM_BEDS', 'TOMATO_BED_AREA',
   'PAGES', 'ADMIN_PAGES', 'CROP_PAGES',
   'effectiveEff', 'predictedCE', 'predictedTankPh', 'computeRecipe',
   'computeStageRecipe',
+  'calcNutrDemand',
+  'COMPOST_AMENDMENT', 'COMPOST_LABEL_PCT', 'COMPOST_MINERALIZATION_YEAR1',
+  'COMPOST_SEASONAL_FACTOR', 'COMPOST_RELEASE_PER_WEEK', 'theoreticalReleasePerWeek',
+  'FIRST_PRINCIPLES_SIDEDRESS', 'computeStageSidedress',
+  // Fertigation-recipe (REQ-098..100). FP_RECIPE_T5 holds the wired T5
+  // anchor (PA Taillon April 2026); MIXING_FACTOR_FERT_STORED/FP back
+  // REQ-100; FIRST_PRINCIPLES_T5_FERTIGATION is the source-of-truth that
+  // wireFpFertigation() copies into FP_RECIPE_T5.fertigation at script load.
+  'FP_RECIPE_T5',
+  'MIXING_FACTOR_FERT_STORED', 'MIXING_FACTOR_FERT_FP',
+  'FIRST_PRINCIPLES_T5_FERTIGATION',
+  // Foliar-recipe (REQ-101 / REQ-103). Cuticle-coverage delivery model;
+  // the function reads from STORED_RECIPE.tomato.foliaire so the verifier
+  // also pulls the constants directly via window.FoliarRecipeTomato.
+  'FOLIAR_COVERAGE_DEFAULT', 'FOLIAR_COVERAGE_WITH_YUCCA', 'computeFoliarSupply',
+  // Nursery plant-needs (REQ-090..093). Until app/index.html @includes the
+  // partials, window.PlantNeedsNursery / NURSERY_TARGETS / calcNurseryDemand
+  // are absent — the verifier's REQ-090..093 block loads the source files via
+  // Node vm and runs assertions there, so the checks pass pre-integration and
+  // also remain valid post-integration (the source-of-truth is the file set).
+  'PlantNeedsNursery',
+  'NURSERY_TARGETS', 'calcNurseryDemand',
+  'LETTUCE_NURSERY_TISSUE_DW', 'LETTUCE_NURSERY_DM_FRACTION',
   'getWeekNumber', 'foliarPhResponse',
   // The following are EXPECTED constants for REQ-030/031 — not currently
   // declared in index.html. Verifier asserts presence and fails informatively
@@ -257,6 +281,7 @@ const ACCEPTED_EXCESSES    = ph1.ACCEPTED_EXCESSES;
 const PRODUCT_PCT          = ph1.PRODUCT_PCT;
 const SIDEDRESS_AREA_PER_PLANCHE = ph1.SIDEDRESS_AREA_PER_PLANCHE;
 const SIDEDRESS_MIN_EFF    = ph1.SIDEDRESS_MIN_EFF;
+const SIDEDRESS_PRODUCTS   = ph1.SIDEDRESS_PRODUCTS;
 const TOMATO_NUM_BEDS      = ph1.TOMATO_NUM_BEDS;
 const TOMATO_BED_AREA      = ph1.TOMATO_BED_AREA;
 const ADMIN_PAGES          = ph1.ADMIN_PAGES || [];
@@ -265,6 +290,19 @@ const effectiveEff         = ph1.effectiveEff;
 const predictedTankPh      = ph1.predictedTankPh;
 const foliarPhResponse     = ph1.foliarPhResponse;
 const computeStageRecipe   = ph1.computeStageRecipe;
+const calcNutrDemand       = ph1.calcNutrDemand;
+const FP_RECIPE_T5         = ph1.FP_RECIPE_T5;
+const MIXING_FACTOR_FERT_STORED = ph1.MIXING_FACTOR_FERT_STORED;
+const MIXING_FACTOR_FERT_FP     = ph1.MIXING_FACTOR_FERT_FP;
+const FIRST_PRINCIPLES_T5_FERTIGATION = ph1.FIRST_PRINCIPLES_T5_FERTIGATION;
+const COMPOST_AMENDMENT    = ph1.COMPOST_AMENDMENT;
+const COMPOST_LABEL_PCT    = ph1.COMPOST_LABEL_PCT;
+const COMPOST_MINERALIZATION_YEAR1 = ph1.COMPOST_MINERALIZATION_YEAR1;
+const COMPOST_SEASONAL_FACTOR = ph1.COMPOST_SEASONAL_FACTOR;
+const COMPOST_RELEASE_PER_WEEK = ph1.COMPOST_RELEASE_PER_WEEK;
+const theoreticalReleasePerWeek = ph1.theoreticalReleasePerWeek;
+const FIRST_PRINCIPLES_SIDEDRESS = ph1.FIRST_PRINCIPLES_SIDEDRESS;
+const computeStageSidedress = ph1.computeStageSidedress;
 const INCOMPATIBLE_RECIPES = ph1.INCOMPATIBLE_RECIPES;
 const MIX_ORDER            = ph1.MIX_ORDER;
 
@@ -470,6 +508,512 @@ if (!CHANNEL_ROLE || !BIOMASS_DEMAND || !TOMATO_FRUIT_EXPORT) {
     pass(`CHANNEL_ROLE couvre les ${demandElements.size} éléments (BIOMASS_DEMAND + TOMATO_FRUIT_EXPORT)`);
   } else {
     fail('CHANNEL_ROLE couvre tous les éléments de demande', `manquants: ${missing.join(', ')}`);
+  }
+}
+
+// ─── REQ-081 — Ca/Mg biomass scaled by transpFactor; others unchanged ──
+//
+// calcNutrDemand(yield, stage, transpFactor) must apply transpFactor to the
+// biomass term for Ca and Mg only. Verified by calling at tf=1.0 vs tf=0.5
+// and asserting Ca/Mg biomass term halves while N/P/K/micros are unchanged.
+//
+// Spec: nutrition/tomato/plant-needs/spec.md → REQ-081.
+
+header('REQ-081 — Ca/Mg biomass demand × transpFactor');
+
+if (!calcNutrDemand) {
+  fail('calcNutrDemand exposé', 'missing on window');
+} else {
+  const stage = 'T5';
+  const y = 1.5;
+  const fullTransp = calcNutrDemand(y, stage, 1.0);
+  const halfTransp = calcNutrDemand(y, stage, 0.5);
+  const COUPLED = ['Ca', 'Mg'];
+  const DECOUPLED = ['N', 'P', 'K', 'Fe', 'Mn', 'Zn', 'B', 'Cu', 'Mo'];
+  const offenders = [];
+  for (const el of COUPLED) {
+    const ratio = (fullTransp[el].biomass > 0)
+      ? halfTransp[el].biomass / fullTransp[el].biomass
+      : null;
+    if (ratio == null || Math.abs(ratio - 0.5) > 0.01) {
+      offenders.push(`${el}: biomass ratio at tf=0.5 should be 0.5, got ${ratio == null ? 'n/a' : ratio.toFixed(3)}`);
+    }
+  }
+  for (const el of DECOUPLED) {
+    const a = fullTransp[el].biomass;
+    const b = halfTransp[el].biomass;
+    if (a !== b) {
+      offenders.push(`${el}: biomass should be unchanged at tf=0.5, was ${a} → ${b}`);
+    }
+  }
+  if (offenders.length === 0) {
+    pass(`Ca + Mg biomass × transpFactor; N/P/K/micros décorrélés (testé à tf=1.0 vs 0.5, ${stage} y=${y})`);
+  } else {
+    fail('Ca/Mg couplés à transpFactor, autres non',
+         offenders.map(o => `  ${o}`).join('\n'));
+  }
+}
+
+// ─── REQ-082 — Stage-transition continuity for BIOMASS_DEMAND ───────────
+//
+// Catches order-of-magnitude hand-edit errors in BIOMASS_DEMAND[stage][el]
+// (typo dropping/adding a digit, factor-of-10 unit slip, etc.). Threshold
+// 2.5× the prior stage's value — chosen to allow legitimate phenological
+// spikes (T2→T3 P at flowering is +167%; T3→T4 Fe drop is −72%) while
+// flagging anything in the 250%+ range as suspicious. Stage order is
+// taken from `Object.keys(BIOMASS_DEMAND)` in declaration order.
+//
+// Spec: nutrition/tomato/plant-needs/spec.md → REQ-082.
+
+header('REQ-082 — BIOMASS_DEMAND stage-transition continuity (≤ 250 %)');
+
+if (!BIOMASS_DEMAND) {
+  fail('BIOMASS_DEMAND exposed', 'missing');
+} else {
+  const stages = Object.keys(BIOMASS_DEMAND);
+  const offenders = [];
+  for (let i = 1; i < stages.length; i++) {
+    const prev = stages[i - 1];
+    const cur  = stages[i];
+    const els  = new Set([
+      ...Object.keys(BIOMASS_DEMAND[prev]),
+      ...Object.keys(BIOMASS_DEMAND[cur]),
+    ]);
+    for (const el of els) {
+      const a = BIOMASS_DEMAND[prev][el] || 0;
+      const b = BIOMASS_DEMAND[cur][el]  || 0;
+      if (a <= 0) continue; // avoid div-by-zero; nothing meaningful to compare
+      const ratio = Math.abs(b - a) / a;
+      if (ratio > 2.5) {
+        offenders.push(`${prev}→${cur} ${el}: ${a} → ${b} (Δ=${(ratio*100).toFixed(0)}%)`);
+      }
+    }
+  }
+  if (offenders.length === 0) {
+    pass(`Toutes les transitions de stade restent dans ±250 % par élément (${stages.length - 1} transitions × ~12 éléments)`);
+  } else {
+    fail('Transitions de stade dans ±250 % par élément',
+         offenders.map(o => `  ${o}`).join('\n'));
+  }
+}
+
+// ─── REQ-083 — PlantNeedsTomato public API namespace ────────────────────
+//
+// Asserts window.PlantNeedsTomato exists at runtime and exposes the
+// expected public API. Renames or removals fail loudly here, before
+// they break consumers (Bilan UI, recipe calculators).
+//
+// Spec: nutrition/tomato/plant-needs/spec.md → REQ-083.
+
+header('REQ-083 — window.PlantNeedsTomato public API surface');
+
+const PN = window.PlantNeedsTomato;
+if (!PN) {
+  fail('window.PlantNeedsTomato exists', 'namespace not declared (model.js include may be missing or out of order)');
+} else {
+  const expectedKeys = [
+    'TOMATO_FRUIT_EXPORT', 'BIOMASS_DEMAND', 'TOMATO_DEMAND_CERT',
+    'TOMATO_REMOVAL', 'TRANSP_COUPLED_BIOMASS',
+    'calcNutrDemand', 'demandTotal', 'certFor',
+  ];
+  const missing = expectedKeys.filter(k => PN[k] == null);
+  if (missing.length > 0) {
+    fail('PlantNeedsTomato exposes the public API', `manquants: ${missing.join(', ')}`);
+  } else {
+    // Sanity-check the convenience functions return shape-correct values.
+    const total = PN.demandTotal(1.5, 'T5', 1.0);
+    const certCa = PN.certFor('T5', 'Ca');
+    const okShape = typeof total === 'object' && typeof total.K === 'number'
+                  && typeof certCa === 'number';
+    if (!okShape) {
+      fail('PlantNeedsTomato.demandTotal / certFor return correct shape',
+           `demandTotal: ${typeof total}; certFor: ${typeof certCa}`);
+    } else {
+      pass(`PlantNeedsTomato exposes ${expectedKeys.length} clés (${expectedKeys.length} attendues, ${expectedKeys.length} présentes)`);
+    }
+  }
+}
+
+// ─── REQ-079 — Compost release within mass-balance sanity band ──────────
+//
+// Asserts every COMPOST_RELEASE_PER_WEEK value falls within [0.5×, 1.5×]
+// of the theoretical formula: (applied_g_per_m2 × year1_fraction / 52) ×
+// SEASONAL_FACTOR. Catches transcription errors while allowing conservative
+// manual overrides (Mg label-gap, ~25 % below theoretical).
+//
+// Spec: nutrition/compost-contribution/spec.md → REQ-079.
+
+header('REQ-079 — Compost release within ±50 % of mass-balance');
+
+if (!COMPOST_RELEASE_PER_WEEK || !COMPOST_LABEL_PCT
+    || !COMPOST_MINERALIZATION_YEAR1 || !COMPOST_AMENDMENT) {
+  fail('Compost-contribution constants exposed', 'one or more globals missing');
+} else {
+  const offenders = [];
+  for (const el of Object.keys(COMPOST_RELEASE_PER_WEEK)) {
+    const stored = COMPOST_RELEASE_PER_WEEK[el];
+    const labelPct = COMPOST_LABEL_PCT[el];
+    const yr1 = COMPOST_MINERALIZATION_YEAR1[el];
+    if (labelPct == null || yr1 == null) {
+      offenders.push(`${el}: stored ${stored} but label %/min %/m1 missing`);
+      continue;
+    }
+    const applied = COMPOST_AMENDMENT.applicationRateKgPerM2 * 1000 * labelPct;
+    const theoretical = (applied * yr1 / 52) * COMPOST_SEASONAL_FACTOR;
+    if (theoretical <= 0) {
+      offenders.push(`${el}: theoretical = 0 (bad inputs)`);
+      continue;
+    }
+    const ratio = stored / theoretical;
+    if (ratio < 0.5 || ratio > 1.5) {
+      offenders.push(`${el}: stored ${stored.toFixed(3)} vs theoretical ${theoretical.toFixed(3)} (ratio ${ratio.toFixed(2)})`);
+    }
+  }
+  if (offenders.length === 0) {
+    pass(`Toutes les valeurs de release sont dans [0.5×, 1.5×] du calcul théorique (${Object.keys(COMPOST_RELEASE_PER_WEEK).length} éléments)`);
+  } else {
+    fail('Release dans la bande de sanité ±50 %',
+         offenders.map(o => `  ${o}`).join('\n'));
+  }
+}
+
+// ─── REQ-080 — CompostContribution public API namespace ─────────────────
+//
+// Spec: nutrition/compost-contribution/spec.md → REQ-080.
+
+header('REQ-080 — window.CompostContribution public API surface');
+
+const CC = window.CompostContribution;
+if (!CC) {
+  fail('window.CompostContribution exists', 'namespace not declared (model.js include may be missing or out of order)');
+} else {
+  const expectedKeys = [
+    'AMENDMENT', 'LABEL_PCT', 'MINERALIZATION_YEAR1',
+    'SEASONAL_FACTOR', 'releasePerWeek', 'theoreticalReleasePerWeek',
+  ];
+  const missing = expectedKeys.filter(k => CC[k] == null);
+  if (missing.length > 0) {
+    fail('CompostContribution exposes the public API', `manquants: ${missing.join(', ')}`);
+  } else {
+    const okShape = typeof CC.releasePerWeek.N === 'number'
+                  && typeof CC.theoreticalReleasePerWeek('N') === 'number';
+    if (!okShape) {
+      fail('CompostContribution.releasePerWeek + theoreticalReleasePerWeek shape',
+           `releasePerWeek.N: ${typeof CC.releasePerWeek.N}; theoretical(N): ${typeof CC.theoreticalReleasePerWeek('N')}`);
+    } else {
+      pass(`CompostContribution exposes ${expectedKeys.length} clés (toutes présentes, shape OK)`);
+    }
+  }
+}
+
+// ─── INV-1 (sidedress-recipe) — Stage coverage closed + non-negative ────
+//
+// computeStageSidedress(stage) must return numeric, non-negative actisol_g,
+// farine_g, alfalfa_g, and g_per_planche for every stage in RECIPE_INPUTS.stageYield.
+//
+// Spec: nutrition/tomato/sidedress-recipe/spec.md → INV-1.
+
+header('Sidedress INV-1 — Stage coverage closed + numeric output');
+
+if (!computeStageSidedress) {
+  fail('computeStageSidedress exposed', 'missing on window');
+} else {
+  const stages = Object.keys(ph1.RECIPE_INPUTS?.stageYield || {});
+  const offenders = [];
+  const numericFields = ['actisol_g', 'farine_g', 'alfalfa_g', 'g_per_planche'];
+  for (const s of stages) {
+    const r = computeStageSidedress(s);
+    if (!r || typeof r !== 'object') {
+      offenders.push(`${s}: returned ${typeof r}`);
+      continue;
+    }
+    let bad = false;
+    for (const k of numericFields) {
+      if (typeof r[k] !== 'number' || !isFinite(r[k]) || r[k] < 0) {
+        offenders.push(`${s}: ${k}=${r[k]} (typeof ${typeof r[k]})`);
+        bad = true; break;
+      }
+    }
+    if (!bad && typeof r.chosen !== 'string') {
+      offenders.push(`${s}: chosen=${r.chosen} (typeof ${typeof r.chosen})`);
+    }
+  }
+  if (offenders.length === 0) {
+    pass(`Tous les stades (${stages.length}) renvoient {actisol_g, farine_g, alfalfa_g, chosen, g_per_planche} numériques ≥ 0`);
+  } else {
+    fail('Stage coverage + numeric output', offenders.map(o => `  ${o}`).join('\n'));
+  }
+}
+
+// ─── REQ-087 — Sidedress mass-balance: chosen product sized to N gap ─────
+//
+// computeStageSidedress(stage, product).g_per_planche must equal the
+// mass-balance derivation within ±5 g rounding tolerance, for the wired
+// default product ('FarinePlumes') AND for the alfalfa branch:
+//   n_offtake = TOMATO_FRUIT_EXPORT.N × stageYield × 1000 + BIOMASS_DEMAND.N
+//   n_compost = CompostContribution.releasePerWeek.N × 1000
+//   n_needed  = max(0, offtake − compost)
+//   g/planche = round(n_needed / (p.n_pct × p.eff) / 1000 × area)
+//
+// Spec: nutrition/tomato/sidedress-recipe/spec.md → REQ-087.
+
+header('REQ-087 — Sidedress g_per_planche matches mass-balance formula');
+
+if (!computeStageSidedress || !SIDEDRESS_PRODUCTS || !SIDEDRESS_AREA_PER_PLANCHE
+    || !TOMATO_FRUIT_EXPORT || !BIOMASS_DEMAND
+    || !window.CompostContribution || !ph1.RECIPE_INPUTS) {
+  fail('Sidedress + upstream constants exposed', 'one or more globals missing');
+} else {
+  const stages = Object.keys(ph1.RECIPE_INPUTS.stageYield);
+  const offenders = [];
+  const compostN = window.CompostContribution.releasePerWeek.N;
+  const area = SIDEDRESS_AREA_PER_PLANCHE;
+  // Test the wired default ('FarinePlumes') AND the alfalfa branch — both
+  // are Ca-free, both go through the same formula with their own n_pct/eff.
+  const testProducts = ['FarinePlumes', 'AlfalfaMeal'];
+  for (const product of testProducts) {
+    const p = SIDEDRESS_PRODUCTS[product];
+    if (!p || (p.ca_pct || 0) > 0) {
+      offenders.push(`${product}: not Ca-free or missing in SIDEDRESS_PRODUCTS`);
+      continue;
+    }
+    // Read the per-product flat field from the return value.
+    const fieldFor = { FarinePlumes: 'farine_g', AlfalfaMeal: 'alfalfa_g', Actisol: 'actisol_g' };
+    const field = fieldFor[product];
+    for (const s of stages) {
+      const y = ph1.RECIPE_INPUTS.stageYield[s] || 0;
+      const biomassN = (BIOMASS_DEMAND[s] && BIOMASS_DEMAND[s].N) || 0;
+      const offtake = TOMATO_FRUIT_EXPORT.N.g * 1000 * y + biomassN;
+      const compost = compostN * 1000;
+      const needed = Math.max(0, offtake - compost);
+      const expected_g_m2 = needed / (p.n_pct * p.eff) / 1000;
+      const expected_g_planche = Math.round(expected_g_m2 * area);
+      const r = computeStageSidedress(s, product);
+      const actual = r[field];
+      const actualGpp = r.g_per_planche;
+      if (Math.abs(actual - expected_g_planche) > 5) {
+        offenders.push(`${product}/${s}: ${field}=${actual} vs expected ${expected_g_planche}`);
+      }
+      // g_per_planche should mirror the chosen-product field
+      if (Math.abs(actualGpp - expected_g_planche) > 5) {
+        offenders.push(`${product}/${s}: g_per_planche=${actualGpp} vs expected ${expected_g_planche}`);
+      }
+    }
+  }
+  if (offenders.length === 0) {
+    pass(`Tous les stades × 2 produits Ca-free suivent la formule mass-balance (±5 g de tolérance)`);
+  } else {
+    fail('Mass-balance derivation', offenders.map(o => `  ${o}`).join('\n'));
+  }
+}
+
+// ─── REQ-088 — SidedressRecipeTomato public API namespace ───────────────
+//
+// Spec: nutrition/tomato/sidedress-recipe/spec.md → REQ-088.
+
+header('REQ-088 — window.SidedressRecipeTomato public API surface');
+
+const SR = window.SidedressRecipeTomato;
+if (!SR) {
+  fail('window.SidedressRecipeTomato exists', 'namespace not declared (model.js include may be missing or out of order)');
+} else {
+  const expectedKeys = [
+    'AREA_PER_PLANCHE', 'PRODUCTS', 'MIN_EFF', 'FIRST_PRINCIPLES_BY_STAGE',
+    'computeStageSidedress',
+  ];
+  const missing = expectedKeys.filter(k => SR[k] == null);
+  if (missing.length > 0) {
+    fail('SidedressRecipeTomato exposes the public API', `manquants: ${missing.join(', ')}`);
+  } else {
+    const t5 = SR.computeStageSidedress('T5');
+    const okShape = typeof SR.AREA_PER_PLANCHE === 'number'
+                  && typeof t5.farine_g === 'number'
+                  && typeof t5.chosen === 'string'
+                  && typeof SR.PRODUCTS === 'object';
+    if (!okShape) {
+      fail('SidedressRecipeTomato shape', `AREA_PER_PLANCHE: ${typeof SR.AREA_PER_PLANCHE}; T5.farine_g: ${typeof t5.farine_g}; T5.chosen: ${typeof t5.chosen}; PRODUCTS: ${typeof SR.PRODUCTS}`);
+    } else {
+      pass(`SidedressRecipeTomato exposes ${expectedKeys.length} clés (toutes présentes, shape OK)`);
+    }
+  }
+}
+
+// ─── REQ-089 — Ca-aware product gate ────────────────────────────────────
+//
+// Generalizes from "actisol_g === 0" to "no Ca-bearing product can be
+// selected by computeStageSidedress while soil is Ca-saturated". Two
+// assertions:
+//   (a) for every stage, the chosen product (default 'FarinePlumes') has
+//       SIDEDRESS_PRODUCTS[chosen].ca_pct === 0.
+//   (b) explicitly requesting a Ca-bearing product (e.g. 'Actisol' which
+//       carries 3 % Ca) returns g_per_planche === 0 — caller cannot bypass
+//       the gate. Future Ca-bearing products (Selectus, frass, etc.) get
+//       rejected automatically without code changes.
+//
+// Spec: nutrition/tomato/sidedress-recipe/spec.md → REQ-089.
+
+header('REQ-089 — Ca-aware product gate (chosen product ca_pct === 0)');
+
+if (!computeStageSidedress || !SIDEDRESS_PRODUCTS) {
+  fail('computeStageSidedress + SIDEDRESS_PRODUCTS exposed', 'missing on window');
+} else {
+  const stages = Object.keys(ph1.RECIPE_INPUTS?.stageYield || {});
+  const offenders = [];
+  // (a) chosen product is always Ca-free
+  for (const s of stages) {
+    const r = computeStageSidedress(s);
+    const chosen = r.chosen;
+    const spec = SIDEDRESS_PRODUCTS[chosen];
+    if (!spec) {
+      offenders.push(`${s}: chosen='${chosen}' not in SIDEDRESS_PRODUCTS`);
+      continue;
+    }
+    if ((spec.ca_pct || 0) !== 0) {
+      offenders.push(`${s}: chosen='${chosen}' has ca_pct=${spec.ca_pct} (gate breached)`);
+    }
+  }
+  // (b) Ca-bearing products explicitly requested return g_per_planche === 0.
+  // Iterate over every entry in SIDEDRESS_PRODUCTS — any new Ca-bearing
+  // product gets gated automatically without verifier edits.
+  const caBearingKeys = Object.entries(SIDEDRESS_PRODUCTS)
+    .filter(([_, p]) => (p.ca_pct || 0) > 0)
+    .map(([k]) => k);
+  if (caBearingKeys.length === 0) {
+    offenders.push('expected ≥1 Ca-bearing product in SIDEDRESS_PRODUCTS for defensive gate test (e.g. Actisol)');
+  }
+  for (const product of caBearingKeys) {
+    for (const s of stages) {
+      const r = computeStageSidedress(s, product);
+      if (r.g_per_planche !== 0) {
+        offenders.push(`${product}/${s}: g_per_planche=${r.g_per_planche} (Ca-bearing gate breached, expected 0)`);
+      }
+    }
+  }
+  if (offenders.length === 0) {
+    pass(`Gate Ca-aware: tous les stades (${stages.length}) choisissent un produit Ca-free; produits Ca-bearing (${caBearingKeys.join(',')}) renvoient 0 g`);
+  } else {
+    fail('Ca-aware product gate', offenders.map(o => `  ${o}`).join('\n'));
+  }
+}
+
+// ─── REQ-098 — Fertigation mass-balance derivation matches the formula ──
+//
+// computeStageRecipe(stage).{kSulfate, mgSulfate} must equal the mass-
+// balance derivation within ±5 g rounding tolerance:
+//   k_offtake  = TOMATO_FRUIT_EXPORT.K × stageYield × 1000 + BIOMASS_DEMAND[stage].K
+//   k_sd       = sd.actisol_g × Actisol_K × min_eff × 1000 / SIDEDRESS_AREA
+//   k_compost  = CompostContribution.releasePerWeek.K × 1000
+//   k_needed   = max(0, k_offtake − k_sd − k_compost)
+//   kSulfate_g = round(k_needed / 1000 / K2SO4_K × total_area)
+//   (Mg analogous; sidedress carries no Mg.)
+//
+// Spec: nutrition/tomato/fertigation-recipe/spec.md → REQ-098.
+
+header('REQ-098 — computeStageRecipe matches mass-balance formula');
+
+if (!computeStageRecipe || !TOMATO_FRUIT_EXPORT || !BIOMASS_DEMAND
+    || !PRODUCT_PCT || !SIDEDRESS_MIN_EFF || !SIDEDRESS_AREA_PER_PLANCHE
+    || !TOMATO_NUM_BEDS || !TOMATO_BED_AREA || !STORED_RECIPE
+    || !window.CompostContribution || !ph1.RECIPE_INPUTS) {
+  fail('Fertigation + upstream constants exposed', 'one or more globals missing');
+} else {
+  const stages = Object.keys(ph1.RECIPE_INPUTS.stageYield);
+  const totalArea = TOMATO_NUM_BEDS * TOMATO_BED_AREA;
+  const compost = window.CompostContribution.releasePerWeek;
+  const offenders = [];
+  for (const s of stages) {
+    const y = ph1.RECIPE_INPUTS.stageYield[s] || 0;
+    const sd = (STORED_RECIPE.tomato.sidedress[s]) || { actisol_g: 0, farine_g: 0 };
+    const biomass = BIOMASS_DEMAND[s] || {};
+    // K
+    const kOfftake = (TOMATO_FRUIT_EXPORT.K.g * 1000 * y) + (biomass.K || 0);
+    const kSd = (sd.actisol_g * PRODUCT_PCT.Actisol_K
+                 * (SIDEDRESS_MIN_EFF.K || 0.85) * 1000)
+                 / SIDEDRESS_AREA_PER_PLANCHE;
+    const kCompost = (compost.K || 0) * 1000;
+    const kNeeded = Math.max(0, kOfftake - kSd - kCompost);
+    const expectedKsulfate = Math.round((kNeeded / 1000 / PRODUCT_PCT.K2SO4_K) * totalArea);
+    // Mg
+    const mgOfftake = (TOMATO_FRUIT_EXPORT.Mg.g * 1000 * y) + (biomass.Mg || 0);
+    const mgCompost = (compost.Mg || 0) * 1000;
+    const mgNeeded = Math.max(0, mgOfftake - mgCompost);
+    const expectedMgSulfate = Math.round((mgNeeded / 1000 / PRODUCT_PCT.MgSO4_Mg) * totalArea);
+    // Compare
+    const r = computeStageRecipe(s) || {};
+    if (typeof r.kSulfate !== 'number' || Math.abs(r.kSulfate - expectedKsulfate) > 5) {
+      offenders.push(`${s}: kSulfate=${r.kSulfate} vs expected ${expectedKsulfate}`);
+    }
+    if (typeof r.mgSulfate !== 'number' || Math.abs(r.mgSulfate - expectedMgSulfate) > 5) {
+      offenders.push(`${s}: mgSulfate=${r.mgSulfate} vs expected ${expectedMgSulfate}`);
+    }
+  }
+  if (offenders.length === 0) {
+    pass(`Tous les stades (${stages.length}) suivent la formule mass-balance fertigation (±5 g)`);
+  } else {
+    fail('Fertigation mass-balance derivation', offenders.map(o => `  ${o}`).join('\n'));
+  }
+}
+
+// ─── REQ-099 — FertigationRecipeTomato public API namespace ─────────────
+//
+// Spec: nutrition/tomato/fertigation-recipe/spec.md → REQ-099.
+
+header('REQ-099 — window.FertigationRecipeTomato public API surface');
+
+const FR = window.FertigationRecipeTomato;
+if (!FR) {
+  fail('window.FertigationRecipeTomato exists', 'namespace not declared (model.js include may be missing or out of order)');
+} else {
+  const expectedKeys = [
+    'MIXING_FACTOR_STORED', 'MIXING_FACTOR_FP',
+    'FIRST_PRINCIPLES_T5', 'computeStageRecipe',
+  ];
+  const missing = expectedKeys.filter(k => FR[k] == null);
+  if (missing.length > 0) {
+    fail('FertigationRecipeTomato exposes the public API', `manquants: ${missing.join(', ')}`);
+  } else {
+    const t5 = FR.computeStageRecipe('T5');
+    const okShape = typeof FR.MIXING_FACTOR_STORED === 'number'
+                  && typeof FR.MIXING_FACTOR_FP === 'number'
+                  && typeof FR.FIRST_PRINCIPLES_T5 === 'object'
+                  && typeof t5.kSulfate === 'number'
+                  && typeof t5.mgSulfate === 'number';
+    if (!okShape) {
+      fail('FertigationRecipeTomato shape',
+           `MIXING_FACTOR_STORED: ${typeof FR.MIXING_FACTOR_STORED}; MIXING_FACTOR_FP: ${typeof FR.MIXING_FACTOR_FP}; FIRST_PRINCIPLES_T5: ${typeof FR.FIRST_PRINCIPLES_T5}; T5.kSulfate: ${typeof t5.kSulfate}; T5.mgSulfate: ${typeof t5.mgSulfate}`);
+    } else {
+      pass(`FertigationRecipeTomato exposes ${expectedKeys.length} clés (toutes présentes, shape OK)`);
+    }
+  }
+}
+
+// ─── REQ-100 — Mixing factor mode-aware ─────────────────────────────────
+//
+// Two constants exposed: MIXING_FACTOR_STORED < MIXING_FACTOR_FP, and
+// MIXING_FACTOR_FP === 1.0 (FP-mode pure mass-balance, no SME credit, no
+// double-count risk → full barrel counts as fresh supply).
+//
+// Spec: nutrition/tomato/fertigation-recipe/spec.md → REQ-100.
+
+header('REQ-100 — MIXING_FACTOR mode-aware (stored < fp, fp === 1.0)');
+
+if (!FR) {
+  fail('FertigationRecipeTomato exposed', 'namespace missing — REQ-099 must pass first');
+} else {
+  const stored = FR.MIXING_FACTOR_STORED;
+  const fp     = FR.MIXING_FACTOR_FP;
+  const offenders = [];
+  if (typeof stored !== 'number') offenders.push(`MIXING_FACTOR_STORED non numérique: ${typeof stored}`);
+  if (typeof fp     !== 'number') offenders.push(`MIXING_FACTOR_FP non numérique: ${typeof fp}`);
+  if (offenders.length === 0) {
+    if (!(stored < fp)) offenders.push(`MIXING_FACTOR_STORED (${stored}) doit être < MIXING_FACTOR_FP (${fp})`);
+    if (fp !== 1.0)     offenders.push(`MIXING_FACTOR_FP (${fp}) doit être pinned à 1.0 (mass-balance pure, pas de double-count)`);
+    if (!(stored > 0))  offenders.push(`MIXING_FACTOR_STORED (${stored}) doit être > 0 (sinon fertigation stored mode invisible)`);
+  }
+  if (offenders.length === 0) {
+    pass(`MIXING_FACTOR mode-aware: stored=${stored} < fp=${fp} (=1.0)`);
+  } else {
+    fail('MIXING_FACTOR mode-aware', offenders.map(o => `  ${o}`).join('\n'));
   }
 }
 
@@ -705,8 +1249,6 @@ if (!TOMATO_REMOVAL) {
 //
 // Manual-review skip list (NOT wired here, by design):
 //   REQ-002 — Ecocert-only (manual policy review per its own statement)
-//   REQ-028 — cert annotation on every empirical constant (manual review,
-//             sampling threshold subjective)
 //
 // ─────────────────────────────────────────────────────────────────────────
 
@@ -755,10 +1297,13 @@ function fertigationEffective(stage, el, soilPh) {
   return mg_m2;
 }
 
-// Helper — compost release in mg/m²/wk per element.
+// Helper — compost release in mg/m²/wk per element. Reads
+// COMPOST_RELEASE_PER_WEEK directly (single source of truth, exposed via
+// instrumentation; consumers in the live app use
+// window.CompostContribution.releasePerWeek which wraps the same constant).
 function compostReleaseMg(el) {
-  if (!RECIPE_INPUTS || !RECIPE_INPUTS.compostReleasePerWeek) return 0;
-  return (RECIPE_INPUTS.compostReleasePerWeek[el] || 0) * 1000;  // g→mg
+  if (!COMPOST_RELEASE_PER_WEEK) return 0;
+  return (COMPOST_RELEASE_PER_WEEK[el] || 0) * 1000;  // g→mg
 }
 
 // Helper — total demand (mg/m²/wk) for (stage, el).
@@ -1512,6 +2057,508 @@ header('REQ-002 — Pas de produits non-Ecocert dans le copy de l\'app');
     pass(`Aucun produit non-Ecocert dans ${FORBIDDEN_PRODUCTS.length} entrées du blocklist`);
   } else {
     fail('REQ-002 — produits non-Ecocert détectés', hits.join('\n'));
+  }
+}
+
+// ─── REQ-090..093 — Nursery plant-needs subproject ─────────────────────
+//
+// The nursery/plant-needs subproject (data + calc + model) lives at
+// nutrition/nursery/plant-needs/{data.js,calc.js,model.js}. Until
+// app/index.html @includes the partials, window.PlantNeedsNursery /
+// NURSERY_TARGETS / calcNurseryDemand are absent from the dist/index.html
+// artifact. To avoid a chicken-and-egg between source-of-truth (the partials)
+// and verifier runtime (jsdom on dist/index.html), we load the partials
+// directly into a Node vm sandbox and run REQ-090..093 against that. After
+// integration, the same code path still works — the partials remain the
+// canonical definitions.
+//
+// Spec: nutrition/nursery/plant-needs/spec.md → REQ-090..093 + INV-1.
+
+import vm from 'node:vm';
+
+let nurseryNs = null;
+let nurseryLoadErr = null;
+try {
+  const dataSrc  = readFileSync(join(REPO_ROOT, 'nutrition/nursery/plant-needs/data.js'),  'utf8');
+  const calcSrc  = readFileSync(join(REPO_ROOT, 'nutrition/nursery/plant-needs/calc.js'),  'utf8');
+  const modelSrc = readFileSync(join(REPO_ROOT, 'nutrition/nursery/plant-needs/model.js'), 'utf8');
+  // The partials use bare `const` declarations and `window.PlantNeedsNursery
+  // = {…}`. A shared sandbox with a `window` host lets all three modules see
+  // one another's bindings (data → calc → model) the same way they do in the
+  // browser when loaded in dependency order.
+  const sandbox = { window: {} };
+  vm.createContext(sandbox);
+  vm.runInContext(dataSrc + '\n' + calcSrc + '\n' + modelSrc, sandbox, {
+    filename: 'nursery-plant-needs-bundle.js',
+  });
+  nurseryNs = sandbox.window.PlantNeedsNursery || null;
+} catch (err) {
+  nurseryLoadErr = err && err.message || String(err);
+}
+
+// ─── INV-1 — Element coverage closed (11 canonical elements) ─────────────
+
+header('Nursery plant-needs INV-1 — Element coverage closed (11 elements)');
+
+if (!nurseryNs) {
+  fail('Nursery partials load + expose window.PlantNeedsNursery',
+       nurseryLoadErr || 'window.PlantNeedsNursery not produced by the partials');
+} else {
+  const expected = ['N','P','K','Ca','Mg','Fe','Mn','Zn','B','Cu','Mo'];
+  const actual = Object.keys(nurseryNs.LETTUCE_NURSERY_TISSUE_DW || {});
+  const missing = expected.filter(e => !actual.includes(e));
+  const extras  = actual.filter(e => !expected.includes(e));
+  if (missing.length === 0 && extras.length === 0) {
+    pass(`LETTUCE_NURSERY_TISSUE_DW couvre exactement les 11 éléments canoniques`);
+  } else {
+    fail('LETTUCE_NURSERY_TISSUE_DW couvre exactement les 11 éléments canoniques',
+         `missing=${missing.join(',') || '(none)'}; extras=${extras.join(',') || '(none)'}`);
+  }
+}
+
+// ─── REQ-090 — Linearity in targetG ─────────────────────────────────────
+//
+// calcNurseryDemand(2g, days, cells) returns 2× the values of
+// calcNurseryDemand(1g, days, cells), per element, on perTray_mg. Asserted
+// within ±0.1 %.
+//
+// Spec: nutrition/nursery/plant-needs/spec.md → REQ-090.
+
+header('REQ-090 — Nursery demand linear in targetG (±0.1 %)');
+
+if (!nurseryNs || typeof nurseryNs.calcNurseryDemand !== 'function') {
+  fail('calcNurseryDemand exposed on window.PlantNeedsNursery',
+       nurseryLoadErr || 'function missing on namespace');
+} else {
+  const fn = nurseryNs.calcNurseryDemand;
+  const a = fn(1, 35, 50);
+  const b = fn(2, 35, 50);
+  const offenders = [];
+  for (const el of Object.keys(a)) {
+    if (a[el].perTray_mg === 0) continue;
+    const ratio = b[el].perTray_mg / a[el].perTray_mg;
+    if (Math.abs(ratio - 2.0) / 2.0 > 0.001) {
+      offenders.push(`${el}: ratio=${ratio.toFixed(5)} (expected 2.0)`);
+    }
+  }
+  if (offenders.length === 0) {
+    pass(`Doubler targetG double perTray_mg pour les 11 éléments (±0.1 %)`);
+  } else {
+    fail('Demand linéaire en targetG', offenders.join('\n'));
+  }
+}
+
+// ─── REQ-091 — Inverse-linearity in cycleDays ───────────────────────────
+//
+// calcNurseryDemand(g, 70, cells).perTray_mg is exactly half of
+// calcNurseryDemand(g, 35, cells).perTray_mg, per element. ±0.1 %.
+//
+// Spec: nutrition/nursery/plant-needs/spec.md → REQ-091.
+
+header('REQ-091 — Nursery demand inverse-linear in cycleDays (±0.1 %)');
+
+if (!nurseryNs || typeof nurseryNs.calcNurseryDemand !== 'function') {
+  fail('calcNurseryDemand exposed on window.PlantNeedsNursery',
+       nurseryLoadErr || 'function missing on namespace');
+} else {
+  const fn = nurseryNs.calcNurseryDemand;
+  const short = fn(90, 35, 50);
+  const long  = fn(90, 70, 50);
+  const offenders = [];
+  for (const el of Object.keys(short)) {
+    if (short[el].perTray_mg === 0) continue;
+    const ratio = long[el].perTray_mg / short[el].perTray_mg;
+    if (Math.abs(ratio - 0.5) / 0.5 > 0.001) {
+      offenders.push(`${el}: ratio=${ratio.toFixed(5)} (expected 0.5)`);
+    }
+  }
+  if (offenders.length === 0) {
+    pass(`Doubler cycleDays divise perTray_mg par 2 pour les 11 éléments (±0.1 %)`);
+  } else {
+    fail('Demand inverse-linéaire en cycleDays', offenders.join('\n'));
+  }
+}
+
+// ─── REQ-092 — N demand band sanity check at defaults ───────────────────
+//
+// At defaults (90 g, 35 d, 50 cells), N perPlant_mg ∈ [50, 70]. Catches
+// order-of-magnitude typos in DM, tissue concentration, or cycle length.
+//
+// Spec: nutrition/nursery/plant-needs/spec.md → REQ-092.
+
+header('REQ-092 — Nursery N demand ∈ [50, 70] mg/plant/wk au défaut');
+
+if (!nurseryNs || typeof nurseryNs.calcNurseryDemand !== 'function') {
+  fail('calcNurseryDemand exposed on window.PlantNeedsNursery',
+       nurseryLoadErr || 'function missing on namespace');
+} else {
+  const fn = nurseryNs.calcNurseryDemand;
+  const out = fn(90, 35, 50);
+  const n = out.N && out.N.perPlant_mg;
+  if (typeof n !== 'number' || !isFinite(n)) {
+    fail('N perPlant_mg numérique', `valeur: ${n}`);
+  } else if (n < 50 || n > 70) {
+    fail('N perPlant_mg ∈ [50, 70]', `valeur: ${n.toFixed(2)} mg`);
+  } else {
+    pass(`N perPlant_mg = ${n.toFixed(2)} mg/wk (∈ [50, 70])`);
+  }
+}
+
+// ─── REQ-093 — window.PlantNeedsNursery public API surface ──────────────
+//
+// Asserts the namespace exists and exposes the declared keys; spot-checks
+// that calcNurseryDemand returns shape `{ perPlant_mg, perTray_mg }` per
+// element and demandPerTray returns a number.
+//
+// Spec: nutrition/nursery/plant-needs/spec.md → REQ-093.
+
+header('REQ-093 — window.PlantNeedsNursery public API surface');
+
+if (!nurseryNs) {
+  fail('window.PlantNeedsNursery exists',
+       nurseryLoadErr || 'namespace not declared (model.js include may be missing or out of order)');
+} else {
+  const expectedKeys = [
+    'LETTUCE_NURSERY_TISSUE_DW', 'LETTUCE_NURSERY_DM_FRACTION',
+    'NURSERY_TARGETS',
+    'calcNurseryDemand', 'demandPerTray',
+  ];
+  const missing = expectedKeys.filter(k => nurseryNs[k] == null);
+  if (missing.length > 0) {
+    fail('PlantNeedsNursery exposes the public API', `manquants: ${missing.join(', ')}`);
+  } else {
+    const out = nurseryNs.calcNurseryDemand(90, 35, 50);
+    const n = out && out.N;
+    const perTray = nurseryNs.demandPerTray('N');
+    const okShape = n
+                 && typeof n.perPlant_mg === 'number'
+                 && typeof n.perTray_mg  === 'number'
+                 && typeof perTray       === 'number'
+                 && isFinite(n.perPlant_mg) && isFinite(n.perTray_mg) && isFinite(perTray);
+    if (!okShape) {
+      fail('PlantNeedsNursery.calcNurseryDemand / demandPerTray return correct shape',
+           `calcNurseryDemand(...).N: ${JSON.stringify(n)}; demandPerTray('N'): ${typeof perTray}`);
+    } else {
+      pass(`PlantNeedsNursery exposes ${expectedKeys.length} clés (toutes présentes, shape OK)`);
+    }
+  }
+}
+
+// ─── REQ-094..097 — Nursery substrate-contribution subproject ──────────
+//
+// The nursery/substrate-contribution subproject (data + calc + model)
+// lives at nutrition/nursery/substrate-contribution/{data.js,calc.js,model.js}.
+// Same vm-loaded pattern as REQ-090..093 above: load the partials in a
+// shared sandbox, run REQ-094..097 against the produced namespace. Once
+// app/index.html @includes the partials, window.SubstrateContributionNursery
+// will also exist on the real jsdom window — we prefer that when present,
+// otherwise fall back to the vm-loaded copy.
+//
+// Spec: nutrition/nursery/substrate-contribution/spec.md → REQ-094..097.
+
+let SCN = window.SubstrateContributionNursery;
+let scnLoadErr = null;
+if (!SCN) {
+  try {
+    const dataSrc  = readFileSync(join(REPO_ROOT, 'nutrition/nursery/substrate-contribution/data.js'),  'utf8');
+    const calcSrc  = readFileSync(join(REPO_ROOT, 'nutrition/nursery/substrate-contribution/calc.js'),  'utf8');
+    const modelSrc = readFileSync(join(REPO_ROOT, 'nutrition/nursery/substrate-contribution/model.js'), 'utf8');
+    const sandbox = { window: {} };
+    vm.createContext(sandbox);
+    vm.runInContext(dataSrc + '\n' + calcSrc + '\n' + modelSrc, sandbox, {
+      filename: 'nursery-substrate-contribution-bundle.js',
+    });
+    SCN = sandbox.window.SubstrateContributionNursery || null;
+  } catch (err) {
+    scnLoadErr = err && err.message || String(err);
+  }
+}
+
+// ─── REQ-094 — Front-load cap ≤ 9 g feather meal/tray + INV-2 mass balance
+
+header('REQ-094 — Substrate front-load cap ≤ 9 g + INV-2 release-curve mass balance');
+
+if (!SCN) {
+  fail('SubstrateContributionNursery namespace available',
+       scnLoadErr || 'partials did not produce window.SubstrateContributionNursery');
+} else {
+  const cap = SCN.LIMITS && SCN.LIMITS.maxFeatherMealPerTrayG;
+  if (typeof cap !== 'number') {
+    fail('LIMITS.maxFeatherMealPerTrayG est un nombre', `got ${typeof cap}`);
+  } else if (cap > 9) {
+    fail('LIMITS.maxFeatherMealPerTrayG ≤ 9 (germination protection)',
+         `cap = ${cap} (max allowed = 9)`);
+  } else {
+    pass(`LIMITS.maxFeatherMealPerTrayG = ${cap} (≤ 9, germination protection)`);
+  }
+
+  // INV-2 — release curves sum to ~1.0 ± 0.05 (mass balance).
+  const om2Sum = (SCN.OM2_RELEASE_CURVE_BY_WEEK || []).reduce((a, b) => a + b, 0);
+  const fmSum  = (SCN.FEATHER_MEAL_RELEASE_CURVE_BY_WEEK || []).reduce((a, b) => a + b, 0);
+  if (om2Sum < 0.95 || om2Sum > 1.05) {
+    fail('OM2_RELEASE_CURVE_BY_WEEK somme ≈ 1.0 ± 0.05', `somme = ${om2Sum.toFixed(3)}`);
+  } else {
+    pass(`OM2_RELEASE_CURVE_BY_WEEK somme = ${om2Sum.toFixed(3)} (mass balance OK)`);
+  }
+  if (fmSum < 0.95 || fmSum > 1.05) {
+    fail('FEATHER_MEAL_RELEASE_CURVE_BY_WEEK somme ≈ 1.0 ± 0.05', `somme = ${fmSum.toFixed(3)}`);
+  } else {
+    pass(`FEATHER_MEAL_RELEASE_CURVE_BY_WEEK somme = ${fmSum.toFixed(3)} (mass balance OK)`);
+  }
+}
+
+// ─── REQ-095 — Linearity in feather meal input ──────────────────────────
+
+header('REQ-095 — Substrate release linéaire en feather meal (OM2 invariant)');
+
+if (!SCN || typeof SCN.theoreticalSubstrateReleasePerWeek !== 'function') {
+  fail('theoreticalSubstrateReleasePerWeek exposed', scnLoadErr || 'function missing');
+} else {
+  // Pick week 2 (peak feather meal release) for a clean signal.
+  const W = 2;
+  const X = 9;
+  const r0  = SCN.theoreticalSubstrateReleasePerWeek(W, 0);
+  const rX  = SCN.theoreticalSubstrateReleasePerWeek(W, X);
+  const r2X = SCN.theoreticalSubstrateReleasePerWeek(W, 2 * X);
+
+  // (a) Feather meal N component: rX.N - r0.N == r2X.N - rX.N (within 0.5 mg).
+  const dN1 = rX.N - r0.N;
+  const dN2 = r2X.N - rX.N;
+  if (Math.abs(dN1 - dN2) > 0.5) {
+    fail('Feather meal N scales linéairement avec fmG',
+         `Δ(0→X)=${dN1.toFixed(2)} vs Δ(X→2X)=${dN2.toFixed(2)} mg/tray/wk (semaine ${W})`);
+  } else {
+    pass(`Feather meal N linéaire: Δ(0→9)=${dN1.toFixed(2)} ≈ Δ(9→18)=${dN2.toFixed(2)} mg/tray/wk (semaine ${W})`);
+  }
+
+  // (b) OM2-only elements unchanged when fmG doubles.
+  const om2Drift = [];
+  for (const el of ['P', 'K', 'Ca', 'Mg']) {
+    if (Math.abs(rX[el] - r2X[el]) > 1e-6) {
+      om2Drift.push(`${el}: ${rX[el].toFixed(3)} vs ${r2X[el].toFixed(3)}`);
+    }
+  }
+  if (om2Drift.length === 0) {
+    pass('Composante OM2 (P/K/Ca/Mg) invariante quand fmG double');
+  } else {
+    fail('Composante OM2 doit être invariante avec fmG', om2Drift.join(' | '));
+  }
+}
+
+// ─── REQ-096 — Cycle-average matches mass-balance (±10 %) ───────────────
+
+header('REQ-096 — Cycle-average substrate release matches mass-balance');
+
+if (!SCN || typeof SCN.cycleAverageReleasePerTray !== 'function'
+    || !SCN.FEATHER_MEAL_LABEL_PCT
+    || typeof SCN.FEATHER_MEAL_MINERALIZATION_FRAC !== 'number') {
+  fail('cycleAverageReleasePerTray + feather meal constants exposed',
+       scnLoadErr || 'one or more globals missing');
+} else {
+  const fmG = SCN.NURSERY_FEATHER_MEAL_DEFAULT_G_PER_TRAY || 9;
+  const W   = (SCN.OM2_RELEASE_CURVE_BY_WEEK || []).length || 5;
+  const avg = SCN.cycleAverageReleasePerTray(fmG);
+
+  // Closed-form mass-balance for N:
+  //   feather meal mineralizable N total  +  OM2 N total released across cycle
+  //   ────────────────────────────────────────────────────────────────────────
+  //                                  W weeks
+  const fmTotalN_mg   = fmG * SCN.FEATHER_MEAL_LABEL_PCT.N
+                            * SCN.FEATHER_MEAL_MINERALIZATION_FRAC * 1000;
+  const om2NperTray   = (SCN.OM2_STARTER_CHARGE_PPM.N || 0)
+                      * (SCN.NURSERY_TRAY_SUBSTRATE_VOL_L || 1.65);
+  const om2Sum        = (SCN.OM2_RELEASE_CURVE_BY_WEEK || []).reduce((a, b) => a + b, 0);
+  const expectedN     = (fmTotalN_mg + om2NperTray * om2Sum) / W;
+
+  if (typeof avg.N !== 'number' || !isFinite(avg.N)) {
+    fail('cycleAverageReleasePerTray(fmG).N est un nombre', `got ${avg.N}`);
+  } else {
+    const ratio = avg.N / expectedN;
+    if (ratio < 0.9 || ratio > 1.1) {
+      fail('Cycle-average N matches mass balance ±10 %',
+           `avg.N = ${avg.N.toFixed(2)} vs expected ${expectedN.toFixed(2)} (ratio ${ratio.toFixed(3)})`);
+    } else {
+      pass(`Cycle-average N = ${avg.N.toFixed(1)} mg/tray/wk (mass balance ${expectedN.toFixed(1)}, ratio ${ratio.toFixed(3)})`);
+    }
+  }
+}
+
+// ─── REQ-097 — Public API namespace + INV-1 element coverage ────────────
+
+header('REQ-097 — window.SubstrateContributionNursery public API surface');
+
+if (!SCN) {
+  fail('SubstrateContributionNursery exists',
+       scnLoadErr || 'namespace not declared (model.js include may be missing or out of order)');
+} else {
+  const expectedKeys = [
+    'OM2_STARTER_CHARGE_PPM',
+    'OM2_RELEASE_CURVE_BY_WEEK',
+    'FEATHER_MEAL_LABEL_PCT',
+    'FEATHER_MEAL_MINERALIZATION_FRAC',
+    'FEATHER_MEAL_RELEASE_CURVE_BY_WEEK',
+    'NURSERY_TRAY_SUBSTRATE_VOL_L',
+    'NURSERY_FEATHER_MEAL_DEFAULT_G_PER_TRAY',
+    'LIMITS',
+    'theoreticalSubstrateReleasePerWeek',
+    'cycleAverageReleasePerTray',
+  ];
+  const missing = expectedKeys.filter(k => SCN[k] == null);
+  if (missing.length > 0) {
+    fail('SubstrateContributionNursery exposes the public API',
+         `manquants: ${missing.join(', ')}`);
+  } else {
+    // INV-1 — element coverage closure: OM2 keys ⊆ {N,P,K,Ca,Mg};
+    // feather meal carries only N on its label.
+    const macros = new Set(['N', 'P', 'K', 'Ca', 'Mg']);
+    const om2Keys = Object.keys(SCN.OM2_STARTER_CHARGE_PPM);
+    const om2Outliers = om2Keys.filter(k => !macros.has(k));
+    const fmKeys = Object.keys(SCN.FEATHER_MEAL_LABEL_PCT);
+    const fmExtra = fmKeys.filter(k => k !== 'N');
+    if (om2Outliers.length > 0) {
+      fail('OM2_STARTER_CHARGE_PPM keys ⊆ {N,P,K,Ca,Mg}',
+           `outliers: ${om2Outliers.join(', ')}`);
+    } else if (fmExtra.length > 0) {
+      fail('FEATHER_MEAL_LABEL_PCT contient uniquement N',
+           `extra: ${fmExtra.join(', ')}`);
+    } else {
+      const sample = SCN.theoreticalSubstrateReleasePerWeek(1, 9);
+      const sampleOk = sample && typeof sample === 'object'
+                    && typeof sample.N === 'number' && isFinite(sample.N);
+      if (!sampleOk) {
+        fail('theoreticalSubstrateReleasePerWeek return shape',
+             `keys=${Object.keys(sample || {}).join(',')}, N=${sample?.N}`);
+      } else {
+        pass(`SubstrateContributionNursery exposes ${expectedKeys.length} clés (toutes présentes, INV-1 OK, shape OK)`);
+      }
+    }
+  }
+}
+
+// ─── INV-1 (foliar-recipe) — Element coverage closed + non-negative ─────
+//
+// computeFoliarSupply(stage) must return numeric, finite, non-negative
+// values for every element in TOMATO_FRUIT_EXPORT (currently 11 elements:
+// N, P, K, Ca, Mg, Fe, Mn, Zn, B, Cu, Mo) at every stage in
+// RECIPE_INPUTS.stageYield.
+//
+// Spec: nutrition/tomato/foliar-recipe/spec.md → INV-1.
+
+header('Foliar INV-1 — Element coverage closed + numeric output');
+
+{
+  const FRT = window.FoliarRecipeTomato;
+  if (!FRT || typeof FRT.computeFoliarSupply !== 'function') {
+    fail('window.FoliarRecipeTomato.computeFoliarSupply exists',
+         'namespace not declared (model.js include may be missing or out of order)');
+  } else if (!TOMATO_FRUIT_EXPORT || !ph1.RECIPE_INPUTS) {
+    fail('Foliar INV-1 — TOMATO_FRUIT_EXPORT + RECIPE_INPUTS exposés', 'missing');
+  } else {
+    const stages = Object.keys(ph1.RECIPE_INPUTS.stageYield || {});
+    const expectedEls = Object.keys(TOMATO_FRUIT_EXPORT);
+    const offenders = [];
+    for (const s of stages) {
+      const r = FRT.computeFoliarSupply(s);
+      if (!r || typeof r !== 'object') {
+        offenders.push(`${s}: returned ${typeof r}`);
+        continue;
+      }
+      for (const el of expectedEls) {
+        const v = r[el];
+        if (typeof v !== 'number' || !isFinite(v) || v < 0) {
+          offenders.push(`${s}/${el}: ${v} (typeof ${typeof v})`);
+        }
+      }
+    }
+    if (offenders.length === 0) {
+      pass(`Tous les stades (${stages.length}) × ${expectedEls.length} éléments renvoient des valeurs numériques ≥ 0`);
+    } else {
+      fail('Foliar INV-1 — element coverage + numeric output', offenders.slice(0, 5).map(o => `  ${o}`).join('\n'));
+    }
+  }
+}
+
+// ─── REQ-101 — Coverage discount applied to foliar delivery ──────────────
+//
+// For pinned elements (Mn, Fe), recompute the formula
+//   delivered = recipe_g × element_pct × 1000 / area × FOLIAR_COVERAGE_DEFAULT
+// from STORED_RECIPE.tomato.foliaire and assert
+// computeFoliarSupply('T5').{Mn, Fe} matches within 1 % tolerance. Mn pins
+// the surfactant-coverage logic; Fe pins the FeSO₄·7H₂O 20 % Fe path.
+//
+// Spec: nutrition/tomato/foliar-recipe/spec.md → REQ-101.
+
+header('REQ-101 — Foliar delivery applies FOLIAR_COVERAGE_DEFAULT (Mn, Fe)');
+
+{
+  const FRT = window.FoliarRecipeTomato;
+  if (!FRT || typeof FRT.computeFoliarSupply !== 'function'
+      || typeof FRT.FOLIAR_COVERAGE_DEFAULT !== 'number'
+      || !STORED_RECIPE?.tomato?.foliaire?.A
+      || !PRODUCT_PCT
+      || !TOMATO_NUM_BEDS || !TOMATO_BED_AREA) {
+    fail('REQ-101 — foliar namespace + STORED_RECIPE + PRODUCT_PCT exposés', 'missing');
+  } else {
+    const A = STORED_RECIPE.tomato.foliaire.A;
+    const parseG = (s) => parseFloat(String(s).replace(',', '.')) || 0;
+    const findG = (substr) => {
+      const item = A.find(x => (x.name || '').includes(substr));
+      return item ? parseG(item.master) : 0;
+    };
+    const area = TOMATO_NUM_BEDS * TOMATO_BED_AREA;
+    const cov = FRT.FOLIAR_COVERAGE_DEFAULT;
+    const offenders = [];
+    const PINNED = [
+      { el: 'Mn', g: findG('MnSO₄'), pct: PRODUCT_PCT.MnSO4_Mn },
+      { el: 'Fe', g: findG('FeSO₄'), pct: PRODUCT_PCT.FeSO4_Fe },
+    ];
+    const supply = FRT.computeFoliarSupply('T5');
+    for (const { el, g, pct } of PINNED) {
+      const expected = (g * pct * 1000) / area * cov;
+      const actual = supply[el];
+      if (Math.abs(actual - expected) > Math.max(0.01, expected * 0.01)) {
+        offenders.push(`${el}: actual=${actual.toFixed(3)} vs expected=${expected.toFixed(3)} (g=${g}, pct=${pct}, cov=${cov})`);
+      }
+    }
+    if (offenders.length === 0) {
+      pass(`Mn + Fe delivered match formula recipe_g × pct × 1000 / area × ${cov} (±1 %)`);
+    } else {
+      fail('REQ-101 — coverage discount formula', offenders.join('\n'));
+    }
+  }
+}
+
+// ─── REQ-103 — FoliarRecipeTomato public API namespace ──────────────────
+//
+// Spec: nutrition/tomato/foliar-recipe/spec.md → REQ-103.
+
+header('REQ-103 — window.FoliarRecipeTomato public API surface');
+
+{
+  const FRT = window.FoliarRecipeTomato;
+  if (!FRT) {
+    fail('window.FoliarRecipeTomato exists',
+         'namespace not declared (model.js include may be missing or out of order)');
+  } else {
+    const expectedKeys = [
+      'AREA_M2', 'FOLIAR_COVERAGE_DEFAULT', 'FOLIAR_COVERAGE_WITH_YUCCA',
+      'computeFoliarSupply',
+    ];
+    const missing = expectedKeys.filter(k => FRT[k] == null);
+    if (missing.length > 0) {
+      fail('FoliarRecipeTomato exposes the public API', `manquants: ${missing.join(', ')}`);
+    } else {
+      const t5Fe = FRT.computeFoliarSupply('T5').Fe;
+      const okShape = typeof FRT.AREA_M2 === 'number'
+                    && typeof FRT.FOLIAR_COVERAGE_DEFAULT === 'number'
+                    && typeof FRT.FOLIAR_COVERAGE_WITH_YUCCA === 'number'
+                    && typeof t5Fe === 'number' && isFinite(t5Fe) && t5Fe > 0;
+      if (!okShape) {
+        fail('FoliarRecipeTomato shape', `AREA_M2: ${typeof FRT.AREA_M2}; COV_DEFAULT: ${FRT.FOLIAR_COVERAGE_DEFAULT}; COV_YUCCA: ${FRT.FOLIAR_COVERAGE_WITH_YUCCA}; T5.Fe: ${t5Fe}`);
+      } else {
+        pass(`FoliarRecipeTomato exposes ${expectedKeys.length} clés (toutes présentes, T5.Fe=${t5Fe.toFixed(2)} mg/m²/wk)`);
+      }
+    }
   }
 }
 

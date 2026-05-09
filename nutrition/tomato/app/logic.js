@@ -10,21 +10,27 @@ function buildNutriment() {
     buildNutrimentNursery();
     return;
   }
+  const PN = window.PlantNeedsTomato;
   const target  = parseFloat(document.getElementById('nutr-target').value)  || 1.5;
-  const current = parseFloat(document.getElementById('nutr-current').value) || 1.3;
+  const solarPerGram = parseFloat(document.getElementById('nutr-solar-per-gram').value) || 7;
   const phLocked = document.getElementById('nutr-phlocked').checked;
+
+  // REQ-104: header inputs are exactly five scalars (target, solarPerGram,
+  // stage, phLocked, recipeMode). The "current yield" input was retired
+  // 2026-05-09 — page now answers "what's needed at target", not "what's
+  // needed given current canopy". REQ-081 Ca/Mg biomass × transpFactor
+  // still applies, but transpFactor pins to 1.0 (full-canopy assumption).
+  // Re-add a transpFactor knob if mid-cycle stunted-plant correction
+  // becomes operationally important.
+  const transpFactor = 1.0;
 
   // Demand is now stage-aware: fruit removal (yield-driven) + biomass build-out
   // (stage-driven). demandBreakdown[el] = {fruit, biomass, total}; we keep a
   // flat `demand[el] = total` view for the existing gap-chain + Block 5 levers
   // that reason on a single number per element.
-  const demandBreakdown = calcNutrDemand(target, nutrStage);
+  const demandBreakdown = PN.calcNutrDemand(target, nutrStage, transpFactor);
   const demand = {};
   Object.keys(demandBreakdown).forEach(el => { demand[el] = demandBreakdown[el].total; });
-  // Transpiration factor — corrects soil mass-flow for canopy size (stunted
-  // plants transpire less than their irrigation volume). 1,0 = full canopy at
-  // target yield; floor 0,4 even for tiny seedlings.
-  const transpFactor = transpirationFactor(current, target);
   const supply  = calcNutrSupply(nutrStage, phLocked, transpFactor, target, nutrRecipeMode);
   const r = supply.raw;
   const order = ['N','P','K','Ca','Mg','Fe','Mn','Zn','B','Cu','Mo'];
@@ -42,9 +48,10 @@ function buildNutriment() {
   // the bank. Bank trajectory is tracked separately on the 🪨 Banque sol page.
   //
   // Compost release per element (g/m²/wk) → mg/m²/wk for the gap chain.
+  const CC = window.CompostContribution;
   const compostMg = {};
   order.forEach(el => {
-    const gPerWk = RECIPE_INPUTS.compostReleasePerWeek[el];
+    const gPerWk = CC.releasePerWeek[el];
     compostMg[el] = (gPerWk != null ? gPerWk : 0) * 1000;
   });
   const gapAfterDemand    = {};   // = demand (nothing covered yet)
@@ -60,61 +67,37 @@ function buildNutriment() {
     gapAfterFoliar[el]    = Math.max(0, gapAfterFert[el]      - (supply.foliar[el]     || 0));
   });
 
-  // ─── Light-limited yield ceiling (header card) ───
-  // Heuristic: 1 kg fresh fruit per 7 kJ/cm² of weekly solar radiation.
-  //   weekly_J_cm2 = getSolarRad() (daily) × 7
-  //   ceiling kg/m²/wk = weekly_J_cm2 / 7000
-  // This is the physical ceiling — nutrition cannot push yield above what
-  // light supports. If the target is above the ceiling, flag it.
+  // ─── Light-limited yield ceiling (header card) — REQ-105 ───
+  //   weekly_J_cm² = getSolarRad() (daily) × 7
+  //   ceiling kg/m²/wk = weekly_J_cm² ÷ (solarPerGram × 1000)
+  // solarPerGram is operator-set (default 7 J/g ≈ 14 g/MJ at canopy).
   const dailyJ = getSolarRad();
   const weeklyJ = dailyJ * 7;
-  const lightCeiling = weeklyJ / 7000;
-  const tgt = parseFloat(document.getElementById('nutr-target').value) || 1.5;
-  const overTarget = tgt > lightCeiling;
+  const lightCeiling = weeklyJ / (solarPerGram * 1000);
+  const overTarget = target > lightCeiling;
   const ceilingColor = overTarget ? '#8a3e1e' : 'var(--text-muted)';
   const ceilingBg    = overTarget ? '#fef0e8' : 'var(--input-bg)';
   const ceilingBord  = overTarget ? '#e8c4a8' : 'var(--border)';
   const ceilingWarn  = overTarget
-    ? ` ⚠ <strong>Cible ${tgt.toFixed(2)} > plafond</strong> — nutrition ne pourra pas combler le manque de lumière cette semaine.`
+    ? ` ⚠ <strong>Cible ${target.toFixed(2)} > plafond</strong>`
     : '';
   document.getElementById('nutr-light-ceiling').innerHTML =
-    `<strong style="color:var(--text);">Plafond lumière ≈ ${lightCeiling.toFixed(2)} kg/m²/sem</strong>`
-    + ` <span style="font-size:10px;">cert 2</span><br>`
-    + `<span style="font-size:11px;">Radiation cette semaine : ${dailyJ} J/cm²/jour × 7 = ${weeklyJ.toLocaleString('fr-CA')} J/cm²/sem &nbsp;÷&nbsp; 7 kJ/cm² par kg de fruit ≈ <strong style="color:var(--text);">${lightCeiling.toFixed(2)} kg/m²/sem</strong>.${ceilingWarn}</span>`;
+    `<strong style="color:var(--text);">Plafond lumière ≈ ${lightCeiling.toFixed(2)} kg/m²/sem</strong>${ceilingWarn}<br>`
+    + `<span style="font-size:11px;">${weeklyJ.toLocaleString('fr-CA')} J/cm²/sem ÷ (${solarPerGram} J/g × 1 000) = ${lightCeiling.toFixed(2)} kg/m²/sem.</span>`;
   document.getElementById('nutr-light-ceiling').style.color  = ceilingColor;
   document.getElementById('nutr-light-ceiling').style.background = ceilingBg;
   document.getElementById('nutr-light-ceiling').style.borderColor = ceilingBord;
 
-  // ─── Products in play (header card) ───
-  // Static names for fertigation salts (STORED_RECIPE.tomato.fertigation uses
-  // kSulfate/mgSulfate keys without display labels) and granular sidedress
-  // (STORED_RECIPE.tomato.sidedress uses actisol_g/farine_g). Foliar names come
-  // straight from STORED_RECIPE.tomato.foliaire so any recipe rename or product
-  // swap propagates automatically (REQ-004 spirit). All products listed are
-  // CAN/CGSB-32.311 compliant (REQ-002).
-  const fertigProducts = [
-    'Sulfate de potassium (K₂SO₄, 0-0-50)',
-    'Sulfate de magnésium (MgSO₄·7H₂O)',
-  ];
-  const sidedressProducts = [
-    'Actisol 5-3-2 (compost de fumier granulé)',
-    'Farine de plumes 13-0-0',
-  ];
-  const foliarA = STORED_RECIPE.tomato.foliaire.A.map(p => p.name);
-  const renderProductGroup = (label, items) =>
-    `<div style="margin-bottom:8px;"><div style="font-size:11px; font-weight:600; color:var(--text); margin-bottom:3px;">${label}</div>`
-    + `<div style="color:var(--text-muted); padding-left:10px;">${items.map(i => `• ${i}`).join('<br>')}</div></div>`;
-  document.getElementById('nutr-products').innerHTML =
-      renderProductGroup('Fertigation (au goutteur)', fertigProducts)
-    + renderProductGroup('Foliaire — Spray hebdomadaire (mer., oligos)', foliarA)
-    + renderProductGroup('Granulaire au sol (planches)', sidedressProducts);
+  // REQ-107: products-in-play list retired 2026-05-09 — replaced by the
+  // per-block product names that already appear inline in each Block 1-5
+  // card body. Header stays minimal.
 
   // ─── Block 1: Weekly plant needs ───
   // Cert: TOMATO_FRUIT_EXPORT is cert 3 (Yara split applied to whole-plant);
   // BIOMASS_DEMAND is cert 3 (Haifa F-144 + Sonneveld extrapolation). Modal
   // shows the per-element split + interpretation.
-  const fruitExport_g = (typeof TOMATO_FRUIT_EXPORT !== 'undefined') ? TOMATO_FRUIT_EXPORT : {};
-  const biomassDmd = (typeof BIOMASS_DEMAND !== 'undefined' && BIOMASS_DEMAND[nutrStage]) ? BIOMASS_DEMAND[nutrStage] : {};
+  const fruitExport_g = (PN && PN.TOMATO_FRUIT_EXPORT) ? PN.TOMATO_FRUIT_EXPORT : {};
+  const biomassDmd = (PN && PN.BIOMASS_DEMAND && PN.BIOMASS_DEMAND[nutrStage]) ? PN.BIOMASS_DEMAND[nutrStage] : {};
   const block1HeaderRow = `<div style="display:grid; grid-template-columns:0.5fr 0.9fr 0.9fr 0.9fr; gap:4px 10px;">
     <div style="font-weight:700; color:var(--text-muted); font-size:10px; text-transform:uppercase; letter-spacing:1px;">Él.</div>
     <div style="font-weight:700; color:var(--text-muted); font-size:10px; text-transform:uppercase; letter-spacing:1px;">Fruit</div>
@@ -128,19 +111,27 @@ function buildNutriment() {
     const fxG = fruitExport_g[el];
     const fxStr = (fxG && fxG.g != null) ? `${fxG.g} g/kg` : (fxG != null ? `${fxG} g/kg` : '—');
     const bioStr = (biomassDmd[el] != null) ? `${biomassDmd[el]} mg/m²/sem` : '—';
-    const dCert = (typeof TOMATO_DEMAND_CERT !== 'undefined' && TOMATO_DEMAND_CERT[nutrStage])
-      ? (TOMATO_DEMAND_CERT[nutrStage][el] != null ? TOMATO_DEMAND_CERT[nutrStage][el] : 2)
-      : 2;
+    const dCert = PN.certFor(nutrStage, el);
     const isMicro = ['Fe','Mn','Zn','B','Cu','Mo'].indexOf(el) >= 0;
+    const isTranspCoupled = (el === 'Ca' || el === 'Mg');
     const microCaveat = isMicro
       ? ' ⚠ Cert 1 — TOMATO_FRUIT_EXPORT pour les micros utilise un split 60% par défaut (lacune de données), et BIOMASS_DEMAND.Cu/Mo est cert 1 toutes étapes confondues. Tissue test requis avant d\'agir sur un manque de micro.'
       : '';
+    const transpNote = isTranspCoupled
+      ? ` ⚙ REQ-081 : ${el} biomasse × facteur transpiration (${transpFactor.toFixed(2)}) — élément xylémique, l'apport biomasse suit la transpiration de la canopée.`
+      : '';
+    const eqStr = isTranspCoupled
+      ? `demand[${el}] = TOMATO_FRUIT_EXPORT[${el}] × yield + BIOMASS_DEMAND[${nutrStage}][${el}] × transpFactor`
+      : `demand[${el}] = TOMATO_FRUIT_EXPORT[${el}] × yield + BIOMASS_DEMAND[${nutrStage}][${el}]`;
+    const bioPlugged = isTranspCoupled
+      ? `${bioStr} × ${transpFactor.toFixed(2)}`
+      : bioStr;
     registerPourquoi(`demand.${el}`, {
       title: `${el} — besoin hebdomadaire (stade ${nutrStage})`,
       cert: dCert,
-      equation: `demand[${el}] = TOMATO_FRUIT_EXPORT[${el}] × yield + BIOMASS_DEMAND[${nutrStage}][${el}]`,
-      plugged: `fruit ${fmtVal(b.fruit)} (${fxStr} × ${target.toFixed(2)} kg/m²/sem) + biomasse ${fmtVal(b.biomass)} (${bioStr}) = <strong>${fmtVal(b.total)} / m²/sem</strong>`,
-      interpretation: `Le poste fruit ne tient compte QUE de ce qui sort en récolte. Le poste biomasse couvre la canopée + nouvelles structures hebdomadaires (tiges, racines, jeunes feuilles). Au stade ${nutrStage}, ${b.fruit > b.biomass ? 'le fruit domine' : (b.biomass > b.fruit ? 'la biomasse domine' : 'fruit et biomasse sont équilibrés')}.${el === 'Ca' ? ' Note: Ca xylème uniquement → ~95% reste dans la canopée, seulement 5% part dans le fruit.' : ''}${microCaveat}`
+      equation: eqStr,
+      plugged: `fruit ${fmtVal(b.fruit)} (${fxStr} × ${target.toFixed(2)} kg/m²/sem) + biomasse ${fmtVal(b.biomass)} (${bioPlugged}) = <strong>${fmtVal(b.total)} / m²/sem</strong>`,
+      interpretation: `Le poste fruit ne tient compte QUE de ce qui sort en récolte. Le poste biomasse couvre la canopée + nouvelles structures hebdomadaires (tiges, racines, jeunes feuilles). Au stade ${nutrStage}, ${b.fruit > b.biomass ? 'le fruit domine' : (b.biomass > b.fruit ? 'la biomasse domine' : 'fruit et biomasse sont équilibrés')}.${el === 'Ca' ? ' Note: Ca xylème uniquement → ~95% reste dans la canopée, seulement 5% part dans le fruit.' : ''}${transpNote}${microCaveat}`
     });
     html1 += `<div class="pq-row" onclick="showPourquoi('demand.${el}')" style="display:grid; grid-template-columns:0.5fr 0.9fr 0.9fr 0.9fr; gap:4px 10px; padding:2px 4px; border-radius:3px;">
       <div style="font-weight:600;">${el}</div>
@@ -153,24 +144,24 @@ function buildNutriment() {
   document.getElementById('nutr-needs').innerHTML = html1;
 
   // ─── Block 2: Compost résiduel (Savaria ORGANIMIX, fall 2025) ───
-  // Reads RECIPE_INPUTS.compostReleasePerWeek (g/m²/wk per element) — single
-  // source of truth (REQ-004). Annual mineralization × seasonal Q10 boost;
-  // declines over 18-24 months as the compost ages out. First replenishment
-  // channel in the mass-balance gap chain (offtake → compost → sidedress →
-  // fertigation → foliar).
+  // Reads window.CompostContribution.releasePerWeek (g/m²/wk per element) —
+  // single source of truth (REQ-004, REQ-080). Annual mineralization ×
+  // seasonal Q10 boost; declines over 18-24 months as the compost ages out.
+  // First replenishment channel in the mass-balance gap chain
+  // (offtake → compost → sidedress → fertigation → foliar).
   const TOMATO_AREA = TOMATO_NUM_BEDS * TOMATO_BED_AREA;
   let html2 = `<div style="font-size:12.5px; line-height:1.5; color:var(--text-muted); margin-bottom:10px;">Minéralisation hebdomadaire du compost Savaria ORGANIMIX appliqué à l'automne 2025 (~25,4 kg/m², étiquette N 0,5 · P₂O₅ 0,1 · K₂O 0,1 · Ca 1,1 · Mg ~0,5 %). Décline avec le temps ; à revisiter quand le compost vieillit (~18-24 mois post-application).</div>`;
   // Per-element compost-supply pourquoi entries — modal opens on row click.
   // Interpretation: stable domain context. Live values come from
-  // RECIPE_INPUTS.compostReleasePerWeek (single source of truth).
+  // window.CompostContribution.releasePerWeek (single source of truth).
   order.forEach(el => {
-    const gPerWk = RECIPE_INPUTS.compostReleasePerWeek[el];
+    const gPerWk = CC.releasePerWeek[el];
     if (gPerWk == null) {
       // Element not declared on Savaria label → no compost contribution tracked.
       registerPourquoi(`compost.${el}`, {
         title: `${el} — compost résiduel`,
         cert: 2,
-        equation: `compost[${el}] = 0 (non listé dans RECIPE_INPUTS.compostReleasePerWeek)`,
+        equation: `compost[${el}] = 0 (non listé dans window.CompostContribution.releasePerWeek)`,
         plugged: `Apport compost = 0 mg/m²/sem`,
         // stable — Savaria label declares only macros + Ca; micros not tracked
         interpretation: `${el} n'est pas suivi dans la libération du compost (étiquette Savaria ne déclare que macros). Apport supposé négligeable à l'échelle hebdomadaire.`
@@ -190,7 +181,7 @@ function buildNutriment() {
     registerPourquoi(`compost.${el}`, {
       title: `${el} — compost résiduel (Savaria ORGANIMIX)`,
       cert: el === 'Mg' ? 1 : (el === 'Ca' ? 3 : 2),
-      equation: `compost[${el}] = RECIPE_INPUTS.compostReleasePerWeek[${el}] × 1000`,
+      equation: `compost[${el}] = window.CompostContribution.releasePerWeek[${el}] × 1000`,
       plugged: `${gPerWk.toFixed(3)} g/m²/sem × 1000 = <strong>${mgPerWk.toFixed(0)} mg/m²/sem</strong> &nbsp;·&nbsp; total tomate (${TOMATO_AREA.toFixed(0)} m²) = ${totalGPerWk.toFixed(1)} g/sem`,
       interpretation: note
     });

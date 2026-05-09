@@ -14,6 +14,15 @@
 set -uo pipefail
 cd "$(dirname "$0")/.."
 
+# Verifier reads the built artifact, not the source. Run `npm run build` first
+# (the `npm run check` script chains them; running this script directly assumes
+# dist/index.html is current).
+INDEX="dist/index.html"
+if [ ! -f "$INDEX" ]; then
+  echo "  ✗ $INDEX not found. Run \`npm run build\` first (or use \`npm run check\`)." >&2
+  exit 1
+fi
+
 PASS=0
 FAIL=0
 FAIL_DETAILS=()
@@ -57,7 +66,7 @@ check_no_match() {
   local name="$1"
   local pattern="$2"
   local matches
-  matches=$(grep -nE "$pattern" index.html 2>/dev/null | head -3 || true)
+  matches=$(grep -nE "$pattern" "$INDEX" 2>/dev/null | head -3 || true)
   if [ -z "$matches" ]; then
     pass "$name"
   else
@@ -71,7 +80,7 @@ check_no_match() {
 check_match() {
   local name="$1"
   local pattern="$2"
-  if grep -qE "$pattern" index.html 2>/dev/null; then
+  if grep -qE "$pattern" "$INDEX" 2>/dev/null; then
     pass "$name"
   else
     fail "$name" "expected pattern not found: $pattern"
@@ -91,7 +100,7 @@ check_in_function() {
       inside && /^}/ { inside=0 }
       inside && index($0, needle) > 0 { found=1 }
       END { exit found ? 0 : 1 }
-    ' index.html; then
+    ' "$INDEX"; then
     pass "$name"
   else
     fail "$name" "expected '$needle' inside function $fn"
@@ -148,13 +157,13 @@ check_in_function "setDiagCrop() appelle syncHash()" "setDiagCrop" 'syncHash('
 
 # Every <div id="page-XXX-content"> slug must be registered in the PAGES const,
 # otherwise navigating to it from the URL silently falls back to the default page.
-content_slugs=$(grep -oE 'id="page-[a-z]+-content"' index.html \
+content_slugs=$(grep -oE 'id="page-[a-z]+-content"' "$INDEX" \
                 | sed -E 's/id="page-(.*)-content"/\1/' \
                 | sort -u)
-pages_decl=$(grep -E 'const PAGES = ' index.html | head -1)
+pages_decl=$(grep -E 'const PAGES = ' "$INDEX" | head -1)
 
 if [ -z "$pages_decl" ]; then
-  fail "PAGES const trouvé dans index.html" "expected: const PAGES = [...]"
+  fail "PAGES const trouvé dans $INDEX" "expected: const PAGES = [...]"
 else
   missing=""
   for slug in $content_slugs; do
@@ -190,7 +199,7 @@ for entry in "${solar_expected[@]}"; do
   wk="${entry%%:*}"
   val="${entry##*:}"
   # Tolerant pattern: VALUE followed by comma, then "// week N"
-  if ! grep -qE "^\s+${val},\s*//\s*week\s+${wk}\b" index.html; then
+  if ! grep -qE "^\s+${val},\s*//\s*week\s+${wk}\b" "$INDEX"; then
     solar_missing="$solar_missing wk${wk}(${val})"
   fi
 done

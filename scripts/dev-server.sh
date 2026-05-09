@@ -3,9 +3,9 @@
 #
 # Starts two processes:
 #   1. scripts/build.mjs --watch   — watches app/ + nutrition/ etc., regenerates
-#                                    index.html on every change (~5ms).
-#   2. live-server                 — serves repo root, pushes browser reload
-#                                    when index.html (the build artifact) changes.
+#                                    dist/index.html on every change (~5ms).
+#   2. live-server                 — serves dist/, pushes browser reload
+#                                    when dist/index.html changes.
 #
 # End-to-end edit→reload typically lands under 500ms.
 #
@@ -48,4 +48,4 @@ BUILD_PID=$!
 trap 'kill "${BUILD_PID}" 2>/dev/null || true' EXIT
 
 echo "Starting live-server on http://localhost:${PORT} ..."
-exec npx --yes live-server --port="${PORT}" --no-browser --quiet
+exec npx --yes live-server "${PROJECT_ROOT}/dist" --port="${PORT}" --no-browser --quiet

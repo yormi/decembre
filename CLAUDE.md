@@ -27,6 +27,35 @@ When building the app of procedures for the team, include a brief "why" explanat
 
 App invariants are tracked in `requirements.md` (REQ-001, REQ-002, …) and validated automatically by `scripts/check-requirements.sh`. Read it before editing the app; run the script before declaring work done.
 
+## Specs
+
+A **spec** is a normative, testable, minimal claim about what the system must do or be — not how it does it. The terminology replaced "requirement" on 2026-05-09; filenames `requirements.md` and `scripts/check-requirements.sh` kept for path stability, but body content uses "spec" throughout.
+
+**Where specs live:**
+- Cross-app: `requirements.md` at the root (CE labels, hash routing, week numbering — REQ-001/005-008).
+- Per-domain: `nutrition/spec.md`, `nutrition/tomato/spec.md`, `nutrition/lettuce/spec.md`, `yield-range/spec.md`, etc.
+- Per-subproject: `nutrition/tomato/plant-needs/spec.md`, `nutrition/tomato/app/spec.md`, `yield-range/app/spec.md`, …
+
+**Each spec entry has:**
+- A globally-unique `REQ-NNN` identifier (never reused, even after retirement).
+- A normative statement ("for every X, Y must hold").
+- A short rationale (one paragraph — *why we care*, not *how we got here*).
+- A verification path: a one-line pointer to the auto-wired check in `scripts/check-recipes.mjs` / `scripts/check-requirements.sh`, OR an explicit "deferred — wired when X" with documented trigger.
+- A transferability cert (0–5; canonical scale defined in `nutrition/tomato/plant-needs/spec.md`).
+- Optionally: a one-line implementation pointer (file + symbol) and cross-references to other REQs.
+
+**What does NOT belong in a spec:**
+- Formulas, derivations, source tables, calibration data → those live in `*/derivation.md`, `*/calibration-data.md`, `*/notes.md`, or as code comments.
+- Per-element values, magic numbers, datasets → those live in code (`data.js`) or calibration files.
+- Implementation walkthroughs, code excerpts longer than a one-liner, file paths to consumers.
+
+**Operating rules:**
+- *If not auto-enforceable, not a spec.* Manual-review items belong in team process (Catherine's #review channel), not in a `spec.md`. (Codified after REQ-003/056/057 were removed 2026-05-08.)
+- REQ-NNN allocation: reserve a contiguous range when starting a subproject (yield-range took 063–077; plant-needs took 081–083). Cross-check the spec tree before claiming a number.
+- The verifier (`npm run check`) scans every `*/spec.md` for `^## REQ-` headers, dedups across the tree, and matches against `header('REQ-NNN ...')` (node) or `echo "REQ-NNN…"` (bash). A spec is **wired** when its REQ has a verifier check; **deferred** otherwise. Target: 100 % wired.
+
+**When a spec gains complexity (formulas, source tables, derivations, edge-case discussion), split it.** Keep `spec.md` to the bare normative claims. Move the *how* and the *why-this-number* into a sibling file (`derivation.md` is the convention so far). Future readers should be able to read `spec.md` end-to-end in under 5 minutes and know what the system promises.
+
 ## Retiring a recipe — audit trail
 
 Any edit to the three STORED recipe channels — `STORED_RECIPE.tomato.fertigation`, `STORED_RECIPE.tomato.sidedress`, or `STORED_RECIPE.tomato.foliaire` — requires running the `/retire-recipe` skill FIRST so the old state is captured into `RECIPE_HISTORY` for organic-cert audit. Never edit those constants directly. Out of scope: plant-need / model inputs (`RECIPE_INPUTS`, `TOMATO_FRUIT_EXPORT`, `BIOMASS_DEMAND`) and lettuce-side constants — edit those freely. Note: editing a plant-need input shifts the FP-target output of `computeStageRecipe(stage)` (the Block 7 drift gauge), but does NOT change the locked `STORED_RECIPE.tomato.fertigation` values.
@@ -49,7 +78,7 @@ Convention:
 
    When you delegate to a background sub-agent, brief the sub-agent to append its own changelog entry as part of its task. Do not log on the user's behalf for changes the user makes manually.
 3. **Trust the changelog over your own memory.** If your reasoning conflicts with a recent changelog entry, re-derive from current files. Memory is a snapshot; the changelog + filesystem is ground truth.
-4. **If the auto-injected 25 lines don't span back to the last time you "touched base", refresh your memory.** Read the full `working files/changelog.md` for older context, and re-read any files (`index.html`, `requirements.md`, etc.) whose state might have shifted since your snapshot. The 25-line window is a fast path; not a hard limit. When in doubt, read.
+4. **If the auto-injected 25 lines don't span back to the last time you "touched base", refresh your memory.** Read the full `working files/changelog.md` for older context, and re-read any files (`app/index.html`, `requirements.md`, etc.) whose state might have shifted since your snapshot. The 25-line window is a fast path; not a hard limit. When in doubt, read. Note: `index.html` is the build artifact at `dist/index.html` (gitignored) — the source of truth is `app/index.html` plus the partials it `@include`s from `nutrition/`, `yield-range/`, etc.
 
 Examples of changes worth logging:
 - Recipe edits (`STORED_RECIPE.tomato.{fertigation, sidedress, foliaire}`, etc.)
