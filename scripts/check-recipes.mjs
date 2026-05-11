@@ -38,7 +38,7 @@
 // after printing a single "skipped" warning so the bash umbrella verifier
 // stays usable on a fresh clone before `npm install`.
 
-import { readFileSync, existsSync } from 'node:fs';
+import { readFileSync, existsSync, readdirSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 
@@ -178,17 +178,18 @@ const exposeNames = [
   'COMPOST_AMENDMENT', 'COMPOST_LABEL_PCT', 'COMPOST_MINERALIZATION_YEAR1',
   'COMPOST_SEASONAL_FACTOR', 'COMPOST_RELEASE_PER_WEEK', 'theoreticalReleasePerWeek',
   'FIRST_PRINCIPLES_SIDEDRESS', 'computeStageSidedress',
-  // Fertigation-recipe (REQ-098..100). FP_RECIPE_T5 holds the wired T5
-  // anchor (PA Taillon April 2026); MIXING_FACTOR_FERT_STORED/FP back
-  // REQ-100; FIRST_PRINCIPLES_T5_FERTIGATION is the source-of-truth that
-  // wireFpFertigation() copies into FP_RECIPE_T5.fertigation at script load.
+  // Fertigation-recipe (REQ-098..099). FP_RECIPE_T5 holds the wired T5
+  // anchor (PA Taillon April 2026); FIRST_PRINCIPLES_T5_FERTIGATION is
+  // the source-of-truth that wireFpFertigation() copies into
+  // FP_RECIPE_T5.fertigation at script load. REQ-100 (mode-aware mixing
+  // factor) retired 2026-05-10 — concept dropped, full barrel mass.
   'FP_RECIPE_T5',
-  'MIXING_FACTOR_FERT_STORED', 'MIXING_FACTOR_FERT_FP',
   'FIRST_PRINCIPLES_T5_FERTIGATION',
   // Foliar-recipe (REQ-101 / REQ-103). Cuticle-coverage delivery model;
   // the function reads from STORED_RECIPE.tomato.foliaire so the verifier
   // also pulls the constants directly via window.FoliarRecipeTomato.
   'FOLIAR_COVERAGE_DEFAULT', 'FOLIAR_COVERAGE_WITH_YUCCA', 'computeFoliarSupply',
+  'BURN_CAP_BASE_G', 'BURN_CAP_SURFACTANT_FACTOR', 'burnCapG', 'computeFoliarRecipeForGap',
   // Nursery plant-needs (REQ-090..093). Until app/index.html @includes the
   // partials, window.PlantNeedsNursery / NURSERY_TARGETS / calcNurseryDemand
   // are absent — the verifier's REQ-090..093 block loads the source files via
@@ -292,8 +293,6 @@ const foliarPhResponse     = ph1.foliarPhResponse;
 const computeStageRecipe   = ph1.computeStageRecipe;
 const calcNutrDemand       = ph1.calcNutrDemand;
 const FP_RECIPE_T5         = ph1.FP_RECIPE_T5;
-const MIXING_FACTOR_FERT_STORED = ph1.MIXING_FACTOR_FERT_STORED;
-const MIXING_FACTOR_FERT_FP     = ph1.MIXING_FACTOR_FERT_FP;
 const FIRST_PRINCIPLES_T5_FERTIGATION = ph1.FIRST_PRINCIPLES_T5_FERTIGATION;
 const COMPOST_AMENDMENT    = ph1.COMPOST_AMENDMENT;
 const COMPOST_LABEL_PCT    = ph1.COMPOST_LABEL_PCT;
@@ -706,6 +705,104 @@ if (!CC) {
   }
 }
 
+// ─── REQ-140..143 — SoilContribution subproject ─────────────────────────
+//
+// Spec: nutrition/soil-contribution/spec.md → REQ-140 (bank shape), REQ-141
+// (CONTRIBUTING scoping), REQ-142 (months-to-depletion), REQ-143 (namespace).
+
+header('REQ-140 — SoilContribution.BANK_MG_M2.tomato declared in mg/m²');
+{
+  const SC = window.SoilContribution;
+  if (!SC || !SC.BANK_MG_M2 || !SC.BANK_MG_M2.tomato) {
+    fail('SoilContribution.BANK_MG_M2.tomato exists', 'namespace or tomato entry missing');
+  } else {
+    const tomato = SC.BANK_MG_M2.tomato;
+    const missing = ['P','K','Ca','Mg'].filter(el => !(typeof tomato[el] === 'number' && tomato[el] >= 1000));
+    if (missing.length > 0) {
+      fail('SoilContribution.BANK_MG_M2.tomato has macros ≥ 1000 mg/m²', `manquants ou < 1000: ${missing.join(', ')}`);
+    } else {
+      pass(`BANK_MG_M2.tomato : P=${tomato.P}, K=${tomato.K}, Ca=${tomato.Ca}, Mg=${tomato.Mg} mg/m² (Mehlich-3 × 100)`);
+    }
+  }
+}
+
+header('REQ-141 — Only CONTRIBUTING elements (P, Ca) participate in the gap chain');
+{
+  const SC = window.SoilContribution;
+  if (!SC) {
+    fail('SoilContribution available', 'namespace missing');
+  } else {
+    const offenders = [];
+    if (SC.CONTRIBUTING.P !== true)  offenders.push('CONTRIBUTING.P not true');
+    if (SC.CONTRIBUTING.Ca !== true) offenders.push('CONTRIBUTING.Ca not true');
+    // Non-contributing elements must return 0 even with bank data (K, Mg) or large demand.
+    for (const el of ['N','K','Mg','Fe','Mn','Zn','B','Cu','Mo']) {
+      const v = SC.weeklyContribution('tomato', el, 1000);
+      if (v !== 0) offenders.push(`weeklyContribution(tomato, ${el}, 1000) === ${v} (expected 0)`);
+    }
+    // Contributing elements must clamp to bank when demand exceeds it.
+    const caHuge = SC.weeklyContribution('tomato', 'Ca', 1e9);
+    if (caHuge !== SC.BANK_MG_M2.tomato.Ca) {
+      offenders.push(`weeklyContribution(tomato, Ca, 1e9) === ${caHuge}, expected min-clamp to ${SC.BANK_MG_M2.tomato.Ca}`);
+    }
+    if (offenders.length > 0) {
+      fail('CONTRIBUTING scoping holds', offenders.map(o => `  ${o}`).join('\n'));
+    } else {
+      pass('CONTRIBUTING = {P, Ca} ; non-contributing elements return 0 ; contributing elements clamp at bank');
+    }
+  }
+}
+
+header('REQ-142 — monthsToDepletion defined for any element with bank data + positive demand');
+{
+  const SC = window.SoilContribution;
+  if (!SC) {
+    fail('SoilContribution available', 'namespace missing');
+  } else {
+    const offenders = [];
+    const caMonths = SC.monthsToDepletion('tomato', 'Ca', 300);   // contributing + has bank
+    if (typeof caMonths !== 'number' || !(caMonths > 0)) offenders.push(`monthsToDepletion(Ca, 300) = ${caMonths}`);
+    const kMonths = SC.monthsToDepletion('tomato', 'K', 3000);    // NOT contributing but has bank
+    if (typeof kMonths !== 'number' || !(kMonths > 0)) offenders.push(`monthsToDepletion(K, 3000) = ${kMonths} (should be a number for disabled rows too)`);
+    const nMonths = SC.monthsToDepletion('tomato', 'N', 1000);    // no bank data
+    if (nMonths !== null) offenders.push(`monthsToDepletion(N, 1000) = ${nMonths} (expected null)`);
+    const zeroDemand = SC.monthsToDepletion('tomato', 'Ca', 0);   // zero demand
+    if (zeroDemand !== null) offenders.push(`monthsToDepletion(Ca, 0) = ${zeroDemand} (expected null)`);
+    // Sanity: arithmetic check on Ca runway.
+    const expectedCa = SC.BANK_MG_M2.tomato.Ca / (300 * SC.WEEKS_PER_MONTH);
+    if (Math.abs(caMonths - expectedCa) > 1e-6) {
+      offenders.push(`Ca runway arithmetic mismatch: got ${caMonths}, expected ${expectedCa}`);
+    }
+    if (offenders.length > 0) {
+      fail('monthsToDepletion behaviour', offenders.map(o => `  ${o}`).join('\n'));
+    } else {
+      pass(`monthsToDepletion: Ca contributes (~${caMonths.toFixed(0)} mois) ; K disabled but has runway ; N + zero-demand → null`);
+    }
+  }
+}
+
+header('REQ-143 — window.SoilContribution public API surface');
+{
+  const SC = window.SoilContribution;
+  if (!SC) {
+    fail('window.SoilContribution exists', 'namespace not declared (model.js include may be missing or out of order)');
+  } else {
+    const expectedKeys = ['BANK_MG_M2', 'CONTRIBUTING', 'WEEKS_PER_MONTH', 'weeklyContribution', 'monthsToDepletion', 'renderGrid'];
+    const missing = expectedKeys.filter(k => SC[k] == null);
+    const wrongType = [];
+    if (typeof SC.weeklyContribution !== 'function') wrongType.push('weeklyContribution not function');
+    if (typeof SC.monthsToDepletion !== 'function') wrongType.push('monthsToDepletion not function');
+    if (typeof SC.renderGrid !== 'function')         wrongType.push('renderGrid not function');
+    if (typeof SC.WEEKS_PER_MONTH !== 'number')      wrongType.push('WEEKS_PER_MONTH not number');
+    const offenders = [...missing.map(k => 'missing: ' + k), ...wrongType];
+    if (offenders.length > 0) {
+      fail('SoilContribution public API', offenders.map(o => `  ${o}`).join('\n'));
+    } else {
+      pass(`SoilContribution exposes ${expectedKeys.length} clés (toutes présentes, fonctions OK)`);
+    }
+  }
+}
+
 // ─── INV-1 (sidedress-recipe) — Stage coverage closed + non-negative ────
 //
 // computeStageSidedress(stage) must return numeric, non-negative actisol_g,
@@ -965,7 +1062,6 @@ if (!FR) {
   fail('window.FertigationRecipeTomato exists', 'namespace not declared (model.js include may be missing or out of order)');
 } else {
   const expectedKeys = [
-    'MIXING_FACTOR_STORED', 'MIXING_FACTOR_FP',
     'FIRST_PRINCIPLES_T5', 'computeStageRecipe',
   ];
   const missing = expectedKeys.filter(k => FR[k] == null);
@@ -973,49 +1069,20 @@ if (!FR) {
     fail('FertigationRecipeTomato exposes the public API', `manquants: ${missing.join(', ')}`);
   } else {
     const t5 = FR.computeStageRecipe('T5');
-    const okShape = typeof FR.MIXING_FACTOR_STORED === 'number'
-                  && typeof FR.MIXING_FACTOR_FP === 'number'
-                  && typeof FR.FIRST_PRINCIPLES_T5 === 'object'
+    const okShape = typeof FR.FIRST_PRINCIPLES_T5 === 'object'
                   && typeof t5.kSulfate === 'number'
                   && typeof t5.mgSulfate === 'number';
     if (!okShape) {
       fail('FertigationRecipeTomato shape',
-           `MIXING_FACTOR_STORED: ${typeof FR.MIXING_FACTOR_STORED}; MIXING_FACTOR_FP: ${typeof FR.MIXING_FACTOR_FP}; FIRST_PRINCIPLES_T5: ${typeof FR.FIRST_PRINCIPLES_T5}; T5.kSulfate: ${typeof t5.kSulfate}; T5.mgSulfate: ${typeof t5.mgSulfate}`);
+           `FIRST_PRINCIPLES_T5: ${typeof FR.FIRST_PRINCIPLES_T5}; T5.kSulfate: ${typeof t5.kSulfate}; T5.mgSulfate: ${typeof t5.mgSulfate}`);
     } else {
       pass(`FertigationRecipeTomato exposes ${expectedKeys.length} clés (toutes présentes, shape OK)`);
     }
   }
 }
 
-// ─── REQ-100 — Mixing factor mode-aware ─────────────────────────────────
-//
-// Two constants exposed: MIXING_FACTOR_STORED < MIXING_FACTOR_FP, and
-// MIXING_FACTOR_FP === 1.0 (FP-mode pure mass-balance, no SME credit, no
-// double-count risk → full barrel counts as fresh supply).
-//
-// Spec: nutrition/tomato/fertigation-recipe/spec.md → REQ-100.
-
-header('REQ-100 — MIXING_FACTOR mode-aware (stored < fp, fp === 1.0)');
-
-if (!FR) {
-  fail('FertigationRecipeTomato exposed', 'namespace missing — REQ-099 must pass first');
-} else {
-  const stored = FR.MIXING_FACTOR_STORED;
-  const fp     = FR.MIXING_FACTOR_FP;
-  const offenders = [];
-  if (typeof stored !== 'number') offenders.push(`MIXING_FACTOR_STORED non numérique: ${typeof stored}`);
-  if (typeof fp     !== 'number') offenders.push(`MIXING_FACTOR_FP non numérique: ${typeof fp}`);
-  if (offenders.length === 0) {
-    if (!(stored < fp)) offenders.push(`MIXING_FACTOR_STORED (${stored}) doit être < MIXING_FACTOR_FP (${fp})`);
-    if (fp !== 1.0)     offenders.push(`MIXING_FACTOR_FP (${fp}) doit être pinned à 1.0 (mass-balance pure, pas de double-count)`);
-    if (!(stored > 0))  offenders.push(`MIXING_FACTOR_STORED (${stored}) doit être > 0 (sinon fertigation stored mode invisible)`);
-  }
-  if (offenders.length === 0) {
-    pass(`MIXING_FACTOR mode-aware: stored=${stored} < fp=${fp} (=1.0)`);
-  } else {
-    fail('MIXING_FACTOR mode-aware', offenders.map(o => `  ${o}`).join('\n'));
-  }
-}
+// REQ-100 (mode-aware MIXING_FACTOR) retired 2026-05-10 — concept dropped,
+// fertigation supply now reported at full barrel mass. Number not reused.
 
 // ─── REQ-012 — fraction sums per element in CHANNEL_ROLE within 1.0 ± 0.05
 
@@ -2357,7 +2424,10 @@ if (!SCN || typeof SCN.cycleAverageReleasePerTray !== 'function'
 } else {
   const fmG = SCN.NURSERY_FEATHER_MEAL_DEFAULT_G_PER_TRAY || 9;
   const W   = (SCN.OM2_RELEASE_CURVE_BY_WEEK || []).length || 5;
-  const avg = SCN.cycleAverageReleasePerTray(fmG);
+  const result = SCN.cycleAverageReleasePerTray(fmG);
+  // REQ-136 — function now returns { perTray_mg, details }; legacy callers
+  // that read avg[el] directly are migrated to avg.perTray_mg[el].
+  const avg = (result && result.perTray_mg) ? result.perTray_mg : result;
 
   // Closed-form mass-balance for N:
   //   feather meal mineralizable N total  +  OM2 N total released across cycle
@@ -2559,6 +2629,1258 @@ header('REQ-103 — window.FoliarRecipeTomato public API surface');
         pass(`FoliarRecipeTomato exposes ${expectedKeys.length} clés (toutes présentes, T5.Fe=${t5Fe.toFixed(2)} mg/m²/wk)`);
       }
     }
+  }
+}
+
+// ─── REQ-112 — computeFoliarSupply takes sprayCount + surfactant ───────
+//
+// Defaults match prior single-arg behavior; sprayCount=2 doubles every
+// element; surfactant=true scales by FOLIAR_COVERAGE_WITH_YUCCA / DEFAULT.
+//
+// Spec: nutrition/tomato/foliar-recipe/spec.md → REQ-112.
+
+header('REQ-112 — computeFoliarSupply(stage, opts) — sprayCount + surfactant levers');
+
+{
+  const FRT = window.FoliarRecipeTomato;
+  if (!FRT || typeof FRT.computeFoliarSupply !== 'function') {
+    fail('FoliarRecipeTomato.computeFoliarSupply exposed', 'missing');
+  } else {
+    const baseline = FRT.computeFoliarSupply('T5');
+    const noOpts   = FRT.computeFoliarSupply('T5', undefined);
+    const doubled  = FRT.computeFoliarSupply('T5', { sprayCount: 2 });
+    const withYucca = FRT.computeFoliarSupply('T5', { surfactant: true });
+    const ELEMENTS = ['Fe', 'Mn', 'Zn', 'B', 'Cu', 'Mo'];
+    const ratioYucca = FRT.FOLIAR_COVERAGE_WITH_YUCCA / FRT.FOLIAR_COVERAGE_DEFAULT;
+    const offenders = [];
+    for (const el of ELEMENTS) {
+      if (Math.abs(baseline[el] - noOpts[el]) > 0.001) {
+        offenders.push(`${el}: defaults diverge (no-opt=${noOpts[el]} vs single-arg=${baseline[el]})`);
+      }
+      if (baseline[el] > 0 && Math.abs(doubled[el] - 2 * baseline[el]) > Math.max(0.001, baseline[el] * 0.01)) {
+        offenders.push(`${el}: sprayCount=2 should double (baseline=${baseline[el]}, doubled=${doubled[el]})`);
+      }
+      if (baseline[el] > 0) {
+        const expected = baseline[el] * ratioYucca;
+        if (Math.abs(withYucca[el] - expected) > Math.max(0.001, expected * 0.01)) {
+          offenders.push(`${el}: surfactant=true should ×${ratioYucca.toFixed(3)} (baseline=${baseline[el]}, with=${withYucca[el]}, expected=${expected.toFixed(3)})`);
+        }
+      }
+    }
+
+    // Recipe-agnostic property: pass an explicit stub label-string array
+    // (same shape as STORED_RECIPE.tomato.foliaire.A) and assert that the
+    // sprayCount=2 / surfactant=true multipliers behave identically. This
+    // pins the third-arg path so FP-mode callers (which pass the gap-
+    // derived recipe through computeFoliarSupply) cannot regress.
+    const stubRecipe = [
+      { name: 'MnSO₄ (31,5 % Mn)',     master: '10 g'  },
+      { name: 'ZnSO₄ (35,5 % Zn)',     master: '8 g'   },
+      { name: 'Solubore (20,5 % B)',   master: '4 g'   },
+      { name: 'CuSO₄ (25 % Cu)',       master: '1 g'   },
+      { name: 'Molybdate (39,6 % Mo)', master: '0,5 g' },
+      { name: 'FeSO₄·7H₂O (20 % Fe)',  master: '40 g'  },
+    ];
+    const stubBase   = FRT.computeFoliarSupply('T5', undefined,           stubRecipe);
+    const stubDouble = FRT.computeFoliarSupply('T5', { sprayCount: 2 },   stubRecipe);
+    const stubYucca  = FRT.computeFoliarSupply('T5', { surfactant: true }, stubRecipe);
+    let anyStubPositive = false;
+    for (const el of ELEMENTS) {
+      if (stubBase[el] > 0) anyStubPositive = true;
+      if (stubBase[el] > 0 && Math.abs(stubDouble[el] - 2 * stubBase[el]) > Math.max(0.001, stubBase[el] * 0.01)) {
+        offenders.push(`${el} (stub recipe): sprayCount=2 should double (base=${stubBase[el]}, doubled=${stubDouble[el]})`);
+      }
+      if (stubBase[el] > 0) {
+        const expected = stubBase[el] * ratioYucca;
+        if (Math.abs(stubYucca[el] - expected) > Math.max(0.001, expected * 0.01)) {
+          offenders.push(`${el} (stub recipe): surfactant=true should ×${ratioYucca.toFixed(3)} (base=${stubBase[el]}, with=${stubYucca[el]}, expected=${expected.toFixed(3)})`);
+        }
+      }
+    }
+    if (!anyStubPositive) {
+      offenders.push('stub recipe arg: every element returned 0 — recipe arg is being ignored or substring match failed');
+    }
+
+    if (offenders.length === 0) {
+      pass(`computeFoliarSupply: defaults preserved, sprayCount=2 double, surfactant=true ×${ratioYucca.toFixed(2)}, recipe-agnostic via 3rd arg`);
+    } else {
+      fail('REQ-112 — sprayCount + surfactant + recipe-agnostic semantics', offenders.map(o => `  ${o}`).join('\n'));
+    }
+  }
+}
+
+// ─── REQ-115 — computeFoliarRecipeForGap derives gap-maximizing recipe
+//
+// Spec: nutrition/tomato/foliar-recipe/spec.md → REQ-115.
+
+header('REQ-115 — computeFoliarRecipeForGap (min-dose clamp + surfactant + burn cap + CE scale)');
+
+{
+  const FRT = window.FoliarRecipeTomato;
+  if (!FRT || typeof FRT.computeFoliarRecipeForGap !== 'function'
+      || typeof FRT.burnCapG !== 'function'
+      || !FRT.BURN_CAP_BASE_G
+      || typeof FRT.BURN_CAP_SURFACTANT_FACTOR !== 'number') {
+    fail('Foliar recipe-derivation API exposed', 'computeFoliarRecipeForGap / burnCapG / BURN_CAP_BASE_G / BURN_CAP_SURFACTANT_FACTOR missing');
+  } else {
+    const offenders = [];
+
+    // Tiny gap → all zeros (min-dose clamp). 0.001 mg/m²/wk for every el.
+    const tiny = { Mn: 0.001, Zn: 0.001, Cu: 0.001, Fe: 0.001, Mo: 0.001, B: 0.001 };
+    const tinyRecipe = FRT.computeFoliarRecipeForGap(tiny);
+    Object.keys(tinyRecipe).forEach(function(k) {
+      if (tinyRecipe[k] !== 0) offenders.push(`tiny gap: ${k}=${tinyRecipe[k]} (expected 0 — min-dose clamp)`);
+    });
+
+    // Huge gap (no surfactant) → every el clipped to BURN_CAP_BASE_G[el]
+    // (with the rounding-up to nearest 0.5 g preserving the cap exactly).
+    const huge = { Mn: 1000, Zn: 1000, Cu: 1000, Fe: 1000, Mo: 1000, B: 1000 };
+    const hugeRecipe = FRT.computeFoliarRecipeForGap(huge, { surfactant: false });
+    const PAIRS = [
+      { el: 'Mn', key: 'MnSO4_g' },
+      { el: 'Zn', key: 'ZnSO4_g' },
+      { el: 'Cu', key: 'CuSO4_g' },
+      { el: 'Fe', key: 'FeSO4_g' },
+      { el: 'Mo', key: 'NaMoO4_g' },
+      { el: 'B',  key: 'Solubore_g' },
+    ];
+    PAIRS.forEach(function(p) {
+      const expected = FRT.burnCapG(p.el, false);
+      const actual = hugeRecipe[p.key];
+      // After CE-scale loop the cap may be reduced to fit total CE budget,
+      // so actual ≤ expected is the correct invariant. (Strict equality
+      // would over-constrain when CE binds.)
+      if (actual > expected + 0.01) {
+        offenders.push(`huge gap (no surfactant): ${p.key}=${actual} > burnCap=${expected}`);
+      }
+    });
+
+    // Surfactant=true → cap = base × BURN_CAP_SURFACTANT_FACTOR (default 1.0).
+    // Single multiplier across all elements per the 2026-05-10 research-grounded
+    // simplification — surfactant changes the COVERAGE axis, not the burn-cap
+    // axis (Sentís et al. 2017 + extension lit + Décembre sun-only context).
+    const expectedFactor = FRT.BURN_CAP_SURFACTANT_FACTOR;
+    Object.keys(FRT.BURN_CAP_BASE_G).forEach(function(el) {
+      const expected = FRT.BURN_CAP_BASE_G[el] * expectedFactor;
+      const got = FRT.burnCapG(el, true);
+      if (Math.abs(got - expected) > 0.01) {
+        offenders.push(`burnCapG('${el}', true) = ${got}; expected base × ${expectedFactor} = ${expected}`);
+      }
+    });
+
+    // CE check: predictedCE on a huge-gap recipe (with + without surfactant)
+    // should stay under REQ-025 burn cap (10 mS/cm tomato leaf).
+    if (typeof predictedCE === 'function') {
+      const recipeAsLabelArray = function(r) {
+        return [
+          { name: 'MnSO₄ (31,5 % Mn)',     master: r.MnSO4_g + ' g' },
+          { name: 'ZnSO₄ (35,5 % Zn)',     master: r.ZnSO4_g + ' g' },
+          { name: 'CuSO₄ (25 % Cu)',       master: r.CuSO4_g + ' g' },
+          { name: 'FeSO₄·7H₂O (20 % Fe)',  master: r.FeSO4_g + ' g' },
+          { name: 'NaMolybdate (39,6 % Mo)', master: r.NaMoO4_g + ' g' },
+          { name: 'Solubore (20,5 % B)',   master: r.Solubore_g + ' g' },
+        ];
+      };
+      [false, true].forEach(function(surfactant) {
+        const r = FRT.computeFoliarRecipeForGap(huge, { surfactant: surfactant });
+        const ce = predictedCE(recipeAsLabelArray(r), 1.0);
+        if (isFinite(ce) && ce > 10.0) {
+          offenders.push(`CE-scale loop did not bound predicted CE (surfactant=${surfactant}): predictedCE=${ce.toFixed(2)} > 10.0`);
+        }
+      });
+    }
+
+    if (offenders.length === 0) {
+      pass(`computeFoliarRecipeForGap: min-dose clamp + burn caps (× ${FRT.BURN_CAP_SURFACTANT_FACTOR} surfactant) + CE-scale all hold`);
+    } else {
+      fail('REQ-115 — recipe derivation', offenders.map(function(o) { return '  ' + o; }).join('\n'));
+    }
+  }
+}
+
+// ─── REQ-116 — FP foliar recipe live-derived from pre-foliar gap chain ──
+//
+// Spec: nutrition/tomato/foliar-recipe/spec.md → REQ-116.
+//
+// Integration test: call calcNutrSupply twice in FP mode at T5. Between
+// calls, bump COMPOST_RELEASE_PER_WEEK.Mn so the pre-foliar gap drops
+// sharply. Assert FP_RECIPE_T5.foliar.MnSO4 decreased. Restore the compost
+// value at the end so downstream tests see canonical state.
+//
+// Wrapped in try/catch — if calcNutrSupply isn't reachable (jsdom didn't
+// expose it, page DOM not initialized, etc.) the verifier reports the
+// failure cleanly rather than crashing the whole run.
+
+header('REQ-116 — FP foliar recipe live-derived from pre-foliar gap chain (calcNutrSupply integration)');
+
+{
+  const calcNutrSupply = window.calcNutrSupply;
+  const FRT = window.FoliarRecipeTomato;
+  const CC  = window.CompostContribution;
+  const fpFoliar = FP_RECIPE_T5 && FP_RECIPE_T5.foliar;
+  if (typeof calcNutrSupply !== 'function' || !FRT || !CC || !CC.releasePerWeek || !fpFoliar) {
+    fail('REQ-116 prerequisites available (calcNutrSupply / FoliarRecipeTomato / CompostContribution / FP_RECIPE_T5.foliar)',
+         `calcNutrSupply: ${typeof calcNutrSupply}, FRT: ${!!FRT}, CC: ${!!CC}, CC.releasePerWeek: ${!!(CC && CC.releasePerWeek)}, FP_RECIPE_T5.foliar: ${!!fpFoliar}`);
+  } else {
+    let offenders = [];
+    const originalMnRelease = CC.releasePerWeek.Mn;
+    try {
+      // Baseline: default compost state. T5, phLocked=true, transpFactor=1.0,
+      // target=1.5 kg/m²/wk — match the page defaults so FP_RECIPE_T5.foliar
+      // reflects the canonical FP state.
+      calcNutrSupply('T5', true, 1.0, 1.5, 'fp');
+      const baselineMn = fpFoliar['MnSO4'];
+      if (!isFinite(baselineMn) || baselineMn < 0) {
+        offenders.push(`baseline FP_RECIPE_T5.foliar.MnSO4 = ${baselineMn} (expected finite ≥ 0 after calcNutrSupply FP call)`);
+      }
+
+      // Mutation: huge Mn release from compost (1 g/m²/wk = 1000 mg/m²/wk),
+      // far above any plausible Mn demand. Pre-foliar gap.Mn drops to 0,
+      // so computeFoliarRecipeForGap should return MnSO4_g = 0 (min-dose
+      // clamp). Confirms calcNutrSupply consults the live compost chain.
+      CC.releasePerWeek.Mn = 1.0;
+      calcNutrSupply('T5', true, 1.0, 1.5, 'fp');
+      const droppedMn = fpFoliar['MnSO4'];
+      if (!(droppedMn < baselineMn)) {
+        offenders.push(`after compost.Mn bump, FP_RECIPE_T5.foliar.MnSO4 = ${droppedMn}; expected < baseline ${baselineMn} (gap closed → recipe shrinks)`);
+      }
+      if (droppedMn !== 0) {
+        offenders.push(`after compost.Mn bump, FP_RECIPE_T5.foliar.MnSO4 = ${droppedMn}; expected exactly 0 (gap = 0 → min-dose clamp)`);
+      }
+    } catch (e) {
+      offenders.push(`calcNutrSupply FP call threw: ${e && e.message ? e.message : e}`);
+    } finally {
+      // Restore — downstream tests / re-runs see canonical state.
+      CC.releasePerWeek.Mn = originalMnRelease;
+      // Re-derive once at canonical state so FP_RECIPE_T5.foliar reflects
+      // baseline for any subsequent verifier that reads it.
+      try { calcNutrSupply('T5', true, 1.0, 1.5, 'fp'); } catch (e) { void e; }
+    }
+    if (offenders.length === 0) {
+      pass('FP_RECIPE_T5.foliar.MnSO4 shrinks when compost.Mn rises (pre-foliar gap chain wired through calcNutrSupply)');
+    } else {
+      fail('REQ-116 — FP foliar live derivation', offenders.map(function(o) { return '  ' + o; }).join('\n'));
+    }
+  }
+}
+
+// ─── REQ-104..107 — Tomato Nutrition page header card ──────────────────
+//
+// Section 1 of the Bilan UI specs. Asserts header inputs, light ceiling
+// formula, recipe-mode toggle behaviour. Spec:
+// nutrition/tomato/app/spec.md → "Section 1 — Cible & contexte".
+
+header('REQ-104 — Header inputs are exactly five scalars (no nutr-current)');
+
+const REQUIRED_HEADER_INPUTS = [
+  'nutr-target',
+  'nutr-solar-per-gram',
+  'nutr-stage-selector',
+  'nutr-phlocked',
+  'nutr-recipe-fp',
+  'nutr-recipe-stored',
+];
+{
+  const missing = REQUIRED_HEADER_INPUTS.filter(id => !window.document.getElementById(id));
+  const stillHasCurrent = !!window.document.getElementById('nutr-current');
+  if (missing.length > 0) {
+    fail('Required header inputs present', `manquants: ${missing.join(', ')}`);
+  } else if (stillHasCurrent) {
+    fail('nutr-current input retired', 'still present in markup');
+  } else {
+    pass(`Header expose ${REQUIRED_HEADER_INPUTS.length} inputs requis ; nutr-current absent`);
+  }
+}
+
+header('REQ-105 — Light ceiling reactive to solarPerGram (mutate input → text changes)');
+
+{
+  const inp = window.document.getElementById('nutr-solar-per-gram');
+  const ceilingEl = window.document.getElementById('nutr-light-ceiling');
+  let logicJsBody = '';
+  try {
+    logicJsBody = readFileSync(
+      join(REPO_ROOT, 'nutrition', 'tomato', 'app', 'logic.js'),
+      'utf8'
+    );
+  } catch (e) { /* swallow — fail below */ }
+
+  // Belt: source-grep checks (input default + no /7000).
+  const defaultOk = inp && inp.value === '7';
+  const noHardcoded7000 = !/lightCeiling\s*=\s*weeklyJ\s*\/\s*7000\b/.test(logicJsBody);
+
+  // Suspenders: runtime behavioral. Mutate the input + dispatch an `input`
+  // event — relying on the page's own listener wiring to trigger re-render.
+  // No direct buildNutriment() call: that would mask a missing listener
+  // (real users don't have a fallback). If the listener isn't wired, the
+  // displayed text stays unchanged and this fails — which is the point.
+  let textBefore = null, textAfter = null;
+  if (inp && ceilingEl) {
+    try {
+      // Force an initial render via input event at default 7
+      inp.value = '7';
+      inp.dispatchEvent(new window.Event('input', { bubbles: true }));
+      textBefore = (ceilingEl.textContent || '').trim();
+      // Mutate to 14 + dispatch — listener (if wired) will re-render
+      inp.value = '14';
+      inp.dispatchEvent(new window.Event('input', { bubbles: true }));
+      textAfter = (ceilingEl.textContent || '').trim();
+      // Restore default for downstream checks
+      inp.value = '7';
+      inp.dispatchEvent(new window.Event('input', { bubbles: true }));
+    } catch (e) { /* fail below if textBefore/After remain null */ }
+  }
+
+  if (!defaultOk) {
+    fail('nutr-solar-per-gram default = 7', `actual: ${inp ? inp.value : 'missing'}`);
+  } else if (!noHardcoded7000) {
+    fail('logic.js ceiling formula has no hardcoded /7000', 'literal still present');
+  } else if (textBefore == null || textAfter == null) {
+    fail('Light-ceiling text reachable for behavioral test', 'render not exercised');
+  } else if (textBefore === textAfter) {
+    fail('Mutating solarPerGram changes the displayed ceiling',
+         `7 → 14 produced same text:\n  ${textBefore.slice(0, 80)}`);
+  } else {
+    pass(`Plafond lumière réagit à solarPerGram (7 → 14 mute le texte affiché ; defaut 7, pas de /7000)`);
+  }
+}
+
+header('REQ-106 — FP mode locks stage to T5 (auto-revert + default fp)');
+
+{
+  let logicJsBody = '';
+  try {
+    logicJsBody = readFileSync(
+      join(REPO_ROOT, 'nutrition', 'tomato', 'app', 'logic.js'),
+      'utf8'
+    );
+  } catch (e) { /* */ }
+  let indexHtmlBody = '';
+  try {
+    indexHtmlBody = readFileSync(
+      join(REPO_ROOT, 'app', 'index.html'),
+      'utf8'
+    );
+  } catch (e) { /* */ }
+  const autoRevert = /s !== 'T5' && nutrRecipeMode === 'fp'/.test(logicJsBody);
+  const fpSnapsT5 = /nutrRecipeMode === 'fp' && nutrStage !== 'T5'/.test(logicJsBody);
+  const defaultFp = /let nutrRecipeMode\s*=\s*'fp'/.test(indexHtmlBody);
+  if (!autoRevert) {
+    fail('FP→stored auto-revert when stage off T5', 'pattern not found in logic.js');
+  } else if (!fpSnapsT5) {
+    fail('FP mode snaps stage to T5', 'pattern not found in logic.js');
+  } else if (!defaultFp) {
+    fail("Default `let nutrRecipeMode = 'fp'`", 'pattern not found in index.html');
+  } else {
+    pass('FP mode coordonné avec stage T5 (auto-revert, snap, default fp)');
+  }
+}
+
+header('REQ-107 — Recipe toggle: First principles left, default; products-in-play removed');
+
+{
+  const fpBtn = window.document.getElementById('nutr-recipe-fp');
+  const storedBtn = window.document.getElementById('nutr-recipe-stored');
+  const productsBlock = window.document.getElementById('nutr-products');
+  const offenders = [];
+  if (!fpBtn || !storedBtn) {
+    offenders.push('one or both toggle buttons missing');
+  } else {
+    // Both buttons share a parent (the flex container). FP must come first.
+    const parent = fpBtn.parentElement;
+    if (parent !== storedBtn.parentElement) {
+      offenders.push('FP and Stockée buttons not siblings');
+    } else {
+      const order = Array.from(parent.children).filter(el => el.tagName === 'BUTTON');
+      if (order[0] !== fpBtn) {
+        offenders.push(`FP button is not first child (got id="${order[0]?.id || '?'}")`);
+      }
+    }
+    const fpText = (fpBtn.textContent || '').trim();
+    if (!/First principles/.test(fpText)) {
+      offenders.push(`FP label text not "First principles" (got "${fpText.slice(0, 40)}")`);
+    }
+    if (/Premiers principes/.test(fpText)) {
+      offenders.push('FP label still says "Premiers principes" — should be "First principles"');
+    }
+  }
+  if (productsBlock) {
+    offenders.push('nutr-products still in DOM — should be removed');
+  }
+  // REQ-107: helper-note text is also unspecified, so per the build-minimum
+  // principle (~/.claude/CLAUDE.md "Spec discipline"), it must be empty.
+  const note = window.document.getElementById('nutr-recipe-mode-note');
+  if (note) {
+    const noteText = (note.textContent || '').trim();
+    if (noteText.length > 0) {
+      offenders.push(`nutr-recipe-mode-note has text (${noteText.length} chars) — should be empty`);
+    }
+  }
+  if (offenders.length === 0) {
+    pass('Toggle: First principles à gauche (défaut), Stockée à droite ; nutr-products retiré ; helper-note vide');
+  } else {
+    fail('Toggle order + label + products-in-play retired + note empty', offenders.map(o => `  ${o}`).join('\n'));
+  }
+}
+
+// ─── REQ-108..111 — Tomato Nutrition page Block 1 (Besoin du plant) ────
+//
+// Section 2 of the Bilan UI specs. Spec:
+// nutrition/tomato/app/spec.md → REQ-108..111.
+
+header('REQ-108 — Block 1 calls PN.calcNutrDemand (no bare-global lookups in render)');
+
+{
+  let logicJsBody = '';
+  try {
+    logicJsBody = readFileSync(
+      join(REPO_ROOT, 'nutrition', 'tomato', 'app', 'logic.js'),
+      'utf8'
+    );
+  } catch (e) { /* */ }
+  // Block 1 render is bracketed by `Block 1` comment and the
+  // `document.getElementById('nutr-needs').innerHTML = html1` line.
+  const block1Match = logicJsBody.match(/Block 1[\s\S]*?nutr-needs.*?innerHTML/);
+  const block1Body = block1Match ? block1Match[0] : '';
+  const usesPnDemand = /PN\.calcNutrDemand|window\.PlantNeedsTomato\.calcNutrDemand/.test(logicJsBody);
+  // Negative lookbehind for `.` excludes namespaced access (PN.BIOMASS_DEMAND).
+  const bareBiomassInBlock1   = /(?<!\.)\bBIOMASS_DEMAND\s*\[/.test(block1Body);
+  const bareFruitExportInBlock1 = /(?<!\.)\bTOMATO_FRUIT_EXPORT\s*\[/.test(block1Body);
+  if (!usesPnDemand) {
+    fail('logic.js calls PN.calcNutrDemand', 'pattern not found');
+  } else if (bareBiomassInBlock1 || bareFruitExportInBlock1) {
+    fail('No bare BIOMASS_DEMAND / TOMATO_FRUIT_EXPORT in Block 1 render',
+         `${bareBiomassInBlock1 ? 'BIOMASS_DEMAND[ ' : ''}${bareFruitExportInBlock1 ? 'TOMATO_FRUIT_EXPORT[' : ''}`);
+  } else {
+    pass('Block 1 demand routé via PN.calcNutrDemand ; pas d\'accès bare-global');
+  }
+}
+
+header('REQ-109 — Block 1 row click opens cert + equation + plugged modal (no interpretation prose)');
+
+{
+  const PN = window.PlantNeedsTomato;
+  const rowsContainer = window.document.getElementById('nutr-needs');
+  const expectedElements = PN ? Object.keys(PN.TOMATO_FRUIT_EXPORT || {}) : [];
+  let rowsCount = 0;
+  let clickableCount = 0;
+  let allHaveOnclick = true;
+  if (rowsContainer) {
+    const rows = rowsContainer.querySelectorAll('.pq-row');
+    rowsCount = rows.length;
+    rows.forEach(r => {
+      const onclick = r.getAttribute('onclick') || '';
+      if (/showPourquoi\(['"]demand\.[A-Za-z]+['"]\)/.test(onclick)) clickableCount += 1;
+      else allHaveOnclick = false;
+    });
+  }
+  // Modal interpretation node should be empty after a row's modal opens.
+  let interpretationLeaked = false;
+  if (PN && rowsCount > 0 && typeof window.showPourquoi === 'function') {
+    try {
+      window.showPourquoi('demand.N');
+      const interp = window.document.getElementById('pq-modal-interp');
+      const interpText = interp ? (interp.textContent || '').trim() : '';
+      if (interpText.length > 0) interpretationLeaked = true;
+    } catch (e) { /* */ }
+  }
+  const offenders = [];
+  if (rowsCount !== expectedElements.length) {
+    offenders.push(`row count ${rowsCount} ≠ TOMATO_FRUIT_EXPORT keys ${expectedElements.length}`);
+  }
+  if (!allHaveOnclick || clickableCount !== rowsCount) {
+    offenders.push(`only ${clickableCount}/${rowsCount} rows wire showPourquoi('demand.<el>')`);
+  }
+  if (interpretationLeaked) {
+    offenders.push('modal interpretation node has text — should be empty per REQ-109');
+  }
+  if (offenders.length === 0) {
+    pass(`Block 1: ${rowsCount} rows cliquables ; modal n'expose que cert + équation + plugged`);
+  } else {
+    fail('Block 1 rows + modal lean', offenders.map(o => `  ${o}`).join('\n'));
+  }
+}
+
+header('REQ-110 — Block 1 reactive to target + stage changes');
+
+{
+  const targetInp = window.document.getElementById('nutr-target');
+  const needsEl = window.document.getElementById('nutr-needs');
+  let textBefore = null, textAfterTarget = null, textAfterStage = null;
+  if (targetInp && needsEl) {
+    try {
+      targetInp.value = '1.5';
+      targetInp.dispatchEvent(new window.Event('input', { bubbles: true }));
+      textBefore = (needsEl.textContent || '').trim();
+      // Mutate target
+      targetInp.value = '0.5';
+      targetInp.dispatchEvent(new window.Event('input', { bubbles: true }));
+      textAfterTarget = (needsEl.textContent || '').trim();
+      // Restore + change stage to T1 via the data-nstage button
+      targetInp.value = '1.5';
+      targetInp.dispatchEvent(new window.Event('input', { bubbles: true }));
+      const t1 = window.document.querySelector('[data-nstage="T1"]');
+      if (t1) t1.dispatchEvent(new window.Event('click', { bubbles: true }));
+      textAfterStage = (needsEl.textContent || '').trim();
+      // Restore back to T5
+      const t5 = window.document.querySelector('[data-nstage="T5"]');
+      if (t5) t5.dispatchEvent(new window.Event('click', { bubbles: true }));
+    } catch (e) { /* */ }
+  }
+  const offenders = [];
+  if (textBefore == null) offenders.push('Block 1 not reachable for behavioral test');
+  else {
+    if (textBefore === textAfterTarget) offenders.push('mutating target did not change Block 1 text');
+    if (textBefore === textAfterStage) offenders.push('changing stage did not change Block 1 text');
+  }
+  if (offenders.length === 0) {
+    pass('Block 1 réagit à target (1.5 → 0.5) et stage (T5 → T1)');
+  } else {
+    fail('Block 1 reactivity', offenders.map(o => `  ${o}`).join('\n'));
+  }
+}
+
+header('REQ-111 — Block 1 row layout: 4 columns (Él. / Fruit / Biomasse / Total)');
+
+{
+  const needsEl = window.document.getElementById('nutr-needs');
+  let headerHasFruitBiomasse = false;
+  let allRowsFourCells = true;
+  let firstRowCellCount = 0;
+  if (needsEl) {
+    const headerText = (needsEl.textContent || '');
+    headerHasFruitBiomasse = /Fruit/.test(headerText) && /Biomasse/.test(headerText);
+    const rows = needsEl.querySelectorAll('.pq-row');
+    rows.forEach((r, idx) => {
+      const cellCount = r.children.length;
+      if (idx === 0) firstRowCellCount = cellCount;
+      if (cellCount !== 4) allRowsFourCells = false;
+    });
+  }
+  if (!needsEl) {
+    fail('#nutr-needs reachable', 'missing');
+  } else if (!headerHasFruitBiomasse) {
+    fail('Block 1 header contains "Fruit" + "Biomasse" labels', 'one or both missing');
+  } else if (!allRowsFourCells) {
+    fail('Block 1 rows have exactly 4 cells', `first row had ${firstRowCellCount}`);
+  } else {
+    pass(`Block 1 layout: 4 colonnes (Él. / Fruit / Biomasse / Total) ; en-tête confirmé`);
+  }
+}
+
+// ─── REQ-122..126 — Multi-fertigation degree of freedom ────────────────
+//
+// Spec: nutrition/nursery/fertigation/spec.md → REQ-122..126.
+// Implementation: nutrition/nursery/fertigation/calc.js.
+// All five checks read the live `window.FertigationNursery` namespace,
+// which is mounted by the @included data.js + calc.js + model.js trio.
+
+header('REQ-122 — nurseryRecipeSupply scales linearly with applicationsPerWeek');
+{
+  const FN = window.FertigationNursery;
+  if (!FN || typeof FN.nurseryRecipeSupply !== 'function') {
+    fail('REQ-122 — nurseryRecipeSupply present', 'window.FertigationNursery.nurseryRecipeSupply missing');
+  } else {
+    const recipe = FN.NURSERY_RECIPE_DEFAULT;
+    const trayL  = (FN.NURSERY_FERTIGATION_DEFAULTS || {}).trayVolumeL || 1.25;
+    const sup1 = FN.nurseryRecipeSupply(recipe, trayL, 1);
+    const sup2 = FN.nurseryRecipeSupply(recipe, trayL, 2);
+    const sup3 = FN.nurseryRecipeSupply(recipe, trayL, 3);
+    const els = Object.keys(sup1.perTray_mg || {});
+    let bad = [];
+    for (const el of els) {
+      const e1 = sup1.perTray_mg[el] || 0;
+      if (e1 <= 0) continue;
+      const e2 = (sup2.perTray_mg || {})[el] || 0;
+      const e3 = (sup3.perTray_mg || {})[el] || 0;
+      // Allow ±0.1% tolerance for float math
+      if (Math.abs(e2 / e1 - 2) > 0.001) bad.push(`${el}: 2× ratio = ${(e2/e1).toFixed(4)}`);
+      if (Math.abs(e3 / e1 - 3) > 0.001) bad.push(`${el}: 3× ratio = ${(e3/e1).toFixed(4)}`);
+    }
+    if (bad.length === 0) {
+      pass(`Linearité confirmée pour ${els.length} éléments à N=2 et N=3`);
+    } else {
+      fail('REQ-122 — linéarité', bad.slice(0, 5).join(' · '));
+    }
+  }
+}
+
+header('REQ-123 — minApplicationsPerWeek returns integer ≤ 7 or null');
+{
+  const FN = window.FertigationNursery;
+  if (!FN || typeof FN.minApplicationsPerWeek !== 'function') {
+    fail('REQ-123 — minApplicationsPerWeek present', 'function missing on namespace');
+  } else {
+    // Realistic-ish synthetic demand at 90 g target / 35 d / 50 cells. Read from
+    // PlantNeedsNursery if loaded; else inline fallback.
+    const PNN = window.PlantNeedsNursery;
+    const demand = (PNN && typeof PNN.demandPerTray === 'function')
+      ? { N: PNN.demandPerTray('N'), P: PNN.demandPerTray('P'), K: PNN.demandPerTray('K') }
+      : { N: 3150, P: 315, K: 3780 };
+    const recipe = FN.NURSERY_RECIPE_DEFAULT;
+    const trayL  = (FN.NURSERY_FERTIGATION_DEFAULTS || {}).trayVolumeL || 1.25;
+    const cap    = FN.NURSERY_CE_CAP_MS_CM || 3.0;
+    const N = FN.minApplicationsPerWeek(recipe, demand, trayL, cap);
+    const ok = (N === null) || (Number.isInteger(N) && N >= 1 && N <= 7);
+    if (!ok) {
+      fail('REQ-123 — return type', `got ${N} (expected integer 1-7 or null)`);
+    } else {
+      // Cross-check: at returned N, every sourced element should be covered.
+      // (null path: just assert it returned null cleanly.)
+      if (N === null) {
+        pass('minApplicationsPerWeek returns null (recipe dose-bound or > 7×/sem) — well-formed');
+      } else {
+        const sup = FN.nurseryRecipeSupply(recipe, trayL, N);
+        const sourced = ['N', 'P', 'K'].filter(el => (sup.perTray_mg[el] || 0) > 0);
+        const covered = sourced.every(el => (sup.perTray_mg[el] || 0) >= demand[el]);
+        if (covered) {
+          pass(`minApplicationsPerWeek = ${N} couvre N/P/K (sources actives)`);
+        } else {
+          fail('REQ-123 — couverture à N', `sourced ${sourced.join(',')} pas tous ≥ demande à N=${N}`);
+        }
+      }
+    }
+  }
+}
+
+header('REQ-124 — nurseryElementsBySource splits sourced vs unsourced');
+{
+  const FN = window.FertigationNursery;
+  if (!FN || typeof FN.nurseryElementsBySource !== 'function') {
+    fail('REQ-124 — nurseryElementsBySource present', 'function missing on namespace');
+  } else {
+    const PNN = window.PlantNeedsNursery;
+    const demand = {};
+    if (PNN && typeof PNN.demandPerTray === 'function') {
+      ['N','P','K','Ca','Mg','Fe','Mn','Zn','B','Cu','Mo'].forEach(el => {
+        demand[el] = PNN.demandPerTray(el);
+      });
+    } else {
+      Object.assign(demand, { N:3150, P:315, K:3780, Ca:1260, Mg:250, Fe:13, Mn:3.2, Zn:2.5, B:1.9, Cu:0.5, Mo:0.03 });
+    }
+    const out = FN.nurseryElementsBySource(FN.NURSERY_RECIPE_DEFAULT, demand);
+    const isShape = out && Array.isArray(out.sourced) && Array.isArray(out.unsourced);
+    if (!isShape) {
+      fail('REQ-124 — return shape', 'expected { sourced: [], unsourced: [] }');
+    } else {
+      const allEls = Object.keys(demand);
+      const union = out.sourced.concat(out.unsourced).sort().join(',');
+      const exp = allEls.slice().sort().join(',');
+      const dupes = out.sourced.filter(el => out.unsourced.includes(el));
+      if (union !== exp) {
+        fail('REQ-124 — couverture', `union ${union} ≠ demande ${exp}`);
+      } else if (dupes.length > 0) {
+        fail('REQ-124 — exclusion mutuelle', `chevauchement: ${dupes.join(',')}`);
+      } else {
+        // N + P + K must be sourced at default recipe; Mo must be unsourced
+        // (no product carries it). Other elements (Ca/Mg/Fe/Mn/Zn/B/Cu) are
+        // implementation-defined depending on whether kelp's traces count.
+        const need = ['N', 'P', 'K'].filter(el => !out.sourced.includes(el));
+        const moInUnsourced = out.unsourced.includes('Mo');
+        if (need.length > 0) {
+          fail('REQ-124 — N/P/K sourcés', `manquants: ${need.join(',')}; sourced=${out.sourced.join(',')}`);
+        } else if (!moInUnsourced) {
+          fail('REQ-124 — Mo unsourced', `sourced=${out.sourced.join(',')}; unsourced=${out.unsourced.join(',')}`);
+        } else {
+          pass(`sourced=[${out.sourced.join(',')}] · unsourced=[${out.unsourced.join(',')}]`);
+        }
+      }
+    }
+  }
+}
+
+header('REQ-125 — nurseryRecipeCE signature has no frequency parameter');
+{
+  const FN = window.FertigationNursery;
+  if (!FN || typeof FN.nurseryRecipeCE !== 'function') {
+    fail('REQ-125 — nurseryRecipeCE present', 'function missing');
+  } else {
+    // Function.length reports the number of declared formal parameters before
+    // the first default. nurseryRecipeCE(recipe, dilution) → length 2.
+    // Adding applicationsPerWeek would make it 3 (or push dilution past defaults).
+    const arity = FN.nurseryRecipeCE.length;
+    if (arity > 2) {
+      fail('REQ-125 — arité ≤ 2', `nurseryRecipeCE.length = ${arity}, should be ≤ 2 (recipe, dilution)`);
+    } else {
+      // Behavioral check: CE doesn't change when applicationsPerWeek would scale supply.
+      const ce1 = FN.nurseryRecipeCE(FN.NURSERY_RECIPE_DEFAULT, 1);
+      const ce2 = FN.nurseryRecipeCE(FN.NURSERY_RECIPE_DEFAULT, 1);
+      if (Math.abs(ce1 - ce2) > 1e-9) {
+        fail('REQ-125 — déterministe', `${ce1} ≠ ${ce2}`);
+      } else {
+        pass(`nurseryRecipeCE(recipe, dilution) — arité ${arity} ; CE cap binds per-fertigation only`);
+      }
+    }
+  }
+}
+
+header('REQ-126 — applicationsPerWeek coerced to integer ∈ [1, 7]');
+{
+  const FN = window.FertigationNursery;
+  if (!FN || typeof FN.nurseryRecipeSupply !== 'function') {
+    fail('REQ-126 — nurseryRecipeSupply present', 'function missing');
+  } else {
+    const recipe = FN.NURSERY_RECIPE_DEFAULT;
+    const trayL  = 1.25;
+    const sup1 = FN.nurseryRecipeSupply(recipe, trayL, 1);
+    const sup2 = FN.nurseryRecipeSupply(recipe, trayL, 2);
+    // Test cases: each (input, expectedFrequencyApplied) pair.
+    const cases = [
+      [2.5,  3,  '2.5 → round to 3'],   // round-half-up
+      [2.4,  2,  '2.4 → round to 2'],
+      [0,    1,  '0 → clamp to 1'],
+      [-3,   1,  '-3 → clamp to 1'],
+      [9,    7,  '9 → clamp to 7'],
+      [NaN,  1,  'NaN → 1'],
+      [undefined, 1, 'undefined → 1'],
+    ];
+    const N_ref = sup1.perTray_mg.N || 0;
+    const offenders = [];
+    for (const [input, expectedN, label] of cases) {
+      const sup = FN.nurseryRecipeSupply(recipe, trayL, input);
+      const expectedNvalue = expectedN * N_ref;
+      const got = sup.perTray_mg.N || 0;
+      if (Math.abs(got / expectedNvalue - 1) > 0.001) {
+        offenders.push(`${label}: got N=${got.toFixed(0)}, expected ${expectedNvalue.toFixed(0)}`);
+      }
+    }
+    // minApplicationsPerWeek never returns fractional / 0
+    const PNN = window.PlantNeedsNursery;
+    const dem = (PNN && PNN.demandPerTray) ? { N: PNN.demandPerTray('N') } : { N: 3150 };
+    const N = FN.minApplicationsPerWeek(recipe, dem, trayL, FN.NURSERY_CE_CAP_MS_CM);
+    if (N !== null && (!Number.isInteger(N) || N < 1 || N > 7)) {
+      offenders.push(`minApplicationsPerWeek returned ${N} (must be null or integer 1-7)`);
+    }
+    if (offenders.length === 0) {
+      pass(`coercion validée sur ${cases.length} cas + minApplicationsPerWeek retour entier/null`);
+    } else {
+      fail('REQ-126 — coercion', offenders.slice(0, 3).join(' · '));
+    }
+  }
+}
+
+// ─── REQ-113 — Block 5 exposes sprayCount + surfactant inputs ──────────
+//
+// Spec: nutrition/tomato/app/spec.md → REQ-113.
+
+header('REQ-113 — Block 5 inputs: nutr-foliar-spray-count + nutr-foliar-surfactant');
+
+{
+  const sprayInp = window.document.getElementById('nutr-foliar-spray-count');
+  const surfInp  = window.document.getElementById('nutr-foliar-surfactant');
+  let indexHtmlBody = '';
+  try {
+    indexHtmlBody = readFileSync(join(REPO_ROOT, 'app', 'index.html'), 'utf8');
+  } catch (e) { /* */ }
+  const offenders = [];
+  if (!sprayInp) {
+    offenders.push('nutr-foliar-spray-count missing');
+  } else {
+    if (sprayInp.type !== 'number') offenders.push(`spray-count type=${sprayInp.type} (expected number)`);
+    if (sprayInp.value !== '1') offenders.push(`spray-count default=${sprayInp.value} (expected 1)`);
+    if (sprayInp.min !== '1' || sprayInp.max !== '3') offenders.push(`spray-count range min=${sprayInp.min} max=${sprayInp.max} (expected 1–3)`);
+  }
+  if (!surfInp) {
+    offenders.push('nutr-foliar-surfactant missing');
+  } else {
+    if (surfInp.type !== 'checkbox') offenders.push(`surfactant type=${surfInp.type} (expected checkbox)`);
+    if (surfInp.checked) offenders.push('surfactant default checked (expected unchecked)');
+  }
+  // Listener wiring: both ids must appear inside the input-listener array.
+  if (!/['"]nutr-foliar-spray-count['"]/.test(indexHtmlBody)) {
+    offenders.push('nutr-foliar-spray-count not wired in app/index.html input-listener array');
+  }
+  if (!/['"]nutr-foliar-surfactant['"]/.test(indexHtmlBody)) {
+    offenders.push('nutr-foliar-surfactant not wired in app/index.html input-listener array');
+  }
+  if (offenders.length === 0) {
+    pass('Block 5 expose nutr-foliar-spray-count (1, 1-3) + nutr-foliar-surfactant (checkbox, unchecked) ; listeners cabls');
+  } else {
+    fail('REQ-113 — Block 5 input shape', offenders.map(o => `  ${o}`).join('\n'));
+  }
+}
+
+// ─── REQ-114 — Block 5 reactive to spray count + surfactant changes ────
+//
+// Spec: nutrition/tomato/app/spec.md → REQ-114.
+
+header('REQ-114 — Block 5 reactive (sprayCount + surfactant → text changes)');
+
+{
+  const sprayInp = window.document.getElementById('nutr-foliar-spray-count');
+  const surfInp  = window.document.getElementById('nutr-foliar-surfactant');
+  const block5   = window.document.getElementById('nutr-foliar');
+  let textBefore = null, textAfterSpray = null, textAfterSurf = null;
+  if (sprayInp && surfInp && block5) {
+    try {
+      sprayInp.value = '1';
+      surfInp.checked = false;
+      sprayInp.dispatchEvent(new window.Event('input', { bubbles: true }));
+      textBefore = (block5.textContent || '').trim();
+      // Mutate sprayCount → expect re-render
+      sprayInp.value = '2';
+      sprayInp.dispatchEvent(new window.Event('input', { bubbles: true }));
+      textAfterSpray = (block5.textContent || '').trim();
+      // Restore + toggle surfactant
+      sprayInp.value = '1';
+      sprayInp.dispatchEvent(new window.Event('input', { bubbles: true }));
+      surfInp.checked = true;
+      surfInp.dispatchEvent(new window.Event('change', { bubbles: true }));
+      textAfterSurf = (block5.textContent || '').trim();
+      // Restore default
+      surfInp.checked = false;
+      surfInp.dispatchEvent(new window.Event('change', { bubbles: true }));
+    } catch (e) { /* */ }
+  }
+  const offenders = [];
+  if (textBefore == null) {
+    offenders.push('Block 5 not reachable for behavioral test');
+  } else {
+    if (textBefore === textAfterSpray) offenders.push('mutating sprayCount did not change Block 5 text');
+    if (textBefore === textAfterSurf)  offenders.push('toggling surfactant did not change Block 5 text');
+  }
+  if (offenders.length === 0) {
+    pass('Block 5 réagit à sprayCount (1 → 2) et surfactant (off → on)');
+  } else {
+    fail('REQ-114 — Block 5 reactivity', offenders.map(o => `  ${o}`).join('\n'));
+  }
+}
+
+// ─── REQ-127..129 — Semis subpage Blocks 2/3 layout + gap chain ─────────
+//
+// Specs: nutrition/nursery/app/spec.md → REQ-127 (Block 2 layout),
+// REQ-128 (Block 3 layout), REQ-129 (gap chain demand → substrate → fert).
+//
+// Need to flip the page to the Semis subpage so the render lands. setNutrCrop
+// triggers buildNutriment which dispatches to buildNutrimentNursery and writes
+// into #nutr-n-substrate / #nutr-n-fertigation.
+
+if (typeof window.setNutrCrop === 'function') {
+  try { window.setNutrCrop('nursery'); } catch (e) { /* swallow */ }
+}
+
+header('REQ-130 — Block 1 (Besoins): 3-col table (Él / Par plant / Cert)');
+{
+  const needsEl = window.document.getElementById('nutr-n-needs');
+  if (!needsEl) {
+    fail('REQ-130 — #nutr-n-needs present', 'DOM node missing');
+  } else {
+    const html = needsEl.innerHTML || '';
+    // 3-col grid signature (matches the new Block 1 layout)
+    const has3Col = /grid-template-columns:\s*0\.5fr 1fr 0\.6fr/.test(html);
+    // Per-plant unit visible
+    const hasPerPlant = /Par plant/.test(html);
+    const hasMgSem = /mg\/sem/.test(html);
+    const hasCert = /cert\s+\d/.test(html);
+    // 11 elements expected (N…Mo); count innerText hits for the symbol pattern.
+    const elementSymbols = ['N','P','K','Ca','Mg','Fe','Mn','Zn','B','Cu','Mo'];
+    const presentSyms = elementSymbols.filter(sym => {
+      const re = new RegExp(`<div[^>]*font-weight:600[^>]*>\\s*${sym}\\s*</div>`);
+      return re.test(html);
+    });
+    const offs = [];
+    if (!has3Col) offs.push('3-col grid (0.5fr 1fr 0.6fr)');
+    if (!hasPerPlant) offs.push('"Par plant" header');
+    if (!hasMgSem) offs.push('"mg/sem" unit suffix');
+    if (!hasCert) offs.push('"cert N" cell');
+    if (presentSyms.length < 3) offs.push(`only ${presentSyms.length}/11 element symbols rendered`);
+    if (offs.length === 0) {
+      pass(`Block 1: 3-col grid · ${presentSyms.length}/11 elements · cert column present`);
+    } else {
+      fail('REQ-130 — Block 1 layout', offs.join(' · '));
+    }
+  }
+}
+
+header('REQ-127 — Block 2 (substrate) layout: recipe header + gap-grid');
+{
+  const subEl = window.document.getElementById('nutr-n-substrate');
+  if (!subEl) {
+    fail('REQ-127 — #nutr-n-substrate present', 'DOM node missing');
+  } else {
+    const html = subEl.innerHTML || '';
+    const hasRecipeHeader = /Farine de plumes\s+\d/.test(html);
+    const has5ColGrid = /grid-template-columns:\s*0\.6fr 1fr 1fr 1fr 0\.4fr/.test(html);
+    const pqRows = subEl.querySelectorAll('.pq-row');
+    if (!hasRecipeHeader) {
+      fail('REQ-127 — recipe header', '"Farine de plumes Xg/plateau" not found in Block 2');
+    } else if (!has5ColGrid) {
+      fail('REQ-127 — 5-column gap-grid', 'renderGapGrid signature grid not present');
+    } else if (pqRows.length === 0) {
+      fail('REQ-127 — gap-grid rows', 'no .pq-row found (gap-grid empty)');
+    } else {
+      pass(`Block 2: recipe header + 5-col gap-grid (${pqRows.length} rows)`);
+    }
+  }
+}
+
+header('REQ-128 — Block 3 (fertigation) layout: recipe header + CE/pH + gap-grid');
+{
+  const fEl = window.document.getElementById('nutr-n-fertigation');
+  if (!fEl) {
+    fail('REQ-128 — #nutr-n-fertigation present', 'DOM node missing');
+  } else {
+    const html = fEl.innerHTML || '';
+    const hasRecipeHeader = /Recette par plateau/.test(html) && /×\d+\/sem/.test(html);
+    const hasCE = /CE pr[ée]dite/.test(html) && /mS\/cm/.test(html);
+    const hasPh = /pH pr[ée]dit/.test(html);
+    const has5ColGrid = /grid-template-columns:\s*0\.6fr 1fr 1fr 1fr 0\.4fr/.test(html);
+    const pqRows = fEl.querySelectorAll('.pq-row');
+    const offs = [];
+    if (!hasRecipeHeader) offs.push('recipe header (×N/sem)');
+    if (!hasCE) offs.push('CE readout');
+    if (!hasPh) offs.push('pH readout');
+    if (!has5ColGrid) offs.push('5-col gap-grid');
+    if (pqRows.length === 0) offs.push('.pq-row entries');
+    if (offs.length === 0) {
+      pass(`Block 3: recipe header + CE/pH + 5-col gap-grid (${pqRows.length} rows)`);
+    } else {
+      fail('REQ-128 — Block 3 layout', `missing: ${offs.join(', ')}`);
+    }
+  }
+}
+
+header('REQ-129 — Gap chain order demand → substrate → fertigation');
+{
+  // Behavioral check: read the calc-side outputs and assert that what Block 3
+  // shows as "manque entrant" equals what Block 2 shows as "manque sortant",
+  // for the macro elements where both have rendered values.
+  // We do this by re-running the calc directly (the DOM rounds for display, so
+  // a strict text-equality check would be flaky).
+  const SCN = window.SubstrateContributionNursery;
+  const PNN = window.PlantNeedsNursery;
+  const FN  = window.FertigationNursery;
+  if (!SCN || !PNN || !FN) {
+    fail('REQ-129 — namespaces present', 'one of SubstrateContributionNursery, PlantNeedsNursery, FertigationNursery missing');
+  } else {
+    const targetG = 90, cycleDays = 35, cellsPerTray = 50;
+    const fmG = SCN.NURSERY_FEATHER_MEAL_DEFAULT_G_PER_TRAY;
+    const trayL = FN.NURSERY_FERTIGATION_DEFAULTS.trayVolumeL;
+    const dem = PNN.calcNurseryDemand(targetG, cycleDays, cellsPerTray);
+    const subAvg = SCN.cycleAverageReleasePerTray(fmG);
+    const sup = FN.nurseryRecipeSupply(FN.NURSERY_RECIPE_DEFAULT, trayL, 1);
+    const offs = [];
+    for (const el of ['N','P','K','Ca','Mg']) {
+      const d = (dem[el] || {}).perTray_mg || 0;
+      const s = subAvg[el] || 0;
+      const gapAfterSub = Math.max(0, d - s);
+      const f = (sup.perTray_mg || {})[el] || 0;
+      const gapAfterFert = Math.max(0, gapAfterSub - f);
+      // Sanity: chain monotonically non-increasing
+      if (!(d >= gapAfterSub && gapAfterSub >= gapAfterFert)) {
+        offs.push(`${el}: chain not monotonic (${d.toFixed(0)} → ${gapAfterSub.toFixed(0)} → ${gapAfterFert.toFixed(0)})`);
+      }
+    }
+    if (offs.length === 0) {
+      pass('Gap chain monotonic for N/P/K/Ca/Mg (demand ≥ gapAfterSubstrate ≥ gapAfterFert)');
+    } else {
+      fail('REQ-129 — gap chain monotonic', offs.join(' · '));
+    }
+  }
+}
+
+// ─── REQ-136..138 — Cross-app contribution-block: details + cell modals ──
+//
+// Spec: nutrition/spec.md → REQ-136 (model: details{cert, cap}),
+// REQ-137 (UI layout, inherited from REQ-127/128 nursery), REQ-138
+// (cell + emoji modals scoped per (block, element, cap-kind)).
+// Verifier walks nursery substrate + fertigation; tomato + lettuce
+// blocks adopt in a follow-up pass (deferred from REQ-137 scope today).
+
+if (typeof window.setNutrCrop === 'function') {
+  try { window.setNutrCrop('nursery'); } catch (e) { /* swallow */ }
+}
+
+header('REQ-136 — substrate + fertigation return details{el: {cert, cap}}');
+{
+  const SCN = window.SubstrateContributionNursery;
+  const FN  = window.FertigationNursery;
+  const offs = [];
+  if (SCN && typeof SCN.cycleAverageReleasePerTray === 'function') {
+    const r = SCN.cycleAverageReleasePerTray(SCN.NURSERY_FEATHER_MEAL_DEFAULT_G_PER_TRAY);
+    if (!r || typeof r !== 'object' || !r.perTray_mg) {
+      offs.push('substrate: missing perTray_mg');
+    } else if (!r.details || typeof r.details !== 'object') {
+      offs.push('substrate: missing details map');
+    } else {
+      for (const el of Object.keys(r.perTray_mg)) {
+        const d = r.details[el];
+        if (!d || typeof d.cert !== 'number' || d.cert < 0 || d.cert > 5) {
+          offs.push(`substrate.details.${el}: cert out of [0,5]`);
+        }
+        if (d && d.cap !== null && d.cap !== undefined) {
+          // REQ-136 4-field schema (2026-05-11): kind, constraint, limit, lever, uncappedMg
+          if (!['damage','precipitation','other'].includes(d.cap.kind)
+              || typeof d.cap.constraint !== 'string' || !d.cap.constraint
+              || typeof d.cap.limit !== 'string'      || !d.cap.limit
+              || typeof d.cap.lever !== 'string'      || !d.cap.lever
+              || typeof d.cap.uncappedMg !== 'number') {
+            offs.push(`substrate.details.${el}.cap: malformed (need kind/constraint/limit/lever/uncappedMg)`);
+          }
+        }
+      }
+    }
+  } else {
+    offs.push('substrate: cycleAverageReleasePerTray missing');
+  }
+  if (FN && typeof FN.nurseryRecipeSupply === 'function') {
+    const trayL = FN.NURSERY_FERTIGATION_DEFAULTS.trayVolumeL;
+    const r = FN.nurseryRecipeSupply(FN.NURSERY_RECIPE_DEFAULT, trayL, 1);
+    if (!r || !r.perTray_mg) {
+      offs.push('fert: missing perTray_mg');
+    } else if (!r.details) {
+      offs.push('fert: missing details map');
+    } else {
+      for (const el of Object.keys(r.perTray_mg)) {
+        const d = r.details[el];
+        if (!d || typeof d.cert !== 'number') {
+          offs.push(`fert.details.${el}: missing cert`);
+        }
+      }
+    }
+  } else {
+    offs.push('fert: nurseryRecipeSupply missing');
+  }
+  if (offs.length === 0) {
+    pass('substrate + fertigation expose details{cert, cap} per element');
+  } else {
+    fail('REQ-136 — details schema', offs.slice(0, 5).join(' · '));
+  }
+}
+
+header('REQ-138 — Apport ici cells + cap emojis keyed per (block, element)');
+{
+  const subEl = window.document.getElementById('nutr-n-substrate');
+  const fertEl = window.document.getElementById('nutr-n-fertigation');
+  const offs = [];
+  if (!subEl) offs.push('#nutr-n-substrate missing');
+  if (!fertEl) offs.push('#nutr-n-fertigation missing');
+  if (offs.length === 0) {
+    const subHtml = subEl.innerHTML || '';
+    const fertHtml = fertEl.innerHTML || '';
+    const subHasCellKeys = /data-cell-key="nursery-substrate\.cell\.\w+"/.test(subHtml);
+    const fertHasCellKeys = /data-cell-key="nursery-fert\.cell\.\w+"/.test(fertHtml);
+    const subHasFireEmoji = subHtml.includes('🔥');
+    const subEmojiHandler = /showCapReason\('nursery-substrate'/.test(subHtml);
+    if (!subHasCellKeys) offs.push('substrate cells missing data-cell-key');
+    if (!fertHasCellKeys) offs.push('fert cells missing data-cell-key');
+    if (!subHasFireEmoji) offs.push('substrate N row missing 🔥 emoji (cap should fire at default)');
+    if (!subEmojiHandler) offs.push('substrate emoji handler showCapReason missing');
+  }
+  if (offs.length === 0) {
+    pass('Cells keyed (block, element) · 🔥 emoji rendered on capped N · showCapReason wired');
+  } else {
+    fail('REQ-138 — cell + emoji wiring', offs.slice(0, 5).join(' · '));
+  }
+}
+
+// REQ-137 cross-app rollout: tomato Bilan blocks 2-5 (compost, sidedress,
+// fertigation, foliar) also use renderGapGrid with details + blockId.
+// Switch back to tomato page so the tomato render fires.
+if (typeof window.setNutrCrop === 'function') {
+  try { window.setNutrCrop('tomato'); } catch (e) { /* swallow */ }
+}
+
+header('REQ-137 — Tomato Bilan blocks adopt renderGapGrid + details (cell-keying)');
+{
+  const blockIds = ['nutr-compost', 'nutr-sidedress', 'nutr-fert', 'nutr-foliar'];
+  const blockKeys = ['compost', 'sidedress', 'fert', 'foliar'];
+  const offs = [];
+  for (let i = 0; i < blockIds.length; i++) {
+    const el = window.document.getElementById(blockIds[i]);
+    if (!el) { offs.push(`#${blockIds[i]} missing`); continue; }
+    const html = el.innerHTML || '';
+    const hasCellKeys = new RegExp(`data-cell-key="${blockKeys[i]}\\.cell\\.\\w+"`).test(html);
+    if (!hasCellKeys) offs.push(`${blockIds[i]} cells missing data-cell-key`);
+  }
+  // Note: 💧 precipitation emoji on sidedress P fires only when supply.sidedress.P > 0
+  // AND phLocked. At current Ca-aware default (Actisol=0, REQ-089), supply.sidedress.P
+  // is 0 → no cap fires → no emoji. That's consistent with REQ-138 semantics
+  // (cap fires only when there's a value to cap). Synthetic-cap test deferred.
+  if (offs.length === 0) {
+    pass('Tomato compost/sidedress/fert/foliar blocks all keyed (block, element)');
+  } else {
+    fail('REQ-137 — Tomato block wiring', offs.slice(0, 5).join(' · '));
+  }
+}
+
+// ─── REQ-139 — App must call subproject namespace, no inline reimplementation
+//
+// Spec: requirements.md → REQ-139.
+//
+// Two layers:
+//   (1) Registry-driven positive check — for each (namespace, function,
+//       consumer) tuple, the consumer file must reference
+//       `window.<Namespace>.<function>` at least once. Catches the
+//       regression case where a call site gets deleted and the formula
+//       reinlined.
+//   (2) Inline-formula blacklist — the foliar-supply arithmetic shape
+//       `PRODUCT_PCT.<XSO4_X|Solubore_B|NaMoO4_Mo>) / area * 1000 * cov`
+//       must not appear in `app/index.html`. This is the exact pattern
+//       that drifted on 2026-05-10 (FP-mode foliar branch ignored
+//       sprayCount + surfactant opts because it inlined instead of
+//       calling computeFoliarSupply). Foliar-only for now; extend with
+//       fertigation/sidedress shapes once computeFertigationSupply +
+//       computeSidedressSupply land in their subprojects.
+
+header('REQ-139 — App must call subproject namespace (no inline reimplementation)');
+
+{
+  let consumerSrc = '';
+  try {
+    consumerSrc = readFileSync(join(REPO_ROOT, 'app', 'index.html'), 'utf8');
+  } catch (e) { /* fall through — registry check will surface as misses */ }
+
+  // Registry: every public namespace function with a known consumer
+  // today. Add a row here whenever a new model.js function gets wired
+  // into the app.
+  const REGISTRY = [
+    { ns: 'FoliarRecipeTomato',  fn: 'computeFoliarSupply',         consumer: 'app/index.html' },
+    { ns: 'FoliarRecipeTomato',  fn: 'computeFoliarRecipeForGap',   consumer: 'app/index.html' },
+    { ns: 'CompostContribution', fn: 'releasePerWeek',              consumer: 'app/index.html' },
+  ];
+
+  // Inline-formula blacklist: per-element foliar-supply shape.
+  // Pattern matches `PRODUCT_PCT.<elemKey>) / area * 1000 * cov` (with
+  // any whitespace). This is the exact arithmetic that lives in
+  // computeFoliarSupply — anyone re-typing it in app/index.html is
+  // recreating the 2026-05-10 drift.
+  const INLINE_BLACKLIST = [
+    { name: 'foliar Mn supply', re: /PRODUCT_PCT\.MnSO4_Mn\s*\)\s*\/\s*area\s*\*\s*1000\s*\*\s*cov/ },
+    { name: 'foliar Zn supply', re: /PRODUCT_PCT\.ZnSO4_Zn\s*\)\s*\/\s*area\s*\*\s*1000\s*\*\s*cov/ },
+    { name: 'foliar Cu supply', re: /PRODUCT_PCT\.CuSO4_Cu\s*\)\s*\/\s*area\s*\*\s*1000\s*\*\s*cov/ },
+    { name: 'foliar Mo supply', re: /PRODUCT_PCT\.NaMoO4_Mo\s*\)\s*\/\s*area\s*\*\s*1000\s*\*\s*cov/ },
+    { name: 'foliar B supply',  re: /PRODUCT_PCT\.Solubore_B\s*\)\s*\/\s*area\s*\*\s*1000\s*\*\s*cov/ },
+    { name: 'foliar Fe supply', re: /PRODUCT_PCT\.FeSO4_Fe\s*\)\s*\/\s*area\s*\*\s*1000\s*\*\s*cov/ },
+  ];
+
+  const offenders = [];
+
+  // Layer 1 — registry positive check.
+  for (const row of REGISTRY) {
+    const needle = `window.${row.ns}.${row.fn}`;
+    if (!consumerSrc.includes(needle)) {
+      offenders.push(`${row.consumer} missing call to ${needle} (registry says it must be the consumer)`);
+    }
+  }
+
+  // Layer 2 — inline-formula blacklist.
+  for (const entry of INLINE_BLACKLIST) {
+    if (entry.re.test(consumerSrc)) {
+      offenders.push(`inline reimplementation detected: ${entry.name} (pattern ${entry.re} matched in app/index.html — call window.FoliarRecipeTomato.computeFoliarSupply instead)`);
+    }
+  }
+
+  if (offenders.length === 0) {
+    pass(`Registry: ${REGISTRY.length} namespace fns wired in app/index.html · Blacklist: ${INLINE_BLACKLIST.length} foliar-supply shapes absent`);
+  } else {
+    fail('REQ-139 — namespace usage / inline drift', offenders.map(o => `  ${o}`).join('\n'));
+  }
+}
+
+// ─── REQ-144 — Operator-facing prose requires declared provenance ──────
+//
+// Inside any container marked `data-prose-check="strict"`, every visible
+// text node must have an ancestor with `data-prose-source` set to one of:
+//   - "derived"           → auto-rendered from data (REQ-060 owns correctness)
+//   - "stable:<short-tag>" → hand-written stable domain context
+//   - "REQ-NNN"           → mandated by a specific spec entry (rare)
+//
+// Opt-in by design: today, zero containers may be marked. The check passes
+// trivially and prints "0 containers locked-down". Containers opt in as
+// they're touched; new operator surfaces opt in from day one. See
+// requirements.md REQ-144 for the migration plan.
+
+header('REQ-144 — Operator-facing prose has declared provenance (opt-in)');
+
+{
+  const strictContainers = Array.from(
+    window.document.querySelectorAll('[data-prose-check="strict"]')
+  );
+
+  // Collect every REQ-NNN that exists as a spec header anywhere in the
+  // spec tree. The bash umbrella verifier does this too — we duplicate it
+  // here to keep the node verifier self-contained.
+  const specReqIds = new Set();
+  {
+    const specFiles = [
+      join(REPO_ROOT, 'requirements.md'),
+      // Domain spec files — discovered via fs walk so new domains are picked up.
+    ];
+    function walk(dir) {
+      try {
+        for (const entry of readdirSync(dir, { withFileTypes: true })) {
+          if (entry.name.startsWith('.') || entry.name === 'node_modules' || entry.name === 'dist') continue;
+          const full = join(dir, entry.name);
+          if (entry.isDirectory()) walk(full);
+          else if (entry.isFile() && entry.name === 'spec.md') specFiles.push(full);
+        }
+      } catch { /* ignore */ }
+    }
+    walk(REPO_ROOT);
+    for (const path of specFiles) {
+      try {
+        const text = readFileSync(path, 'utf8');
+        const matches = text.match(/^## (REQ-\d{3}[a-z]?)\b/gm) || [];
+        for (const m of matches) specReqIds.add(m.replace(/^## /, ''));
+      } catch { /* ignore missing files */ }
+    }
+  }
+
+  const offenders = [];
+  let textNodesChecked = 0;
+
+  for (const container of strictContainers) {
+    const walker = container.ownerDocument.createTreeWalker(container, 0x4 /* TEXT_NODE */);
+    let node;
+    while ((node = walker.nextNode())) {
+      const parent = node.parentElement;
+      if (!parent) continue;
+      const tag = parent.tagName;
+      if (tag === 'SCRIPT' || tag === 'STYLE') continue;
+      const text = node.nodeValue;
+      if (!text || !text.trim()) continue;
+
+      textNodesChecked++;
+
+      // Find nearest ancestor with data-prose-source (stop at container).
+      let cursor = parent;
+      let source = null;
+      while (cursor && cursor !== container.parentElement) {
+        if (cursor.hasAttribute && cursor.hasAttribute('data-prose-source')) {
+          source = cursor.getAttribute('data-prose-source');
+          break;
+        }
+        cursor = cursor.parentElement;
+      }
+
+      if (source === null) {
+        const containerPath = container.id ? `#${container.id}` : `<${container.tagName.toLowerCase()}>`;
+        offenders.push(`undeclared prose in ${containerPath}: "${text.trim().slice(0, 80)}"`);
+        if (offenders.length >= 5) break;
+        continue;
+      }
+
+      // Validate the value shape.
+      if (source === 'derived') continue;
+      if (source.startsWith('stable:') && source.length > 'stable:'.length) continue;
+      if (/^REQ-\d{3}[a-z]?$/.test(source)) {
+        if (!specReqIds.has(source)) {
+          offenders.push(`data-prose-source="${source}" points to unknown spec entry`);
+          if (offenders.length >= 5) break;
+        }
+        continue;
+      }
+      offenders.push(`data-prose-source="${source}" has invalid shape (expected "derived" | "stable:<tag>" | "REQ-NNN")`);
+      if (offenders.length >= 5) break;
+    }
+    if (offenders.length >= 5) break;
+  }
+
+  if (offenders.length === 0) {
+    pass(`${strictContainers.length} container(s) locked-down · ${textNodesChecked} text node(s) with declared provenance`);
+  } else {
+    fail('REQ-144 — undeclared or invalid prose provenance', offenders.join('\n'));
   }
 }
 

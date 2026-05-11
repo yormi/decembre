@@ -32,11 +32,9 @@ utilities). Domain-specific specs live alongside the app code they govern:
 | `nutrition/lettuce/app/spec.md` | Salanova admin subpage UI |
 | `nutrition/nursery/spec.md` | Semis laitue nutrition (seedling DW%, cell volume cap) |
 | `nutrition/nursery/app/spec.md` | Semis admin subpage UI |
-| `yield-range/spec.md` | Salanova nursery yield prediction model (RGR-multiplier + RootCap) |
-| `yield-range/derivation.md` | Yield Range math model formulas, stress functions, constants history, calibration anchors |
-| `yield-range/calibration-data.md` | Observed cohort weights anchoring the yield model |
-| `yield-range/app/spec.md` | Yield Range admin page UI specs |
-| `yield-range/app/derivation.md` | Yield Range app source rationale + design history |
+| `yield-range/spec.md` | Salanova nursery time-to-canopy-cap model (canopy-density driven, no decay) |
+| `yield-range/app/spec.md` | Yield Range admin page UI |
+| `yield-range/doc/yield-range-calibration-2026-spring.md` | Empirical cohort observations anchoring the yield-range model |
 
 Other domains (irrigation, IPM, harvest, climate, etc.) currently live in
 this file. They will be split out into their own `<domain>/spec.md` files
@@ -220,6 +218,154 @@ This is the only shape that handles year-rollover weeks correctly
 If either disappears, the check fails. Brittle on purpose: those two
 fragments are the two halves of the algorithm; losing either is the
 exact regression to guard against.
+
+---
+
+## REQ-139 — App must call subproject namespace, no inline reimplementation
+
+**Statement:** Every subproject under `nutrition/` and `yield-range/` that
+exposes a public computation through a `window.<Namespace>` (the
+`model.js` convention) is the **sole source** of that computation.
+App-side renderers in `app/index.html` and any consumer under
+`nutrition/<crop>/app/` (`buildNutriment`, page builders, Block builders,
+Salanova builders, gap-grid builders, etc.) MUST invoke the namespaced
+function. Inlining the same arithmetic — copying the formula out of
+`calc.js` / `model.js` into the consumer — is forbidden, even when "just
+for this one branch".
+
+**Rationale:** Drift between an inlined copy and the model module
+produces silent bugs that flip operator-facing levers backward. The
+codified incident (2026-05-10): the Nutrition admin page's FP-mode
+foliar branch inlined `(g × pct × 1000 / area × cov)` per element
+instead of calling `window.FoliarRecipeTomato.computeFoliarSupply`. The
+inline drifted from the model's signature: it ignored the `sprayCount`
+and `surfactant` opts that operators set in Block 5, so the live
+re-render didn't react to those levers. Same drift class will recur on
+fertigation and sidedress as soon as their subprojects gain a supply
+function — today they expose only sizers (`computeStageRecipe`,
+`computeStageSidedress`) with no `computeFertigationSupply` /
+`computeSidedressSupply` counterpart, so consumers compute their supply
+inline. **The fix shape when a consumer needs a function the
+subproject doesn't yet expose is to ADD the function in the subproject,
+not to inline the arithmetic.** Subprojects own both the sizer (recipe)
+and the renderer (supply) axes. (TODO follow-up: add
+`computeFertigationSupply` to `nutrition/tomato/fertigation-recipe/`
+and `computeSidedressSupply` to `nutrition/tomato/sidedress-recipe/`,
+then extend the verifier blacklist below to cover their formula
+shapes.)
+
+**Cert:** 4 — bright-line normative rule; auto-enforcement is partial
+(the registry catches regression on existing call sites and the
+blacklist catches new drift on the foliar formula shape, but the
+verifier can't enumerate every future inline reimplementation a priori).
+
+**Verification:** Two layers in `scripts/check-recipes.mjs`:
+
+1. **Registry-driven positive check.** A small inline registry of
+   `(namespace, function, expectedConsumer)` tuples. For each tuple,
+   assert the consumer file (today: `app/index.html`) contains
+   `window.<Namespace>.<function>` at least once. Seed:
+   - `FoliarRecipeTomato.computeFoliarSupply`
+   - `FoliarRecipeTomato.computeFoliarRecipeForGap`
+   - `CompostContribution.releasePerWeek`
+
+   Catches regressions where someone deletes a call site and reinlines
+   the math. Extend the registry whenever a new public namespace
+   function gains a consumer.
+
+2. **Inline-formula blacklist.** Forbid the foliar-supply formula shape
+   `PRODUCT_PCT.<XSO4_X|Solubore_B|NaMoO4_Mo>) / area * 1000 * cov`
+   inside `app/index.html` — the exact pattern that drifted on
+   2026-05-10. Today, after the foliar fix, this pattern should not
+   appear inline anywhere; if it reappears the check fails.
+
+   Blacklist is foliar-only at first. Extend with fertigation and
+   sidedress formula shapes once `computeFertigationSupply` and
+   `computeSidedressSupply` exist.
+
+**When you add a new subproject namespace function with a consumer:**
+add a tuple to the registry. **When you inline a formula in
+`app/index.html`:** stop, move the formula into the subproject's
+`calc.js` (and expose it on `model.js`), then call the namespaced
+function from the consumer.
+
+---
+
+## REQ-144 — Operator-facing prose requires declared provenance
+
+**Statement:** Inside any DOM container carrying
+`data-prose-check="strict"`, every visible text node (descendant text not
+inside `<script>` / `<style>`) MUST have an ancestor element carrying a
+`data-prose-source` attribute whose value is one of:
+
+- `"derived"` — the string is rendered by a function operating on live data.
+  The auto-derivation rule (REQ-060) governs correctness; REQ-144 only
+  enforces that *the provenance is declared*.
+- `"stable:<short-tag>"` — the string is hand-written stable domain
+  context. The `<short-tag>` is free-form (e.g., `stable:ca-saturation`,
+  `stable:phlock-chemistry`) and serves as a hint for human reviewers, not
+  a spec pointer. The `// stable —` comment convention next to the source
+  string literal continues to apply (REQ-060).
+- `"REQ-NNN"` — the string exists *because* a specific spec entry calls
+  for it. Used for copy whose existence is mandated by a normative spec
+  (rare; most stable copy uses `stable:` instead). The verifier asserts
+  `REQ-NNN` appears as a `## REQ-NNN` header somewhere in the spec tree.
+
+**Rationale:** REQ-060 prevents narrative from contradicting data and
+asks for a `// stable —` source comment, but the comment is self-attested
+and invisible to a DOM verifier. REQ-144 promotes provenance into the
+rendered DOM so the check is mechanical: prose without declared
+provenance, inside a locked-down container, fails the verifier. Global
+spec discipline (`spec is floor AND ceiling`) becomes enforced rather
+than honor-coded.
+
+**Cert:** 4 — bright-line normative rule; mechanically enforceable inside
+opted-in subtrees. Cert is not 5 because the `stable:<tag>` form is a
+declarative honor system (tag isn't cross-validated against the source
+comment).
+
+**Scope (opt-in by design):**
+
+REQ-144 enforcement only applies inside containers explicitly marked
+`data-prose-check="strict"`. This is deliberate — retrofitting every
+existing text node in one pass would be a large slog and gate-keep
+unrelated work. The migration plan is:
+
+1. The rule + verifier land first (this entry).
+2. When a developer (Claude or otherwise) materially touches an operator
+   container, they opt that container into `strict` mode and tag each
+   text node with `data-prose-source`. From that point on, drift on
+   that container fails the check.
+3. New operator surfaces (new pages, new blocks) opt in from day one.
+4. Periodically, dedicate a session to retrofitting the cleanest unmarked
+   containers (Block 5 levers + the pH-lock reminder is the natural
+   starting point — already 100 % auto-derived plus one stable annotation).
+
+This staged rollout means REQ-144 starts "wired but not blocking" (zero
+containers opted in → check passes trivially) and incrementally bites
+more of the operator surface over time. The verifier prints the count
+of opted-in containers so the migration is visible.
+
+**Verification:** `scripts/check-recipes.mjs` — `header('REQ-144 …')`
+block. Procedure:
+
+1. Find every element matching `[data-prose-check="strict"]`. Print the
+   count.
+2. For each strict container, walk its text-node descendants (skipping
+   `<script>` / `<style>`).
+3. For each text node, walk up ancestors looking for the nearest
+   `data-prose-source` attribute. If none → fail with the offending text
+   snippet and the container path.
+4. If the `data-prose-source` value matches `REQ-NNN` shape, assert
+   `REQ-NNN` appears as a `^## REQ-NNN` header in the spec tree (any
+   `requirements.md` or `**/spec.md`). Unknown REQ → fail.
+5. Other values (`derived`, `stable:<tag>`) are accepted without further
+   validation (REQ-060 owns the `// stable —` source-comment side).
+
+**When you add a new operator-facing prose block:** add
+`data-prose-check="strict"` to the container. Wrap each text node in a
+`<span data-prose-source="...">` (or set the attribute directly on the
+parent element if it owns the text node). Run `npm run check`.
 
 ---
 
