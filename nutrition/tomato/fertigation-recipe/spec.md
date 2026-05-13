@@ -100,7 +100,7 @@ domain), not as a fertigation-channel offset.
 ```
 k_offtake_mg/m²/wk   = TOMATO_FRUIT_EXPORT.K × stageYield × 1000 + BIOMASS_DEMAND[stage].K
 k_sidedress_mg/m²/wk = STORED_RECIPE.tomato.sidedress[stage].actisol_g
-                        × PRODUCT_PCT.Actisol_K × SIDEDRESS_MIN_EFF.K × 1000
+                        × PRODUCT_PCT.Actisol_K × SIDEDRESS_MIN_EFF.Actisol_K × 1000
                         / SIDEDRESS_AREA_PER_PLANCHE
 k_needed_mg/m²/wk    = max(0, k_offtake − k_sidedress)
 kSulfate_g_total     = round(k_needed / 1000 / PRODUCT_PCT.K2SO4_K × total_area)

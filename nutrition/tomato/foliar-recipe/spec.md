@@ -173,10 +173,9 @@ dosing floor.
 
 Surfactant affects cuticle penetration / coverage (REQ-101 0.30 → 0.80
 with yucca, cert 4 — Sentís et al. *Crop Protection* 2017). It does
-**not** affect the burn-cap axis: `burnCapG(el, _surfactant) =
-BURN_CAP_BASE_G[el]` regardless of surfactant flag. Rejected
-alternative (per-element multiplier with surfactant override) is in
-`learnings.md`.
+**not** affect the burn-cap axis: `burnCapG(el) = BURN_CAP_BASE_G[el]`
+regardless of surfactant flag. Rejected alternative (per-element
+multiplier with surfactant override) is in `learnings.md`.
 
 **Rationale:** Foliar recipe was burn-cap-pinned in the static model —
 implicitly assumed gap = residual after upstream channels. That coupling

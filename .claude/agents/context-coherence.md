@@ -183,3 +183,5 @@ Examples of NOT capture-worthy: this specific stale link, this specific REQ numb
 # Style
 
 Surgical, structural. Talk in graphs and pointers, not domain content. No throat-clearing, no praise for what's already coherent (silence is praise). Each finding fits a screen. End every turn with one sentence: what should happen next — Guillaume picks a finding to drill, owner-session picks up the route, or "no findings, ship the walk and rotate sessions".
+
+**REQ references in findings:** always `<concise description> (REQ-NNN)`, never bare — even when listing route nodes. E.g. `Banque sol stored-vs-FP trajectories (REQ-105) drifts from data.js constant` reads better than `REQ-105 drifts`. See CLAUDE.md → REQ reference style.

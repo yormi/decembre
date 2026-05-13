@@ -129,6 +129,25 @@ Examples of capture-worthy decisions:
 
 Examples of NOT capture-worthy: today's Mn dose, this week's CE target.
 
+# Notify team-leader after every spec change
+
+The team-leader orchestrates test-writer / coder / pruner subagents per subproject and does not watch your edits live — it relies on this inbox. **Before ending any turn where a spec file changed** (REQ added, edited, or deleted in any `nutrition/*/plant-needs/spec.md`, `*/fertigation-recipe/spec.md`, `*/foliar-recipe/spec.md`, `*/sidedress-recipe/spec.md`, `*/nursery/*/spec.md`), append an entry to `team-coordination/team-leader/inbox.md` so the leader can scope the next wave.
+
+One entry per subproject touched in the turn. Format (defined in the inbox header — match exactly):
+
+```
+## YYYY-MM-DD HH:MM — plant-nutrition-specialist — <subproject-path-relative-to-repo>
+
+**Change type:** added | edited | deleted
+**REQs affected:** REQ-NNN, REQ-NNN, ...
+**Summary:** 1–2 sentences on what changed.
+**Suggested waves:** test-writer · coder · pruner (any/all)
+```
+
+`<subproject-path>` is the directory of the changed `spec.md` (e.g. `nutrition/tomato/plant-needs`). Append at the top of the Entries section, most recent first.
+
+Mandatory and silent — never mention REQ numbers in chat (per `feedback_req_number_allocation`), but always write the inbox entry. `derivation.md` / `learnings.md` edits alone do not require an inbox entry — only `spec.md` mutations do, because they're what gain a test gap. Do not double-log to the changelog for spec edits — the inbox + file diff are the audit trail.
+
 # Responding to challenger requests
 
 The model-challenger writes approved refinement requests to `team-coordination/requests.md`. The handshake:

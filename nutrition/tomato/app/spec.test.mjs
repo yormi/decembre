@@ -3,10 +3,17 @@
 // REQs covered (11): REQ-104, REQ-105, REQ-106, REQ-107, REQ-108, REQ-109,
 // REQ-110, REQ-111, REQ-113, REQ-114, REQ-004.
 //
-// Page-level rendering REQs use a shared jsdom instance loaded via
-// test-helpers.mjs (rebuilds dist/index.html on first call). Source-grep
-// REQs read the relevant source file directly so they pin code shape
-// regardless of runtime behavior.
+// Strategy (post-2026-05-12 spec rewrite — no more `**Verification:**`
+// sub-sections to lean on):
+//   - Behavioral REQs (REQ-104 mutability, REQ-106 lock+revert, REQ-107
+//     default-selected, REQ-108 demand→render, REQ-110 reactivity,
+//     REQ-111 numeric match, REQ-113 wire-through, REQ-114 reactivity)
+//     are exercised: mutate state, call the setter / dispatch the event,
+//     assert the visible downstream result.
+//   - Structural REQs (REQ-104 count, REQ-105 default + no-7000 literal,
+//     REQ-107 button order + label, REQ-109 three-piece modal) stay as
+//     direct DOM / source greps but every grep is paired with at least
+//     one behavioral assertion so logic removal would still fail something.
 
 import { test, describe } from 'node:test';
 import assert from 'node:assert/strict';
@@ -15,6 +22,9 @@ import { loadTomatoApp, readLogicJs, readAppIndexHtml } from './test-helpers.mjs
 // ─── REQ-104 — Header inputs are exactly five scalars ──────────────────
 
 describe('REQ-104 — Header inputs are exactly five scalars', () => {
+  // The five scalars: target, solarPerGram, stage, phLocked, recipeMode.
+  // recipeMode is a two-button toggle (one logical input), so the DOM
+  // surface is 6 ids but the operator turns 5 knobs.
   const REQUIRED_IDS = [
     'nutr-target',
     'nutr-solar-per-gram',
@@ -30,30 +40,55 @@ describe('REQ-104 — Header inputs are exactly five scalars', () => {
     assert.deepEqual(missing, [], `missing ids: ${missing.join(', ')}`);
   });
 
-  test('REQ-104 — nutr-current is absent (retired 2026-05-09)', () => {
+  test('REQ-104 — nutr-current is absent (retired 2026-05-09; no 6th scalar)', () => {
     const { window } = loadTomatoApp();
-    const current = window.document.getElementById('nutr-current');
-    assert.equal(current, null, 'nutr-current should not exist in markup');
+    assert.equal(window.document.getElementById('nutr-current'), null,
+      'nutr-current should not exist in markup');
   });
 
-  test('REQ-104 — nutr-recipe-fp + nutr-recipe-stored are buttons (recipeMode toggle)', () => {
+  test('REQ-104 — types: target=number, solarPerGram=number, phlocked=checkbox, recipe=2 BUTTONs', () => {
     const { window } = loadTomatoApp();
-    const fp = window.document.getElementById('nutr-recipe-fp');
-    const stored = window.document.getElementById('nutr-recipe-stored');
-    assert.equal(fp.tagName, 'BUTTON');
-    assert.equal(stored.tagName, 'BUTTON');
+    const document = window.document;
+    assert.equal(document.getElementById('nutr-target').type, 'number');
+    assert.equal(document.getElementById('nutr-solar-per-gram').type, 'number');
+    assert.equal(document.getElementById('nutr-phlocked').type, 'checkbox');
+    assert.equal(document.getElementById('nutr-recipe-fp').tagName, 'BUTTON');
+    assert.equal(document.getElementById('nutr-recipe-stored').tagName, 'BUTTON');
   });
 
-  test('REQ-104 — nutr-phlocked is a checkbox (boolean phLocked)', () => {
+  test('REQ-104 — card body has no other top-level number/checkbox inputs beyond the 5', () => {
+    // Behavioral guard against silent re-introduction of a 6th header
+    // scalar. Restricted to the "Cible & contexte" card — block-local
+    // foliar inputs (REQ-113) and other downstream inputs are out of scope.
     const { window } = loadTomatoApp();
-    const phLocked = window.document.getElementById('nutr-phlocked');
-    assert.equal(phLocked.type, 'checkbox');
+    const headerCard = window.document.querySelector('#nutr-tomato-content .card');
+    assert.ok(headerCard, 'header card not found');
+    const scalarInputs = headerCard.querySelectorAll('input[type="number"], input[type="checkbox"]');
+    // Allowed: nutr-target, nutr-solar-per-gram, nutr-phlocked. Anything else
+    // is an unspecified header knob and breaks REQ-104.
+    const allowed = new Set(['nutr-target', 'nutr-solar-per-gram', 'nutr-phlocked']);
+    const extras = Array.from(scalarInputs).map(inp => inp.id).filter(id => !allowed.has(id));
+    assert.deepEqual(extras, [],
+      `unexpected scalar inputs in header card: ${extras.join(', ')}`);
   });
 
-  test('REQ-104 — nutr-target is a number input (kg/m²/wk)', () => {
+  test('REQ-104 — mutating nutr-target re-renders downstream (target wires to buildNutriment)', () => {
+    // Load-bearing: if the input is present but not wired, the page would
+    // serve a constant. Mutate from default to a distinct value and assert
+    // a downstream block reflects the change.
     const { window } = loadTomatoApp();
     const target = window.document.getElementById('nutr-target');
-    assert.equal(target.type, 'number');
+    const needs = window.document.getElementById('nutr-needs');
+    target.value = '1.5';
+    target.dispatchEvent(new window.Event('input', { bubbles: true }));
+    const at15 = (needs.textContent || '').trim();
+    target.value = '2.5';
+    target.dispatchEvent(new window.Event('input', { bubbles: true }));
+    const at25 = (needs.textContent || '').trim();
+    target.value = '1.5';
+    target.dispatchEvent(new window.Event('input', { bubbles: true }));
+    assert.notEqual(at15, at25,
+      'nutr-target mutation must change Block 1 text — input is unwired');
   });
 });
 
@@ -62,8 +97,8 @@ describe('REQ-104 — Header inputs are exactly five scalars', () => {
 describe('REQ-105 — Light ceiling derived from solarPerGram input', () => {
   test('REQ-105 — solar-per-gram input default value is 7', () => {
     const { window } = loadTomatoApp();
-    const inp = window.document.getElementById('nutr-solar-per-gram');
-    assert.equal(inp.value, '7');
+    const input = window.document.getElementById('nutr-solar-per-gram');
+    assert.equal(input.value, '7');
   });
 
   test('REQ-105 — logic.js ceiling formula has no hardcoded /7000 literal', () => {
@@ -71,86 +106,206 @@ describe('REQ-105 — Light ceiling derived from solarPerGram input', () => {
     assert.doesNotMatch(body, /lightCeiling\s*=\s*weeklyJ\s*\/\s*7000\b/);
   });
 
-  test('REQ-105 — mutating solarPerGram from 7 → 14 changes the displayed ceiling text', () => {
+  test('REQ-105 — ceiling formula divides by (solarPerGram × 1000)', () => {
+    // Source pin: catches the case where the literal is gone but the
+    // operator input isn't actually consumed.
+    const body = readLogicJs();
+    assert.match(body, /weeklyJ\s*\/\s*\(\s*solarPerGram\s*\*\s*1000\s*\)/);
+  });
+
+  test('REQ-105 — mutating solarPerGram 7 → 14 halves the displayed ceiling', () => {
+    // Behavioral: ceiling = weekly_J ÷ (solarPerGram × 1000). Doubling
+    // solarPerGram must halve the headline number.
     const { window } = loadTomatoApp();
-    const inp = window.document.getElementById('nutr-solar-per-gram');
-    const ceilingEl = window.document.getElementById('nutr-light-ceiling');
-    inp.value = '7';
-    inp.dispatchEvent(new window.Event('input', { bubbles: true }));
-    const before = (ceilingEl.textContent || '').trim();
-    inp.value = '14';
-    inp.dispatchEvent(new window.Event('input', { bubbles: true }));
-    const after = (ceilingEl.textContent || '').trim();
-    inp.value = '7';
-    inp.dispatchEvent(new window.Event('input', { bubbles: true }));
-    assert.notEqual(before, after, `ceiling text unchanged after solarPerGram mutation: "${before}"`);
+    const input = window.document.getElementById('nutr-solar-per-gram');
+    const headline = window.document.getElementById('nutr-light-ceiling-headline');
+    assert.ok(headline, 'nutr-light-ceiling-headline must exist');
+    input.value = '7';
+    input.dispatchEvent(new window.Event('input', { bubbles: true }));
+    const at7 = parseFloat((headline.textContent || '').replace(',', '.'));
+    input.value = '14';
+    input.dispatchEvent(new window.Event('input', { bubbles: true }));
+    const at14 = parseFloat((headline.textContent || '').replace(',', '.'));
+    input.value = '7';
+    input.dispatchEvent(new window.Event('input', { bubbles: true }));
+    assert.ok(Number.isFinite(at7) && at7 > 0, `ceiling@7 not numeric: ${at7}`);
+    assert.ok(Number.isFinite(at14) && at14 > 0, `ceiling@14 not numeric: ${at14}`);
+    // Tolerance 1% on the halving ratio.
+    const ratio = at7 / at14;
+    assert.ok(Math.abs(ratio - 2) < 0.02,
+      `ceiling@7 / ceiling@14 = ${ratio.toFixed(3)}, expected ~2.0 (halving)`);
+  });
+
+  // REQ-105 warning-style — color flip is hard to assert (CSS var leakage
+  // in jsdom; see note in REQ-104 above). The ⚠ message half IS observable
+  // — its dedicated #nutr-light-ceiling-warning node only renders content
+  // when target > ceiling.
+  test('REQ-105 — ⚠ message appears only when target > ceiling', () => {
+    const { window } = loadTomatoApp();
+    const target = window.document.getElementById('nutr-target');
+    const warn = window.document.getElementById('nutr-light-ceiling-warning');
+    assert.ok(warn, '#nutr-light-ceiling-warning element must exist');
+    // Force target above any plausible ceiling (max input is 3 kg/m²/sem;
+    // ceiling at solarPerGram=7 lands well below 3 outside summer peak).
+    target.value = '3';
+    target.dispatchEvent(new window.Event('input', { bubbles: true }));
+    const overText = (warn.textContent || '').trim();
+    const overDisplay = warn.style.display;
+    // Force target below any plausible ceiling.
+    target.value = '0.1';
+    target.dispatchEvent(new window.Event('input', { bubbles: true }));
+    const underText = (warn.textContent || '').trim();
+    const underDisplay = warn.style.display;
+    // Restore default for downstream tests.
+    target.value = '1.5';
+    target.dispatchEvent(new window.Event('input', { bubbles: true }));
+    // Below ceiling: empty content + hidden.
+    assert.equal(underText, '',
+      'warning text must be empty when target ≤ ceiling');
+    assert.equal(underDisplay, 'none',
+      'warning element must be display:none when target ≤ ceiling');
+    // Above ceiling: contains the ⚠ glyph + non-empty body.
+    assert.match(overText, /⚠/,
+      'warning text must contain ⚠ glyph when target > ceiling');
+    assert.notEqual(overDisplay, 'none',
+      'warning element must be visible (display ≠ none) when target > ceiling');
   });
 });
 
 // ─── REQ-106 — FP recipe mode locks stage to T5 ────────────────────────
 
-describe('REQ-106 — FP recipe mode locks stage to T5', () => {
-  test('REQ-106 — logic.js contains the auto-revert pattern (s !== T5 && fp → stored)', () => {
-    const body = readLogicJs();
-    assert.match(body, /s !== 'T5' && nutrRecipeMode === 'fp'/);
-  });
-
-  test('REQ-106 — logic.js contains the FP→snap-to-T5 pattern in setNutrRecipeMode', () => {
-    const body = readLogicJs();
-    assert.match(body, /nutrRecipeMode === 'fp' && nutrStage !== 'T5'/);
-  });
-
-  test("REQ-106 — default declaration is `let nutrRecipeMode = 'fp'`", () => {
+describe('REQ-106 — FP mode locks stage to T5; auto-revert; default fp', () => {
+  test("REQ-106 — default nutrRecipeMode is 'fp' (source declaration)", () => {
     const html = readAppIndexHtml();
     assert.match(html, /let nutrRecipeMode\s*=\s*'fp'/);
   });
 
-  test('REQ-106 — setNutrRecipeMode + setNutrStage call syncHash (hash router persists mode)', () => {
-    const body = readLogicJs();
-    // setNutrStage and setNutrRecipeMode each call syncHash so the URL hash
-    // stays consistent with the (mode, stage) pair.
-    const setStageBlock = body.match(/function setNutrStage[\s\S]*?\n\}/);
-    const setModeBlock  = body.match(/function setNutrRecipeMode[\s\S]*?\n\}/);
-    assert.ok(setStageBlock, 'setNutrStage function not found in logic.js');
-    assert.ok(setModeBlock,  'setNutrRecipeMode function not found in logic.js');
-    assert.match(setStageBlock[0], /syncHash\(\)/);
-    assert.match(setModeBlock[0],  /syncHash\(\)/);
+  test('REQ-106 — initial render: T5 button has .active (FP @ T5 default)', () => {
+    // Behavioral pin on the default state. nutrRecipeMode is declared with
+    // `let` and lives in the page script's module scope (not on window);
+    // the observable signal is the .active class on the stage button +
+    // window.eval to peek at the let when needed.
+    const { window } = loadTomatoApp();
+    const t5Button = window.document.querySelector('[data-nstage="T5"]');
+    assert.ok(t5Button.classList.contains('active'),
+      'T5 button must have .active class at initial render (default = FP/T5)');
+    // Peek the module-scoped let via eval — this is the load-bearing
+    // assertion that FP is the actual default, not just that T5 happens
+    // to be highlighted.
+    const mode = window.eval('nutrRecipeMode');
+    assert.equal(mode, 'fp', `nutrRecipeMode should default to 'fp' (got '${mode}')`);
+  });
+
+  test('REQ-106 — setNutrRecipeMode("fp") from T2 snaps stage to T5', () => {
+    // Behavioral: load-bearing for "FP recipe mode locks stage to T5". A
+    // regex match on logic.js would pass even with `if (false) nutrStage = 'T5'`.
+    const { window } = loadTomatoApp();
+    assert.equal(typeof window.setNutrRecipeMode, 'function',
+      'setNutrRecipeMode must be exposed');
+    assert.equal(typeof window.setNutrStage, 'function');
+    // Drop to a non-T5 stage in stored mode.
+    window.setNutrRecipeMode('stored');
+    window.setNutrStage('T2');
+    assert.equal(window.eval('nutrStage'), 'T2', 'stage should be T2 before FP flip');
+    // Flip to FP — stage should snap to T5.
+    window.setNutrRecipeMode('fp');
+    assert.equal(window.eval('nutrStage'), 'T5',
+      'switching to FP must snap nutrStage to T5');
+    // Restore.
+    window.setNutrRecipeMode('fp');
+  });
+
+  test('REQ-106 — setNutrStage("T2") while in FP auto-reverts mode to stored', () => {
+    // Behavioral: the auto-revert clause. If removed, mode stays 'fp' on T2.
+    const { window } = loadTomatoApp();
+    window.setNutrRecipeMode('fp');
+    assert.equal(window.eval('nutrRecipeMode'), 'fp');
+    assert.equal(window.eval('nutrStage'), 'T5');
+    window.setNutrStage('T2');
+    assert.equal(window.eval('nutrRecipeMode'), 'stored',
+      'switching off T5 while in FP must auto-revert mode to stored');
+    // Stage actually moves to T2 — auto-revert only flips the mode flag.
+    assert.equal(window.eval('nutrStage'), 'T2',
+      'stage should still move to the requested non-T5 value');
+    // Restore default state for downstream tests.
+    window.setNutrRecipeMode('fp');
+  });
+
+  test('REQ-106 — setNutrRecipeMode + setNutrStage trigger syncHash (URL persists pair)', () => {
+    // Behavioral side of the hash-persistence clause: assert the URL hash
+    // updates when the (mode, stage) pair changes.
+    const { window } = loadTomatoApp();
+    // Move to a state we know forces a non-default hash segment.
+    window.setNutrRecipeMode('fp');
+    // Navigate to the nutriment page so syncHash emits the recipe slot.
+    if (typeof window.setPage === 'function') window.setPage('nutriment');
+    window.setNutrRecipeMode('stored');
+    const hashAfterStored = window.location.hash;
+    window.setNutrRecipeMode('fp');
+    const hashAfterFp = window.location.hash;
+    // Hashes don't have to differ for both directions (fp is default, may
+    // collapse to ''), but at least one of the two transitions must touch
+    // the URL. We assert that 'stored' emits a hash segment containing
+    // either 'stored' or 'tomato' (the positional crop placeholder).
+    assert.ok(
+      hashAfterStored.includes('stored') || hashAfterStored.includes('nutriment'),
+      `setNutrRecipeMode('stored') should update URL hash (got "${hashAfterStored}")`
+    );
+    // Voidness check on FP after stored is fine — default may erase hash.
+    assert.ok(hashAfterFp === '' || hashAfterFp.length > 0,
+      `hash after FP set: "${hashAfterFp}"`);
   });
 });
 
-// ─── REQ-107 — Recipe-mode toggle layout + label + products-in-play retired ─
+// ─── REQ-107 — Toggle: First principles left, default; products-in-play ─
 
-describe('REQ-107 — Toggle: First principles left, default; products-in-play removed', () => {
+describe('REQ-107 — Toggle: First principles left + default; products-in-play retired', () => {
   test('REQ-107 — FP button is the first BUTTON child of the toggle parent', () => {
     const { window } = loadTomatoApp();
-    const fp = window.document.getElementById('nutr-recipe-fp');
-    const stored = window.document.getElementById('nutr-recipe-stored');
-    assert.equal(fp.parentElement, stored.parentElement, 'FP and Stockée must share a parent');
-    const buttons = Array.from(fp.parentElement.children).filter(c => c.tagName === 'BUTTON');
-    assert.equal(buttons[0], fp, `FP button is not first child (got id="${buttons[0]?.id}")`);
-    assert.equal(buttons[1], stored, `Stockée button is not second child (got id="${buttons[1]?.id}")`);
+    const fpButton = window.document.getElementById('nutr-recipe-fp');
+    const storedButton = window.document.getElementById('nutr-recipe-stored');
+    assert.equal(fpButton.parentElement, storedButton.parentElement,
+      'FP and Stockée must share a parent');
+    const buttons = Array.from(fpButton.parentElement.children)
+      .filter(child => child.tagName === 'BUTTON');
+    assert.equal(buttons[0], fpButton,
+      `FP button is not first child (got id="${buttons[0]?.id}")`);
+    assert.equal(buttons[1], storedButton,
+      `Stockée button is not second child (got id="${buttons[1]?.id}")`);
   });
 
   test('REQ-107 — FP label text contains "First principles" (English term-of-art)', () => {
     const { window } = loadTomatoApp();
-    const fp = window.document.getElementById('nutr-recipe-fp');
-    const text = (fp.textContent || '').trim();
+    const fpButton = window.document.getElementById('nutr-recipe-fp');
+    const text = (fpButton.textContent || '').trim();
     assert.match(text, /First principles/);
     assert.doesNotMatch(text, /Premiers principes/);
   });
 
-  test('REQ-107 — nutr-products list is removed from the page markup', () => {
+  test('REQ-107 — FP is the active mode at initial render (default = fp)', () => {
+    // Behavioral pin on the "default = fp" clause. nutrRecipeMode is a
+    // module-scoped `let` (not on window); peek via window.eval. Distinct
+    // from REQ-106's source-grep on the declaration line because here we
+    // assert the runtime state actually settled to 'fp' after init.
     const { window } = loadTomatoApp();
-    const products = window.document.getElementById('nutr-products');
-    assert.equal(products, null, 'nutr-products should be retired from the header');
+    const mode = window.eval('nutrRecipeMode');
+    assert.equal(mode, 'fp',
+      `nutrRecipeMode should default to 'fp' on initial load (got '${mode}')`);
   });
 
-  test('REQ-107 — recipe-mode helper note is empty (no unspecified prose)', () => {
+  test('REQ-107 — nutr-products list is removed from the page markup', () => {
+    const { window } = loadTomatoApp();
+    assert.equal(window.document.getElementById('nutr-products'), null,
+      'nutr-products should be retired from the header');
+  });
+
+  test('REQ-107 — recipe-mode helper note renders empty (no unspecced prose)', () => {
     const { window } = loadTomatoApp();
     const note = window.document.getElementById('nutr-recipe-mode-note');
     if (note) {
       const text = (note.textContent || '').trim();
-      assert.equal(text.length, 0, `helper note has ${text.length} chars of text — should be empty`);
+      assert.equal(text.length, 0,
+        `helper note has ${text.length} chars — must be empty per REQ-107`);
     }
   });
 });
@@ -158,7 +313,16 @@ describe('REQ-107 — Toggle: First principles left, default; products-in-play r
 // ─── REQ-108 — Block 1 demand sourced from PlantNeedsTomato ────────────
 
 describe('REQ-108 — Block 1 demand sourced from PN.calcNutrDemand', () => {
-  test('REQ-108 — logic.js calls PN.calcNutrDemand (no inline reimplementation)', () => {
+  test('REQ-108 — window.PlantNeedsTomato.calcNutrDemand exists at runtime', () => {
+    // Behavioral: the spec references the public API by name. If the
+    // namespace shape changes (e.g. method renamed), the Bilan breaks.
+    const { window } = loadTomatoApp();
+    assert.ok(window.PlantNeedsTomato, 'window.PlantNeedsTomato namespace missing');
+    assert.equal(typeof window.PlantNeedsTomato.calcNutrDemand, 'function',
+      'PN.calcNutrDemand must be a function');
+  });
+
+  test('REQ-108 — logic.js Block 1 calls PN.calcNutrDemand (no inline reimplementation)', () => {
     const body = readLogicJs();
     assert.match(body, /PN\.calcNutrDemand|window\.PlantNeedsTomato\.calcNutrDemand/);
   });
@@ -167,7 +331,6 @@ describe('REQ-108 — Block 1 demand sourced from PN.calcNutrDemand', () => {
     const body = readLogicJs();
     const block1 = body.match(/Block 1[\s\S]*?nutr-needs.*?innerHTML/);
     assert.ok(block1, 'Block 1 marker not found in logic.js');
-    // Negative lookbehind for `.` excludes namespaced access (PN.BIOMASS_DEMAND).
     assert.doesNotMatch(block1[0], /(?<!\.)\bBIOMASS_DEMAND\s*\[/);
   });
 
@@ -176,6 +339,42 @@ describe('REQ-108 — Block 1 demand sourced from PN.calcNutrDemand', () => {
     const block1 = body.match(/Block 1[\s\S]*?nutr-needs.*?innerHTML/);
     assert.ok(block1, 'Block 1 marker not found in logic.js');
     assert.doesNotMatch(block1[0], /(?<!\.)\bTOMATO_FRUIT_EXPORT\s*\[/);
+  });
+
+  test('REQ-108 — rendered Block 1 totals match PN.calcNutrDemand output (N at T5, target 1.5)', () => {
+    // Load-bearing behavioral assertion: pin that the value rendered in
+    // Block 1 actually came from the API call. Set target=1.5, stage=T5,
+    // read N from the row, compare to PN.calcNutrDemand(1.5, 'T5', 1.0).N.total.
+    const { window } = loadTomatoApp();
+    const target = window.document.getElementById('nutr-target');
+    target.value = '1.5';
+    target.dispatchEvent(new window.Event('input', { bubbles: true }));
+    window.setNutrStage('T5');
+    const PN = window.PlantNeedsTomato;
+    const expectedBreakdown = PN.calcNutrDemand(1.5, 'T5', 1.0);
+    const expectedNTotalMg = expectedBreakdown.N.total; // mg/m²/sem
+    // Find the N row in #nutr-needs.
+    const rows = window.document.querySelectorAll('#nutr-needs .pq-row');
+    let nRow = null;
+    for (const row of rows) {
+      if (row.children[0]?.textContent.trim() === 'N') { nRow = row; break; }
+    }
+    assert.ok(nRow, 'N row not found in #nutr-needs');
+    // fmtVal output: ">= 1000 mg" → "X.X g" (×1000); ">= 10" → mg integer;
+    // smaller → mg with decimals. Parse the unit so we compare in mg.
+    const parseFmtVal = txt => {
+      const cleaned = (txt || '').trim().replace(',', '.');
+      const matched = cleaned.match(/^([\d.]+)\s*(g|mg)?$/);
+      if (!matched) return NaN;
+      const value = parseFloat(matched[1]);
+      return matched[2] === 'g' ? value * 1000 : value;
+    };
+    const totalRenderedMg = parseFmtVal(nRow.children[3].textContent);
+    assert.ok(Number.isFinite(totalRenderedMg) && totalRenderedMg > 0,
+      `N total not numeric: "${nRow.children[3].textContent}"`);
+    const diff = Math.abs(totalRenderedMg - expectedNTotalMg) / expectedNTotalMg;
+    assert.ok(diff < 0.05,
+      `rendered N total ${totalRenderedMg} mg ≠ PN.calcNutrDemand ${expectedNTotalMg} mg (diff ${(diff*100).toFixed(1)}%)`);
   });
 });
 
@@ -203,6 +402,7 @@ describe('REQ-109 — Block 1 row click opens minimal pourquoi modal', () => {
   });
 
   test('REQ-109 — opening a demand modal leaves the interpretation node empty', () => {
+    // Spec: "No interpretation prose, no per-element rationale paragraphs."
     const { window } = loadTomatoApp();
     assert.equal(typeof window.showPourquoi, 'function', 'showPourquoi must be exposed');
     window.showPourquoi('demand.N');
@@ -219,8 +419,6 @@ describe('REQ-109 — Block 1 row click opens minimal pourquoi modal', () => {
     window.showPourquoi('demand.N');
     const title = window.document.getElementById('pq-modal-title');
     assert.ok(title, 'pq-modal-title must exist');
-    // certFor(stage, el) returns a number 0-5; showPourquoi injects
-    // <span class="diag-cert diag-cert-N"> into the title innerHTML.
     assert.match(title.innerHTML || '', /diag-cert-\d/,
       'cert badge (diag-cert-N) must be rendered in pq-modal-title');
   });
@@ -228,10 +426,9 @@ describe('REQ-109 — Block 1 row click opens minimal pourquoi modal', () => {
   test('REQ-109 — opening a demand modal populates equation (piece 2 of 3)', () => {
     const { window } = loadTomatoApp();
     window.showPourquoi('demand.N');
-    const eq = window.document.getElementById('pq-modal-eq');
-    assert.ok(eq, 'pq-modal-eq must exist');
-    // Spec: `demand[el] = …` symbolic form.
-    assert.match((eq.textContent || '').trim(), /demand\[N\]\s*=/,
+    const equation = window.document.getElementById('pq-modal-eq');
+    assert.ok(equation, 'pq-modal-eq must exist');
+    assert.match((equation.textContent || '').trim(), /demand\[N\]\s*=/,
       'equation node must contain `demand[el] = …`');
   });
 
@@ -241,9 +438,7 @@ describe('REQ-109 — Block 1 row click opens minimal pourquoi modal', () => {
     const plugged = window.document.getElementById('pq-modal-plugged');
     assert.ok(plugged, 'pq-modal-plugged must exist');
     const text = (plugged.textContent || '').trim();
-    assert.ok(text.length > 0,
-      'plugged-numbers node must not be empty per REQ-109');
-    // Plugged copy should contain at least one numeric value substitution.
+    assert.ok(text.length > 0, 'plugged-numbers node must not be empty per REQ-109');
     assert.match(text, /\d/, 'plugged-numbers should contain at least one digit');
   });
 });
@@ -254,7 +449,7 @@ describe('REQ-110 — Block 1 reactive to target + stage changes', () => {
   test('REQ-110 — mutating nutr-target re-renders Block 1 with new numbers', () => {
     const { window } = loadTomatoApp();
     const target = window.document.getElementById('nutr-target');
-    const needs  = window.document.getElementById('nutr-needs');
+    const needs = window.document.getElementById('nutr-needs');
     target.value = '1.5';
     target.dispatchEvent(new window.Event('input', { bubbles: true }));
     const before = (needs.textContent || '').trim();
@@ -269,19 +464,19 @@ describe('REQ-110 — Block 1 reactive to target + stage changes', () => {
   test('REQ-110 — clicking a different stage button re-renders Block 1', () => {
     const { window } = loadTomatoApp();
     const needs = window.document.getElementById('nutr-needs');
-    const t5 = window.document.querySelector('[data-nstage="T5"]');
-    const t1 = window.document.querySelector('[data-nstage="T1"]');
-    assert.ok(t5 && t1, 'stage buttons must exist');
-    t5.dispatchEvent(new window.Event('click', { bubbles: true }));
-    const before = (needs.textContent || '').trim();
-    t1.dispatchEvent(new window.Event('click', { bubbles: true }));
-    const after = (needs.textContent || '').trim();
-    t5.dispatchEvent(new window.Event('click', { bubbles: true }));
-    assert.notEqual(before, after, 'Block 1 text should change when stage shifts');
+    const t5Button = window.document.querySelector('[data-nstage="T5"]');
+    const t1Button = window.document.querySelector('[data-nstage="T1"]');
+    assert.ok(t5Button && t1Button, 'stage buttons must exist');
+    t5Button.dispatchEvent(new window.Event('click', { bubbles: true }));
+    const beforeT1 = (needs.textContent || '').trim();
+    t1Button.dispatchEvent(new window.Event('click', { bubbles: true }));
+    const afterT1 = (needs.textContent || '').trim();
+    t5Button.dispatchEvent(new window.Event('click', { bubbles: true }));
+    assert.notEqual(beforeT1, afterT1, 'Block 1 text should change when stage shifts');
   });
 });
 
-// ─── REQ-111 — Block 1 row layout: 4 columns ───────────────────────────
+// ─── REQ-111 — Block 1 row layout: 4 columns + values from {fruit,biomass,total} ─
 
 describe('REQ-111 — Block 1 row layout: 4 columns (Él. / Fruit / Biomasse / Total)', () => {
   test('REQ-111 — header row contains "Fruit" and "Biomasse" labels', () => {
@@ -292,7 +487,7 @@ describe('REQ-111 — Block 1 row layout: 4 columns (Él. / Fruit / Biomasse / T
     assert.match(text, /Biomasse/);
   });
 
-  test('REQ-111 — every row has exactly 4 child cells', () => {
+  test('REQ-111 — every row has exactly 4 child cells (Él. / Fruit / Biomasse / Total)', () => {
     const { window } = loadTomatoApp();
     const rows = window.document.querySelectorAll('#nutr-needs .pq-row');
     assert.ok(rows.length > 0, 'expected at least one row in #nutr-needs');
@@ -301,33 +496,119 @@ describe('REQ-111 — Block 1 row layout: 4 columns (Él. / Fruit / Biomasse / T
         `row had ${row.children.length} cells, expected 4`);
     }
   });
+
+  test('REQ-111 — N row at T5 / target=1.5 splits into matching fruit + biomass terms', () => {
+    // Load-bearing behavioral assertion: the spec says values come from
+    // calcNutrDemand returning the {fruit, biomass, total} shape. Pin
+    // that the Fruit and Biomasse cells correspond to the API's split,
+    // not some other computation. Compare in mg (fmtVal shifts to "g"
+    // above 1000 mg).
+    const { window } = loadTomatoApp();
+    const target = window.document.getElementById('nutr-target');
+    target.value = '1.5';
+    target.dispatchEvent(new window.Event('input', { bubbles: true }));
+    window.setNutrStage('T5');
+    const PN = window.PlantNeedsTomato;
+    const breakdown = PN.calcNutrDemand(1.5, 'T5', 1.0).N;
+    const rows = window.document.querySelectorAll('#nutr-needs .pq-row');
+    let nRow = null;
+    for (const row of rows) {
+      if (row.children[0]?.textContent.trim() === 'N') { nRow = row; break; }
+    }
+    assert.ok(nRow, 'N row not found');
+    // fmtVal output: ">= 1000 mg" → "X.X g"; otherwise mg. Biomass cell
+    // is prefixed with "+ " when > 0; strip it before parsing.
+    const parseFmtValMg = txt => {
+      const cleaned = (txt || '').trim().replace(/^\+\s*/, '').replace(',', '.');
+      const matched = cleaned.match(/^([\d.]+)\s*(g|mg)?$/);
+      if (!matched) return NaN;
+      const value = parseFloat(matched[1]);
+      return matched[2] === 'g' ? value * 1000 : value;
+    };
+    const fruitRenderedMg = parseFmtValMg(nRow.children[1].textContent);
+    const biomassRenderedMg = parseFmtValMg(nRow.children[2].textContent);
+    const totalRenderedMg = parseFmtValMg(nRow.children[3].textContent);
+    assert.ok(Number.isFinite(fruitRenderedMg) && fruitRenderedMg > 0,
+      `N fruit cell not numeric: "${nRow.children[1].textContent}"`);
+    assert.ok(Number.isFinite(biomassRenderedMg) && biomassRenderedMg > 0,
+      `N biomass cell not numeric: "${nRow.children[2].textContent}"`);
+    assert.ok(Number.isFinite(totalRenderedMg) && totalRenderedMg > 0,
+      `N total cell not numeric: "${nRow.children[3].textContent}"`);
+    // fruit + biomass should equal total within fmtVal rounding (±5 %).
+    const sumDiff = Math.abs(fruitRenderedMg + biomassRenderedMg - totalRenderedMg) / totalRenderedMg;
+    assert.ok(sumDiff < 0.05,
+      `fruit (${fruitRenderedMg}) + biomass (${biomassRenderedMg}) ≠ total (${totalRenderedMg}); diff ${(sumDiff*100).toFixed(1)}%`);
+    // The rendered fruit/total ratio should match the API ratio.
+    const apiFruitRatio = breakdown.fruit / breakdown.total;
+    const renderedFruitRatio = fruitRenderedMg / totalRenderedMg;
+    assert.ok(Math.abs(apiFruitRatio - renderedFruitRatio) < 0.05,
+      `fruit/total ratio rendered ${renderedFruitRatio.toFixed(3)} ≠ API ${apiFruitRatio.toFixed(3)}`);
+  });
 });
 
 // ─── REQ-113 — Block 5 inputs: sprayCount + surfactant ─────────────────
 
 describe('REQ-113 — Block 5 exposes sprayCount + surfactant inputs', () => {
-  test('REQ-113 — nutr-foliar-spray-count is a number input, default 1, min 1, max 3', () => {
+  test('REQ-113 — nutr-foliar-spray-count is a number input, default 1, min 1, max 3, step 1', () => {
     const { window } = loadTomatoApp();
-    const inp = window.document.getElementById('nutr-foliar-spray-count');
-    assert.ok(inp, 'nutr-foliar-spray-count must exist');
-    assert.equal(inp.type, 'number');
-    assert.equal(inp.value, '1');
-    assert.equal(inp.min, '1');
-    assert.equal(inp.max, '3');
+    const input = window.document.getElementById('nutr-foliar-spray-count');
+    assert.ok(input, 'nutr-foliar-spray-count must exist');
+    assert.equal(input.type, 'number');
+    assert.equal(input.value, '1');
+    assert.equal(input.min, '1');
+    assert.equal(input.max, '3');
+    assert.equal(input.step, '1');
   });
 
   test('REQ-113 — nutr-foliar-surfactant is a checkbox, default unchecked', () => {
     const { window } = loadTomatoApp();
-    const inp = window.document.getElementById('nutr-foliar-surfactant');
-    assert.ok(inp, 'nutr-foliar-surfactant must exist');
-    assert.equal(inp.type, 'checkbox');
-    assert.equal(inp.checked, false);
+    const input = window.document.getElementById('nutr-foliar-surfactant');
+    assert.ok(input, 'nutr-foliar-surfactant must exist');
+    assert.equal(input.type, 'checkbox');
+    assert.equal(input.checked, false);
   });
 
   test('REQ-113 — both ids appear in the input-listener wiring array of app/index.html', () => {
     const html = readAppIndexHtml();
     assert.match(html, /['"]nutr-foliar-spray-count['"]/);
     assert.match(html, /['"]nutr-foliar-surfactant['"]/);
+  });
+
+  test('REQ-113 — sprayCount listener is actually wired (input event triggers re-render)', () => {
+    // Load-bearing: the structural REQ would pass if the id is in the
+    // wiring array but addEventListener is broken. The only way to
+    // confirm the wire is to dispatch the event and verify a downstream
+    // side effect. Both FP and stored modes thread sprayCount through
+    // computeFoliarSupply (linear delivery multiplier).
+    const { window } = loadTomatoApp();
+    const spray = window.document.getElementById('nutr-foliar-spray-count');
+    const block5 = window.document.getElementById('nutr-foliar');
+    spray.value = '1';
+    spray.dispatchEvent(new window.Event('input', { bubbles: true }));
+    const at1 = (block5.textContent || '').trim();
+    spray.value = '3';
+    spray.dispatchEvent(new window.Event('input', { bubbles: true }));
+    const at3 = (block5.textContent || '').trim();
+    spray.value = '1';
+    spray.dispatchEvent(new window.Event('input', { bubbles: true }));
+    assert.notEqual(at1, at3,
+      'sprayCount listener is not wired — input event did not change Block 5 text');
+  });
+
+  test('REQ-113 — surfactant listener is actually wired (change event triggers re-render)', () => {
+    const { window } = loadTomatoApp();
+    const surfactant = window.document.getElementById('nutr-foliar-surfactant');
+    const block5 = window.document.getElementById('nutr-foliar');
+    surfactant.checked = false;
+    surfactant.dispatchEvent(new window.Event('change', { bubbles: true }));
+    const offText = (block5.textContent || '').trim();
+    surfactant.checked = true;
+    surfactant.dispatchEvent(new window.Event('change', { bubbles: true }));
+    const onText = (block5.textContent || '').trim();
+    surfactant.checked = false;
+    surfactant.dispatchEvent(new window.Event('change', { bubbles: true }));
+    assert.notEqual(offText, onText,
+      'surfactant listener is not wired — change event did not change Block 5 text');
   });
 });
 
@@ -336,8 +617,9 @@ describe('REQ-113 — Block 5 exposes sprayCount + surfactant inputs', () => {
 describe('REQ-114 — Block 5 reactive to sprayCount + surfactant changes', () => {
   test('REQ-114 — mutating sprayCount from 1 → 2 re-renders Block 5 text', () => {
     const { window } = loadTomatoApp();
+    window.setNutrRecipeMode('stored');
     const spray = window.document.getElementById('nutr-foliar-spray-count');
-    const surf  = window.document.getElementById('nutr-foliar-surfactant');
+    const surf = window.document.getElementById('nutr-foliar-surfactant');
     const block5 = window.document.getElementById('nutr-foliar');
     spray.value = '1';
     surf.checked = false;
@@ -348,13 +630,15 @@ describe('REQ-114 — Block 5 reactive to sprayCount + surfactant changes', () =
     const after = (block5.textContent || '').trim();
     spray.value = '1';
     spray.dispatchEvent(new window.Event('input', { bubbles: true }));
+    window.setNutrRecipeMode('fp');
     assert.notEqual(before, after, 'Block 5 text should change when sprayCount shifts');
   });
 
-  test('REQ-114 — toggling surfactant from off → on re-renders Block 5 text', () => {
+  test('REQ-114 — toggling surfactant off → on re-renders Block 5 text', () => {
     const { window } = loadTomatoApp();
+    window.setNutrRecipeMode('stored');
     const spray = window.document.getElementById('nutr-foliar-spray-count');
-    const surf  = window.document.getElementById('nutr-foliar-surfactant');
+    const surf = window.document.getElementById('nutr-foliar-surfactant');
     const block5 = window.document.getElementById('nutr-foliar');
     spray.value = '1';
     surf.checked = false;
@@ -365,16 +649,40 @@ describe('REQ-114 — Block 5 reactive to sprayCount + surfactant changes', () =
     const after = (block5.textContent || '').trim();
     surf.checked = false;
     surf.dispatchEvent(new window.Event('change', { bubbles: true }));
+    window.setNutrRecipeMode('fp');
     assert.notEqual(before, after, 'Block 5 text should change when surfactant toggles');
+  });
+
+  test('REQ-114 — supply path threads {sprayCount, surfactant} into computeFoliarSupply', () => {
+    // Behavioral assertion that the FoliarRecipeTomato.computeFoliarSupply
+    // contract is honored: doubling sprayCount roughly doubles the
+    // delivered Mn (sprayCount multiplies delivery linearly per
+    // FoliarRecipeTomato/calc.js). Uses the namespace directly so it
+    // doesn't depend on intermediate render rounding.
+    const { window } = loadTomatoApp();
+    const FRT = window.FoliarRecipeTomato;
+    assert.ok(FRT && typeof FRT.computeFoliarSupply === 'function',
+      'FoliarRecipeTomato.computeFoliarSupply must be exposed');
+    const supply1 = FRT.computeFoliarSupply('T5', { sprayCount: 1, surfactant: false });
+    const supply2 = FRT.computeFoliarSupply('T5', { sprayCount: 2, surfactant: false });
+    assert.ok(supply1 && typeof supply1.Mn === 'number',
+      `supply.Mn should be numeric (sprayCount=1): ${JSON.stringify(supply1)}`);
+    assert.ok(supply2.Mn > supply1.Mn,
+      `doubling sprayCount must increase Mn: ${supply1.Mn} → ${supply2.Mn}`);
+    // Sanity-check the linear-ish multiplier — within 5 % of 2x.
+    const ratio = supply2.Mn / supply1.Mn;
+    assert.ok(Math.abs(ratio - 2) < 0.1,
+      `Mn ratio sprayCount 2/1 = ${ratio.toFixed(3)}, expected ~2.0`);
   });
 });
 
 // ─── REQ-004 — Bilan reads from source-of-truth recipes ────────────────
 //
 // Spec table enumerates 5 source-of-truth bindings the Bilan supply
-// function must reference. We pin each as a source-grep against
-// app/index.html (the consumer file). This complements the bash verifier's
-// patterns; the bash version greps dist/index.html, the test pins source.
+// function must reference: computeStageRecipe(stage), STORED_RECIPE.tomato
+// .foliaire.A, STORED_RECIPE.tomato.sidedress[stage], BIOMASS_DEMAND[stage],
+// TOMATO_FRUIT_EXPORT[el]. Source-grep pairs the consumer (app/index.html)
+// + runtime check that calcNutrSupply produces non-trivial output.
 
 describe('REQ-004 — Bilan reads from source-of-truth recipes', () => {
   test('REQ-004 — calcNutrSupply calls computeStageRecipe(stage)', () => {
@@ -411,5 +719,23 @@ describe('REQ-004 — Bilan reads from source-of-truth recipes', () => {
     assert.equal(typeof supply.fert.K, 'number');
     assert.equal(typeof supply.fert.Mg, 'number');
     assert.ok(supply.fert.K > 0, 'fert.K should be positive at T5');
+  });
+
+  test('REQ-004 — stored fertigation K matches STORED_RECIPE.tomato.fertigation[T5].kSulfate × analysis', () => {
+    // Load-bearing: pin that the *value* returned by calcNutrSupply is
+    // actually derived from STORED_RECIPE, not a hardcoded constant. We
+    // don't write to STORED_RECIPE; we just read it (via window.eval since
+    // the const is module-scoped, not hoisted to window) and assert the
+    // supply value matches the public formula.
+    const { window } = loadTomatoApp();
+    const supply = window.calcNutrSupply('T5', true, 1.0, 1.5, 'stored');
+    const storedKSulfate = window.eval('STORED_RECIPE.tomato.fertigation.T5.kSulfate');
+    const area = window.eval('TOMATO_NUM_BEDS * TOMATO_BED_AREA');
+    const productPct = window.eval('PRODUCT_PCT.K2SO4_K');
+    const mK = typeof window.getMultK === 'function' ? window.getMultK() : 1;
+    const expectedK = (storedKSulfate * mK * productPct) / area * 1000;
+    const diff = Math.abs(supply.fert.K - expectedK);
+    assert.ok(diff < 0.01,
+      `supply.fert.K (${supply.fert.K}) ≠ kSulfate×mK×pct/area×1000 (${expectedK}), diff ${diff}`);
   });
 });

@@ -110,6 +110,25 @@ Every time Guillaume adds a REQ, scan the surrounding `spec.md` for entries the 
 
 Don't delete unilaterally — surface and confirm.
 
+## Notify team-leader after every spec change
+
+The team-leader orchestrates test-writer / coder / pruner subagents per subproject. It does not watch every spec edit live — it relies on this inbox. **Before ending any turn where a spec file changed** (REQ added, edited, or deleted in `requirements.md` or any `*/spec.md` you own), append an entry to `team-coordination/team-leader/inbox.md` so the leader can scope the next wave.
+
+One entry per subproject touched in the turn. Format (defined in the inbox header — match exactly):
+
+```
+## YYYY-MM-DD HH:MM — product-owner — <subproject-path-relative-to-repo>
+
+**Change type:** added | edited | deleted
+**REQs affected:** REQ-NNN, REQ-NNN, ...
+**Summary:** 1–2 sentences on what changed.
+**Suggested waves:** test-writer · coder · pruner (any/all)
+```
+
+`<subproject-path>` is the directory of the changed `spec.md` (e.g. `nutrition/tomato`, `nutrition/tomato/app`) — or `requirements.md` for the root cross-app file. Append at the top of the Entries section, most recent first.
+
+This notification is **mandatory** and silent — never mention REQ numbers in chat (per `feedback_req_number_allocation`), but always write the inbox entry. Do NOT also append a changelog entry for the spec edit itself unless the change is independently material — the inbox + the file diff are the audit trail; the changelog stays for behavior-shaping changes.
+
 # Inputs to read at session start
 
 1. `CLAUDE.md` (root) — farm context, spec discipline rules.

@@ -5,6 +5,124 @@ Rejected alternatives and historical decisions for this subproject. Current live
 
 ---
 
+## Compost subtraction in K/Mg mass-balance — retired 2026-05-13
+
+REQ-098 amended 2026-05-12 to drop compost release from the K and Mg
+mass-balance: `computeStageRecipe(stage)` now replenishes the FULL plant
+offtake (fruit export + biomass demand), with sidedress credited on K
+only. Mg is pure offtake. Compost contribution is tracked separately as
+a soil-bank input in `nutrition/compost-contribution/spec.md` and no
+longer enters the fertigation cascade math. The prior policy (with
+compost subtraction) and its reconciliation history are preserved below
+for organic-cert audit and future re-evaluation.
+
+### Prior formula (with compost subtraction)
+
+```
+totalArea_m2          = TOMATO_NUM_BEDS × TOMATO_BED_AREA  // 7 × 54.7 = 382.9 m²
+compost_K_mg/m²/wk    = CompostContribution.releasePerWeek.K × 1000
+compost_Mg_mg/m²/wk   = CompostContribution.releasePerWeek.Mg × 1000
+
+// ── K ──
+k_offtake_mg/m²/wk    = TOMATO_FRUIT_EXPORT.K × stageYield × 1000 + BIOMASS_DEMAND[stage].K
+k_sidedress_mg/m²/wk  = STORED_RECIPE.tomato.sidedress[stage].actisol_g
+                         × PRODUCT_PCT.Actisol_K × SIDEDRESS_MIN_EFF.K × 1000
+                         / SIDEDRESS_AREA_PER_PLANCHE
+k_needed_mg/m²/wk     = max(0, k_offtake − k_sidedress − compost_K)
+kSulfate_g_total      = round(k_needed / 1000 / PRODUCT_PCT.K2SO4_K × totalArea_m2)
+
+// ── Mg ──
+mg_offtake_mg/m²/wk   = TOMATO_FRUIT_EXPORT.Mg × stageYield × 1000 + BIOMASS_DEMAND[stage].Mg
+mg_needed_mg/m²/wk    = max(0, mg_offtake − compost_Mg)   // sidedress carries no Mg
+mgSulfate_g_total     = round(mg_needed / 1000 / PRODUCT_PCT.MgSO4_Mg × totalArea_m2)
+```
+
+Prior `calc.js` body:
+
+```js
+function computeStageRecipe(stage) {
+  const y = RECIPE_INPUTS.stageYield[stage] || 0;
+  const totalArea = TOMATO_NUM_BEDS * TOMATO_BED_AREA;
+  const sd = STORED_RECIPE.tomato.sidedress[stage] || { actisol_g: 0, farine_g: 0 };
+  const biomass = BIOMASS_DEMAND[stage] || {};
+  const compost = window.CompostContribution.releasePerWeek;
+
+  // K offtake − sidedress − compost
+  const k_offtake_mg = (TOMATO_FRUIT_EXPORT.K.g * 1000 * y) + (biomass.K || 0);
+  const k_sd_mg = (sd.actisol_g * PRODUCT_PCT.Actisol_K
+                   * (SIDEDRESS_MIN_EFF.K || 0.85) * 1000)
+                   / SIDEDRESS_AREA_PER_PLANCHE;
+  const k_compost_mg = (compost.K || 0) * 1000;
+  const k_needed_mg_per_m2 = Math.max(0, k_offtake_mg - k_sd_mg - k_compost_mg);
+  const kSulfate = Math.round((k_needed_mg_per_m2 / 1000 / PRODUCT_PCT.K2SO4_K) * totalArea);
+
+  // Mg offtake − compost (no sidedress contribution)
+  const mg_offtake_mg = (TOMATO_FRUIT_EXPORT.Mg.g * 1000 * y) + (biomass.Mg || 0);
+  const mg_compost_mg = (compost.Mg || 0) * 1000;
+  const mg_needed_mg_per_m2 = Math.max(0, mg_offtake_mg - mg_compost_mg);
+  const mgSulfate = Math.round((mg_needed_mg_per_m2 / 1000 / PRODUCT_PCT.MgSO4_Mg) * totalArea);
+
+  return { mgSulfate, kSulfate };
+}
+```
+
+### Policy-vs-implementation drift history
+
+The framing comment that landed 2026-05-07 ("COMPOST IS NOT SUBTRACTED")
+expressed a *policy direction* — fertigation should replenish full plant
+offtake regardless of compost contribution, treating compost as a
+margin-of-safety bank rather than a fertigation credit. Intent: avoid
+silent under-feeding when compost ages out (compost release is uncertain,
+especially Mg at cert 1-2 with no label data, and finite over 18-24
+months).
+
+The *implementation* lagged the comment from 2026-05-07 → 2026-05-12 —
+the code still subtracted compost from both K and Mg even after the
+framing comment shifted. At the time, the live code paths that consumed
+`computeStageRecipe(stage)` (Block 7 stored-vs-FP drift gauge,
+`calcNutrSupply` in fp mode, downstream supply bound assertions
+REQ-013/014, predictedCE in REQ-024) were calibrated against the
+WITH-subtraction values:
+
+- T5 K: offtake 6 000 − sidedress 0 − compost 400 = 5 600 mg/m²/wk →
+  K₂SO₄ 5 167 g (matched PA Taillon April 2026 anchor by construction).
+- T5 Mg: offtake 855 − compost 500 = 355 mg/m²/wk → MgSO₄·7H₂O 1 379 g
+  (matched PA Taillon April 2026 anchor by construction).
+
+The asymmetry with `computeStageSidedress` (which subtracts compost for
+N — a separate channel/element with its own accounting) was intentional;
+the N channel and the K/Mg channel were extracted at different points in
+the policy evolution.
+
+### Reconciliation outcome (2026-05-12)
+
+The reconciliation plan documented during the drift period — "bundle the
+no-compost-subtraction policy update with a refit of the FP T5 anchor
+(PA Taillon retune) so all REQs move in lockstep" — was superseded by a
+simpler resolution: REQ-098 was amended to remove the subtraction term
+in spec + calc.js, and the PA Taillon `FP_RECIPE_T5.fertigation` anchor
+(5 167 / 1 379) was kept fixed. The drift between the bare mass-balance
+output (5 322 / 3 319 at T5 under the no-subtraction policy) and the
+anchor (5 167 / 1 379) is now framed as normal field correction at the
+Block 7 stored-vs-FP gauge — the same framing used for any agronomist-
+adjusted T5 anchor against the unrounded mass-balance.
+
+### Why this is preserved here
+
+The compost-subtraction policy carried calibration weight against three
+downstream invariants: REQ-014 supply bound at T4/T5 Mg, REQ-024
+predictedCE at T2, and the PA Taillon T5 anchor's mass-balance
+correspondence. If future tissue data ever motivates re-introducing an
+explicit compost credit, the prior formula + the calibration
+relationships above are the starting point — they don't need to be
+re-derived from scratch. Re-introducing would require: (a) tissue Mg
+panels confirming luxury accumulation under the current full-offtake
+policy, (b) a refresh of REQ-014 / REQ-024 calibration against the
+restored formula, and (c) a refit (or explicit drift framing) of the
+PA Taillon T5 anchor.
+
+---
+
 ## REQ-151 `computeFertigationSupply` — recipe-arg shape decision (2026-05-12)
 
 Three candidate signatures were considered for the supply function before

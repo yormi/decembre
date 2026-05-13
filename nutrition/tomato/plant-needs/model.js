@@ -25,15 +25,6 @@ window.PlantNeedsTomato = {
   // term only; phloem-mobile macros and active-transport micros decoupled.
   calcNutrDemand,
 
-  // Convenience: collapse {fruit, biomass, total} into a flat {el → total}
-  // map. Used by recipe calculators that only need the total.
-  demandTotal(yieldKgPerM2, stage, transpFactor = 1.0) {
-    const d = calcNutrDemand(yieldKgPerM2, stage, transpFactor);
-    const out = {};
-    Object.keys(d).forEach(el => { out[el] = d[el].total; });
-    return out;
-  },
-
   // Convenience: cert per (stage, el) on the merged transferability scale.
   // Stable fallback to 1 (default placeholder) if the table is missing
   // an entry. See "Cert scale" section in plant-needs/spec.md.

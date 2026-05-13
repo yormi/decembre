@@ -106,7 +106,6 @@ At runtime, `window.PlantNeedsTomato` exists and exposes:
 | `TOMATO_REMOVAL`          | object   |
 | `TRANSP_COUPLED_BIOMASS`  | object   |
 | `calcNutrDemand`          | function |
-| `demandTotal`             | function |
 | `certFor`                 | function |
 
 **Rationale:** Consumers (Bilan UI, recipe calculators, future ports to

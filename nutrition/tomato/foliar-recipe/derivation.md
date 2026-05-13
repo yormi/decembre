@@ -247,7 +247,7 @@ Update the model when:
 
 | File                                                | Owns                                                               |
 |-----------------------------------------------------|--------------------------------------------------------------------|
-| `nutrition/tomato/foliar-recipe/data.js`            | `FOLIAR_COVERAGE_DEFAULT`, `FOLIAR_COVERAGE_WITH_YUCCA`, `FOLIAR_AREA_M2` (derived from `TOMATO_NUM_BEDS × TOMATO_BED_AREA`) |
+| `nutrition/tomato/foliar-recipe/data.js`            | `FOLIAR_COVERAGE_DEFAULT`, `FOLIAR_COVERAGE_WITH_YUCCA`, `BURN_CAP_BASE_G`, `burnCapG(el)` (area = `TOMATO_NUM_BEDS × TOMATO_BED_AREA`, computed inline in `calc.js`) |
 | `nutrition/tomato/foliar-recipe/calc.js`            | `computeFoliarSupply(stage)`                                       |
 | `nutrition/tomato/foliar-recipe/model.js`           | `window.FoliarRecipeTomato` namespace wrapper                      |
 | `nutrition/tomato/foliar-recipe/spec.md`            | Spec — what the model must do or be                                |

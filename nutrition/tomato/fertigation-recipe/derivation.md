@@ -3,7 +3,8 @@
 How the model is built. The **spec** (what it must do or be) is in
 `spec.md`. This file is everything else: mass-balance derivation, T5
 refined target, source tables (PA Taillon April 2026 + agronomist
-context), refinement triggers.
+context), refinement triggers. Rejected alternatives and superseded
+policies live in `learnings.md` next door.
 
 ---
 
@@ -13,22 +14,27 @@ For each tomato stage `T1..T5`:
 
 ```
 totalArea_m2          = TOMATO_NUM_BEDS × TOMATO_BED_AREA  // 7 × 54.7 = 382.9 m²
-compost_K_mg/m²/wk    = CompostContribution.releasePerWeek.K × 1000
-compost_Mg_mg/m²/wk   = CompostContribution.releasePerWeek.Mg × 1000
 
 // ── K ──
 k_offtake_mg/m²/wk    = TOMATO_FRUIT_EXPORT.K × stageYield × 1000 + BIOMASS_DEMAND[stage].K
 k_sidedress_mg/m²/wk  = STORED_RECIPE.tomato.sidedress[stage].actisol_g
-                         × PRODUCT_PCT.Actisol_K × SIDEDRESS_MIN_EFF.K × 1000
+                         × PRODUCT_PCT.Actisol_K × SIDEDRESS_MIN_EFF.Actisol_K × 1000
                          / SIDEDRESS_AREA_PER_PLANCHE
-k_needed_mg/m²/wk     = max(0, k_offtake − k_sidedress − compost_K)
+k_needed_mg/m²/wk     = max(0, k_offtake − k_sidedress)
 kSulfate_g_total      = round(k_needed / 1000 / PRODUCT_PCT.K2SO4_K × totalArea_m2)
 
 // ── Mg ──
 mg_offtake_mg/m²/wk   = TOMATO_FRUIT_EXPORT.Mg × stageYield × 1000 + BIOMASS_DEMAND[stage].Mg
-mg_needed_mg/m²/wk    = max(0, mg_offtake − compost_Mg)   // sidedress carries no Mg
+mg_needed_mg/m²/wk    = max(0, mg_offtake)    // sidedress carries no Mg; compost not subtracted
 mgSulfate_g_total     = round(mg_needed / 1000 / PRODUCT_PCT.MgSO4_Mg × totalArea_m2)
 ```
+
+Compost release is **not** subtracted from either K or Mg — the
+fertigation channel replenishes full plant offtake, and compost
+contribution is accounted for separately as a soil-bank input (see
+`nutrition/compost-contribution/spec.md`). Why-this-policy + the prior
+"with-compost-subtraction" implementation + the reconciliation history
+live in `learnings.md` (REQ-098 amended 2026-05-12 / 2026-05-13).
 
 Implemented in `nutrition/tomato/fertigation-recipe/calc.js`:
 
@@ -38,62 +44,23 @@ function computeStageRecipe(stage) {
   const totalArea = TOMATO_NUM_BEDS * TOMATO_BED_AREA;
   const sd = STORED_RECIPE.tomato.sidedress[stage] || { actisol_g: 0, farine_g: 0 };
   const biomass = BIOMASS_DEMAND[stage] || {};
-  const compost = window.CompostContribution.releasePerWeek;
 
-  // K offtake − sidedress − compost
+  // K offtake − sidedress (no compost)
   const k_offtake_mg = (TOMATO_FRUIT_EXPORT.K.g * 1000 * y) + (biomass.K || 0);
   const k_sd_mg = (sd.actisol_g * PRODUCT_PCT.Actisol_K
                    * (SIDEDRESS_MIN_EFF.K || 0.85) * 1000)
                    / SIDEDRESS_AREA_PER_PLANCHE;
-  const k_compost_mg = (compost.K || 0) * 1000;
-  const k_needed_mg_per_m2 = Math.max(0, k_offtake_mg - k_sd_mg - k_compost_mg);
-  const kSulfate = Math.round((k_needed_mg_per_m2 / 1000 / PRODUCT_PCT.K2SO4_K) * totalArea);
+  const k_fert_mg_per_m2 = Math.max(0, k_offtake_mg - k_sd_mg);
+  const kSulfate = Math.round((k_fert_mg_per_m2 / 1000 / PRODUCT_PCT.K2SO4_K) * totalArea);
 
-  // Mg offtake − compost (no sidedress contribution)
+  // Mg offtake only (no sidedress, no compost)
   const mg_offtake_mg = (TOMATO_FRUIT_EXPORT.Mg.g * 1000 * y) + (biomass.Mg || 0);
-  const mg_compost_mg = (compost.Mg || 0) * 1000;
-  const mg_needed_mg_per_m2 = Math.max(0, mg_offtake_mg - mg_compost_mg);
-  const mgSulfate = Math.round((mg_needed_mg_per_m2 / 1000 / PRODUCT_PCT.MgSO4_Mg) * totalArea);
+  const mg_fert_mg_per_m2 = Math.max(0, mg_offtake_mg);
+  const mgSulfate = Math.round((mg_fert_mg_per_m2 / 1000 / PRODUCT_PCT.MgSO4_Mg) * totalArea);
 
   return { mgSulfate, kSulfate };
 }
 ```
-
----
-
-## Policy vs implementation drift (compost subtraction)
-
-The framing comment that landed 2026-05-07 ("COMPOST IS NOT SUBTRACTED")
-expresses a *policy direction*: fertigation should replenish full plant
-offtake regardless of compost contribution, treating compost as a
-margin-of-safety bank rather than a fertigation credit. The intent: avoid
-silent under-feeding when compost ages out.
-
-The *implementation* still subtracts compost release from both K and Mg.
-At 2026-05-09 extraction, the live code paths that consume
-`computeStageRecipe(stage)` (Block 7 stored-vs-FP drift gauge,
-`calcNutrSupply` in fp mode, downstream supply bound assertions
-REQ-013/014, predictedCE in REQ-024) are calibrated against the
-WITH-subtraction values:
-
-- T5 K: offtake 6 000 − sidedress 0 − compost 400 = 5 600 mg/m²/wk →
-  K₂SO₄ 5 167 g (matches PA Taillon April 2026 anchor).
-- T5 Mg: offtake 855 − compost 500 = 355 mg/m²/wk → MgSO₄·7H₂O 1 379 g
-  (matches PA Taillon April 2026 anchor).
-
-Removing the subtraction at extraction time would silently re-inflate
-the FP target (T5 K → ~5 537 g, T5 Mg → ~3 320 g), break REQ-014 supply
-bound at T4/T5 Mg, and push T2 predictedCE outside the [0.3, 2.0] band
-(REQ-024). Until the policy intent is wired through end-to-end (recipe
-+ supply bound calibrations + UI labels), the implementation preserves
-the current numerics. **Reconciliation plan:** bundle the
-no-compost-subtraction policy update with a refit of the FP T5 anchor
-(PA Taillon retune) so all REQs move in lockstep.
-
-This asymmetry with `computeStageSidedress` (which DOES subtract compost
-for N — that's a separate channel/element with its own accounting) is
-intentional. The N channel and the K/Mg channel were extracted at
-different points in the policy evolution.
 
 ---
 
@@ -104,31 +71,33 @@ mass-balance derivation:
 
 ```js
 {
-  'K2SO4':       5167,   // mass-balance T5 — replenishes offtake K
-  'MgSO4-7H2O':  1379,   // mass-balance T5 — replenishes offtake Mg
+  'K2SO4':       5167,   // PA Taillon April 2026 anchor
+  'MgSO4-7H2O':  1379,   // PA Taillon April 2026 anchor
   'Solubore':       9,   // boric acid non-ionic, 100% eff at pH 7,4
 }
 ```
 
-These match `computeStageRecipe('T5')` for K and Mg (mass-balance values
-re-derived 2026-05-08 from RECIPE_INPUTS) and add Solubore (boric acid)
-for B. PA Taillon's April 2026 recommendation is the source for both the
-mass-balance anchor and the Solubore dose.
+The K2SO4 and MgSO4·7H2O numbers are the PA Taillon agronomist anchor —
+they are NOT the bare mass-balance output of `computeStageRecipe('T5')`
+under the current no-compost-subtraction policy. Mass-balance currently
+returns kSulfate ≈ 5 322 g and mgSulfate ≈ 3 319 g at T5 (see per-stage
+table below); the 5 167 / 1 379 anchor is held intentionally at PA
+Taillon's April 2026 recommendation. The drift is normal field
+correction (~3 % K, ~58 % Mg) and tracked at the Block 7 stored-vs-FP
+gauge. Solubore (boric acid) is added as the T5-only B dose — see below.
 
 ### Per-element derivation at T5 (stageYield = 1.5 kg/m²/wk):
 
 | Element | offtake mg/m²/wk | sidedress credit | needed mg/m²/wk | g/m² of product | g_total (× 382.9 m²) |
 |---------|------------------|------------------|-----------------|-----------------|----------------------|
-| K       | 6 000            | 0 (Actisol gated out) | 6 000      | K₂SO₄ 14.46     | 5 167                |
-| Mg      | 855              | 0                | 355–855*        | MgSO₄·7H₂O 3.60 | 1 379                |
+| K       | 6 000            | 232 (Actisol gated by REQ-089*) | 5 768  | K₂SO₄ 13.90     | 5 322                |
+| Mg      | 855              | 0                | 855             | MgSO₄·7H₂O 8.67 | 3 319                |
 | B       | 4.5              | 0                | 4.5             | Solubore 0.024  | 9                    |
 
-\* The legacy comment in `app/index.html` mentions "offtake 855 − compost
-500 = 355" — that referenced a pre-2026-05-07 version that subtracted
-compost. Current `computeStageRecipe` produces ~1 379 for the full
-offtake (no compost subtraction), matching the wired FP value. The
-comment is stale; will be cleaned up when the foliar agent's adjacent
-edits land.
+\* Actisol K is currently still passed through the mass-balance K credit
+term at 0.85 mineralization efficiency. REQ-089 / SME P-lockout
+discussion governs whether Actisol stays as the sidedress vehicle going
+forward; the formula does not gate Actisol K to zero on its own.
 
 ### Solubore — single-channel B at T5
 
@@ -272,32 +241,35 @@ REQ-100 deleted from spec; constants removed from `data.js` and
 
 ---
 
-## Per-stage values (with compost subtraction, current implementation)
+## Per-stage values
 
-Compost contribution at the time of extraction (`window.CompostContribution.releasePerWeek`):
-K ≈ 0.40 mg→ 400 mg/m²/wk; Mg ≈ 0.50 → 500 mg/m²/wk. Sidedress K credit = 0
-(Actisol gated out by REQ-089, soil Ca-saturated).
+Sidedress K credit applied per `STORED_RECIPE.tomato.sidedress[stage]
+.actisol_g` × `PRODUCT_PCT.Actisol_K` × `SIDEDRESS_MIN_EFF.Actisol_K`
+(0.85) × 1000 ÷ `SIDEDRESS_AREA_PER_PLANCHE` (54.7). No compost term in
+either column.
 
-| Stage | stageYield kg/m²/wk | K offtake | − compost | K needed | kSulfate g | Mg offtake | − compost | Mg needed | mgSulfate g |
-|-------|---------------------|-----------|-----------|----------|------------|------------|-----------|-----------|-------------|
-| T1    | 0                   | ~510      | 400       | ~110     | ~100       | ~47        | 500 → 0   | 0         | 0           |
-| T2    | 0                   | ~1 020    | 400       | ~620     | ~570       | ~156       | 500 → 0   | 0         | 0           |
-| T3    | 0.3                 | ~2 060    | 400       | ~1 660   | ~1 530     | ~350       | 500 → 0   | 0         | 0           |
-| T4    | 1.0                 | ~4 280    | 400       | ~3 880   | ~3 580     | ~671       | 500       | ~171      | ~660        |
-| T5    | 1.5                 | ~6 000    | 400       | ~5 600   | ~5 167     | ~855       | 500       | ~355      | ~1 379      |
+| Stage | stageYield kg/m²/wk | K offtake | − sidedress | K needed | kSulfate g | Mg offtake | Mg needed | mgSulfate g |
+|-------|---------------------|-----------|-------------|----------|------------|------------|-----------|-------------|
+| T1    | 0                   | 2 200     | 15          | 2 185    | 2 016      | 175        | 175       | 680         |
+| T2    | 0                   | 2 950     | 46          | 2 904    | 2 679      | 265        | 265       | 1 029       |
+| T3    | 0.3                 | 5 360     | 120         | 5 240    | 4 835      | 483        | 483       | 1 875       |
+| T4    | 1.0                 | 4 440     | 194         | 4 246    | 3 917      | 688        | 688       | 2 670       |
+| T5    | 1.5                 | 6 000     | 232         | 5 768    | 5 322      | 855        | 855       | 3 319       |
 
-(Values approximate — driven by the live numbers in `BIOMASS_DEMAND`,
-`TOMATO_FRUIT_EXPORT`, and `CompostContribution.releasePerWeek` at the
-time of read. Re-derive with `computeStageRecipe(stage)` for the current
-truth.)
+(Recomputed 2026-05-13 from live `BIOMASS_DEMAND`, `TOMATO_FRUIT_EXPORT`,
+`RECIPE_INPUTS.stageYield`, `STORED_RECIPE.tomato.sidedress`,
+`PRODUCT_PCT`, `SIDEDRESS_MIN_EFF`, `SIDEDRESS_AREA_PER_PLANCHE` via the
+fertigation-recipe test-helpers boot. Re-derive with
+`computeStageRecipe(stage)` for the current truth.)
 
-T5 K and Mg match `FP_RECIPE_T5.fertigation` exactly (5 167 / 1 379),
-which is the PA Taillon April 2026 anchor — the wired override IS the
-mass-balance value, not a corrected drift. `wireFpFertigation()` at
-script load reads from `FIRST_PRINCIPLES_T5_FERTIGATION` (data.js); the
-verifier (REQ-098) confirms `computeStageRecipe('T5')` matches its own
-formula (not the FP_RECIPE_T5 override — those are different concerns:
-model coherence vs operator anchor).
+T5 kSulfate (5 322) and mgSulfate (3 319) differ from the wired
+`FP_RECIPE_T5.fertigation` override (5 167 / 1 379) — that's the PA
+Taillon April 2026 anchor, intentionally held by hand and not updated to
+the bare mass-balance. `wireFpFertigation()` at script load reads from
+`FIRST_PRINCIPLES_T5_FERTIGATION` (data.js); the verifier (REQ-098)
+confirms `computeStageRecipe('T5')` matches its own formula (not the
+FP_RECIPE_T5 override — those are different concerns: model coherence
+vs operator anchor).
 
 `STORED_RECIPE.tomato.fertigation` (operational, weighed by team) is
 hand-locked at PA Taillon's April 2026 values — `/retire-recipe` audit
@@ -309,10 +281,11 @@ intentionally differ.
 
 ## Caveats and known limitations
 
-- **Compost not subtracted on the K/Mg side** (decision 2026-05-07).
-  Trade-off documented above. Refinement: revisit if Mg offtake
-  consistently overshoots tissue-petiole Mg targets and we want to claim
-  compost credit explicitly.
+- **Compost not subtracted on the K/Mg side** (REQ-098 amended 2026-05-12
+  to drop the subtraction). See `learnings.md` for the prior policy +
+  reconciliation history. Refinement: revisit only if tissue petiole
+  consistently shows luxury Mg accumulation that warrants claiming an
+  explicit compost credit.
 - **B is T5-only constant, not stage-derived.** If B demand starts
   varying across stages (e.g. flowering-phase boron spike), extend
   `computeStageRecipe` to compute a third field. Currently fixed at
@@ -321,11 +294,11 @@ intentionally differ.
   cycle.
 - **Mass-balance vs PA Taillon T5 anchor.** `computeStageRecipe('T5')`
   recomputes from scratch every call; the FP target stored in
-  `FP_RECIPE_T5.fertigation` is the agronomist-anchored value. A
-  ~7-10 % drift between the two is normal (field correction). REQ-098
-  verifier checks `computeStageRecipe(stage)` matches its own formula,
-  not the FP_RECIPE_T5 override — those are two different concerns
-  (model coherence vs operator anchor).
+  `FP_RECIPE_T5.fertigation` is the agronomist-anchored value. Drift is
+  normal (field correction). REQ-098 verifier checks
+  `computeStageRecipe(stage)` matches its own formula, not the
+  FP_RECIPE_T5 override — those are two different concerns (model
+  coherence vs operator anchor).
 - **Total area hardcoded.** `TOMATO_NUM_BEDS × TOMATO_BED_AREA = 382.9 m²`
   — if beds reconfigure, both constants drift in lockstep. Tag a
   refinement trigger.
@@ -352,10 +325,11 @@ Update the model when:
   alfalfa, the K sidedress credit term shifts and `computeStageRecipe`
   K dose reflects automatically. No code edit here, but verify the
   sidedress credit assumption (Actisol K eff 0.85) still applies.
-- **Compost ages out** (REQ-079 verifier flags drift, or compost
-  ages out per `compost-contribution/spec.md`'s pending decline curve).
-  Currently no impact on fertigation derivation (compost not
-  subtracted); may become relevant if we ever flip the policy.
+- **Compost subtraction reconsidered.** If tissue panels suggest the
+  current full-offtake fertigation is over-supplying Mg consistently
+  across multiple cycles, revisit the no-compost-subtraction policy
+  (REQ-098, current). See `learnings.md` for the retired version of the
+  policy and what it would take to re-introduce a credit.
 - **B becomes stage-aware.** Extend `computeStageRecipe` return shape to
   include `solubore_g` if flowering-phase B demand spikes meaningfully
   beyond the current 4-5 mg/m²/wk steady-state.
@@ -367,10 +341,11 @@ Update the model when:
 | File                                                  | Owns                                                       |
 |-------------------------------------------------------|------------------------------------------------------------|
 | `nutrition/tomato/fertigation-recipe/data.js`         | FP T5 target values for `FP_RECIPE_T5.fertigation` (`FIRST_PRINCIPLES_T5_FERTIGATION`)        |
-| `nutrition/tomato/fertigation-recipe/calc.js`         | `computeStageRecipe(stage)`, `wireFpFertigation` IIFE      |
+| `nutrition/tomato/fertigation-recipe/calc.js`         | `computeStageRecipe(stage)`, `computeFertigationSupply(stage, opts, recipe)`, `wireFpFertigation` IIFE |
 | `nutrition/tomato/fertigation-recipe/model.js`        | `window.FertigationRecipeTomato` namespace wrapper         |
 | `nutrition/tomato/fertigation-recipe/spec.md`         | Spec — what the model must do or be                        |
 | `nutrition/tomato/fertigation-recipe/derivation.md`   | This file                                                  |
+| `nutrition/tomato/fertigation-recipe/learnings.md`    | Rejected alternatives, retired policies (compost subtraction, mixing factor) |
 
 `app/index.html` includes them in dependency order: AFTER plant-needs
 (needs `BIOMASS_DEMAND`, `TOMATO_FRUIT_EXPORT`), AFTER compost-contribution
@@ -400,7 +375,9 @@ Extracted from `app/index.html` into this subproject:
   (REQ-100, 2026-05-08) then dropped entirely. Fertigation supply is now
   reported at full barrel mass; consumer line in `calcNutrSupply` no
   longer multiplies by any factor.
-- `computeStageRecipe(stage)` — moved to `calc.js`, formula identical.
+- `computeStageRecipe(stage)` — moved to `calc.js`, formula identical
+  to the in-place version, with the 2026-05-12 amendment dropping the
+  compost-subtraction term.
 - `wireFpFertigation()` — new IIFE in `calc.js` that overwrites
   `FP_RECIPE_T5.fertigation` with values from data.js + the recomputed
   T5 mass-balance. Mirrors `wireFpSidedress()` in

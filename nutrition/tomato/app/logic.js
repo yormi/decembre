@@ -104,6 +104,18 @@ function buildNutriment() {
   const ceilingCard = document.getElementById('nutr-light-ceiling');
   ceilingCard.style.background   = ceilingBg;
   ceilingCard.style.borderColor  = ceilingBord;
+  // REQ-105: ⚠ message rendered ONLY when target > ceiling. Paired with the
+  // orange-bg color flip above so both visual signals appear together.
+  const ceilingWarn = document.getElementById('nutr-light-ceiling-warning');
+  if (ceilingWarn) {
+    if (overTarget) {
+      ceilingWarn.innerHTML = `⚠ Cible ${target.toFixed(2)} kg/m²/sem au-dessus du plafond lumière (${lightCeiling.toFixed(2)} à ${solarPerGram} J/g) — atteignable seulement si la conversion lumière→fruit est meilleure que l'hypothèse.`;
+      ceilingWarn.style.display = 'block';
+    } else {
+      ceilingWarn.innerHTML = '';
+      ceilingWarn.style.display = 'none';
+    }
+  }
 
   // REQ-107: products-in-play list retired 2026-05-09 — replaced by the
   // per-block product names that already appear inline in each Block 1-5
@@ -223,14 +235,14 @@ function buildNutriment() {
         cert: 2,
         equation: `compost[${el}] = 0 (non listé dans window.CompostContribution.releasePerWeek)`,
         plugged: `Apport compost = 0 mg/m²/sem`,
-        // stable — Savaria label declares only macros + Ca; micros not tracked
+
         interpretation: `${el} n'est pas suivi dans la libération du compost (étiquette Savaria ne déclare que macros). Apport supposé négligeable à l'échelle hebdomadaire.`
       });
       return;
     }
     const mgPerWk = gPerWk * 1000;
     const totalGPerWk = gPerWk * TOMATO_AREA;
-    // stable — Ca-saturation context; mineralization model; Mg label gap; P pH lockout
+
     const note = el === 'Ca'
       ? '⚠ Le Ca du compost a contribué à la sursaturation calcique du sol (racine de la crise pH 7,4). Pas un manque à combler — un excès à laisser décliner par lessivage.'
       : (el === 'Mg'
@@ -298,17 +310,17 @@ function buildNutriment() {
     let eq, note;
     if (el === 'N') {
       eq = 'sidedress[N] = (Actisol_g × Actisol_N × eff_N + Farine_g × Farine_N × eff_N) × 1000 / planche_area';
-      // stable — N mineralization model + product analyses are invariant
+
       note = 'Apport N effectif au régime stade établi : ~4-8 sem d\'applications hebdomadaires se chevauchent en minéralisation steady-state. La farine de plumes domine (75 % efficace, 13 % N) ; l\'Actisol contribue plus lentement (60 %, 5 %).';
     } else if (el === 'P') {
       eq = 'sidedress[P] = Actisol_g × Actisol_P × phLockoutFactor_P × 1000 / planche_area';
-      // stable — Ca-P precipitation chemistry; sulfur lever
+
       note = phLocked
         ? 'P verrouillé à pH ≥ 7 : Ca²⁺ en solution précipite le phosphate fraîchement minéralisé en Ca-P avant absorption racinaire. Facteur 10 % appliqué (Cadre 5-15 %, midpoint). Programme soufre = seul levier durable (pH < 6,5 → P passe à 30-50 % efficace).'
         : 'pH ajusté : minéralisation P de l\'Actisol à 50 % d\'efficacité (l\'organique relâche plus lentement que le N).';
     } else { // K
       eq = 'sidedress[K] = Actisol_g × Actisol_K × eff_K × 1000 / planche_area';
-      // stable — K solubility chemistry
+
       note = 'K majoritairement soluble dans les granules d\'Actisol → efficacité 85 % rapide. Apport modeste vs la fertigation, mais maintient la banque K.';
     }
     registerPourquoi(`sidedress.${el}`, {
@@ -326,7 +338,7 @@ function buildNutriment() {
       cert: 3,
       equation: `sidedress[${el}] = 0`,
       plugged: `Apport granulaire = 0 mg/m²/sem`,
-      // stable — Actisol + farine carry only N/P/K at meaningful weekly doses
+
       interpretation: `Les produits granulaires actifs (Actisol 5-3-2 + farine de plumes 13-0-0) ne livrent que N/P/K. ${el} doit venir d'un autre canal (compost, fertigation, foliaire).`
     });
   });
@@ -427,12 +439,12 @@ function buildNutriment() {
     : ['N','P','Ca','Fe','Mn','Zn','B','Cu','Mo'];
   fertSkipEls.forEach(el => {
     const reason = el === 'N'
-      // stable — biofilm risk + organic mineralization rationale
+
       ? 'N retiré de la fertigation : risque de biofilm dans le baril (matière organique des poissons hydrolysés non utilisée en production) et la minéralisation organique (Actisol + farine de plumes) couvre la sortie. Apport via granulaire au sol + compost.'
       : (el === 'Ca' || el === 'Mg' || el === 'P')
-        // stable — Ca-saturé / Ca-P precipitation chemistry
+
         ? `${el} non ajouté en fertigation : ${el === 'Ca' ? 'sol Ca-saturé — surplus inutile' : (el === 'P' ? 'le P précipite avec Ca²⁺ à pH ≥ 7 avant d\'atteindre les racines' : '')}.`
-        // stable — sulfate-oligo precipitation chemistry at high pH; foliar bypass concept
+
         : `${el} retiré de la fertigation 2026-04-26 : à pH ≥ 7 les sulfates d'oligos précipitent (oxydation, hydroxydes, phosphates de Ca) avant absorption. Foliaire bypasse cette chimie. Réintroduction en fertigation seulement si pH &lt; 6,5.`;
     registerPourquoi(`fert.${el}`, {
       title: `${el} — pas en fertigation`,
@@ -522,7 +534,7 @@ function buildNutriment() {
       cert: el === 'Cu' ? 3 : 4,
       equation: `foliar[${el}] = ${m.product}_g × analysis / area × 1000 × coverage`,
       plugged: `${m.g} g × ${m.analysis} × 1000 / ${r.area.toFixed(0)} m² × ${cov} = <strong>${(supply.foliar[el]||0).toFixed(2)} mg ${el}/m²/sem</strong>`,
-      // stable — coverage discount + foliar-bypass concept; Cu narrow safety
+
       // window is invariant chemistry. Fe-margin claim stripped 2026-05-08
       // (depended on a specific dose vs T5 demand, both can change).
       interpretation: `Coverage ${Math.round(cov*100)}% sans yucca (cert 4). Foliaire bypasse le verrouillage racinaire à pH 7,4 — la cuticule n'est pas affectée par la saturation Ca du sol.${el === 'Cu' ? ' ⚠ Cu : fenêtre de sécurité étroite (toxicité observée sans surfactant — pooling concentre localement).' : ''}`
@@ -533,7 +545,7 @@ function buildNutriment() {
     cert: 4,
     equation: 'foliar[Ca] = 0 (Spray B retiré 2026-05-06)',
     plugged: 'Apport foliaire Ca = 0 mg/m²/sem',
-    // stable — Spray B retirement rationale + BER physiology (Ca xylème-only)
+
     interpretation: `Spray B retiré 2026-05-06 — Ecocert input listing non vérifié (REQ-002). Prévention BER désormais via ventilation + humidité (le Ca xylémique suit le flux de transpiration). Si BER persiste, application externe événementielle hors app.`
   });
   // Reasons below are stable — domain chemistry (foliar inefficiency for N/P).
@@ -544,10 +556,10 @@ function buildNutriment() {
       equation: `foliar[${el}] = 0`,
       plugged: `Pas de produit foliaire pour ${el}.`,
       interpretation: el === 'N'
-        // stable — foliar N physiology (urea/NO3 cuticle inefficiency)
+
         ? 'N foliaire = inefficace en mass-flow (urée brûle, NO₃ peu absorbé par cuticule). Apport via fertigation/sol uniquement.'
         : el === 'P'
-          // stable — Ca-P precipitation on leaf surface
+
           ? 'P foliaire peu efficace ; précipitation Ca-P sur la feuille (pH du film d\'eau monte rapidement).'
           : `${el} couvert par fertigation + sol ; foliaire pas nécessaire.`
     });
@@ -673,7 +685,7 @@ function buildNutriment() {
     html5 += `</ol>`;
   }
   // Always-on structural reminder when pH is locked.
-  // stable — does not depend on recipe/SME state; chemistry of pH ≥ 7 lockout
+
   // (P precipitates Ca-P ; Fe/Mn/Zn oxidize to insoluble forms) is invariant.
   if (phLocked) {
     html5 += `<div style="background:var(--accent-tomato-light); border:1.5px solid var(--accent-tomato-border); border-radius:6px; padding:10px 12px; margin-top:12px; font-size:12.5px; line-height:1.5;"><strong style="color:var(--accent-tomato);">Action structurelle :</strong> tant que le pH du sol reste ≥ 7, P / Mn / Zn / Fe restent foliaire-only. Programme soufre = seul vrai levier durable.</div>`;

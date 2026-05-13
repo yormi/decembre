@@ -14,4 +14,7 @@ window.FertigationRecipeTomato = {
   FIRST_PRINCIPLES_T5:   FIRST_PRINCIPLES_T5_FERTIGATION,
   // Mass-balance derivation function (REQ-098) — { kSulfate, mgSulfate } per stage
   computeStageRecipe,
+  // Per-element delivered mg/m²/wk (REQ-151) — K, Mg, B from a canonical
+  // g-keyed recipe; default reshape from STORED_RECIPE.tomato.fertigation[stage]
+  computeFertigationSupply,
 };

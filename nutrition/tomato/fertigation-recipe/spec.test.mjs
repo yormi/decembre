@@ -1,40 +1,82 @@
 // Tests for nutrition/tomato/fertigation-recipe/spec.md.
 //
 // Coverage:
+//   INV-1   — Stage coverage closed: every stage in RECIPE_INPUTS.stageYield
+//             returns numeric, finite, non-negative kSulfate / mgSulfate.
 //   REQ-098 — Mass-balance derivation matches the formula (per stage,
-//             ±5 g rounding tolerance for both kSulfate and mgSulfate).
-//   REQ-099 — Public API namespace window.FertigationRecipeTomato shape.
+//             ±5 g rounding tolerance for kSulfate and mgSulfate).
+//             NEW (2026-05-12): compost release is NOT subtracted from
+//             either K or Mg offtake. Sidedress is still subtracted from
+//             K only (Mg sidedress = 0 by product chemistry).
+//   REQ-099 — Public API namespace window.FertigationRecipeTomato shape
+//             (FIRST_PRINCIPLES_T5 + computeStageRecipe).
 //   REQ-151 — computeFertigationSupply(stage, opts, recipe) delivers
 //             per-element supply (mg/m²/wk) from a canonical g-keyed recipe.
-//             Tests pin the contract; if the function does not yet exist
-//             the function-presence test fails informatively (Wave 2 coder
-//             will land calc.js + model.js wiring).
+//             Function is deferred (Wave 2 coder will land calc.js +
+//             model.js wiring). Tests are failing-by-design until then.
 //
-// Out of scope here (covered by scripts/check-recipes.mjs):
-//   INV-1 — Stage coverage closed across RECIPE_INPUTS.stageYield (the
-//           verifier already loops every stage and asserts numeric ≥ 0).
-//
-// jsdom boot mirrors scripts/check-recipes.mjs — we load dist/index.html
+// jsdom boot mirrors scripts/check-recipes.mjs — load dist/index.html
 // because calc.js / model.js depend on globals declared elsewhere in the
 // page (RECIPE_INPUTS, BIOMASS_DEMAND, TOMATO_FRUIT_EXPORT, PRODUCT_PCT,
 // SIDEDRESS_*, STORED_RECIPE, TOMATO_NUM_BEDS, TOMATO_BED_AREA,
-// FP_RECIPE_T5, window.CompostContribution).
+// FP_RECIPE_T5, FIRST_PRINCIPLES_T5_FERTIGATION).
 
 import { test, describe } from 'node:test';
 import assert from 'node:assert/strict';
 
 import { loadAppWindow } from './test-helpers.mjs';
 
-// Node 16's node:test runner does not reliably fire a top-level `before()`
-// hook before subtests inside `describe()` blocks. Boot at module-load via
-// top-level await — the jsdom load is cached inside loadAppWindow() so
-// repeated callers are cheap.
+// Top-level await: the node:test runner does not reliably fire a top-level
+// `before()` hook before subtests inside `describe()` blocks. Booting at
+// module-load is the simplest reliable shape. The jsdom load is cached
+// inside loadAppWindow() so repeated callers are cheap.
 const { window, ph1 } = await loadAppWindow();
 
-describe('REQ-098 — computeStageRecipe matches mass-balance formula', () => {
-  // Recompute the mass-balance derivation from upstream constants and
-  // compare against computeStageRecipe(stage). Tolerance ±5 g matches
-  // the verifier (rounding margin).
+describe('INV-1 — Stage coverage is closed', () => {
+  // For every stage in RECIPE_INPUTS.stageYield, computeStageRecipe(stage)
+  // returns numeric kSulfate and mgSulfate. No undefined, NaN, negatives.
+  test('INV-1 — every stage returns finite, non-negative kSulfate and mgSulfate', () => {
+    const stages = Object.keys(ph1.RECIPE_INPUTS.stageYield);
+    assert.ok(stages.length > 0, 'RECIPE_INPUTS.stageYield must enumerate stages');
+    const offenders = [];
+    for (const stage of stages) {
+      const recipe = ph1.computeStageRecipe(stage);
+      if (!recipe || typeof recipe !== 'object') {
+        offenders.push(`${stage}: returned ${recipe}`);
+        continue;
+      }
+      for (const key of ['kSulfate', 'mgSulfate']) {
+        const value = recipe[key];
+        if (typeof value !== 'number'
+            || !Number.isFinite(value)
+            || value < 0) {
+          offenders.push(`${stage}.${key} = ${value}`);
+        }
+      }
+    }
+    assert.equal(offenders.length, 0,
+      `Non-finite or negative output:\n  ${offenders.join('\n  ')}`);
+  });
+});
+
+describe('REQ-098 — computeStageRecipe matches mass-balance formula (no compost subtraction)', () => {
+  // Recompute mass-balance from upstream constants and compare against
+  // computeStageRecipe(stage). NEW formula per spec (2026-05-12):
+  //
+  //   k_offtake_mg/m²/wk   = TOMATO_FRUIT_EXPORT.K × stageYield × 1000
+  //                          + BIOMASS_DEMAND[stage].K
+  //   k_sidedress_mg/m²/wk = STORED_RECIPE.tomato.sidedress[stage].actisol_g
+  //                           × PRODUCT_PCT.Actisol_K × SIDEDRESS_MIN_EFF.K × 1000
+  //                           / SIDEDRESS_AREA_PER_PLANCHE
+  //   k_needed_mg/m²/wk    = max(0, k_offtake − k_sidedress)
+  //   kSulfate_g_total     = round(k_needed / 1000 / PRODUCT_PCT.K2SO4_K × total_area)
+  //
+  //   mg_offtake_mg/m²/wk  = TOMATO_FRUIT_EXPORT.Mg × stageYield × 1000
+  //                          + BIOMASS_DEMAND[stage].Mg
+  //   mg_needed_mg/m²/wk   = max(0, mg_offtake)            // sidedress + compost both excluded
+  //   mgSulfate_g_total    = round(mg_needed / 1000 / PRODUCT_PCT.MgSO4_Mg × total_area)
+  //
+  // Tolerance ±5 g matches the verifier's rounding margin.
   const TOLERANCE_G = 5;
 
   test('REQ-098 — required upstream globals are exposed', () => {
@@ -60,16 +102,11 @@ describe('REQ-098 — computeStageRecipe matches mass-balance formula', () => {
       'TOMATO_NUM_BEDS must be exposed');
     assert.equal(typeof ph1.TOMATO_BED_AREA, 'number',
       'TOMATO_BED_AREA must be exposed');
-    assert.equal(typeof window.CompostContribution, 'object',
-      'window.CompostContribution must exist (compost subproject loads first)');
-    assert.equal(typeof window.CompostContribution.releasePerWeek, 'object',
-      'CompostContribution.releasePerWeek must be a per-element object');
   });
 
-  test('REQ-098 — kSulfate matches the mass-balance formula for every stage', () => {
+  test('REQ-098 — kSulfate matches offtake − sidedress for every stage (NO compost subtraction)', () => {
     const stages = Object.keys(ph1.RECIPE_INPUTS.stageYield);
     const totalArea = ph1.TOMATO_NUM_BEDS * ph1.TOMATO_BED_AREA;
-    const compost = window.CompostContribution.releasePerWeek;
     const offenders = [];
     for (const stage of stages) {
       const stageYield = ph1.RECIPE_INPUTS.stageYield[stage] || 0;
@@ -81,8 +118,8 @@ describe('REQ-098 — computeStageRecipe matches mass-balance formula', () => {
       const kSidedressMg = (sidedress.actisol_g * ph1.PRODUCT_PCT.Actisol_K
         * (ph1.SIDEDRESS_MIN_EFF.K || 0.85) * 1000)
         / ph1.SIDEDRESS_AREA_PER_PLANCHE;
-      const kCompostMg = (compost.K || 0) * 1000;
-      const kNeededMg = Math.max(0, kOfftakeMg - kSidedressMg - kCompostMg);
+      // NEW: no compost subtraction.
+      const kNeededMg = Math.max(0, kOfftakeMg - kSidedressMg);
       const expectedKsulfate = Math.round(
         (kNeededMg / 1000 / ph1.PRODUCT_PCT.K2SO4_K) * totalArea
       );
@@ -93,22 +130,21 @@ describe('REQ-098 — computeStageRecipe matches mass-balance formula', () => {
       }
     }
     assert.equal(offenders.length, 0,
-      `kSulfate drift from mass-balance formula:\n  ${offenders.join('\n  ')}`);
+      `kSulfate drift from mass-balance formula (no compost subtraction):\n  ${offenders.join('\n  ')}`);
   });
 
-  test('REQ-098 — mgSulfate matches the mass-balance formula for every stage', () => {
+  test('REQ-098 — mgSulfate matches offtake for every stage (NO sidedress, NO compost subtraction)', () => {
     const stages = Object.keys(ph1.RECIPE_INPUTS.stageYield);
     const totalArea = ph1.TOMATO_NUM_BEDS * ph1.TOMATO_BED_AREA;
-    const compost = window.CompostContribution.releasePerWeek;
     const offenders = [];
     for (const stage of stages) {
       const stageYield = ph1.RECIPE_INPUTS.stageYield[stage] || 0;
       const biomass = ph1.BIOMASS_DEMAND[stage] || {};
-      // Sidedress carries no Mg by product chemistry (per spec).
+      // Sidedress carries no Mg by product chemistry (spec).
+      // NEW: no compost subtraction either.
       const mgOfftakeMg = (ph1.TOMATO_FRUIT_EXPORT.Mg.g * 1000 * stageYield)
         + (biomass.Mg || 0);
-      const mgCompostMg = (compost.Mg || 0) * 1000;
-      const mgNeededMg = Math.max(0, mgOfftakeMg - mgCompostMg);
+      const mgNeededMg = Math.max(0, mgOfftakeMg);
       const expectedMgSulfate = Math.round(
         (mgNeededMg / 1000 / ph1.PRODUCT_PCT.MgSO4_Mg) * totalArea
       );
@@ -119,29 +155,7 @@ describe('REQ-098 — computeStageRecipe matches mass-balance formula', () => {
       }
     }
     assert.equal(offenders.length, 0,
-      `mgSulfate drift from mass-balance formula:\n  ${offenders.join('\n  ')}`);
-  });
-
-  test('REQ-098 — every stage returns finite, non-negative kSulfate and mgSulfate', () => {
-    const stages = Object.keys(ph1.RECIPE_INPUTS.stageYield);
-    const offenders = [];
-    for (const stage of stages) {
-      const recipe = ph1.computeStageRecipe(stage);
-      if (!recipe) {
-        offenders.push(`${stage}: returned ${recipe}`);
-        continue;
-      }
-      for (const key of ['kSulfate', 'mgSulfate']) {
-        const value = recipe[key];
-        if (typeof value !== 'number'
-            || !Number.isFinite(value)
-            || value < 0) {
-          offenders.push(`${stage}.${key} = ${value}`);
-        }
-      }
-    }
-    assert.equal(offenders.length, 0,
-      `Non-finite or negative output:\n  ${offenders.join('\n  ')}`);
+      `mgSulfate drift from mass-balance formula (no compost, no sidedress subtraction):\n  ${offenders.join('\n  ')}`);
   });
 });
 
@@ -195,19 +209,19 @@ describe('REQ-099 — Public API namespace window.FertigationRecipeTomato', () =
 describe('REQ-151 — computeFertigationSupply(stage, opts, recipe)', () => {
   // Spec contract:
   //   - flat 11-element map { N,P,K,Ca,Mg,Fe,Mn,Zn,Cu,B,Mo } in mg/m²/wk
-  //   - K     = recipe.kSulfate_g   × PRODUCT_PCT.K2SO4_K   × 1000 / total_area
-  //   - Mg    = recipe.mgSulfate_g  × PRODUCT_PCT.MgSO4_Mg  × 1000 / total_area
+  //   - K     = recipe.kSulfate_g   × PRODUCT_PCT.K2SO4_K    × 1000 / total_area
+  //   - Mg    = recipe.mgSulfate_g  × PRODUCT_PCT.MgSO4_Mg   × 1000 / total_area
   //   - B     = recipe.solubore_g   × PRODUCT_PCT.Solubore_B × 1000 / total_area
   //   - all other elements numerically 0
   //   - missing recipe keys default to 0
   //   - omitting recipe defaults to STORED_RECIPE.tomato.fertigation[stage]
   //     reshaped into the canonical g-keyed shape (kSulfate→kSulfate_g,
   //     mgSulfate→mgSulfate_g; no solubore — B is FP-only)
-  //   - opts is reserved (no required keys today)
+  //   - opts is reserved (no required keys today); opts=undefined must
+  //     behave identically to opts={}
   //
-  // If computeFertigationSupply does not yet exist in the namespace, the
-  // first test fails loudly with the missing-key marker so the Wave 2 coder
-  // sees exactly what's expected.
+  // Function is deferred (Wave 2 coder). Each test fails informatively if
+  // computeFertigationSupply isn't yet on the namespace.
   const ELEMENTS_NON_FERT = ['N', 'P', 'Ca', 'Fe', 'Mn', 'Zn', 'Cu', 'Mo'];
   const ALL_ELEMENTS = ['N', 'P', 'K', 'Ca', 'Mg', 'Fe', 'Mn', 'Zn', 'Cu', 'B', 'Mo'];
 
@@ -326,7 +340,7 @@ describe('REQ-151 — computeFertigationSupply(stage, opts, recipe)', () => {
     // call when given the stored grams. STORED_RECIPE uses kSulfate /
     // mgSulfate keys (no solubore — B is FP-only); the canonical shape uses
     // kSulfate_g / mgSulfate_g / solubore_g. The reshape lives inside the
-    // function (default-source convenience per spec). Solubore_g defaults
+    // function (default-source convenience per spec). solubore_g defaults
     // to 0 because STORED_RECIPE has no B.
     const stages = Object.keys(ph1.STORED_RECIPE.tomato.fertigation);
     const offenders = [];

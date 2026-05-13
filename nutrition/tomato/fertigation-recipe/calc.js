@@ -38,40 +38,68 @@
 //
 // Returns { kSulfate, mgSulfate } in grams (rounded). Total weekly dose for
 // the 7-bed × 54.7 m² tomato area.
-//
-// IMPLEMENTATION NOTE: Despite the "COMPOST IS NOT SUBTRACTED" framing
-// above (the policy intent), the live code DOES subtract
-// CompostContribution.releasePerWeek from the K and Mg offtake — this is
-// pre-existing behavior at extraction time (2026-05-09) and the
-// downstream REQ-014 supply bound assertions are calibrated against it.
-// Removing the subtraction silently re-inflates the FP fertigation dose
-// (T5 K from 5167 → ~5537 g; T5 Mg from 1379 → ~3320 g) and breaks
-// REQ-014 / REQ-024 (T4.Mg, T5.Mg, T2 CE band). The framing/code drift
-// is a known issue documented in derivation.md and will be reconciled
-// when the FP-no-compost-credit policy is fully wired through (separate
-// task). For now, preserve current numerics verbatim.
 function computeStageRecipe(stage) {
   const y = RECIPE_INPUTS.stageYield[stage] || 0;
   const totalArea = TOMATO_NUM_BEDS * TOMATO_BED_AREA;
   const sd = STORED_RECIPE.tomato.sidedress[stage] || { actisol_g: 0, farine_g: 0 };
   const biomass = BIOMASS_DEMAND[stage] || {};
-  const compost = window.CompostContribution.releasePerWeek;
 
   // ── K ──
   const k_offtake_mg = (TOMATO_FRUIT_EXPORT.K.g * 1000 * y) + (biomass.K || 0);
   const k_sd_mg = (sd.actisol_g * PRODUCT_PCT.Actisol_K * (SIDEDRESS_MIN_EFF.K || 0.85) * 1000) / SIDEDRESS_AREA_PER_PLANCHE;
-  const k_compost_mg = (compost.K || 0) * 1000;
-  const k_fert_mg_per_m2 = Math.max(0, k_offtake_mg - k_sd_mg - k_compost_mg);
+  const k_fert_mg_per_m2 = Math.max(0, k_offtake_mg - k_sd_mg);
   const kSulfate = Math.round((k_fert_mg_per_m2 / 1000 / PRODUCT_PCT.K2SO4_K) * totalArea);
 
   // ── Mg ──
   const mg_offtake_mg = (TOMATO_FRUIT_EXPORT.Mg.g * 1000 * y) + (biomass.Mg || 0);
   // Side-dress products carry no Mg.
-  const mg_compost_mg = (compost.Mg || 0) * 1000;
-  const mg_fert_mg_per_m2 = Math.max(0, mg_offtake_mg - mg_compost_mg);
+  const mg_fert_mg_per_m2 = Math.max(0, mg_offtake_mg);
   const mgSulfate = Math.round((mg_fert_mg_per_m2 / 1000 / PRODUCT_PCT.MgSO4_Mg) * totalArea);
 
   return { mgSulfate, kSulfate };
+}
+
+// computeFertigationSupply(stage, opts, recipe) — per-element delivered
+// mg/m²/wk for the fertigation channel (K, Mg, B only; all other elements
+// are explicit zeros). REQ-151. Mirrors the foliar precedent
+// (computeFoliarSupply) — caller picks the source and reshapes into the
+// canonical g-keyed shape, model applies one rule.
+//
+// `stage` is used ONLY for the default-recipe lookup; given an explicit
+// recipe the output is stage-independent (delivery at given product mass
+// has no stage signal).
+function computeFertigationSupply(stage, opts, recipe) {
+  void opts;
+  const area = TOMATO_NUM_BEDS * TOMATO_BED_AREA;
+  let canonical = recipe;
+  if (!canonical) {
+    const stored = (STORED_RECIPE.tomato.fertigation || {})[stage] || {};
+    canonical = {
+      kSulfate_g:  stored.kSulfate  || 0,
+      mgSulfate_g: stored.mgSulfate || 0,
+      solubore_g:  0,
+    };
+  }
+  const kSulfate_g  = Number(canonical.kSulfate_g)  || 0;
+  const mgSulfate_g = Number(canonical.mgSulfate_g) || 0;
+  const solubore_g  = Number(canonical.solubore_g)  || 0;
+  const deliver = function(grams, pct) {
+    if (!grams || !pct || !area) return 0;
+    return (grams * pct * 1000) / area;
+  };
+  return {
+    N: 0,
+    P: 0,
+    K:  deliver(kSulfate_g,  PRODUCT_PCT.K2SO4_K),
+    Ca: 0,
+    Mg: deliver(mgSulfate_g, PRODUCT_PCT.MgSO4_Mg),
+    Fe: 0,
+    Mn: 0,
+    Zn: 0,
+    Cu: 0,
+    B:  deliver(solubore_g,  PRODUCT_PCT.Solubore_B),
+    Mo: 0,
+  };
 }
 
 // Wire the FP recipe table at script load. FP_RECIPE_T5.fertigation in

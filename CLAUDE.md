@@ -54,6 +54,24 @@ That's it. No Rationale, no Verification, no Cert, no Supersedes sub-sections in
 
 **When a spec gains complexity (formulas, source tables, derivations, edge-case discussion), split it.** Keep `spec.md` to the bare normative claims. Move the *how* and the *why-this-number* into a sibling file (`derivation.md` is the convention so far). Future readers should be able to read `spec.md` end-to-end in under 5 minutes and know what the system promises.
 
+## REQ reference style — every persona, every channel
+
+When referencing a spec in chat with Guillaume, in coordination files (`team-coordination/**`), in commit messages, or in prose inside `derivation.md` / `learnings.md`, **always lead with a concise description and put the REQ number in parentheses**. Never bare.
+
+- ✅ `Banque sol stored vs first-principles trajectories (REQ-105)`
+- ✅ `narrative copy must not contradict current data (REQ-060)`
+- ❌ `REQ-105` (bare)
+- ❌ `REQ-105 (Banque sol)` (number first, description too terse)
+- ❌ `the Banque sol REQ` (description without number)
+
+The description is a subject+verb+complement extract of the spec statement, not a function name, namespace, or file path. >6 words is fine when needed for clarity. This is what lets Guillaume answer "yes on the Banque sol one" without scrolling to look up what REQ-105 says — both the meaning and the audit-trail handle are on screen.
+
+**Where this rule does NOT apply:**
+- `spec.md` file headings — those keep the canonical `## REQ-NNN — <statement>` structural format.
+- Code comments and verifier matchers — those use `REQ-NNN` as bare pointers (`header('REQ-NNN ...')`, `// REQ-082`); the surrounding code names the behavior.
+
+Memory `feedback_req_expand.md` codifies the same rule; this section makes it persona-explicit.
+
 ## Conventions inherited by every page (no need to restate)
 
 These cross-app specs apply to every routable page and subpage by default. Page-level `spec.md` files do NOT need to list them in an Inherited section — they're assumed unless the page explicitly opts out (and documents why).

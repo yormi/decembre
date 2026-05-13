@@ -21,6 +21,10 @@
           <input type="number" id="nutr-solar-per-gram" value="7" min="3" max="15" step="0.5" inputmode="decimal" style="width:54px; padding:2px 6px; margin:0 4px; font-family:inherit; font-size:12px; text-align:center;">
           J / g de fruit
         </div>
+        <!-- REQ-105: ⚠ message — rendered ONLY when target > ceiling.
+             Paired with the orange-bg color flip on the parent card.
+             logic.js sets innerHTML + display per overTarget. -->
+        <div id="nutr-light-ceiling-warning" style="display:none; margin-top:8px; font-size:12px; line-height:1.4; color:#8a3e1e; font-weight:600;"></div>
       </div>
 
       <div style="font-size:12px; color:var(--text-muted); margin-bottom:10px;">Stade tomate (fixe les doses fertigation)</div>
@@ -135,23 +139,6 @@
     <div class="card" style="border:1.5px dashed var(--border);">
       <div class="card-title" style="color:var(--text-muted);">8. Recette stockée vs calculée (drift)</div>
       <div id="nutr-phase1"></div>
-    </div>
-
-    <div class="card">
-      <div class="card-title" style="color:var(--text-muted);">Hypothèses du calcul (réf.)</div>
-      <div style="font-size:11.5px; color:var(--text-muted); line-height:1.6;">
-        <div style="padding:2px 0;">• <strong>Cadre mass-balance</strong> : la fertigation remplace ce que le fruit + la biomasse retirent du système. Quatre canaux de réapprovisionnement (compost, granulaire au sol, fertigation, foliaire) doivent matcher la sortie hebdo à l'équilibre. La trajectoire de la banque (SME qui monte/descend dans le temps) vit sur la page 🪨 Banque sol — informationnelle, pas un canal de réapprovisionnement ici.</div>
-        <div style="padding:2px 0;">• <strong>Sortie = export fruit + croissance biomasse</strong> (postes non chevauchants, séparation 2026-05-04).</div>
-        <div style="padding:2px 0;">• <strong>Export fruit</strong> par kg de fruit frais (<code>TOMATO_FRUIT_EXPORT</code>, g/kg) : N 1,5 · P 0,24 · K 2,1 · Ca 0,075 · Mg 0,1 — micros (mg/kg) : Fe 6 · Mn 3 · Zn 1,8 · B 1,8 · Cu 0,6 · Mo 0,03</div>
-        <div style="padding:2px 0; font-size:11px;">&nbsp;&nbsp;&nbsp;Dérivé du split Yara fruit-vs-végétatif appliqué aux valeurs plante entière (Yara + Sonneveld) : N/P/K <strong>60% au fruit</strong> · Ca <strong>5% au fruit</strong> (le Ca reste dans la canopée — xylème uniquement) · Mg <strong>25% au fruit</strong> · micros 60% par défaut (lacune de données, cert 1-2).</div>
-        <div style="padding:2px 0;">• <strong>Biomasse</strong> (<code>BIOMASS_DEMAND[stade]</code>) = canopée + nouvelles structures hebdomadaires (mg/m²/sem). T5 ≈ 90 g DW/m²/sem × 2,8% N ≈ 1 800 mg N/m²/sem (cert 3, fourchette 1 500-2 000). Référence historique <code>TOMATO_REMOVAL</code> (absorption plante entière) conservée pour traçabilité.</div>
-        <div style="padding:2px 0;">• <strong>Compost résiduel</strong> (<code>window.CompostContribution.releasePerWeek</code>) : minéralisation hebdomadaire des amendements passés (Savaria ORGANIMIX automne 2025, ~25,4 kg/m² × composition étiquette). Décline avec le temps ; à revisiter quand le compost vieillit (~18-24 mois post-application). Cert 2-3.</div>
-        <div style="padding:2px 0;">• <strong>Engrais sol granulaire</strong> par stade : Actisol 5-3-2 + farine de plumes 13-0-0, hebdomadaire par planche. Efficacité minéralisation (cert 3) : Actisol N 60% / P 50% / K 85% · farine N 75%. P verrouillé à pH ≥ 7 (Ca-P précipite avant absorption) → facteur 10% appliqué. Régime stade établi, serre tempérée.</div>
-        <div style="padding:2px 0;">• <strong>Fertigation</strong> dérivée par mass-balance : <code>fert_needed = max(0, sortie − granulaire − compost)</code>. Apport fertigation rapporté à la masse complète au m²/sem (livraison intégrale au baril).</div>
-        <div style="padding:2px 0;">• <strong>Couverture foliaire</strong> ≈ 30% (sans surfactant — recettes ajustées en conséquence). La cuticule bypasse la chimie de la rhizosphère ; canal critique pour Fe/Mn/Zn tant que le pH reste ≥ 7.</div>
-        <div style="padding:2px 0;">• <strong>Surface</strong> tomate : 7 × 54,7 m² = 382,9 m²</div>
-        <div style="padding:2px 0;">• <strong>Recettes</strong> tirées en direct de STORED_RECIPE.tomato (fertigation PA Taillon avril 2026 verrouillée, sidedress, foliaire) et window.CompostContribution.releasePerWeek (compost résiduel).</div>
-      </div>
     </div>
 
     </div><!-- end nutr-tomato-content -->

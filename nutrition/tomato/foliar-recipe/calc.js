@@ -93,7 +93,7 @@ function computeFoliarSupply(stage, opts, recipe) {
 //          per 15 L master tank.
 //
 // Algorithm: per-element ideal_g sized to close the gap; min-dose floor
-// (< 0.5 g → 0); cap at burnCapG(el, surfactant); then CE-cap-and-scale
+// (< 0.5 g → 0); cap at burnCapG(el); then CE-cap-and-scale
 // loop (max 4 iterations) to keep predictedCE under REQ-025 burn cap.
 //
 // REQ-116 — consumers call this with the live gap chain, replacing the
@@ -125,7 +125,7 @@ function computeFoliarRecipeForGap(gap, opts) {
     if (g <= 0 || !p.pct || !area) { recipe[p.key] = 0; continue; }
     var idealG = (g * area) / (p.pct * 1000 * coverage * sprayCount);
     if (idealG < MIN_DOSE_G) { recipe[p.key] = 0; continue; }
-    var capG = burnCapG(p.el, surfactant);
+    var capG = burnCapG(p.el);
     var doseG = Math.min(idealG, capG);
     recipe[p.key] = ceilToHalfGram(doseG);
   }

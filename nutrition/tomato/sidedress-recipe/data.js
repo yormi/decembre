@@ -22,44 +22,24 @@ const SIDEDRESS_AREA_PER_PLANCHE = 54.7;  // m²
 // (Selectus 4-2-5 with 3.7-4.5% Ca, certain frass blends, lime-amended
 // composts) is rejected automatically without code changes.
 //
-// `n_pct`, `p_pct`, `k_pct`, `ca_pct` are elemental mass fractions (label-stated,
-// converted from oxide where applicable). `eff` is steady-state mineralization
-// (cert 3 — values within Sonneveld & Voogt 2009 ch. 8 ranges; alfalfa cert 2,
-// from organic-N literature). Cold-soul shoulder seasons would reduce ~30-50 %.
-//
-// Source-of-truth for product label %: still `PRODUCT_PCT` for Actisol/Farine
-// (consumed by Bilan supply chain in calcNutrSupply, etc.); alfalfa N inlined
-// here since `PRODUCT_PCT` doesn't yet carry it and adding a constant just
-// for sidedress would over-couple. Promote to `PRODUCT_PCT.AlfalfaMeal_N` if
-// alfalfa lands in another channel.
+// `n_pct`, `ca_pct` are elemental mass fractions (label-stated). `eff` is
+// steady-state mineralization. Source / cert / per-product-cycle rationale
+// live in derivation.md.
 const SIDEDRESS_PRODUCTS = {
   Actisol: {
-    label:  'Actisol 5-3-2',
     n_pct:  PRODUCT_PCT.Actisol_N,        // 0.05
-    p_pct:  PRODUCT_PCT.Actisol_P,        // 0.0131 elemental
-    k_pct:  PRODUCT_PCT.Actisol_K,        // 0.0166 elemental
     ca_pct: 0.03,                         // ~3 % Ca (label-stated, calcitic carrier)
-    eff:    0.60,                         // composted manure pellet, slower than feather meal
-    source: 'Sonneveld 2009 ch.8 manure-pellet range',
-    cert:   3,
+    eff:    0.60,
   },
   FarinePlumes: {
-    label:  'Farine de plumes 13-0-0',
     n_pct:  PRODUCT_PCT.FarinePlumes_N,   // 0.13
-    ca_pct: 0,                            // no Ca carrier
-    eff:    0.75,                         // animal protein, 70-85 % mineralizes in 6-8 weeks
-    source: 'Sonneveld 2009 ch.8 feather-meal range',
-    cert:   3,
+    ca_pct: 0,
+    eff:    0.75,
   },
   AlfalfaMeal: {
-    label:  'Eco-luzerne 3-0.5-2',
     n_pct:  0.03,                         // 3 % N (label-stated)
-    p_pct:  0.005 * 62/142,               // 0.5 % P₂O₅ → 0.218 % elemental P
-    k_pct:  0.02  * 78/94.2,              // 2 % K₂O → 1.66 % elemental K
-    ca_pct: 0,                            // pure alfalfa pellet, no Ca-loading carriers
-    eff:    0.65,                         // plant-protein N, slightly slower than feather meal
-    source: 'Alfalfa-meal organic-N literature (Acti-Sol product datasheet pending)',
-    cert:   2,                            // organic-cert TBD; mineralization range cert 2 from literature
+    ca_pct: 0,
+    eff:    0.65,
   },
 };
 

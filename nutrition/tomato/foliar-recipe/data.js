@@ -55,13 +55,11 @@ const BURN_CAP_BASE_G = {
   Zn: 16,   // ZnSO₄
   Cu: 2,    // CuSO₄ — narrow toxicity threshold (Cu²⁺ enzyme damage)
   Fe: 80,   // FeSO₄·7H₂O — high-mass dose, well below tank-CE bound
-  Mo: 1,    // NaMoO₄ — wide tolerance; seldom binding
+  Mo: 2,    // NaMoO₄ — wide tolerance (Sonneveld 50-200 mg/L band); seldom binding
   B:  9,    // Solubore (boric acid) — non-ionic
 };
 
 // REQ-115 — burn cap by element. Public via window.FoliarRecipeTomato.burnCapG.
-// `_surfactant` parameter kept for caller-side API symmetry; surfactant has no
-// effect on burn cap (coverage axis only — see learnings.md).
-function burnCapG(element, _surfactant) {
+function burnCapG(element) {
   return BURN_CAP_BASE_G[element] || 0;
 }

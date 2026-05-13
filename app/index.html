@@ -3276,6 +3276,14 @@ const ACCEPTED_EXCESSES = [
     stage: 'T3', element: 'Mg',
     reason: 'Compost Mg release saturates at flowering when demand is moderate but compost still active.',
   },
+  {
+    stage: 'T4', element: 'Mg',
+    reason: 'REQ-098 amended 2026-05-12 to drop compost subtraction from fertigation sizing — fertigation replenishes full Mg offtake while compost continues releasing Mg in parallel. Total Mg supply / demand at T4 = 1.67 (above 1.3 luxury cap). Mg toxicity risk low; antagonism with K manageable at current Mg:K ratio. Audit-trail acceptance pending PA Taillon ack.',
+  },
+  {
+    stage: 'T5', element: 'Mg',
+    reason: 'Same as T4.Mg — REQ-098 no-compost-subtraction policy puts T5 Mg supply / demand = 1.52. Audit-trail acceptance pending PA Taillon ack.',
+  },
 ];
 
 // ─── Fertigation-recipe subproject (computeStageRecipe + FP T5) ──

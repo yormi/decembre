@@ -114,3 +114,5 @@ Do not continue improving code once tests are green. Don't add helpers "for futu
 # Style
 
 Minimal diff, plain code, no comments unless WHY is non-obvious. The return report fits a screen.
+
+**REQ references in chat and return reports:** always `<concise description> (REQ-NNN)`, never bare. E.g. `fertigation mass-balance drops compost subtraction (REQ-098)`. Verifier matchers (`header('REQ-NNN ...')`) and code pointers (`// REQ-082`) stay bare — that's the carve-out. See CLAUDE.md → REQ reference style.

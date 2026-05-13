@@ -2,10 +2,11 @@
 // nutrition/tomato/foliar-recipe/spec.md against the live model.
 //
 // Coverage map:
+//   INV-1   — Element coverage closed (numeric / finite / non-negative across all stages)
 //   REQ-101 — Coverage discount applied to foliar delivery (Mn + Fe formula match)
 //   REQ-103 — window.FoliarRecipeTomato public API surface (shape + spot-check)
 //   REQ-112 — computeFoliarSupply(stage, opts, recipe) — sprayCount + surfactant + recipe-arg
-//   REQ-115 — computeFoliarRecipeForGap (min-dose clamp, burn cap, CE-scale)
+//   REQ-115 — computeFoliarRecipeForGap (min-dose clamp, burn cap, CE-scale, 0.5 g grid)
 //   REQ-116 — FP foliar recipe live-derived from pre-foliar gap chain
 //
 // Framework: node:test only. The fixture (test-helpers.mjs) boots
@@ -24,6 +25,46 @@ import { loadFoliarFixture, recipeAsLabelArray } from './test-helpers.mjs';
 // reliably fire before tests nested inside `describe` blocks, so we load the
 // (cached) jsdom window here. loadFoliarFixture is idempotent + memoized.
 const win = loadFoliarFixture();
+
+describe('INV-1 — Element coverage is closed (all stages × 11 elements)', () => {
+  // Spec: for every stage in RECIPE_INPUTS.stageYield, computeFoliarSupply(stage)
+  // returns numeric / finite / non-negative for every element in TOMATO_FRUIT_EXPORT.
+  // No undefined, NaN, or negative.
+  test('INV-1 — every (stage, element) returns a finite non-negative number', () => {
+    const FRT = win.FoliarRecipeTomato;
+    const stages = Object.keys(win.RECIPE_INPUTS.stageYield); // T1..T5
+    const elements = Object.keys(win.TOMATO_FRUIT_EXPORT);    // 11 canonical
+    assert.equal(elements.length, 11,
+      `TOMATO_FRUIT_EXPORT must keep 11 canonical elements; got ${elements.length}`);
+    for (const stage of stages) {
+      const out = FRT.computeFoliarSupply(stage);
+      for (const el of elements) {
+        const v = out[el];
+        assert.notEqual(typeof v, 'undefined',
+          `stage=${stage} el=${el}: missing key`);
+        assert.equal(typeof v, 'number',
+          `stage=${stage} el=${el}: type=${typeof v}, value=${v}`);
+        assert.ok(isFinite(v),
+          `stage=${stage} el=${el}: not finite (${v})`);
+        assert.ok(v >= 0,
+          `stage=${stage} el=${el}: negative (${v})`);
+      }
+    }
+  });
+
+  test('INV-1 — macros (N/P/K/Ca/Mg) are explicit zeros at every stage', () => {
+    // Spec contract + derivation "no-macro by design": foliar carries no macros.
+    const FRT = win.FoliarRecipeTomato;
+    const stages = Object.keys(win.RECIPE_INPUTS.stageYield);
+    for (const stage of stages) {
+      const out = FRT.computeFoliarSupply(stage);
+      for (const macro of ['N', 'P', 'K', 'Ca', 'Mg']) {
+        assert.equal(out[macro], 0,
+          `stage=${stage} ${macro}: expected 0 (no foliar macro channel), got ${out[macro]}`);
+      }
+    }
+  });
+});
 
 describe('REQ-101 — Coverage discount applied to foliar delivery', () => {
   // For pinned elements (Mn, Fe), recompute the formula
@@ -177,6 +218,24 @@ describe('REQ-112 — computeFoliarSupply(stage, opts, recipe) — sprayCount + 
     }
   });
 
+  test('REQ-112 — macros (N/P/K/Ca/Mg) remain 0 regardless of sprayCount / surfactant', () => {
+    // Per spec: macros are explicit zeros; toggling levers can't materialize a
+    // macro channel. Pin the invariant under both knobs together.
+    const FRT = win.FoliarRecipeTomato;
+    const variants = [
+      FRT.computeFoliarSupply('T5'),
+      FRT.computeFoliarSupply('T5', { sprayCount: 3 }),
+      FRT.computeFoliarSupply('T5', { surfactant: true }),
+      FRT.computeFoliarSupply('T5', { sprayCount: 3, surfactant: true }),
+    ];
+    for (const out of variants) {
+      for (const macro of ['N', 'P', 'K', 'Ca', 'Mg']) {
+        assert.equal(out[macro], 0,
+          `${macro} must remain 0 under any opts combination, got ${out[macro]}`);
+      }
+    }
+  });
+
   test('REQ-112 — explicit recipe arg drives the same multiplicative behavior', () => {
     const FRT = win.FoliarRecipeTomato;
     const stubRecipe = [
@@ -281,13 +340,10 @@ describe('REQ-115 — computeFoliarRecipeForGap (min-dose clamp + burn cap + CE 
       `surfactant=true should reduce at least one dose; got noSurf=${JSON.stringify(noSurf)}, yucca=${JSON.stringify(yucca)}`);
   });
 
-  test('REQ-115 — burnCapG ignores surfactant (coverage-only axis)', () => {
-    // From learnings.md / spec: surfactant has no effect on burn-cap axis.
+  test('REQ-115 — burnCapG returns BURN_CAP_BASE_G per element', () => {
     const FRT = win.FoliarRecipeTomato;
     for (const el of ['Mn', 'Zn', 'Cu', 'Fe', 'Mo', 'B']) {
-      assert.equal(FRT.burnCapG(el, false), FRT.burnCapG(el, true),
-        `burnCapG(${el}) must be surfactant-invariant`);
-      assert.equal(FRT.burnCapG(el, false), FRT.BURN_CAP_BASE_G[el],
+      assert.equal(FRT.burnCapG(el), FRT.BURN_CAP_BASE_G[el],
         `burnCapG(${el}) must equal BURN_CAP_BASE_G[${el}]`);
     }
   });
@@ -299,6 +355,26 @@ describe('REQ-115 — computeFoliarRecipeForGap (min-dose clamp + burn cap + CE 
     for (const k of expectedKeys) {
       assert.ok(k in recipe, `recipe missing key ${k}`);
       assert.equal(typeof recipe[k], 'number', `recipe.${k} type=${typeof recipe[k]}`);
+    }
+  });
+
+  test('REQ-115 — every non-zero dose is rounded up to nearest 0.5 g', () => {
+    // Spec algorithm step 1: "round up to nearest 0.5 g". Pin the grid: every
+    // returned dose × 2 is an integer (within floating-point slack).
+    const FRT = win.FoliarRecipeTomato;
+    const cases = [
+      { gap: { Mn: 50, Zn: 50, Cu: 5, Fe: 200, Mo: 1, B: 20 }, opts: { surfactant: false } },
+      { gap: { Mn: 1000, Zn: 1000, Cu: 1000, Fe: 1000, Mo: 1000, B: 1000 }, opts: { surfactant: false } },
+      { gap: { Mn: 50, Zn: 50, Cu: 5, Fe: 200, Mo: 1, B: 20 }, opts: { surfactant: true } },
+    ];
+    for (const c of cases) {
+      const recipe = FRT.computeFoliarRecipeForGap(c.gap, c.opts);
+      for (const k of Object.keys(recipe)) {
+        const doubled = recipe[k] * 2;
+        const remainder = Math.abs(doubled - Math.round(doubled));
+        assert.ok(remainder < 1e-6,
+          `${k}=${recipe[k]} is not on the 0.5 g grid (${c.gap}, surfactant=${c.opts.surfactant})`);
+      }
     }
   });
 });

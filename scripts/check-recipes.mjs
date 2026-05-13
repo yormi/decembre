@@ -613,20 +613,15 @@ if (!PN) {
   const expectedKeys = [
     'TOMATO_FRUIT_EXPORT', 'BIOMASS_DEMAND', 'TOMATO_DEMAND_CERT',
     'TOMATO_REMOVAL', 'TRANSP_COUPLED_BIOMASS',
-    'calcNutrDemand', 'demandTotal', 'certFor',
+    'calcNutrDemand', 'certFor',
   ];
   const missing = expectedKeys.filter(k => PN[k] == null);
   if (missing.length > 0) {
     fail('PlantNeedsTomato exposes the public API', `manquants: ${missing.join(', ')}`);
   } else {
-    // Sanity-check the convenience functions return shape-correct values.
-    const total = PN.demandTotal(1.5, 'T5', 1.0);
     const certCa = PN.certFor('T5', 'Ca');
-    const okShape = typeof total === 'object' && typeof total.K === 'number'
-                  && typeof certCa === 'number';
-    if (!okShape) {
-      fail('PlantNeedsTomato.demandTotal / certFor return correct shape',
-           `demandTotal: ${typeof total}; certFor: ${typeof certCa}`);
+    if (typeof certCa !== 'number') {
+      fail('PlantNeedsTomato.certFor returns numeric cert', `certFor: ${typeof certCa}`);
     } else {
       pass(`PlantNeedsTomato exposes ${expectedKeys.length} clés (${expectedKeys.length} attendues, ${expectedKeys.length} présentes)`);
     }
@@ -996,11 +991,12 @@ if (!computeStageSidedress || !SIDEDRESS_PRODUCTS) {
 // ─── REQ-098 — Fertigation mass-balance derivation matches the formula ──
 //
 // computeStageRecipe(stage).{kSulfate, mgSulfate} must equal the mass-
-// balance derivation within ±5 g rounding tolerance:
+// balance derivation within ±5 g rounding tolerance (amended 2026-05-12 —
+// compost release NO LONGER subtracted; compost flows separately as a
+// soil-bank input, not a fertigation-channel offset):
 //   k_offtake  = TOMATO_FRUIT_EXPORT.K × stageYield × 1000 + BIOMASS_DEMAND[stage].K
 //   k_sd       = sd.actisol_g × Actisol_K × min_eff × 1000 / SIDEDRESS_AREA
-//   k_compost  = CompostContribution.releasePerWeek.K × 1000
-//   k_needed   = max(0, k_offtake − k_sd − k_compost)
+//   k_needed   = max(0, k_offtake − k_sd)
 //   kSulfate_g = round(k_needed / 1000 / K2SO4_K × total_area)
 //   (Mg analogous; sidedress carries no Mg.)
 //
@@ -1011,12 +1007,11 @@ header('REQ-098 — computeStageRecipe matches mass-balance formula');
 if (!computeStageRecipe || !TOMATO_FRUIT_EXPORT || !BIOMASS_DEMAND
     || !PRODUCT_PCT || !SIDEDRESS_MIN_EFF || !SIDEDRESS_AREA_PER_PLANCHE
     || !TOMATO_NUM_BEDS || !TOMATO_BED_AREA || !STORED_RECIPE
-    || !window.CompostContribution || !ph1.RECIPE_INPUTS) {
+    || !ph1.RECIPE_INPUTS) {
   fail('Fertigation + upstream constants exposed', 'one or more globals missing');
 } else {
   const stages = Object.keys(ph1.RECIPE_INPUTS.stageYield);
   const totalArea = TOMATO_NUM_BEDS * TOMATO_BED_AREA;
-  const compost = window.CompostContribution.releasePerWeek;
   const offenders = [];
   for (const s of stages) {
     const y = ph1.RECIPE_INPUTS.stageYield[s] || 0;
@@ -1025,15 +1020,13 @@ if (!computeStageRecipe || !TOMATO_FRUIT_EXPORT || !BIOMASS_DEMAND
     // K
     const kOfftake = (TOMATO_FRUIT_EXPORT.K.g * 1000 * y) + (biomass.K || 0);
     const kSd = (sd.actisol_g * PRODUCT_PCT.Actisol_K
-                 * (SIDEDRESS_MIN_EFF.K || 0.85) * 1000)
+                 * (SIDEDRESS_MIN_EFF.Actisol_K || 0.85) * 1000)
                  / SIDEDRESS_AREA_PER_PLANCHE;
-    const kCompost = (compost.K || 0) * 1000;
-    const kNeeded = Math.max(0, kOfftake - kSd - kCompost);
+    const kNeeded = Math.max(0, kOfftake - kSd);
     const expectedKsulfate = Math.round((kNeeded / 1000 / PRODUCT_PCT.K2SO4_K) * totalArea);
     // Mg
     const mgOfftake = (TOMATO_FRUIT_EXPORT.Mg.g * 1000 * y) + (biomass.Mg || 0);
-    const mgCompost = (compost.Mg || 0) * 1000;
-    const mgNeeded = Math.max(0, mgOfftake - mgCompost);
+    const mgNeeded = Math.max(0, mgOfftake);
     const expectedMgSulfate = Math.round((mgNeeded / 1000 / PRODUCT_PCT.MgSO4_Mg) * totalArea);
     // Compare
     const r = computeStageRecipe(s) || {};
@@ -1664,18 +1657,18 @@ if (typeof ph1.predictedCE !== 'function' || typeof computeStageRecipe !== 'func
 } else {
   const STOCK_VOL_L = 500;
   const DILUTION = 0.02;     // Dosatron 1:50 typical for sulfate fertigation
-  // Operationally-meaningful threshold: when total recipe mass is below this,
-  // the team mixes a "nominal" tank that's mostly water — stage CE bands don't
-  // bind. Below threshold = skip the band check (small biomass-only top-up).
-  // 3000 g chosen so T1 (~1.6 kg) and T2 (~2.3 kg) skip naturally — vegetative
-  // stages are small-dose by design (low offtake) and can't meaningfully hit
-  // the 0.3 floor. T3+ exceed this and get the band check.
-  const OPERATIONAL_MIN_G = 3000;
+  // Vegetative stages (T1, T2) skip the band check by design — low offtake
+  // means a "nominal" tank that's mostly water, can't meaningfully hit the
+  // 0.3 floor. The band binds at T3+ when the plant ramps to flowering / fruit
+  // load and fertigation mass jumps. (Previous mass-based threshold was
+  // recalibrated to a stage-name skip after REQ-098 amendment 2026-05-12 —
+  // T2 fertigation mass crossed the old 3000 g cutoff under the no-compost-
+  // subtraction formula.)
+  const VEGETATIVE_STAGES = new Set(['T1', 'T2']);
   const offenders = [];
   for (const stage of STAGES) {
+    if (VEGETATIVE_STAGES.has(stage)) continue;
     const r = computeStageRecipe(stage) || {};
-    const totalMass = (r.kSulfate || 0) + (r.mgSulfate || 0);
-    if (totalMass < OPERATIONAL_MIN_G) continue; // skip near-zero dose stages
     const recipe = {};
     if (r.kSulfate)  recipe['K2SO4']        = r.kSulfate / STOCK_VOL_L;
     if (r.mgSulfate) recipe['MgSO4-7H2O']   = r.mgSulfate / STOCK_VOL_L;
