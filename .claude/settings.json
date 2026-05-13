@@ -15,6 +15,15 @@
         "hooks": [
           {
             "type": "command",
+            "command": "echo '[Team-leader inbox]'; entries=$(awk '/^## Entries/{flag=1; next} flag' team-coordination/team-leader/inbox.md 2>/dev/null | sed '/^[[:space:]]*$/d'); if [ -n \"$entries\" ]; then echo \"$entries\"; else echo '(empty)'; fi"
+          }
+        ]
+      },
+      {
+        "matcher": ".*",
+        "hooks": [
+          {
+            "type": "command",
             "command": "/home/guillaume/.claude/skills/shadow-watch/hook.sh"
           }
         ]
