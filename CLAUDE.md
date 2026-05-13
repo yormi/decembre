@@ -87,6 +87,25 @@ A page-level `spec.md` only needs to mention these when **deviating** (e.g., "th
 
 Any edit to the three STORED recipe channels — `STORED_RECIPE.tomato.fertigation`, `STORED_RECIPE.tomato.sidedress`, or `STORED_RECIPE.tomato.foliaire` — requires running the `/retire-recipe` skill FIRST so the old state is captured into `RECIPE_HISTORY` for organic-cert audit. Never edit those constants directly. Out of scope: plant-need / model inputs (`RECIPE_INPUTS`, `TOMATO_FRUIT_EXPORT`, `BIOMASS_DEMAND`) and lettuce-side constants — edit those freely. Note: editing a plant-need input shifts the FP-target output of `computeStageRecipe(stage)` (the Block 7 drift gauge), but does NOT change the locked `STORED_RECIPE.tomato.fertigation` values.
 
+## team-coordination/ layout
+
+Cross-persona handshake files. Two recurring patterns:
+
+### Producer ↔ consumer queue: `<work>.md` ↔ `<work>-done.md`
+
+Both files always exist as a pair. **Producer** persona appends an entry to the pending file (`<work>.md`). **Consumer** persona cuts the entry to the archive (`<work>-done.md`) once processed and appends an outcome / verdict block directly under the original. Archive grows monotonically — never delete entries, never amend in place.
+
+Live instances:
+
+| Pending file | Archive file | Producer | Consumer | Outcome block |
+|---|---|---|---|---|
+| `requests.md` | `requests-done.md` | model-challenger (refinement requests) | plant-nutrition-specialist (responds & moves to done) | `### Challenger verdict — PASS \| FAIL` appended by challenger on next verification |
+| `team-leader/inbox.md` | `team-leader/inbox-done.md` | product-owner + plant-nutrition-specialist (spec-change notifications) | team-leader (auto-starts incremental test/code/prune waves) | `### Team-leader outcome (YYYY-MM-DD)` with waves run + npm test / npm run check status |
+
+### Persona-local principles: `<persona>/principles.md`
+
+One file per persona, never paired. Persona reads its own `principles.md` on entry and appends `- P-NN — [principle]. *Because:* [why]. (YYYY-MM-DD)` whenever Guillaume's decisions reveal a transferable pattern (numbered monotonically, most recent at the top). Compounds persona autonomy over time.
+
 ## Parallel-session staleness mitigation
 
 This project may have multiple Claude sessions running in parallel. Each session captures a snapshot at startup; changes by other sessions don't propagate automatically.

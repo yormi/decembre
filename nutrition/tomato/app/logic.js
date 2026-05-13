@@ -692,7 +692,7 @@ function buildNutriment() {
   }
   document.getElementById('nutr-missing').innerHTML = html5;
 
-  // ─── Phase 1 model — drift detection (REQ-016) ───
+  // ─── Phase 1 model — drift detection (REQ-153) ───
   // Renders stored-vs-computed recipe deltas. Admin-only block; doesn't
   // change any team-facing surface. Fenced as a visible "this is the model
   // talking, not the operations recipe".

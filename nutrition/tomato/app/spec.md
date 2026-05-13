@@ -207,3 +207,9 @@ adjusts recipes on the operational pages; the Bilan is downstream.
 - Manual drench (EZ-GRO Ocean) was removed from the program 2026-05-02. If
   reintroduced, add a `TOMATO_DRENCH[stage]` constant + `supply.drench` in
   `calcNutrSupply` + a Block 3b (or merge into Block 3) in the Bilan.
+
+---
+
+## REQ-153 — Bloc « Recette stockée vs calculée (drift) » : ratio FP / Stockée
+
+Pour chaque élément affiché dans le bloc « Recette stockée vs calculée (drift) » de la page Nutrition tomate (admin, mode T5), le ratio rendu est `recette premiers principes ÷ recette stockée`. 100 % ⇒ stockée et FP coïncident ; > 100 % ⇒ la stockée sous-fournit la cible FP ; < 100 % ⇒ la stockée sur-fournit.

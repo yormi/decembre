@@ -17,7 +17,13 @@
 
 import { test, describe } from 'node:test';
 import assert from 'node:assert/strict';
-import { loadTomatoApp, readLogicJs, readAppIndexHtml } from './test-helpers.mjs';
+import {
+  loadTomatoApp,
+  readLogicJs,
+  readAppIndexHtml,
+  stubFpFertigation,
+  readPhase1StoredFertigationT5,
+} from './test-helpers.mjs';
 
 // ─── REQ-104 — Header inputs are exactly five scalars ──────────────────
 
@@ -737,5 +743,57 @@ describe('REQ-004 — Bilan reads from source-of-truth recipes', () => {
     const diff = Math.abs(supply.fert.K - expectedK);
     assert.ok(diff < 0.01,
       `supply.fert.K (${supply.fert.K}) ≠ kSulfate×mK×pct/area×1000 (${expectedK}), diff ${diff}`);
+  });
+});
+
+// ─── REQ-153 — Drift ratio direction is FP ÷ Stockée ───────────────────
+//
+// Block « Recette stockée vs calculée (drift) » in #nutr-phase1: the ratio
+// rendered per element is `FP ÷ Stockée`. 100 % = parity; > 100 % = stored
+// under-supplies vs FP; < 100 % = stored over-supplies. The current impl
+// renders the inverse (Stored ÷ FP, formatted as "X.XX×") — this test pins
+// the direction REQ-153 demands and must fail until the renderer flips.
+
+describe('REQ-153 — Drift gauge ratio direction is FP ÷ Stockée', () => {
+  test('REQ-153 — when FP = 1.5 × Stored for K2SO4, the rendered K2SO4 ratio cell shows 150', () => {
+    // Arrange: read the current stored K2SO4 dose at T5 (read-only — never
+    // mutate STORED_RECIPE per test-writer hard constraints), then set
+    // FP_RECIPE_T5.fertigation.K2SO4 so FP ÷ Stored = 1.5 exactly. Force
+    // FP mode + T5 stage so renderPhase1Comparison emits the comparison
+    // table. Assert the K2SO4 ratio cell text contains "150" (the % value).
+    const { window } = loadTomatoApp();
+    const storedK = readPhase1StoredFertigationT5(window, 'K2SO4');
+    assert.ok(storedK > 0, `expected positive Stored K2SO4 dose; got ${storedK}`);
+    const restore = stubFpFertigation(window, 'K2SO4', storedK * 1.5);
+    try {
+      const phase1Element = window.document.getElementById('nutr-phase1');
+      assert.ok(phase1Element, '#nutr-phase1 container must exist');
+      // Find the K2SO4 row (first cell holds the product name).
+      const rows = phase1Element.querySelectorAll('tr');
+      let kRow = null;
+      for (const row of rows) {
+        const firstCell = row.children[0];
+        if (firstCell && firstCell.textContent.trim() === 'K2SO4') { kRow = row; break; }
+      }
+      assert.ok(kRow, 'K2SO4 row not found in #nutr-phase1');
+      // Last cell holds the ratio per renderPhase1Comparison's row layout.
+      const ratioCellText = (kRow.children[kRow.children.length - 1].textContent || '')
+        .trim()
+        .replace(',', '.');
+      // REQ-153: FP ÷ Stored = 1.5 → cell should render "150" (or "150 %").
+      assert.match(
+        ratioCellText,
+        /\b150\b/,
+        `K2SO4 ratio cell should render "150" (FP ÷ Stored × 100) per REQ-153; got "${ratioCellText}"`
+      );
+      // Defensive guard against the inverted direction (Stored ÷ FP ≈ 0.67).
+      assert.doesNotMatch(
+        ratioCellText,
+        /0[.,]?67/,
+        `K2SO4 ratio cell rendered "${ratioCellText}" — that's Stored÷FP, the inverted direction REQ-153 rejects`
+      );
+    } finally {
+      restore();
+    }
   });
 });

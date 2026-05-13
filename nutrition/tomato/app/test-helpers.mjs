@@ -73,3 +73,43 @@ export function readLogicJs() {
 export function readAppIndexHtml() {
   return readFileSync(join(REPO_ROOT, 'app', 'index.html'), 'utf8');
 }
+
+// Override one element of FP_RECIPE_T5.fertigation at runtime and force a
+// re-render of #nutr-phase1 (Block 8 drift gauge). Returns a restore() that
+// puts the original value back. Used by REQ-153 to set up an FP / Stored
+// ratio of exactly 1.5 for one element without ever touching STORED_RECIPE
+// (which is read-only per test-writer hard constraints).
+//
+// FP_RECIPE_T5 is module-scoped in the page script — reach it via window.eval.
+// Re-render path: setNutrStage('T5') forces FP-eligible stage and calls
+// buildNutriment(), which writes renderPhase1Comparison() into #nutr-phase1.
+export function stubFpFertigation(window, element, value) {
+  const previous = window.eval(`FP_RECIPE_T5.fertigation[${JSON.stringify(element)}]`);
+  window.eval(`FP_RECIPE_T5.fertigation[${JSON.stringify(element)}] = ${value};`);
+  // Ensure FP mode + T5 stage so renderPhase1Comparison emits a real table.
+  if (typeof window.setNutrRecipeMode === 'function') window.setNutrRecipeMode('fp');
+  if (typeof window.setNutrStage === 'function') window.setNutrStage('T5');
+  return function restore() {
+    if (previous === undefined) {
+      window.eval(`delete FP_RECIPE_T5.fertigation[${JSON.stringify(element)}];`);
+    } else {
+      window.eval(`FP_RECIPE_T5.fertigation[${JSON.stringify(element)}] = ${previous};`);
+    }
+    if (typeof window.setNutrRecipeMode === 'function') window.setNutrRecipeMode('fp');
+    if (typeof window.setNutrStage === 'function') window.setNutrStage('T5');
+  };
+}
+
+// Read the STORED value the Block 8 drift gauge uses for a given fertigation
+// element at stage T5. Same parse path as renderPhase1Comparison
+// (storedFert.kSulfate × getMultK() for K2SO4, mgSulfate × getMultMg() for
+// MgSO4·7H2O). Read-only — never mutates STORED_RECIPE.
+export function readPhase1StoredFertigationT5(window, element) {
+  if (element === 'K2SO4') {
+    return window.eval('STORED_RECIPE.tomato.fertigation.T5.kSulfate * getMultK()');
+  }
+  if (element === 'MgSO4-7H2O') {
+    return window.eval('STORED_RECIPE.tomato.fertigation.T5.mgSulfate * getMultMg()');
+  }
+  throw new Error(`readPhase1StoredFertigationT5: unsupported element "${element}"`);
+}

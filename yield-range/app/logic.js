@@ -79,10 +79,8 @@ function renderYieldRange() {
   if (dliEl) {
     dliEl.textContent = String(Math.round(dliBench));
     const fLight = window.YieldRange.f_light(dliBench);
-    // Tier thresholds match the project's existing 3-tier convention
-    // (per REQ-016 in the tomato Block 7 drift gauge): ≤5%, ≤30%,
-    // and >30%. Here the same green/yellow/red palette signals
-    // "near optimum / partial / off-band".
+    // Tier thresholds: ≤5% (green), ≤30% (yellow), >30% (red) —
+    // same green/yellow/red palette signals "near optimum / partial / off-band".
     let dliColor;
     if      (fLight >= 0.95) dliColor = '#1e6b2d';  // green — optimum band
     else if (fLight >= 0.70) dliColor = '#a08020';  // yellow — light-limited ramp or mild saturation

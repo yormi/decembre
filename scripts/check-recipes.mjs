@@ -1495,7 +1495,56 @@ if (!PRODUCT) {
 // REQ-016 retired 2026-05-08 — was "stored TOMATO_STAGES vs computeStageRecipe
 // drift detection". Comparison became meaningless when TOMATO_STAGES const was
 // removed (stored = computed by construction). See RECIPE_HISTORY entry
-// (retired 2026-05-08).
+// (retired 2026-05-08). REQ-153 (2026-05-13) replaces it for Block 8 direction.
+
+// ─── REQ-153 — Block 8 drift gauge renders ratio FP ÷ Stored ──────────────
+//
+// For each element shown in the Tomato Nutrition admin page's Block 8
+// "Recette stockée vs calculée (drift)", the rendered ratio is
+// `FP_RECIPE_T5 ÷ STORED_RECIPE.tomato.fertigation.T5`. 100 % = parity;
+// > 100 % = stored under-supplies vs FP; < 100 % = stored over-supplies.
+// Stubs one element so FP/Stored = 1.5 and asserts the rendered K row text
+// contains "150"; defensive guard rejects the inverted "67" rendering.
+//
+// Spec: nutrition/tomato/app/spec.md → REQ-153.
+
+header('REQ-153 — Block 8 drift gauge renders FP ÷ Stored (≥100 % = under-supply)');
+
+if (!STORED_RECIPE || !FP_RECIPE_T5 || typeof window.buildNutriment !== 'function') {
+  fail('REQ-153 — STORED_RECIPE / FP_RECIPE_T5 / buildNutriment exposed', 'one or more globals missing');
+} else {
+  const storedFert = STORED_RECIPE?.tomato?.fertigation?.T5;
+  const storedK = storedFert ? storedFert.kSulfate : 0;
+  const fpFert = window.FP_RECIPE_T5?.fertigation || FP_RECIPE_T5.fertigation;
+  const originalFP = fpFert ? fpFert.K2SO4 : null;
+  if (!storedK || originalFP == null) {
+    fail('REQ-153 — fixture preconditions', `storedK=${storedK} originalFP=${originalFP}`);
+  } else {
+    let offenders = [];
+    try {
+      // Stub FP/Stored = 1.5 for K2SO4, force FP mode + T5, trigger render.
+      fpFert.K2SO4 = storedK * 1.5;
+      if (typeof window.setNutrRecipeMode === 'function') window.setNutrRecipeMode('fp');
+      if (typeof window.setNutrStage === 'function') window.setNutrStage('T5');
+      window.buildNutriment();
+      const phase1El = window.document.getElementById('nutr-phase1');
+      const phase1Text = phase1El ? phase1El.textContent : '';
+      if (!/\b150\b/.test(phase1Text)) {
+        offenders.push(`Block 8 K2SO4 row missing "150" (FP/Stored=1.5 expected) — text: ${phase1Text.slice(0, 200)}…`);
+      }
+      if (/\b67\b/.test(phase1Text) && !/\b150\b/.test(phase1Text)) {
+        offenders.push('Block 8 renders the inverted ratio (Stored/FP) — direction must be FP/Stored');
+      }
+    } finally {
+      fpFert.K2SO4 = originalFP;
+    }
+    if (offenders.length === 0) {
+      pass('Block 8 drift ratio direction = FP / Stored (REQ-153)');
+    } else {
+      fail('REQ-153 — Block 8 ratio direction', offenders.join('\n'));
+    }
+  }
+}
 
 // ─── REQ-017 — pH-aware effective efficiency in [0,1] ─────────────────────
 

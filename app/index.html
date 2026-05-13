@@ -4238,7 +4238,7 @@ function passiveSupplyMassFlow(crop, element, week) {
   return mass;
 }
 
-// REQ-016 — Compute the recipe a channel SHOULD use, from first principles.
+// Compute the recipe a channel SHOULD use, from first principles.
 // For each element where CHANNEL_ROLE assigns this channel a fraction:
 //   target_mass = (demand[stage,el] − passive[el]) × CHANNEL_ROLE[el][channel]
 //   product_mass = target_mass / (efficiency × analysis)
@@ -4446,12 +4446,12 @@ function renderPhase1Comparison() {
 
   const colorOf = function(stored, fp) {
     if (stored === 0 && fp === 0) return '#9aa3ad';
-    if (fp === 0) return '#b03030';                    // stored > 0 vs FP 0 → red (over-feed)
-    const ratio = stored / fp;
+    if (stored === 0) return '#b03030';
+    const ratio = fp / stored;
     const dev = Math.abs(ratio - 1.0);
-    if (dev <= 0.05) return '#1e6b2d';                 // green ≤5%
-    if (dev <= 0.30) return '#a08020';                 // yellow ≤30%
-    return '#b03030';                                   // red >30%
+    if (dev <= 0.05) return '#1e6b2d';
+    if (dev <= 0.30) return '#a08020';
+    return '#b03030';
   };
   const fmtG = function(g) {
     if (g === 0) return '0 g';
@@ -4462,8 +4462,9 @@ function renderPhase1Comparison() {
   const row = function(name, stored, fp, unit) {
     let ratioStr;
     if (stored === 0 && fp === 0) ratioStr = '—';
-    else if (fp === 0)            ratioStr = '∞';
-    else                          ratioStr = (stored / fp).toFixed(2) + '×';
+    else if (stored === 0)        ratioStr = '∞';
+    else if (fp === 0)            ratioStr = '0 %';
+    else                          ratioStr = (fp / stored * 100).toFixed(0) + ' %';
     return '<tr style="border-bottom:1px solid var(--border);">'
       + '<td style="padding:4px 8px; font-weight:600;">' + name + '</td>'
       + '<td style="padding:4px 8px; font-family:\'DM Mono\',monospace; text-align:right;">' + fmtG(stored) + ' ' + unit + '</td>'
