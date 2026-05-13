@@ -3,11 +3,10 @@
 // Spec:    nutrition/tomato/fertigation-recipe/spec.md
 // REQ-099: this namespace exists at runtime with the keys below.
 //
-// Consumers (calcNutrSupply, renderProposedRecipe, renderPhase1Comparison,
-// future per-stage drift gauges) should reach for
-// `window.FertigationRecipeTomato` instead of the bare constants — the
-// internal mass-balance and T5 anchor can then be reshaped without
-// breaking call sites.
+// Consumers (calcNutrSupply, renderPhase1Comparison, future per-stage
+// drift gauges) should reach for `window.FertigationRecipeTomato` instead
+// of the bare constants — the internal mass-balance and T5 anchor can
+// then be reshaped without breaking call sites.
 window.FertigationRecipeTomato = {
   // T5 refined first-principles target (PA Taillon April 2026 anchor),
   // wired into FP_RECIPE_T5.fertigation by wireFpFertigation() at script load

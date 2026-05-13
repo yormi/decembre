@@ -139,8 +139,8 @@ At runtime, `window.FoliarRecipeTomato` exists and exposes:
 
 **Rationale:** Same as `PlantNeedsTomato` (REQ-083),
 `SidedressRecipeTomato` (REQ-088), `CompostContribution` (REQ-080).
-Consumers (Bilan supply chain, "Recette proposée" admin card, future
-yucca-decision drift gauge) read foliar supply through this namespace
+Consumers (Bilan supply chain, future yucca-decision drift gauge) read
+foliar supply through this namespace
 so internals can be reshaped (yucca on/off, per-stage dose differentiation,
 addition of B back to foliar) without breaking call sites.
 

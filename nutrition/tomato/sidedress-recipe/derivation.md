@@ -225,5 +225,5 @@ Update the model when:
 (needs `window.CompostContribution`), AFTER `RECIPE_INPUTS` (needs
 `stageYield`), AFTER `PRODUCT_PCT` (needs `FarinePlumes_N`, `Actisol_N`,
 etc.). Order: `data.js` → `calc.js` → `model.js`. Consumers
-(`computeStageRecipe`'s context, Banque sol page, Recette proposée admin
-card) come later in the build and reach for `window.SidedressRecipeTomato`.
+(`computeStageRecipe`'s context, Banque sol page) come later in the
+build and reach for `window.SidedressRecipeTomato`.

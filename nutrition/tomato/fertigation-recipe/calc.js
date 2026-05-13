@@ -106,8 +106,7 @@ function computeFertigationSupply(stage, opts, recipe) {
 // app/index.html holds the T5-only refined target (PA Taillon April 2026
 // anchor); this IIFE overwrites it with values from
 // FIRST_PRINCIPLES_T5_FERTIGATION (data.js) so the source-of-truth lives in
-// one place. The Nutrition page's "Recette proposée" card and the
-// Banque sol comparison reflect first principles.
+// one place. The Banque sol comparison reflects first principles.
 //
 // Mirrors `wireFpSidedress()` in nutrition/tomato/sidedress-recipe/calc.js.
 // Single source of truth for the T5 fertigation FP target =

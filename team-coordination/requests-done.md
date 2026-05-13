@@ -53,6 +53,15 @@ When the plant-nutrition-specialist completes a request from `requests.md`, the 
 1. **Acceptance criterion `grep -r BURN_CAP_SURFACTANT_FACTOR returns nothing` is too strict.** The string survives in: (a) immutable changelog entries (2026-05-10 entry documents the introduction of the constant — historical record), (b) `team-coordination/model-challenger/drafts.md` (challenger's archived approved-finding text), (c) `nutrition/tomato/foliar-recipe/learnings.md` (by design — the file's purpose is to name the retired construct so the next time the question gets raised someone finds the prior reasoning). Live code/spec references are all gone, which is the spirit of the acceptance criterion. Scrubbing the historical mentions would defeat the audit-trail purpose of the changelog + learnings. Recommend treat as PASS at "no live references" rather than literal grep zero.
 2. **`_surfactant` parameter kept per the request.** Sidedress and fertigation sibling subprojects don't expose a `burnCapG`-shaped function, so there's no cross-subproject "API symmetry" to preserve; the only consumer (`calc.js:computeFoliarRecipeForGap`) is in the same subproject. A cleaner shape would be to drop the parameter entirely and update the one call site (`burnCapG(p.el, surfactant)` → `burnCapG(p.el)`). The current `_surfactant` underscore convention works but adds a vestigial parameter the caller has no reason to pass. Follow-up cleanup is one-line; bookmarking, not blocking.
 
+### Challenger verdict — PASS (2026-05-13)
+
+Acceptance check:
+- `grep BURN_CAP_SURFACTANT_FACTOR --include=*.js --include=*.html --include=*.mjs` → no **live** references in `nutrition/**`, `app/`, or `scripts/`. Surviving mentions are all in audit-trail surfaces (changelog, learnings.md by design, drafts.md archive, requests-done.md). Treating as PASS per the specialist's open-question #1 (`grep zero` is too strict; the spirit is "no live references"). ✓
+- `npm run check` → 114 passed / 0 failed; REQs wired 89/93 (matches new baseline; 4 deferred — unchanged from pre-edit). REQ-115 still wired. ✓
+- TODO note exists on `BURN_CAP_BASE_G` at `nutrition/tomato/foliar-recipe/data.js:49-52`, pointing at `learnings.md` for full research basis. ✓
+
+Specialist went beyond the action by also dropping the `_surfactant` parameter entirely (signature now `burnCapG(element)` at line 63), matching open-question #2. Cleaner end state than what the action requested. Entry stays as historical record.
+
 ---
 
 ## B2 — Downgrade `FOLIAR_COVERAGE_DEFAULT` cert 4 → 3 (approved 2026-05-11)
@@ -85,6 +94,15 @@ When the plant-nutrition-specialist completes a request from `requests.md`, the 
 
 1. **`FOLIAR_COVERAGE_WITH_YUCCA = 0.80` cert 4 untouched per scope.** Acceptance criterion (c) notes it without action — the with-yucca claim rests on the same Sentís-style literature pool and has zero direct Décembre validation (yucca isn't even on order). Recommend a follow-up B2' request to downgrade it 4 → 3 in parallel for evidence-base consistency. I flagged this inline in `derivation.md` so the next pass through the file surfaces the gap; haven't written a draft entry into challenger-side drafts.md (that's the challenger's lane).
 2. **Bump-back trigger date.** Request wording said "2026-05-12 tissue panel" but Guillaume clarified the panel was actually sampled Monday 2026-05-11, not 2026-05-05+7d as the original changelog estimate implied. Results land late this week given typical lab turnaround. `derivation.md` refinement-trigger updated to sampling-date-anchored rather than guessed-arrival-anchored. When the numbers arrive, specialist re-runs `computeFoliarSupply('T5').Mn` against measured petiole Mn and either bumps cert 3 → 4 or refits coverage downward (likely 25 %). Guillaume needs to forward me the panel when it lands.
+
+### Challenger verdict — PASS with one-line follow-up (2026-05-13)
+
+Acceptance check:
+- `nutrition/tomato/foliar-recipe/spec.md` REQ-101 cert reads `3` at line 114 with three-axis defense (no Décembre measurement, Cu image = pool not coverage, Sentís 2017 = absorption not retention). ✓
+- Refinement-trigger entry in `derivation.md:222-225` wires the cert-bump-back to "petiole panel correlates `computeFoliarSupply('T5').Mn` to measured petiole Mn within ±20 %". ✓
+- `FOLIAR_COVERAGE_WITH_YUCCA` flagged as parallel downgrade needed at `derivation.md:68-69` ("handled separately (B2' followup)"). ✓
+
+**Residual hygiene miss (not blocking):** the illustrative code snippet at `derivation.md:73-76` still reads `// no yucca; cert 4` / `// surfactant-assisted; cert 4` for both constants. The same file says cert 3 in prose ~60 lines above and ~150 lines below. Per `feedback_no_vestigial.md`, the snippet comments should be amended in place when the cert moved. Mark on the specialist's todo for the next foliar-recipe touch; not bouncing the request for this. Entry stays as historical record.
 
 ---
 

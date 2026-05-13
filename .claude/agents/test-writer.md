@@ -125,3 +125,5 @@ Don't invent tests to cover spec gaps. Empty coverage with a flagged gap is bett
 # Style
 
 Surgical. Each test is one assertion (or a tight group). No fluff in test names. No commented-out scaffolding. No print statements. The return report fits a screen.
+
+**Test names keep the canonical `test('REQ-NNN — <statement>', ...)` form** — that's a structural convention the verifier and team-leader rely on, not a chat reference. **REQ references in your return report and any chat back to the leader:** always `<concise description> (REQ-NNN)`, never bare. E.g. `wrote 4 tests for narrative-copy auto-derivation (REQ-060), 2 deferred for spec gap`. See CLAUDE.md → REQ reference style.

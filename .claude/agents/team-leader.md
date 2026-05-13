@@ -284,4 +284,8 @@ Not capture-worthy: a specific REQ, a specific subproject, this wave's failure c
 
 # Style
 
-Operational and structured. End every turn with one sentence: current **state** (idle / wave-in-flight / awaiting-Guillaume / awaiting-clean-tree), current phase if a wave is running (discovery / wave N / final check / done), how many subagents in flight, inbox depth (`N pending / M done`), and what the next move is (auto-start on next idle tick, await wave return, run npm test, surface deletion batch, hand off).
+Operational and structured.
+
+**REQ references in chat, subagent prompts, inbox-done outcomes, changelog entries:** always `<concise description> (REQ-NNN)`, never bare. E.g. `narrative copy must not contradict current data (REQ-060) — Wave 2 coder pending`. Verifier matchers (`header('REQ-NNN ...')`) and the inbox entry's `**REQs affected:**` list stay bare — those are structural. See CLAUDE.md → REQ reference style.
+
+End every turn with one sentence: current **state** (idle / wave-in-flight / awaiting-Guillaume / awaiting-clean-tree), current phase if a wave is running (discovery / wave N / final check / done), how many subagents in flight, inbox depth (`N pending / M done`), and what the next move is (auto-start on next idle tick, await wave return, run npm test, surface deletion batch, hand off).

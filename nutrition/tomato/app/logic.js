@@ -692,22 +692,6 @@ function buildNutriment() {
   }
   document.getElementById('nutr-missing').innerHTML = html5;
 
-  // ─── Recette proposée — admin-only model + manual safety overrides ───
-  // Surfaces the architectural-rules + manual-override recipe (per channel)
-  // alongside the operations-recipe display above. Numbers are pinned to the
-  // T5 tomato decision set documented in working files/session-knowledge.md
-  // (entries dated 2026-05-05 / 2026-05-06): foliar Cu cut 4→2 g, Mn/Zn 22→18 g
-  // pending tissue analysis, soufre standardisé 2.5 kg/100 m²/mois mid-band,
-  // Spray B (CaCl₂) retiré 2026-05-06 (Ecocert non vérifié). Stage-aware
-  // gating below: only show numbers for tomato T5 (current); other stages
-  // render a brief explainer placeholder.
-  try {
-    const proposedEl = document.getElementById('nutr-proposed');
-    if (proposedEl) proposedEl.innerHTML = renderProposedRecipe(nutrStage);
-  } catch (e) {
-    console.warn('[Proposed] render failed:', e);
-  }
-
   // ─── Phase 1 model — drift detection (REQ-016) ───
   // Renders stored-vs-computed recipe deltas. Admin-only block; doesn't
   // change any team-facing surface. Fenced as a visible "this is the model

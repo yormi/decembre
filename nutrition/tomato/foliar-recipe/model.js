@@ -3,8 +3,8 @@
 // Spec:    nutrition/tomato/foliar-recipe/spec.md
 // REQ-103: this namespace exists at runtime with the keys below.
 //
-// Consumers (Bilan supply chain via calcNutrSupply, "Recette proposée"
-// admin card, future yucca-decision drift gauge) should reach for
+// Consumers (Bilan supply chain via calcNutrSupply, future yucca-decision
+// drift gauge) should reach for
 // `window.FoliarRecipeTomato` instead of the bare constants — the
 // internal coverage model + recipe parsing can then be reshaped (yucca
 // on/off, per-stage doses, B back to foliar) without breaking call sites.

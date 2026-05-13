@@ -147,8 +147,8 @@ At runtime, `window.FertigationRecipeTomato` exists and exposes:
 
 **Rationale:** Same as `PlantNeedsTomato` (REQ-083),
 `CompostContribution` (REQ-080), `SidedressRecipeTomato` (REQ-088).
-Consumers (`calcNutrSupply`, `renderProposedRecipe`,
-`renderPhase1Comparison`, future per-stage drift gauges) read fertigation
+Consumers (`calcNutrSupply`, `renderPhase1Comparison`, future per-stage
+drift gauges) read fertigation
 through this namespace so internals can be reshaped without breaking call
 sites. `FIRST_PRINCIPLES_T5` mirrors the wired
 `FP_RECIPE_T5.fertigation` shape (`K2SO4`, `MgSO4-7H2O`, `Solubore`).

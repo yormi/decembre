@@ -12,4 +12,4 @@ A principle is transferable if it applies to **more than the case that revealed 
 
 ## Principles
 
-<!-- empty — append entries here as Guillaume's decisions reveal them -->
+- P-01 — Total effective dose across active-delivery channels (frontload + sidedress + fertigation + foliar) must never exceed hydroponic supply level for that element. Soil bank and compost contribution are NOT counted into this sum — they're background context, not channels subject to the cap. *Because:* hydroponics defines the upper bound on what a tomato/lettuce plant can usefully take up; once active delivery alone equals or exceeds it, additional supply is over-fert regardless of what soil + compost contribute. This is the operative luxury cap for cert-defense and complexity critiques on every channel's supply formula. *How to apply:* when reviewing a supply-formula change, sum (frontload + sidedress + fertigation + foliar) at the target stage per element; compare to hydroponic-target supply (Sonneveld / similar); flag if Σ_active > hydroponic regardless of luxury_factor or REQ-014 head-room. (2026-05-13)

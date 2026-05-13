@@ -246,6 +246,12 @@ No-op pass. Diff is a one-row update to the implementation-map table only: drops
 
 ---
 
+## 2026-05-13 — `nutrition/tomato/sidedress-recipe/derivation.md`
+
+No-op pass. Diff is one prose line at the bottom of the implementation-map section: drops "Recette proposée admin card" from the list of `window.SidedressRecipeTomato` consumers (consumer left the build; the page-block list is now just `computeStageRecipe`'s context + Banque sol). No claim, constant, formula, cert, or numeric moved. Pure bookkeeping. Active queue for this subproject unchanged.
+
+---
+
 ## 2026-05-13 — review of `nutrition/tomato/fertigation-recipe/derivation.md` (working-tree diff vs HEAD; REQ-098 amended)
 
 Scope: substantive amendment to REQ-098 — compost release dropped from the K and Mg mass-balance. `computeStageRecipe(stage)` now replenishes full plant offtake (sidedress credited on K only). Per-stage table recomputed for T1–T5; "Policy vs implementation drift" section removed; `FP_RECIPE_T5.fertigation` (5 167 / 1 379, PA Taillon April 2026) now explicitly disagrees with `computeStageRecipe('T5')` (5 322 / 3 319), framed as "normal field correction (~3 % K, ~58 % Mg)" tracked at the Block 7 stored-vs-FP gauge. Spec.md REQ-098 statement updated in lockstep; sister learnings.md captures the retired formula + reconciliation history.
@@ -301,6 +307,12 @@ Scope: substantive amendment to REQ-098 — compost release dropped from the K a
 - **Specialist's defense:** the table cell is presented as the bare mass-balance output, with the rationale "fertigation replenishes offtake directly; compost contribution is accounted for separately as a soil-bank input."
 - **What I'd need to accept cert ≥ 3 on the *number*:** (a) tissue evidence that current MgSO₄·7H₂O = 1 379 g (PA Taillon) is producing Mg deficit symptoms, *or* (b) confirmation that compost Mg cert 1-2 (per learnings.md "Mg at cert 1-2 with no label data") is low enough that the policy of ignoring it is the right cert call. Currently the spec ignores compost Mg because compost-Mg has low cert — but the consequence (model claims 2.4× the PA Taillon dose is needed) carries higher operational risk than the original cert-1-2 compost-credit assumption did. The cert hierarchy is inverted: we're treating the model-with-no-compost-credit as more reliable than the agronomist-with-implicit-compost-credit.
 - **My read:** the *number* 3 319 g should be presented in the table with an explicit cert annotation, **cert 2**, plus a flag "exceeds PA Taillon T5 anchor by 140 % — model claim, not a recommended dose." Without that flag, a reader (Catherine, audit) sees the number in a "g_total" column and assumes it's a recommendation. It isn't — by the spec's own admission, the recommendation is still 1 379. The derivation.md owes the reader a clear separation: model output (cert 2, claim) vs operational target (cert 4, PA Taillon recommendation).
+
+---
+
+## 2026-05-13 — review of `nutrition/tomato/foliar-recipe/derivation.md` (working-tree diff vs HEAD)
+
+No-op pass: diff is a single line in the implementation-map paragraph removing a stale consumer reference ("Recette proposée" admin card) from the list trailing `window.FoliarRecipeTomato.computeFoliarSupply(stage)`. No claim, constant, REQ, cert, or formula moved. Nothing to critique.
 
 ### Verdict
 

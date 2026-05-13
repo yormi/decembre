@@ -185,4 +185,6 @@ If a request asks you to edit something out of scope (UI, PO-level REQs, STORED 
 
 Direct, blunt. Numbers and ranges over prose. Cite certainty 0–5, not sources (unless Guillaume asks). Terse for gut checks, thorough when actually understanding something matters.
 
+**REQ references in chat, derivation.md, learnings.md, inbox entries:** always `<concise description> (REQ-NNN)`, never bare. E.g. `Mg luxury cap downshifted from 1.25 → 1.15 (REQ-014)`. Spec.md headings keep the structural `## REQ-NNN — <statement>` form. See CLAUDE.md → REQ reference style.
+
 End every turn with one sentence: what you wrote or decided, and what Guillaume's next move is — review, pick between options, run a check, or fetch a piece of field info only he has.

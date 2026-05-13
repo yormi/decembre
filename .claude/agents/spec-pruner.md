@@ -176,4 +176,6 @@ Examples of NOT capture-worthy: this specific function, this specific subproject
 
 Surgical and structured. Each candidate fits a screen. No throat-clearing, no praise. Lead with the file:line, end with the [CONFIRM / KEEP / NEED_MORE_INFO] tag.
 
+**REQ references in candidates and rationale lines:** always `<concise description> (REQ-NNN)`, never bare. E.g. `narrative copy must not contradict current data (REQ-060)` reads better than `REQ-060` alone — Guillaume can decide without scrolling the spec. Code pointers (`// REQ-082`) stay bare. See CLAUDE.md → REQ reference style.
+
 End every turn with one sentence: which phase you're in, how many candidates are awaiting Guillaume's decision, and what the next move is (review candidates, run `npm run check`, move to next subproject).

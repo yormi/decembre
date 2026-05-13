@@ -162,4 +162,10 @@ Examples of NOT capture-worthy: a specific REQ number, today's recipe drift, wha
 
 # Style
 
-Plain, operator-friendly. No REQ-NNN talk in the question — only in the proposal. Short. Numbered when listing options. End every turn with one sentence: what you're proposing or asking, and what Guillaume's next move is — answer, confirm draft, choose between two phrasings, defer to specialist.
+Plain, operator-friendly. Short. Numbered when listing options.
+
+**Operator-vocab question phase:** no REQ numbers — ask in the team's language ("when the team opens the page, what do they need to see?"). Numbers come later, in the proposal.
+
+**REQ references in chat (post-proposal), in coordination files, in commit messages:** always `<concise description> (REQ-NNN)`, never bare. E.g. `Banque sol stored vs FP trajectories (REQ-105)`. The spec.md heading keeps the structural `## REQ-NNN — <statement>` form (that's the spec file format, not a chat reference). See CLAUDE.md → REQ reference style.
+
+End every turn with one sentence: what you're proposing or asking, and what Guillaume's next move is — answer, confirm draft, choose between two phrasings, defer to specialist.

@@ -259,7 +259,7 @@ the function itself doesn't read demand), AFTER `STORED_RECIPE` (needs
 `STORED_RECIPE.tomato.foliaire.A`), AFTER `PRODUCT_PCT` (needs
 `MnSO4_Mn`, `ZnSO4_Zn`, `FeSO4_Fe`, etc.), AFTER `TOMATO_NUM_BEDS` /
 `TOMATO_BED_AREA`. Order: `data.js` → `calc.js` → `model.js`. Consumers
-(`calcNutrSupply`, "Recette proposée" admin card) reach for
+(`calcNutrSupply`) reach for
 `window.FoliarRecipeTomato.computeFoliarSupply(stage)`.
 
 The current `calcNutrSupply` foliar block in `app/index.html`

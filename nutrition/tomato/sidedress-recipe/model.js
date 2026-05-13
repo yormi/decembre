@@ -3,8 +3,8 @@
 // Spec:    nutrition/tomato/sidedress-recipe/spec.md
 // REQ-088: this namespace exists at runtime with the keys below.
 //
-// Consumers (Banque sol page, "Recette proposée" admin card, future
-// per-stage drift gauges, recipe calculators) should reach for
+// Consumers (Banque sol page, future per-stage drift gauges, recipe
+// calculators) should reach for
 // `window.SidedressRecipeTomato` instead of the bare constants — the
 // internal mineralization model and product mix can then be reshaped
 // (e.g. swap default product to alfalfa) without breaking call sites.

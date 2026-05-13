@@ -61,9 +61,8 @@ function computeStageSidedress(stage, product) {
 // Wire the FP recipe table at script load. FP_RECIPE_T5.sidedress and
 // FIRST_PRINCIPLES_SIDEDRESS were hand-set placeholders in v1; this
 // IIFE overrides them with mass-balance values from
-// computeStageSidedress(stage) so the Nutrition page's "Recette proposée"
-// and the Banque sol comparison reflect first principles. Single source of
-// truth = computeStageSidedress.
+// computeStageSidedress(stage) so the Banque sol comparison reflects
+// first principles. Single source of truth = computeStageSidedress.
 //
 // Default product = 'FarinePlumes'. Switching default to 'AlfalfaMeal'
 // (Eco-luzerne) is an operator decision: it triples the dose mass (3 % N
