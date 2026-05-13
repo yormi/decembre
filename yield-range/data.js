@@ -1,166 +1,98 @@
-// ─── yield-range/data.js — Salanova nursery yield model constants ──────────
+// ─── yield-range/data.js — constants for the Salanova nursery time-to-canopy-cap model ─
 //
-// Source-of-truth for every constant declared in `yield-range/spec.md` and
-// `yield-range/derivation.md`. Pure data (no logic). Consumers go through
-// `yield-range/calc.js` (pure functions) and `yield-range/model.js` (the
-// `window.YieldRange` namespace).
+// Spec: yield-range/spec.md (REQ-112 to REQ-118).
+// Calibration anchor: yield-range/doc/yield-range-calibration-2026-spring.md.
 //
-// REQ scope (yield-range model invariants — see yield-range/spec.md):
-//   REQ-063 — packed-canopy spacing decay (floor ≤ 0.40 past d28)
-//   REQ-064 — NO pH-lockout multiplier (peat substrate, divergence from
-//             nutrition/lettuce/ field-soil model — must be preserved)
-//   REQ-065 — photoperiod-weighted env inputs (variable suffixes reflect)
-//   REQ-066 — VPD in g/m³ (suffix _GM3 on every VPD-bearing identifier)
-//   REQ-067 — ±15% prediction band via YIELD_BAND_FACTOR_LOW/HIGH
-//   REQ-068 — Salanova-only variety scope (VARIETY_LIBRARY = {salanova})
-//   REQ-070 — senescence thresholds + DECAY_RATE
-//   REQ-071 — bolting flag at BOLTING_TDAY_THRESHOLD_C = 26
+// All constants live here; calc.js consumes them, model.js exposes the public API.
+// Per the spec discipline rule, we declare ONLY what the math model demands.
+
+// ─── Growth-rate anchor (REQ-115 logistic growth) ───
 //
-// Cert scale per nutrition/tomato/plant-needs/spec.md (transferability 0–5).
-// Stress-function tables are encoded as arrays of {x, y} breakpoints; the
-// piecewiseLinear helper in calc.js does the interpolation with clamped ends.
+// Refit anchor: best non-light conditions (Π other stress = 1.0), 50-cell packed,
+// DLI = sun(16.5) + LED(11.5) = 28.0, RGR_MAX = 0.40, canopyCap = 25g
+// → asymptotes around d28 to d35. Matches the upper bound of "best case" for
+// Décembre's observed 16g (heat-stressed, sub-optimal). Cert 3, will need refit
+// when more cohort data lands.
+const RGR_MAX_LETTUCE_NURSERY = 0.40;
 
-// ─── Growth + senescence kinetics ───────────────────────────────────────────
-const RGR_MAX_LETTUCE_NURSERY = 0.22;       // g/g/day, cert 3 — refit 2026-05-09 with corrected DLI (n=4 Décembre)
-const SHOOT_PER_ML_SUBSTRATE  = 1.6;        // g FW per mL of cell substrate, cert 3 — Hochmuth-anchored
+// ─── Initial seedling weight at germination (day 0) ───
+// Salanova germinated radicle + cotyledon, peat substrate; cert 4.
+const W_INIT_GERMINATED_G = 0.015;
 
-// REQ-070: senescence branch. Triggered when daily growth would be below
-// SENESCENCE_GROWTH_THRESH AND compound stress is below SENESCENCE_STRESS_THRESH.
-// Decay magnitude scales with (0.5 − Π_stress), capped by DECAY_RATE.
-const SENESCENCE_GROWTH_THRESH = 0.02;      // < 2 %/day daily growth
-const SENESCENCE_STRESS_THRESH = 0.5;       // Π stress factors below this
-const DECAY_RATE               = 0.10;      // /day, max biomass loss in senescence
+// ─── Décembre supplemental lighting (LED bench above the nursery) ───
+// 200 µmol/m²/s installed PPFD; ledHours user-input drives total LED DLI.
+const LED_PPFD = 200;
 
-// REQ-067: ±15% prediction band default (Salanova nursery cert 3).
-const YIELD_BAND_FACTOR_LOW  = 0.85;
-const YIELD_BAND_FACTOR_HIGH = 1.15;
-
-// Initial weight defaults (override via `wInitG` input).
-const W_INIT_FALLBACK_G   = 0.001;          // seed mass, when sowing from scratch
-const W_INIT_GERMINATED_G = 0.015;          // post-germination (~d5–7), cotyledons + first true leaf
-
-// REQ-071: bolting flag threshold (cycle-average T_day above this → quality
-// collapse before raw growth rate falls). Décembre's nursery shares the
-// tomato zone (setpoint 22–26 °C) → chronic mild bolting pressure.
-const BOLTING_TDAY_THRESHOLD_C = 26;
-
-// ─── DLI inputs ─────────────────────────────────────────────────────────────
-// DLI_LED       = 200 µmol/m²/s × 16 h × 3600 / 1e6 = 11.5 mol/m²/d
-// DLI_SUN_GH_ANNUAL_AVG_QC = Quebec greenhouse, ~55% PAR transmission, annual mean
-// DLI_BENCH_AVG_DEFAULT    = sun + LED (16h) — default for the slider, REQ-084
-const DLI_LED                  = 11.5;      // mol/m²/d
-const DLI_SUN_GH_ANNUAL_AVG_QC = 16.0;      // mol/m²/d, cert 2
-const DLI_BENCH_AVG_DEFAULT    = 27.5;      // mol/m²/d — sun + LED 16h (REQ-084 slider default)
-
-// ─── Tray geometry (REQ-076 — yield/m²/year formula uses this) ─────────────
-const TRAY_AREA_M2 = 0.149;                 // standard 11" × 21" tray (50 or 32 cell)
-
-// ─── Variety library (REQ-068 — Salanova only until calibration data lands) ─
-const VARIETY_LIBRARY = { salanova: { rgrMaxFactor: 1.0 } };
-
-// ─── Stress-function breakpoint tables ──────────────────────────────────────
-// Encoded as arrays of {x, y} pairs, sorted by x. Values outside the range
-// clamp to the nearest endpoint (handled by piecewiseLinear in calc.js).
+// ─── Quebec greenhouse annual-average sun DLI (REQ-114, REQ-131) ───
+// Single annual constant — no seasonal lookup. Decomposed into the two
+// inputs that produce it so the transmission factor is auditable and
+// updateable independently of the outdoor-DLI baseline (REQ-131).
 //
-// f_light(DLI_per_plant) — REQ-066 unit ppm not relevant; mol/m²/d.
-//   <4: 0 (photosynthesis floor)
-//   4 → 12 linear 0 → 1.0
-//   12 – 17 plateau 1.0
-//   17 → 22 linear 1.0 → 0.7
-//   >22: 0.7 (excess; tipburn-flag handled in calc)
+//   DLI_SUN_OUTDOOR_QC_ANNUAL — Quebec annual-average outdoor PAR DLI
+//     (mol/m²/d). Cert 2 — public climate-data summaries; refit when a
+//     site-specific pyranometer dataset lands.
+//   GH_LIGHT_TRANSMISSION_DOUBLE_POLY — PAR transmission factor for a
+//     typical 6-mil inflated double-poly film (cert 3 — published range
+//     0.50–0.65; aged poly drops to ~0.45). Update when the film is
+//     replaced or aged.
+//   DLI_SUN_GH_ANNUAL_AVG_QC — derived: outdoor × transmission.
+//     30 × 0.55 = 16.5 mol/m²/d (was hardcoded 16 prior to the
+//     decomposition; now anchored to declared inputs).
+const DLI_SUN_OUTDOOR_QC_ANNUAL = 30;       // mol/m²/d, Quebec annual-avg outdoor PAR DLI, cert 2
+const GH_LIGHT_TRANSMISSION_DOUBLE_POLY = 0.55;  // typical 6-mil inflated double-poly, cert 3
+const DLI_SUN_GH_ANNUAL_AVG_QC = DLI_SUN_OUTDOOR_QC_ANNUAL * GH_LIGHT_TRANSMISSION_DOUBLE_POLY;  // 16.5 mol/m²/d
+
+// ─── Canopy-density biomass cap (REQ-112 — operative ceiling) ───
+//
+// Derived from a 2-anchor power-law fit (W ∝ density^-1.585) on the
+// 50-cell + 32-cell estimates, extrapolated for 24-cell and 18-cell.
+// Packed end-to-end:
+//   50-cell tray (333 plants/m²) → ~25 g/plant
+//   32-cell tray (215 plants/m²) → ~50 g/plant
+//   24-cell tray (161 plants/m²) → ~80 g/plant
+//   18-cell tray (121 plants/m²) → ~120 g/plant
+// Root-volume cap (cellVol × 1.6) is NOT used — at packed densities the
+// canopy binds far before root volume.
+// Cert 2 (50/32 are educated estimates from 1 Décembre cohort + general
+// scaling; 24/18 are extrapolations from those two anchors). Refit when
+// Rijk Zwaan grower density curves load or when 24/18 cohorts run.
+const CANOPY_CAP_BY_PLATEAU = { 50: 25, 32: 50, 24: 80, 18: 120 };
+
+// ─── Trajectory window (REQ-118) ───
+// 50 entries from day 0 to day 49 inclusive.
+const TRAJECTORY_MAX_DAYS = 49;
+
+// ─── "At potential" threshold (REQ-117 — daysToPotential output) ───
+// W ≥ 0.95 × canopyCapG triggers the daysToPotential marker.
+const POTENTIAL_THRESHOLD = 0.95;
+
+// ─── f_light piecewise-linear breakpoints (per-plant DLI → growth multiplier) ───
+//
+// Light-response curve for lettuce (cert 3, literature-anchored):
+//   < 4 mol/m²/d  → photosynthesis stalls (f_light = 0)
+//   4 → 12        → linear ramp up to optimum
+//   12 → 17       → optimum plateau (f_light = 1.0)
+//   17 → 22       → diminishing returns (down to 0.7)
+//   ≥ 22          → saturation floor (0.7)
 const F_LIGHT_BREAKPOINTS = [
-  { x: 4,  y: 0    },
-  { x: 12, y: 1.0  },
-  { x: 17, y: 1.0  },
-  { x: 22, y: 0.7  },
+  { x: 0,  y: 0   },
+  { x: 4,  y: 0   },
+  { x: 12, y: 1.0 },
+  { x: 17, y: 1.0 },
+  { x: 22, y: 0.7 },
+  { x: 50, y: 0.7 },
 ];
 
-// f_Tday(T) — °C
-//   <10 : 0
-//   10 → 18 linear 0 → 1.0
-//   18 – 22 plateau 1.0
-//   22 → 26 linear 1.0 → 0.85
-//   26 → 32 linear 0.85 → 0.4 (bolting risk if cycle-avg > BOLTING_TDAY_THRESHOLD_C)
-//   >32 : 0.4 (heat-stress flag in calc)
-const F_TDAY_BREAKPOINTS = [
-  { x: 10, y: 0    },
-  { x: 18, y: 1.0  },
-  { x: 22, y: 1.0  },
-  { x: 26, y: 0.85 },
-  { x: 32, y: 0.4  },
-];
-
-// f_Tnight(T) — °C
-//   <8 : 0.5
-//   8 → 14 linear 0.5 → 1.0
-//   14 – 18 plateau 1.0
-//   18 → 24 linear 1.0 → 0.7  (stretch / etiolation flag)
-//   >24 : 0.6
-const F_TNIGHT_BREAKPOINTS = [
-  { x: 8,  y: 0.5 },
-  { x: 14, y: 1.0 },
-  { x: 18, y: 1.0 },
-  { x: 24, y: 0.7 },
-];
-const F_TNIGHT_FLOOR_HIGH = 0.6;            // applied when T_night > 24 (overrides last bp tail)
-
-// f_CE(CE) — mS/cm. REQ-064: NO pH-lockout multiplier (peat substrate).
-//   <0.5 : 0 (acutely N-limited)
-//   0.5 → 1.5 linear 0 → 1.0
-//   1.5 – 2.7 plateau 1.0
-//   2.7 – 3.4 plateau 1.05 (luxury push, tipburn risk)
-//   3.4 → 4.5 linear 1.05 → 0.7
-//   >4.5 : 0.5 (salt-stress flag in calc)
-const F_CE_BREAKPOINTS = [
-  { x: 0.5, y: 0    },
-  { x: 1.5, y: 1.0  },
-  { x: 2.7, y: 1.0  },
-  { x: 3.4, y: 1.05 },
-  { x: 4.5, y: 0.7  },
-];
-const F_CE_FLOOR_HIGH = 0.5;                // applied when CE > 4.5
-
-// f_VPD(VPD_GM3) — g/m³. REQ-066 unit suffix _GM3.
-//   <2 : 0.7 (tipburn + disease flag)
-//   2 → 3 linear 0.7 → 1.0
-//   3 – 7 plateau 1.0
-//   7 → 11 linear 1.0 → 0.7
-//   >11 : 0.5 (water-stress flag)
-const F_VPD_BREAKPOINTS_GM3 = [
-  { x: 2,  y: 0.7 },
-  { x: 3,  y: 1.0 },
-  { x: 7,  y: 1.0 },
-  { x: 11, y: 0.7 },
-];
-const F_VPD_FLOOR_LOW_GM3  = 0.7;           // applied when VPD < 2
-const F_VPD_FLOOR_HIGH_GM3 = 0.5;           // applied when VPD > 11
-
-// f_CO2(CO2_photoperiod_ppm) — REQ-065 photoperiod-weighted only.
-//   300 ppm → 0.85
-//   400      → 1.0
-//   500      → 1.05
-//   600      → 1.10
-//   800      → 1.20
-//  ≥1000     → 1.25
-const F_CO2_BREAKPOINTS_PPM = [
-  { x: 300,  y: 0.85 },
-  { x: 400,  y: 1.0  },
-  { x: 500,  y: 1.05 },
-  { x: 600,  y: 1.10 },
-  { x: 800,  y: 1.20 },
-  { x: 1000, y: 1.25 },
-];
-
-// ─── Spacing / packed-canopy decay ──────────────────────────────────────────
-// REQ-063: hardcoded packed-canopy curve, NOT a user input. Spreading is out
-// of scope; spec floor ≤ 0.40 for d > 18. Curve calibrated to match Décembre
-// 2026 spring batch (peak ≈ d28, regression by d35).
-//   d ≤ 14: 1.0
-//   14 < d ≤ 28: linear 1.0 → 0.40
-//   d > 28: 0.40
+// ─── Packed-canopy spacing factor (REQ-116) ───
+//
+// Per-plant DLI is bench DLI × spacing_factor(d). Trays packed end-to-end
+// throughout cycle — no spread schedule. Curve:
+//   d ≤ 14   → 1.0  (cotyledons + first true leaves; canopy not yet binding)
+//   d 14→28  → linear decay (canopies overlap progressively)
+//   d ≥ 28   → 0.40 (fully bound canopy)
 const NURSERY_SPACING_PACKED = [
-  { x: 0,   y: 1.0  },
-  { x: 14,  y: 1.0  },
-  { x: 28,  y: 0.40 },
-  { x: 999, y: 0.40 },
+  { day: 0,  factor: 1.0  },
+  { day: 14, factor: 1.0  },
+  { day: 28, factor: 0.40 },
+  { day: 99, factor: 0.40 },
 ];

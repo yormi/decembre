@@ -9,6 +9,26 @@
             "command": "echo '[Recent project activity]'; tail -25 'working files/changelog.md' 2>/dev/null || echo '(no changelog yet)'"
           }
         ]
+      },
+      {
+        "matcher": ".*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/home/guillaume/.claude/skills/shadow-watch/hook.sh"
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write|NotebookEdit|MultiEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/home/guillaume/Documents/Random_Projects/decembre/scripts/challenger-critique-hook.sh"
+          }
+        ]
       }
     ]
   }

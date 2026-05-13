@@ -8,36 +8,15 @@
 // { kSulfate, mgSulfate } in grams of product per total tomato area
 // (TOMATO_NUM_BEDS × TOMATO_BED_AREA = 7 × 54.7 = 382.9 m²) per week.
 
-// ─── MIXING_FACTOR — mode-aware (REQ-100) ───────────────────────────────
-//
-// Drip irrigation delivers liquid solution to the active root zone; ~half
-// is absorbed by roots before the solution mixes with the bulk soil pool.
-// The other half joins the soil pool and is captured in the next SME
-// reading.
-//
-// In `stored` mode, supply.soil is computed from SME × transpiration
-// (mass-flow potential) — SME already contains last week's fertigation
-// residue, so summing the full barrel on top would double-count. The 0.5
-// factor estimates the *additional* fraction this week beyond what SME
-// already reflects.
-//
-// In `fp` mode (mass-balance pure, 2026-05-08 philosophy shift), supply.soil
-// is dropped for fertigation-deliverable elements (K, Mg, B, N, Fe, Mn, Zn,
-// Cu, Mo) — only Ca and P keep their SME credit. With no SME credit, no
-// double-count risk; the full barrel counts as fresh supply, factor = 1.0.
-//
-// Mechanism cert 3. Specific 0.5 value cert 2-3 — operational reasoning,
-// no measured anchor at Décembre yet.
-
-const MIXING_FACTOR_FERT_STORED = 0.5;
-const MIXING_FACTOR_FERT_FP     = 1.0;
-
-// Legacy alias: `calcNutrSupply` reads `MIXING_FACTOR_FERT` directly via
-// `(mode === 'fp') ? 1.0 : MIXING_FACTOR_FERT`. Keeping the name as an
-// alias to MIXING_FACTOR_FERT_STORED preserves that call site verbatim
-// — no consumer edits needed, and the mode-awareness is now wired through
-// the two named constants for verifier visibility (REQ-100).
-const MIXING_FACTOR_FERT = MIXING_FACTOR_FERT_STORED;
+// ─── MIXING_FACTOR retired 2026-05-10 ───────────────────────────────────
+// Previously this file declared MIXING_FACTOR_FERT_STORED = 0.5 and
+// MIXING_FACTOR_FERT_FP = 1.0 (REQ-100, mode-aware split, added
+// 2026-05-05). The concept has been retired: fertigation supply is now
+// reported at the full barrel-loaded mass per m²/sem, in both modes. SME
+// is reported as a separate channel; users compare them rather than
+// blending. The 0.5 stored-mode discount was a cert 2-3 guess and the
+// double-count framing was artificial. REQ-100 deleted; never reuse the
+// number.
 
 // ─── FIRST_PRINCIPLES_T5_FERTIGATION — T5-only refined target ───────────
 //

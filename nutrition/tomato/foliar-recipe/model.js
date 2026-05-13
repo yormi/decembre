@@ -15,10 +15,14 @@ window.FoliarRecipeTomato = {
   get AREA_M2() { return TOMATO_NUM_BEDS * TOMATO_BED_AREA; },
   // Coverage % without surfactant (REQ-101 default). 0.30, cert 4.
   FOLIAR_COVERAGE_DEFAULT:    FOLIAR_COVERAGE_DEFAULT,
-  // Coverage % with yucca (cert 4). Not currently consumed; exposed for
-  // future toggle code when yucca returns to the program.
+  // Coverage % with yucca (cert 4). Consumed when surfactant=true.
   FOLIAR_COVERAGE_WITH_YUCCA: FOLIAR_COVERAGE_WITH_YUCCA,
-  // Delivery function (REQ-101 + REQ-103). Returns the 11-element
-  // mg/m²/wk shape under the no-yucca coverage discount.
+  // REQ-115 — per-element burn cap base (g per 15 L master tank). Cert 3.
+  BURN_CAP_BASE_G,
+  // REQ-115 — per-element burn cap (surfactant has no effect; see learnings.md).
+  burnCapG,
+  // Delivery function (REQ-101 + REQ-103 + REQ-112).
   computeFoliarSupply,
+  // REQ-115 / REQ-116 — gap-maximizing recipe derivation.
+  computeFoliarRecipeForGap,
 };

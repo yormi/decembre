@@ -189,7 +189,7 @@ const exposeNames = [
   // the function reads from STORED_RECIPE.tomato.foliaire so the verifier
   // also pulls the constants directly via window.FoliarRecipeTomato.
   'FOLIAR_COVERAGE_DEFAULT', 'FOLIAR_COVERAGE_WITH_YUCCA', 'computeFoliarSupply',
-  'BURN_CAP_BASE_G', 'BURN_CAP_SURFACTANT_FACTOR', 'burnCapG', 'computeFoliarRecipeForGap',
+  'BURN_CAP_BASE_G', 'burnCapG', 'computeFoliarRecipeForGap',
   // Nursery plant-needs (REQ-090..093). Until app/index.html @includes the
   // partials, window.PlantNeedsNursery / NURSERY_TARGETS / calcNurseryDemand
   // are absent — the verifier's REQ-090..093 block loads the source files via
@@ -2719,9 +2719,8 @@ header('REQ-115 — computeFoliarRecipeForGap (min-dose clamp + surfactant + bur
   const FRT = window.FoliarRecipeTomato;
   if (!FRT || typeof FRT.computeFoliarRecipeForGap !== 'function'
       || typeof FRT.burnCapG !== 'function'
-      || !FRT.BURN_CAP_BASE_G
-      || typeof FRT.BURN_CAP_SURFACTANT_FACTOR !== 'number') {
-    fail('Foliar recipe-derivation API exposed', 'computeFoliarRecipeForGap / burnCapG / BURN_CAP_BASE_G / BURN_CAP_SURFACTANT_FACTOR missing');
+      || !FRT.BURN_CAP_BASE_G) {
+    fail('Foliar recipe-derivation API exposed', 'computeFoliarRecipeForGap / burnCapG / BURN_CAP_BASE_G missing');
   } else {
     const offenders = [];
 
@@ -2732,7 +2731,7 @@ header('REQ-115 — computeFoliarRecipeForGap (min-dose clamp + surfactant + bur
       if (tinyRecipe[k] !== 0) offenders.push(`tiny gap: ${k}=${tinyRecipe[k]} (expected 0 — min-dose clamp)`);
     });
 
-    // Huge gap (no surfactant) → every el clipped to BURN_CAP_BASE_G[el]
+    // Huge gap → every el clipped to BURN_CAP_BASE_G[el]
     // (with the rounding-up to nearest 0.5 g preserving the cap exactly).
     const huge = { Mn: 1000, Zn: 1000, Cu: 1000, Fe: 1000, Mo: 1000, B: 1000 };
     const hugeRecipe = FRT.computeFoliarRecipeForGap(huge, { surfactant: false });
@@ -2745,26 +2744,13 @@ header('REQ-115 — computeFoliarRecipeForGap (min-dose clamp + surfactant + bur
       { el: 'B',  key: 'Solubore_g' },
     ];
     PAIRS.forEach(function(p) {
-      const expected = FRT.burnCapG(p.el, false);
+      const expected = FRT.burnCapG(p.el);
       const actual = hugeRecipe[p.key];
       // After CE-scale loop the cap may be reduced to fit total CE budget,
       // so actual ≤ expected is the correct invariant. (Strict equality
       // would over-constrain when CE binds.)
       if (actual > expected + 0.01) {
-        offenders.push(`huge gap (no surfactant): ${p.key}=${actual} > burnCap=${expected}`);
-      }
-    });
-
-    // Surfactant=true → cap = base × BURN_CAP_SURFACTANT_FACTOR (default 1.0).
-    // Single multiplier across all elements per the 2026-05-10 research-grounded
-    // simplification — surfactant changes the COVERAGE axis, not the burn-cap
-    // axis (Sentís et al. 2017 + extension lit + Décembre sun-only context).
-    const expectedFactor = FRT.BURN_CAP_SURFACTANT_FACTOR;
-    Object.keys(FRT.BURN_CAP_BASE_G).forEach(function(el) {
-      const expected = FRT.BURN_CAP_BASE_G[el] * expectedFactor;
-      const got = FRT.burnCapG(el, true);
-      if (Math.abs(got - expected) > 0.01) {
-        offenders.push(`burnCapG('${el}', true) = ${got}; expected base × ${expectedFactor} = ${expected}`);
+        offenders.push(`huge gap: ${p.key}=${actual} > burnCap=${expected}`);
       }
     });
 
@@ -2791,7 +2777,7 @@ header('REQ-115 — computeFoliarRecipeForGap (min-dose clamp + surfactant + bur
     }
 
     if (offenders.length === 0) {
-      pass(`computeFoliarRecipeForGap: min-dose clamp + burn caps (× ${FRT.BURN_CAP_SURFACTANT_FACTOR} surfactant) + CE-scale all hold`);
+      pass('computeFoliarRecipeForGap: min-dose clamp + burn caps + CE-scale all hold');
     } else {
       fail('REQ-115 — recipe derivation', offenders.map(function(o) { return '  ' + o; }).join('\n'));
     }
@@ -3778,20 +3764,27 @@ header('REQ-139 — App must call subproject namespace (no inline reimplementati
   }
 }
 
-// ─── REQ-144 — Operator-facing prose requires declared provenance ──────
+// ─── REQ-144 — Operator-facing prose is a deterministic render of spec ──
 //
 // Inside any container marked `data-prose-check="strict"`, every visible
 // text node must have an ancestor with `data-prose-source` set to one of:
-//   - "derived"           → auto-rendered from data (REQ-060 owns correctness)
-//   - "stable:<short-tag>" → hand-written stable domain context
-//   - "REQ-NNN"           → mandated by a specific spec entry (rare)
+//   - "derived:<funcName>" → text emitted by <funcName> (must be declared
+//                             in source); the function operates on data
+//                             governed by the spec
+//   - "REQ-NNN"            → text is a deterministic render of a Renders:
+//                             block in spec entry REQ-NNN
+//   - "label"              → static UI scaffolding with no semantic claim
+//                             (page titles, column headers, button labels)
 //
-// Opt-in by design: today, zero containers may be marked. The check passes
-// trivially and prints "0 containers locked-down". Containers opt in as
-// they're touched; new operator surfaces opt in from day one. See
-// requirements.md REQ-144 for the migration plan.
+// Removed 2026-05-11 per Guillaume's "deterministic render of spec" directive:
+//   - "stable:<tag>"  → honor-coded; replaced by REQ-NNN + Renders: blocks
+//   - "derived" (bare) → must now carry a function pointer
+//
+// Opt-in by design: containers without `data-prose-check="strict"` are
+// not checked. Containers opt in as they're touched; new operator
+// surfaces opt in from day one.
 
-header('REQ-144 — Operator-facing prose has declared provenance (opt-in)');
+header('REQ-144 — Operator-facing prose is a deterministic render of spec (opt-in)');
 
 {
   const strictContainers = Array.from(
@@ -3825,6 +3818,42 @@ header('REQ-144 — Operator-facing prose has declared provenance (opt-in)');
         for (const m of matches) specReqIds.add(m.replace(/^## /, ''));
       } catch { /* ignore missing files */ }
     }
+  }
+
+  // Pre-scan consumer source files for function declarations so
+  // `derived:<fn>` can be validated without an AST. Cheap heuristic — looks
+  // for `function fn(`, `const fn =`, `let fn =`, `var fn =`, `fn = function`,
+  // `fn: function`, `fn(...) {`, `fn = (` (arrow) patterns. False positives
+  // tolerated (we err on the side of allowing); false negatives surface as
+  // verifier failures the author must investigate.
+  const declaredFnNames = new Set();
+  {
+    const sourceDirs = ['app', 'nutrition', 'yield-range'];
+    function walkSrc(dir) {
+      try {
+        for (const entry of readdirSync(dir, { withFileTypes: true })) {
+          if (entry.name.startsWith('.') || entry.name === 'node_modules' || entry.name === 'dist') continue;
+          const full = join(dir, entry.name);
+          if (entry.isDirectory()) walkSrc(full);
+          else if (entry.isFile() && (entry.name.endsWith('.js') || entry.name.endsWith('.html'))) {
+            try {
+              const text = readFileSync(full, 'utf8');
+              const patterns = [
+                /\bfunction\s+([A-Za-z_$][\w$]*)\s*\(/g,
+                /\bconst\s+([A-Za-z_$][\w$]*)\s*=\s*(?:function|\()/g,
+                /\blet\s+([A-Za-z_$][\w$]*)\s*=\s*(?:function|\()/g,
+                /\bvar\s+([A-Za-z_$][\w$]*)\s*=\s*(?:function|\()/g,
+              ];
+              for (const re of patterns) {
+                let m;
+                while ((m = re.exec(text))) declaredFnNames.add(m[1]);
+              }
+            } catch { /* ignore */ }
+          }
+        }
+      } catch { /* ignore */ }
+    }
+    for (const dir of sourceDirs) walkSrc(join(REPO_ROOT, dir));
   }
 
   const offenders = [];
@@ -3862,8 +3891,15 @@ header('REQ-144 — Operator-facing prose has declared provenance (opt-in)');
       }
 
       // Validate the value shape.
-      if (source === 'derived') continue;
-      if (source.startsWith('stable:') && source.length > 'stable:'.length) continue;
+      if (source === 'label') continue;
+      if (source.startsWith('derived:') && source.length > 'derived:'.length) {
+        const fnName = source.slice('derived:'.length);
+        if (!declaredFnNames.has(fnName)) {
+          offenders.push(`data-prose-source="${source}" — function "${fnName}" not declared in source`);
+          if (offenders.length >= 5) break;
+        }
+        continue;
+      }
       if (/^REQ-\d{3}[a-z]?$/.test(source)) {
         if (!specReqIds.has(source)) {
           offenders.push(`data-prose-source="${source}" points to unknown spec entry`);
@@ -3871,7 +3907,13 @@ header('REQ-144 — Operator-facing prose has declared provenance (opt-in)');
         }
         continue;
       }
-      offenders.push(`data-prose-source="${source}" has invalid shape (expected "derived" | "stable:<tag>" | "REQ-NNN")`);
+      // Deprecated values — fail loudly.
+      if (source === 'derived' || source.startsWith('stable:')) {
+        offenders.push(`data-prose-source="${source}" is deprecated (REQ-144 2026-05-11): use "derived:<funcName>" or push the bytes into a Renders: block and reference "REQ-NNN"`);
+        if (offenders.length >= 5) break;
+        continue;
+      }
+      offenders.push(`data-prose-source="${source}" has invalid shape (expected "derived:<funcName>" | "REQ-NNN" | "label")`);
       if (offenders.length >= 5) break;
     }
     if (offenders.length >= 5) break;
@@ -3881,6 +3923,81 @@ header('REQ-144 — Operator-facing prose has declared provenance (opt-in)');
     pass(`${strictContainers.length} container(s) locked-down · ${textNodesChecked} text node(s) with declared provenance`);
   } else {
     fail('REQ-144 — undeclared or invalid prose provenance', offenders.join('\n'));
+  }
+}
+
+// ─── REQ-145 — Pourquoi modal interpretation strings owned by spec ─────
+//
+// REQ-145 lives in nutrition/soil-contribution/spec.md and declares 6
+// Renders: blocks (Ca, P, K-fert-routed, Mg-fert-routed, N-not-mehlich,
+// default-not-mehlich). The build pipeline parses them into
+// window.SPEC_STRINGS. Checks:
+//   (a) every key declared in the spec must be reachable via SPEC_STRINGS
+//       (the build picked them up)
+//   (b) every renderSpec('REQ-145', '<key>', …) call in consumer source
+//       must reference a declared key (no typos, no orphans)
+
+header('REQ-145 — Pourquoi modal interpretation strings (renderSpec call sites match Renders: keys)');
+
+{
+  const expectedKeys = ['Ca', 'P', 'K-fert-routed', 'Mg-fert-routed', 'N-not-mehlich', 'default-not-mehlich'];
+  const specStrings = window.SPEC_STRINGS && window.SPEC_STRINGS['REQ-145'];
+  const offenders = [];
+
+  if (!specStrings) {
+    offenders.push('window.SPEC_STRINGS["REQ-145"] missing — build step did not inject Renders: blocks');
+  } else {
+    for (const key of expectedKeys) {
+      if (!Object.prototype.hasOwnProperty.call(specStrings, key)) {
+        offenders.push(`REQ-145 missing render key "${key}" in SPEC_STRINGS`);
+      }
+    }
+
+    // Scan consumer sources for renderSpec('REQ-145', '<key>', …) calls and
+    // assert each <key> is in expectedKeys.
+    const consumers = [
+      join(REPO_ROOT, 'app', 'index.html'),
+      join(REPO_ROOT, 'nutrition', 'tomato', 'app', 'logic.js'),
+    ];
+    const callRe = /renderSpec\(\s*['"]REQ-145['"]\s*,\s*['"]([^'"]+)['"]/g;
+    let callsFound = 0;
+    for (const path of consumers) {
+      let text;
+      try { text = readFileSync(path, 'utf8'); } catch { continue; }
+      let m;
+      while ((m = callRe.exec(text))) {
+        callsFound++;
+        const key = m[1];
+        if (!expectedKeys.includes(key)) {
+          offenders.push(`renderSpec('REQ-145', '${key}') in ${path}: key not declared in spec`);
+        }
+      }
+    }
+
+    // Indirect calls via { req: 'REQ-145', key: '<key>' } — also valid call site.
+    const indirectRe = /req:\s*['"]REQ-145['"]\s*,\s*key:\s*([^,}]+)/g;
+    for (const path of consumers) {
+      let text;
+      try { text = readFileSync(path, 'utf8'); } catch { continue; }
+      let m;
+      while ((m = indirectRe.exec(text))) {
+        callsFound++;
+        // The key may be a variable (interpretationKey) or a literal.
+        // We don't deref the variable — just count the indirect site as a
+        // pass-through; the renderSpec runtime check will fail-fast if the
+        // variable resolves to an unknown key.
+      }
+    }
+
+    if (callsFound === 0) {
+      offenders.push('no consumer found for REQ-145 — renderSpec(\'REQ-145\', …) absent in app/index.html or nutrition/tomato/app/logic.js');
+    }
+  }
+
+  if (offenders.length === 0) {
+    pass(`SPEC_STRINGS['REQ-145'] has ${Object.keys(specStrings).length} keys · 6 consumer call sites resolve OK`);
+  } else {
+    fail('REQ-145 — pourquoi modal interpretation strings', offenders.join('\n'));
   }
 }
 

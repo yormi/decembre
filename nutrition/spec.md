@@ -14,6 +14,11 @@ Crop-specific nutrition specs live in:
 - `nutrition/nursery/spec.md` — Semis laitue nutrition
 - `nutrition/nursery/app/spec.md` — Semis subpage UI
 
+Cross-crop subprojects:
+
+- `nutrition/compost-contribution/spec.md` — weekly per-element release from past compost amendments (Savaria ORGANIMIX fall 2025). Owns `window.CompostContribution`.
+- `nutrition/soil-contribution/spec.md` — weekly per-element draw from the resident Mehlich-3 soil bank + months-to-depletion runway. Owns `window.SoilContribution`.
+
 ---
 
 ## REQ-002 — Ecocert-only product mentions
@@ -685,3 +690,266 @@ separate recipes (tomato vs lettuce); the constraint is per-crop-channel:
 
 **Acceptance:** A new spray (e.g., re-introducing Spray B) requires explicit
 operational sign-off — the spec failure is the gate.
+
+---
+
+## REQ-136 — Contribution channel return shape: `details` per element
+
+**Statement:** Every contribution-channel function (compost release,
+substrate release, sidedress supply, fertigation supply, foliar supply,
+front-load supply, …) MUST return, alongside its flat per-element `mg`
+map, a sibling `details` object keyed by the same elements:
+
+```js
+{
+  perTray_mg: { N: 1463, P: 169, K: 228, … },     // flat numbers (existing)
+  // OR perM2_mg for crop-area channels (compost, sidedress, foliar)
+  details: {
+    N:  { cert: 3, cap: { kind: 'damage', reason: 'Ocean dose plafonnée par CE bidon (REQ-098) — augmenter pousserait au-delà du cap', uncappedMg: 4980 } },
+    P:  { cert: 3, cap: null },                    // recipe covers full P share at this channel
+    K:  { cert: 4, cap: { kind: 'other', reason: 'aucun produit haute-K dans la recette nursery — ajouter K₂SO₄', uncappedMg: 0 } },
+    Ca: { cert: 4, cap: { kind: 'precipitation', reason: 'Ca×PO₄ précipite à pH ≥ 7 → Ca foliaire séparé du P', uncappedMg: 95 } },
+    …
+  }
+}
+```
+
+`details[el]`:
+- `cert: number` — 0-5 transferability cert for the per-element value at
+  this channel. Combines product cert × model cert; takes the minimum.
+- `cap: null | { kind, constraint, limit, lever, uncappedMg }`:
+  - `null` when this channel **fully covers its share** of the demand
+    for this element — there is no gap to explain.
+  - Non-null when this channel **may under-deliver its share** of
+    demand. The cap describes *why* and *what to do*, as three
+    orthogonal short strings (no prose).
+  - `kind: 'damage' | 'precipitation' | 'other'`
+    - `'damage'` — pushing the dose higher would harm the plant (EC
+      ceiling, foliar burn cap, germination protection, root salt
+      tolerance, dose-stacking past safety threshold).
+    - `'precipitation'` — chemistry reduces effective supply (Ksp pair,
+      tag incompatibility, pH-driven lockout precipitating the active
+      ion before uptake).
+    - `'other'` — operational ceiling (mineralization rate, no source
+      in the recipe, channel cascade priority, labor/frequency
+      ceiling, decorative-product cutoff).
+  - `constraint: string` — *what kind of thing is binding*. ≤ 4 words,
+    no numbers, no verbs. The category-label answer to "why can't this
+    push higher?". Examples: `"Protection germination"` ·
+    `"CE bidon"` · `"Précipitation Ca-P"` · `"Pas de source"`.
+  - `limit: string` — *the numerical bound*. ≤ 8 words. The
+    quantitative fact behind the constraint. Examples:
+    `"max 9 g farine / plateau"` · `"max 3,0 mS/cm"` ·
+    `"facteur 0,10 à pH ≥ 7"`.
+  - `lever: string` — *the action to take*. ≤ 6 words, action verb or
+    arrow first. The operator-facing instruction. Examples:
+    `"↑ poisson hydrolysé"` · `"soufre → baisser pH"` ·
+    `"ajouter K₂SO₄ à la recette"`.
+  - `uncappedMg: number` — what the supply would be at full coverage
+    (the gap-closing value). For "no source" caps where pushing isn't
+    possible at all, set to the entering gap so the modal shows the
+    missing amount.
+
+No `reason` prose field. The three labelled strings carry every fact
+the modal needs to render; consumers must not concatenate them at calc
+time. The hover tooltip is `${constraint} · ${limit}`; the modal
+renders three labelled rows (Contrainte / Limite / Levier). REQ
+references do not appear in operator-facing copy — they live in the
+spec and changelog only.
+
+Backwards compatibility: existing callers reading `perTray_mg[el]` or
+`perM2_mg[el]` are unaffected; `details` is a new optional sibling.
+
+**Rationale:** The cap describes the *reason* a channel under-delivers,
+not whether a number was actively reduced. Setting cap only on values
+that hit a hard limit (the original 2026-05-10 morning interpretation)
+left the operator without explanation when, for example, fertigation K
+falls short because there's no K source in the recipe — the gap is real
+and recurring, but no "limit" binds. Reframing cap as the structural
+reason for under-delivery makes the emoji column readable: every gap
+has a category, every category has an actionable lever (push dose
+within the cap, swap to a chemistry-friendly product, add a missing
+source).
+
+**Scope:** Every flux-driven channel function. Concentration-driven
+products (REQ-010) don't participate in the gap chain so they're out of
+scope here, but their burn-cap math (REQ-015, REQ-025) feeds the same
+`cap` structure when those products *are* exposed in a contribution
+block (e.g. foliar Mn capped to burn-safe dose → `cap.kind = 'damage'`).
+
+**Verification:** Node verifier walks every channel function exposed on
+its public namespace (`window.CompostContribution.releasePerWeek`,
+`window.SubstrateContributionNursery.cycleAverageReleasePerTray`,
+`window.FertigationNursery.nurseryRecipeSupply`, etc.) at default
+inputs; for every element with non-zero `mg`, asserts `details[el]`
+exists with `cert ∈ [0, 5]` and `cap` either `null` or matching the
+declared shape. Cert 5 — schema check.
+
+---
+
+## REQ-137 — Contribution-block gap-grid table
+
+Every contribution channel block on every Nutrition admin page renders,
+as the immediate next sibling of its recipe table (REQ-145), a 5-column
+gap-grid: Él. / Manque entrant / Apport ici / Manque sortant / icon.
+Color coding ✅🟢🟡🔴 by residual ratio. The grid receives a
+per-element `details {cert, cap}` payload (REQ-136).
+
+---
+
+## REQ-138 — `Apport ici` cell + cap-emoji interactivity
+
+**Statement:** In every contribution block (REQ-137), the `Apport ici`
+cell of each element row:
+
+1. **Is clickable per (row, column)** — every click opens a modal
+   scoped to **exactly one element × one channel × one cap-context**.
+   The modal MUST NOT aggregate multiple elements, multiple channels,
+   or both cell + cap content. One click → one focused modal, period.
+   - Click on the **value** part of the cell → "Cert" modal with:
+     - The clicked element's symbol + the clicked channel's
+       contribution value (in the channel's native unit, no other
+       elements shown)
+     - `details[el].cert` for that one element
+     - A short auto-derived sentence on the cert source for that
+       (channel, cert) pair only ("Cert 3 — modèle mass-balance,
+       paramètres Sonneveld" or similar, pulled from a channel-level
+       cert-explainer table indexed by `(channel, cert)`)
+   - Hidden state in the modal MUST identify both the element and the
+     channel it came from, so the same element clicked in a different
+     channel's row opens a different modal instance with that
+     channel's cert/source.
+
+2. **Renders a cap emoji** when `details[el].cap` is non-null AND the
+   row's *manque sortant* > 0 (this channel under-delivered for this
+   element). When the channel fully covered its share (manque sortant
+   = 0), no emoji renders even if a `cap` could in principle apply —
+   the gap doesn't exist to explain.
+   - `cap.kind === 'damage'` → 🔥
+   - `cap.kind === 'precipitation'` → 💧
+   - `cap.kind === 'other'` → ❗
+   The emoji appears inline AFTER the numeric value, in the same cell.
+   Tooltip (`title=`) carries the short reason for hover discovery.
+
+3. **Each emoji opens its own modal** — independent from the cert
+   modal in (1) and scoped to **exactly that element × that channel ×
+   that cap-kind**. The modal MUST surface the `details[el].cap`
+   four-field payload directly — no separate registration required by
+   any caller. Layout, top to bottom:
+
+   ```
+   ┌───────────────────────────────────────────┐
+   │  {el} — {channel}              cert N/5   │  header
+   │  {emoji} {kind label}                     │  kind badge
+   ├───────────────────────────────────────────┤
+   │  {supplied} → {uncappedMg}  (+delta)      │  number delta
+   ├───────────────────────────────────────────┤
+   │  Contrainte ·  {cap.constraint}           │
+   │  Limite     ·  {cap.limit}                │
+   │  Levier     ·  {cap.lever}                │
+   └───────────────────────────────────────────┘
+   ```
+
+   - **Kind label**: `🔥 Plafond plante` / `💧 Précipitation` /
+     `❗ Autre plafond`.
+   - **Number delta** rendered only when `uncappedMg > supplied`
+     (i.e. there's a quantitative gap to show). Format:
+     `${supplied} → ${uncappedMg} (+${delta})`.
+   - **Three labelled rows**: each label-value pair on one line, mono
+     font for the value side, dot separator between label and value.
+   - **No prose paragraph.** Each `cap` field renders as-is into its
+     row. No concatenation, no narrative wrap-around, no REQ
+     citations in operator-facing text.
+
+**Single source of cap copy:** the hover tooltip (`title=` attribute)
+shows `${constraint} · ${limit}` (8-15 chars of constraint + the
+numerical bound). Clicking opens the modal with the full 3-row
+breakdown. Tooltip and modal share the same three strings — no
+divergent copy paths.
+
+**Anti-patterns (forbidden by this spec):**
+
+- A single modal that lists all 11 elements when any one cell is
+  clicked.
+- A "channel summary" modal that pools cap reasons across multiple
+  elements ("Mn, Zn, B all burn-capped because…"). Each element
+  warrants its own click and its own modal — operator clicks the
+  emoji they're curious about, gets only that element's story.
+- Cell-click and emoji-click that share a single modal pane — they
+  surface different question types and must be visually distinct
+  (separate close, separate body, separate keying).
+- Reusing the same modal markup across blocks without keying — if
+  Block 2 (substrate) and Block 3 (fertigation) both have a non-null
+  N cap, clicking each must open separately-keyed modals showing the
+  N value in *that* block, not the same overlay reused.
+
+**Rationale:** Per-cell granularity replaces row-level click-throughs
+because the cap context is element-specific within a channel — *Mn is
+burn-capped while N in the same recipe is fine*. The user is
+investigating one specific question per click ("why is K's apport
+shown as 228 mg here?" / "what does the 🔥 next to Cu mean?"). Pooling
+multiple elements into one modal forces the operator to read prose to
+extract the answer they came for. Per-(row, column) modals surface
+exactly the right context at the right click target.
+
+The three emojis are intentionally distinct so a glance at the column
+shows the cap *kind distribution* across elements without opening
+anything. Operators learn the icon vocabulary once and read the column
+visually.
+
+**Verification:** Node verifier:
+
+1. Asserts the `Apport ici` cells in each contribution block carry a
+   click handler keyed by **(blockId, element)** — e.g.
+   `data-cell-key="nursery-fert.cell.K"` or
+   `onclick="showCap('nursery-fert','K')"`. Selector must distinguish
+   blocks (a Block 2 cell and a Block 3 cell for the same element key
+   different modals).
+2. For at least one synthetic capped element (constructed by mutating
+   a recipe to trigger an EC cap, OR injecting a test `cap` payload),
+   assert the cell renders the corresponding emoji AND that the emoji
+   has its own click handler keyed by **(blockId, element, capKind)**
+   — distinct from the cell's own handler.
+3. After a synthetic click on the cell handler, assert the rendered
+   modal body contains exactly one element symbol (the clicked one)
+   and exactly one channel value — no enumeration of other elements.
+4. After a synthetic click on the emoji handler, assert the modal
+   body contains the clicked element's `cap.reason` and `uncappedMg`
+   only — no list of other capped elements.
+5. Asserts the modal markup exposes the auto-derived sentence — no
+   hand-written interpretation strings (REQ-060 inheritance).
+
+Cert 4 — UI assertion + behavioral test. Implementation may use
+existing `showPourquoi` modal infrastructure with new key shapes
+(`${blockId}.cell.${el}` for value clicks,
+`${blockId}.cap.${el}.${kind}` for emoji clicks) or introduce
+dedicated `showCellCert` / `showCapReason` helpers.
+
+---
+
+## Inherited / dependent specs
+
+- REQ-060 — `cap.reason` strings count as narrative copy and must be
+  auto-derived from the data (not hand-written per element). The cert
+  explainer table is the only stable copy here; reason strings come
+  out of the cap-detection function that produced the cap.
+- REQ-029a/b/c — `precipitation` caps cite the Ksp pair or
+  TAG_INCOMPATIBILITY rule that fired, by REQ number.
+- REQ-018 — `decorative` flag (effectiveEff < 5%) maps to `cap.kind =
+  'other'` with the spec ID as reason.
+- Per-channel specs that introduce caps (REQ-021 fertigation
+  solubility, REQ-024 CE envelope, REQ-025 foliar burn cap, REQ-098
+  nursery CE cap, REQ-094 substrate front-load cap) MUST emit the
+  corresponding `cap` object when their threshold binds.
+
+---
+
+## REQ-145 — Contribution-block recipe table
+
+On every Nutrition admin page, each contribution channel block
+(excluding the Tomato Sol soil-bank block) MUST render, between its
+title and gap-grid, a 3-column table `Produit | Composition (% m/m) |
+Quantité`. One row per product in the live recipe. Composition is the
+product's label % as a `·`-separated string in canonical element order
+(N · P · K · Ca · Mg · Fe · Mn · Zn · Cu · B · Mo), elements at 0 %
+omitted. Quantité is the channel-native dose.

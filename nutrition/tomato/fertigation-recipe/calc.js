@@ -5,7 +5,6 @@
 //
 // REQ-098: returned values match the mass-balance derivation.
 // REQ-099: namespace exposed via window.FertigationRecipeTomato (model.js).
-// REQ-100: mixing factor mode-aware — see data.js.
 
 // ─── computeStageRecipe — MASS-BALANCE replenishment of K and Mg ────────
 //

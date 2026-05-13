@@ -1,174 +1,184 @@
 # Yield Range — app UI specs
 
-UI contract for the Yield Range admin page (Salanova nursery yield prediction).
-Math model: `yield-range/spec.md`. Source rationale + design history:
-`yield-range/app/derivation.md`.
+UI contract for the Yield Range admin page. Math model:
+`yield-range/spec.md`.
 
 Admin page. Salanova nursery only. French UI text.
 
 ## Contract
 
-- **4 inputs**: plateau (32/50), semaines germ→transplant (1–10),
-  stratégie nutritive (actuelle/parfaite), DLI banc (5–29 mol/m²/j slider)
-- **4 outputs**: rendement par plant, jour de pic de croissance,
-  rendement par m² par an, stratégie optimale
-- **7 read-only info values**: T jour, T nuit, VPD photopériode,
-  CO₂ photopériode, seuil bolting, RootCap 50-cell, RootCap 32-cell
+- **2 inputs**: plateau (18/24/32/50), heures DEL (0–18)
+- **2 outputs**: capacité plafond (g/plant), graphique poids tête vs jours
 
 Cert scale per `nutrition/tomato/plant-needs/spec.md`.
 
 ---
 
-## REQ-072 — Four inputs, four outputs
+## REQ-119 — Two inputs
 
-**Statement:** The page provides exactly four inputs (plateau, semaines,
-stratégie nutritive, DLI banc) and exactly four outputs (rendement par
-plant, jour de pic de croissance, rendement par m² par an, stratégie
-optimale). The read-only info block (REQ-078) is allowed alongside but
-not counted as an input or output.
+**Statement:** The page provides exactly two inputs:
+1. **Plateau** — toggle 18 / 24 / 32 / 50 (cells per tray)
+2. **Heures DEL** — slider 0–18 (step 1, default 16)
 
-**Rationale:** The page exposes only the levers the operator pulls.
-Other env conditions (T, VPD, CO₂) stay hardcoded.
+No other operator-facing inputs.
+
+**Rationale:** Operator's only levers in this iteration. Sun is
+hardcoded; other env conditions assumed best (per math-model REQ-113).
 
 **Verification:** Deferred — wired when page lands. Trigger: scan
-`#page-rendement-content` for the four named inputs and four named
-output elements.
+`#page-rendement-content` for the two named inputs only.
 
 **Cert:** 5
 
 ---
 
-## REQ-073 — Live output update
+## REQ-120 — Capacité plafond is shown as a labeled numeric display
 
-**Statement:** All four outputs update on every input change without
-page reload or button click.
+**Statement:** The page renders the canopy ceiling as a labeled
+number: `Capacité plafond: X g/plant` (where X is the math model's
+`canopyCapG`). This is a separate display from the chart's reference
+line in REQ-121 — the chart shows the curve approaching the ceiling;
+this number names the ceiling value at a glance.
 
-**Rationale:** Strategy comparison is the page's primary use.
-
-**Verification:** Deferred — wired when page lands. Trigger: each input
-has an `onchange`/`oninput` handler bound to the prediction recompute.
-
-**Cert:** 5
-
----
-
-## REQ-074 — Stratégie nutritive is a binary toggle
-
-**Statement:** "Stratégie nutritive" is a binary toggle with exactly
-two states: `actuelle` and `parfaite`.
-
-**Rationale:** Operator framing ("ideal nutrition?") wraps the model's
-CE-curve multiplier without forcing a numeric CE input.
-
-**Verification:** Deferred — wired when page lands. Trigger: scan for
-toggle element with both state labels.
-
-**Cert:** 5
-
----
-
-## REQ-075 — Jour de pic de croissance is a top-level output
-
-**Statement:** "Jour de pic de croissance" surfaces the math model's
-`optimalHarvestDay` as a top-level output, expressed in days from
-germination.
-
-**Rationale:** Décembre's 2026 spring batch lost 38% of mass between
-d28 and d35 by harvesting past peak. Knowing when growth peaks is the
-actionable counterpart to knowing predicted weight.
+**Rationale:** The chart's asymptote is visible but not labeled with
+its numeric value. Without this standalone display, the operator
+must read a y-axis tick or hover over the line to know the cap.
 
 **Verification:** Deferred — wired when page lands. Trigger: page
-renders an output element bound to `optimalHarvestDay`, displayed in
-days-from-germination.
+contains a text element matching pattern `Capacité plafond: \d+ g/plant`
+with the value bound to `window.YieldRange.predictNurseryYield(...).canopyCapG`.
 
 **Cert:** 5
 
 ---
 
-## REQ-076 — Rendement par m² par an formula
+## REQ-121 — Growth chart of head weight vs days from germination
 
-**Statement:** "Rendement par m² par an" computes
-`plantsPerM2 × gPerSeedling × cyclesPerYear` where
-`plantsPerM2 = cellsPerTray / TRAY_AREA_M2`,
-`cyclesPerYear = 52 / weeks`,
-`gPerSeedling = wPredictedG`,
-`TRAY_AREA_M2 = 0.149`.
+**Statement:** The page renders a chart with:
+- x-axis labeled **`Jours depuis germination`** (range 0–49, integer)
+- y-axis labeled **`Poids tête (g)`**
+- Data series = math model's `trajectory` output
+- Horizontal reference line at `canopyCapG` (the asymptote)
+- Vertical marker at `daysToPotential` when not null
+- When `daysToPotential` is null, an annotation reads
+  `Plein potentiel non atteint dans la fenêtre de 49 jours`
 
-**Rationale:** g/seedling is a leading indicator; g/m²/yr is the
-strategic decision variable.
+**Rationale:** Visual answer to "how long until I'm at potential?"
+Explicit axis labels prevent confusion between days-from-germination
+and days-from-sow / weeks. Empty-state annotation prevents silent
+absence of the marker.
 
-**Verification:** Deferred — wired when page lands. Trigger: output
-value matches formula on known inputs.
-
-**Cert:** 4 — `TRAY_AREA_M2` is approximate (32-cell shares outer
-dimensions but cell layout differs slightly).
-
----
-
-## REQ-077 — Stratégie optimale auto-sweep
-
-**Statement:** "Stratégie optimale" sweeps the 4 combinations of
-(plateau × stratégie nutritive). For each combination, the optimum
-cycle = `optimalHarvestDay / 7` (rounded). The combination with the
-highest `gPerM2PerYear` at its optimum cycle is surfaced, with both
-the combination string and the value.
-
-**Rationale:** Auto-sweep removes manual click-through across
-combinations. Constraining each combination to its peak day prevents
-recommending past-peak harvests.
-
-**Verification:** Deferred — wired when page lands. Trigger: auto-sweep
-evaluates exactly 4 combinations and surfaces both combination string
-and `gPerM2PerYear` value.
+**Verification:** Deferred — wired when page lands. Trigger: chart
+element renders; x-axis label = `Jours depuis germination`; y-axis
+label = `Poids tête (g)`; data series bound to `trajectory`;
+reference line bound to `canopyCapG`; marker bound to
+`daysToPotential`; empty-state text rendered when `daysToPotential`
+is null.
 
 **Cert:** 5
 
 ---
 
-## REQ-078 — Read-only info block of fixed model assumptions
+## REQ-132 — Clickable DLI display with f_light response modal
 
-**Statement:** The page renders a read-only info block with exactly
-seven items: T jour 24 °C, T nuit 18 °C, VPD photopériode 4,5 g/m³,
-CO₂ photopériode 500 ppm, seuil bolting 26 °C, RootCap 50-cell 56 g,
-RootCap 32-cell 144 g. Values auto-render from the spec constants —
-no hardcoded HTML strings.
+**Statement:** The page renders a clickable element showing the
+current bench DLI (`DLI banc: X.X mol/m²/j`). Clicking it opens a
+modal showing the `f_light` response curve as a table:
 
-**Rationale:** REQ-072 keeps these conditions off the input surface.
-The operator still needs to know what the model assumes.
+| DLI (mol/m²/j) | Multiplicateur f_light |
+|---|---|
+| < 4 | 0 (photosynthèse arrêtée) |
+| 4 → 12 | rampe linéaire 0 → 1,0 |
+| 12 – 17 | 1,0 (optimum) |
+| 17 → 22 | rampe linéaire 1,0 → 0,7 (saturation) |
+| ≥ 22 | 0,7 (plafond saturation) |
 
-**Verification:** Deferred — wired when page lands. Trigger: scan for
-the 7 listed labels and matching numeric values; reject hardcoded
-duplicates of values already declared in `yield-range/spec.md`
-constants.
+The modal also shows the current `dliBenchAvg` and `dliPerPlant`
+values for context.
+
+**Rationale:** The operator needs to understand WHY the model behaves
+as it does at edge DLI values. Hiding the f_light response in the
+code makes the model opaque — when a slider change moves the
+trajectory unexpectedly, the curve explains it.
+
+**Verification:** Deferred — wired when verifier checks the DLI
+element exists with click handler binding to a modal that contains
+the 5 breakpoint rows (auto-rendered from
+`window.YieldRange.F_LIGHT_BREAKPOINTS` per REQ-060).
+
+**Cert:** 4
+
+---
+
+## REQ-133 — Peak potential day shown next to Capacité plafond
+
+**Statement:** The Capacité plafond card displays both `canopyCapG` AND
+`daysToPotential` in a single line: `Capacité plafond: X g/plant · pic
+à J<n>` (or `pic non atteint dans la fenêtre de 49 jours` when null).
+
+**Rationale:** The chart marker shows the peak day visually, but
+adjacency to the cap value lets the operator compare "how much" + "how
+long" without reading the chart.
+
+**Verification:** Deferred — wired when verifier checks the
+`#yr-days-to-potential` slot is bound to `daysToPotential` and renders
+the number-vs-null branches.
+
+**Cert:** 4
+
+---
+
+## REQ-134 — Bench DLI shown as integer in the page card
+
+**Statement:** Bench DLI shown in the page card (`#yr-dli-value`) is
+rounded to the nearest integer with `Math.round()`. The modal context
+line keeps one decimal for transparency.
+
+**Rationale:** The page-level number is a quick-read; integer is
+cleaner and the variation between integer values is operationally
+meaningful. The modal is the precise breakdown.
+
+**Verification:** Deferred — wired when verifier asserts
+`#yr-dli-value` text matches `^\d+$` and the modal context line keeps
+the `\d+,\d` shape.
 
 **Cert:** 5
 
 ---
 
-## REQ-084 — DLI banc is a slider input
+## REQ-135 — Bench DLI colour-coded by f_light zone (young-plant indicator)
 
-**Statement:** "DLI banc" is a numeric slider input, range 5 to 29
-mol/m²/j (integer or 0.5 step), default 27,5.
+**Statement:** The bench DLI display value (`#yr-dli-value`) text
+colour is set based on `f_light(dliBenchAvg)`: green if ≥ 0.95, yellow
+if 0.7–0.95, red if < 0.7. Colour updates on every `renderYieldRange`
+call. The colour reflects what **young, pre-canopy-closure plants
+(d ≤ 14)** experience — at that stage `spacing_factor = 1.0` so per-plant
+DLI equals bench DLI. Once the canopy closes (d ≥ 28), per-plant DLI
+drops to `bench × 0.40`, and the late-cycle reality is shown in the
+modal context line, not in this colour.
 
-**Rationale:** Quebec sun varies ~5–35 mol/m²/j across the year.
-Hardcoding annual average hides the largest environmental swing.
-Promoting DLI to a per-cohort input lets the operator pick a value
-matching the cohort's season. Bounds: lower = deep-winter low light,
-upper = annual-avg sun + LED at 18h photoperiod (above 29 the model's
-`f_light` saturates anyway). Default = sun-avg + LED-16h, matches the
-hardcoded value DLI-banc held before promotion.
+**Rationale:** At a glance, the operator sees whether their LED+sun
+setup is good for the early growth phase. Bench DLI is what young
+plants directly feel; the late-cycle reality (per-plant after canopy
+closure) is a separate consideration surfaced in the modal. Mirrors the
+project's 3-tier convention (REQ-016).
 
-**Verification:** Deferred — wired when page lands. Trigger: scan for
-slider element with `min=5`, `max=29`, default value 27.5; bound to
-the math model's `dliBenchAvg` input.
+**Verification:** Deferred — wired when verifier reads the colour at
+representative `ledHours` values (e.g. 0 → red, 16 → green, 18 →
+yellow) via `window.YieldRange.f_light(window.YieldRange.dliBenchAvg(h))`
+and asserts the inline `style.color` against the expected tier.
+Breakpoints come from `F_LIGHT_BREAKPOINTS` per REQ-060 — no hardcoded
+DLI thresholds in the UI.
 
-**Cert:** 5
+**Cert:** 4
 
 ---
 
 ## Inherited
 
-- **REQ-001** (CE not EC in user-facing text)
-- **REQ-060** (info block auto-renders from spec constants)
-- All math-model REQs (**REQ-063 to REQ-071**) must be wired in code
-  before the page renders meaningful predictions.
+Cross-app conventions (REQ-001, REQ-005, REQ-006, REQ-007) apply by
+default per the root `CLAUDE.md` "Conventions inherited by every page"
+section. This page does not deviate.
+
+- All math-model REQs (REQ-112 to REQ-118) must be satisfied by the
+  underlying functions before the page renders meaningful predictions.

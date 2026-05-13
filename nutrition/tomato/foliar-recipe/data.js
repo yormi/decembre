@@ -39,3 +39,27 @@ const FOLIAR_COVERAGE_WITH_YUCCA = 0.80;
 // (No constant declared at this scope — area is computed inline inside
 // computeFoliarSupply; documented here for the spec's "AREA_M2" namespace
 // key, which exposes the live value via the model.js wrapper.)
+
+// REQ-115 — per-element burn cap (g per 15 L master tank).
+// Conservative mid-band foliar guidance (Sonneveld 2009, Yara crop nutrition
+// foliar tables, university extension publications: Cornell, U. Delaware,
+// U. Missouri). Cert 3 — refinable when Décembre tissue + lesion log lands.
+// TODO when tissue + lesion data lands: revisit per-element values with
+// observed Décembre headroom (Cu narrow, Fe wide). Surfactant has no
+// published effect on the burn-cap axis — yucca acts on coverage, not on
+// max safe tank concentration; see learnings.md.
+const BURN_CAP_BASE_G = {
+  Mn: 18,   // MnSO₄ — conservative organic-greenhouse mid-band
+  Zn: 16,   // ZnSO₄
+  Cu: 2,    // CuSO₄ — narrow toxicity threshold (Cu²⁺ enzyme damage)
+  Fe: 80,   // FeSO₄·7H₂O — high-mass dose, well below tank-CE bound
+  Mo: 1,    // NaMoO₄ — wide tolerance; seldom binding
+  B:  9,    // Solubore (boric acid) — non-ionic
+};
+
+// REQ-115 — burn cap by element. Public via window.FoliarRecipeTomato.burnCapG.
+// `_surfactant` parameter kept for caller-side API symmetry; surfactant has no
+// effect on burn cap (coverage axis only — see learnings.md).
+function burnCapG(element, _surfactant) {
+  return BURN_CAP_BASE_G[element] || 0;
+}

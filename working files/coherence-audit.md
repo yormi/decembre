@@ -412,6 +412,8 @@ Most missing-cert constants have an *implicit* cert in a comment block above (e.
 
 ## Finding 14 — Cross-channel double-counting risk for K (and possibly Mg)
 
+**Resolved 2026-05-10** — sidedress dropped from supply sum (2026-05-05); MIXING_FACTOR_FERT (0.5 stored-mode discount, REQ-100) added 2026-05-05 then retired 2026-05-10. Concept dropped: fertigation supply now reported at full barrel mass; SME is a separate channel. See nutrition/tomato/fertigation-recipe/spec.md retired-specs section.
+
 **What's inconsistent:** Per REQ-012 future spec: no double flux-ownership. Today the model has no `CHANNEL_ROLE` const. Bilan adds K from 3 sources at every render (`index.html:3596-3601`, `3686-3700`):
 
 1. Soil mass-flow (SME K 292 ppm × 25.5 L/m²/wk = 7 448 mg K/m²/wk)

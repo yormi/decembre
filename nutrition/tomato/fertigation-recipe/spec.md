@@ -5,28 +5,36 @@ dose** (liquid replenishment of K, Mg, and B at the dripper) per tomato
 production stage, in grams of product per total tomato area per week.
 
 This file is the *spec* (what the model must do or be). Mass-balance
-derivation, T5 refined target rationale, mixing-factor mode-aware
-mechanism, source tables (PA Taillon April 2026), refinement triggers
+derivation, T5 refined target rationale, source tables (PA Taillon
+April 2026), refinement triggers
 live in `derivation.md` next door. Operational *stored* values that the
 team currently weighs out (`STORED_RECIPE.tomato.fertigation`, hand-locked
 at PA Taillon's April 2026 recommendation) are governed by the
 `/retire-recipe` audit-trail skill, not by this spec.
 
-The model answers exactly one question: **"how many grams of K₂SO₄ +
-MgSO₄·7H₂O (and Solubore B at T5) per tomato bed-area per week does the
-plant need at stage S to replenish offtake from the soil bank, given
-sidedress and compost mineralization?"**
+The model answers two questions:
+
+1. **Sizing** — "how many grams of K₂SO₄ + MgSO₄·7H₂O (and Solubore B at
+   T5) per tomato bed-area per week does the plant need at stage S to
+   replenish offtake from the soil bank, given sidedress and compost
+   mineralization?" Answered by `computeStageRecipe(stage)` —
+   computed dose must match the mass-balance formula (REQ-098).
+2. **Supply** — "given a fertigation recipe (in grams of product per
+   total tomato area per week), how many mg/m²/wk of each element does
+   the channel deliver to the bed?" Answered by
+   `computeFertigationSupply(stage, opts, recipe)` — fertigation
+   delivery must equal recipe mass × element fraction ÷ area (REQ-151).
 
 It does NOT answer:
 - What the team currently weighs out (that's
   `STORED_RECIPE.tomato.fertigation`).
-- How much K/Mg/B is *available* this week — that's the supply chain
-  (soil mass-flow + sidedress + foliar). See `calcNutrSupply` in
-  `app/index.html`.
 - The barrel-mixing or injection schedule (operations, not modeling).
-- LUXURY_FACTOR cap on supply.soil — that's a supply-side concern,
-  remains with `calcNutrSupply`. Listed in inherited specs only as a
-  consumer-side reference.
+- LUXURY_FACTOR cap on supply.soil — that's a supply-side concern on
+  the *soil* channel, remains with `calcNutrSupply`. Listed in inherited
+  specs only as a consumer-side reference.
+- Per-element cap / cert detail (REQ-136 `details` sibling) — built at
+  the caller from the flat supply map + current pH state. Matches the
+  foliar precedent.
 
 Cross-channel scope: fertigation is *part of* the weekly replenishment
 chain (compost → sidedress → fertigation → foliar). This subproject owns
@@ -146,10 +154,11 @@ At runtime, `window.FertigationRecipeTomato` exists and exposes:
 
 | Key                          | Type     |
 |------------------------------|----------|
-| `MIXING_FACTOR_STORED`       | number   |
-| `MIXING_FACTOR_FP`           | number   |
 | `FIRST_PRINCIPLES_T5`        | object   |
 | `computeStageRecipe`         | function |
+
+(REQ-099 covers the sizer surface. The supply-side function
+`computeFertigationSupply` is asserted independently by REQ-151.)
 
 **Rationale:** Same as `PlantNeedsTomato` (REQ-083),
 `CompostContribution` (REQ-080), `SidedressRecipeTomato` (REQ-088).
@@ -166,35 +175,84 @@ sites. `FIRST_PRINCIPLES_T5` mirrors the wired
 
 ---
 
-## REQ-100 — Mixing factor is mode-aware
+## REQ-151 — `computeFertigationSupply(stage, opts, recipe)` delivers per-element supply
 
-Two mixing-factor constants exist:
+**Statement:** `computeFertigationSupply(stage, opts = {}, recipe?)`
+returns the per-element fertigation supply in mg/m²/wk delivered to the
+total tomato bed area for one week of normal operation.
 
-- `MIXING_FACTOR_STORED = 0.5` — applied when `calcNutrSupply` runs in
-  `mode === 'stored'`.
-- `MIXING_FACTOR_FP = 1.0` — applied when `calcNutrSupply` runs in
-  `mode === 'fp'`.
+Contract:
 
-`MIXING_FACTOR_STORED < MIXING_FACTOR_FP` (strict inequality), and
-`MIXING_FACTOR_FP === 1.0`.
+- `stage`: string in `{T1, T2, T3, T4, T5}`. Used **only** to select the
+  default recipe when `recipe` is omitted. No stage-dependent factors are
+  applied otherwise — fertigation delivery at given product mass is
+  stage-independent.
+- `opts`: reserved for future channel-level levers; default `{}`. No
+  required keys today.
+- `recipe`: optional recipe override in canonical g-keyed shape:
 
-**Rationale:** In `stored` mode (live operation), supply.soil already
-includes last week's residue (SME measurement captures it), so summing
-the full barrel on top would double-count. The 0.5 factor estimates the
-*additional* fraction this week beyond what SME already reflects (drip
-delivers liquid to the active root zone; ~half is absorbed before mixing
-with the bulk pool). In `fp` mode (mass-balance pure, no SME credit per
-2026-05-08 philosophy shift), supply.soil is dropped for fertigation-
-deliverable elements — the full barrel counts as fresh supply, so factor
-= 1.0. Without mode-awareness, the FP target would be silently halved
-when consumed in fp mode, breaking REQ-013/014 supply bounds.
+  ```js
+  { kSulfate_g: <g>, mgSulfate_g: <g>, solubore_g: <g> }
+  ```
 
-**Verification:** `scripts/check-recipes.mjs` REQ-100 — assert the two
-constants are exposed on `window.FertigationRecipeTomato` with the
-expected numeric inequality and the FP value pinned at 1.0.
+  Each value is **grams of that product over total tomato bed area per
+  week** (area = `TOMATO_NUM_BEDS × TOMATO_BED_AREA`). Missing keys
+  default to `0`. When `recipe` is omitted the function reshapes
+  `STORED_RECIPE.tomato.fertigation[stage]` (which uses `kSulfate` /
+  `mgSulfate` keys, no solubore — B is FP-only) into the canonical
+  shape internally as a default-source convenience. **Callers preparing
+  a recipe from any other source (FP literal, computed sizer) are
+  responsible for the reshape into canonical g-keys before calling.**
 
-**Cert:** 3 (mechanism cert 3 — drip mixing physics; specific 0.5 value
-cert 2-3 from operational reasoning, no measured anchor at Décembre yet).
+- Return: full 11-element map `{N, P, K, Ca, Mg, Fe, Mn, Zn, Cu, B, Mo}`
+  of mg/m²/wk delivered. Elements outside the fertigation channel
+  (everything except K, Mg, B) return `0` numerically. Flat shape
+  matches `computeFoliarSupply` precedent; per-element cap and cert
+  details on every contribution channel (REQ-136) are built at the
+  caller, not inside the model function.
+
+**Rationale:** Closes the TODO under "app must call subproject
+namespace, no inline reimplementation" (REQ-139). Fertigation is the
+third channel in the replenishment chain (compost → sidedress →
+fertigation → foliar) but its subproject only exposed the *sizer*
+(`computeStageRecipe`). The consumer (`calcNutrSupply` in
+`app/index.html`) currently inlines the delivery formula
+`(g × element_pct × 1000) / area` for K, Mg, B — the same class of
+inline drift the no-inline-reimplementation rule (REQ-139) was
+written to prevent on the foliar branch. Promoting the delivery formula to the subproject
+namespace lets the verifier blacklist extend to catch future drift on
+the fertigation formula shape and lets the registry-driven positive
+check assert at least one call site exists.
+
+The canonical g-keyed recipe shape is the SRP boundary: the caller
+selects the source (stored, FP literal, computed sizer) and reshapes
+into the canonical input before calling. The model function applies one
+rule — delivery math — on the pre-normalized input. No mode flags, no
+shape detection.
+
+**Verification (deferred — wired when `calc.js` lands the function):**
+node verifier in `scripts/check-recipes.mjs`:
+
+1. Calls `computeFertigationSupply('T5', {}, { kSulfate_g: 5167, mgSulfate_g: 1379, solubore_g: 9 })`
+   and asserts:
+   - `K`  within ±1 mg/m²/wk of `5167 × PRODUCT_PCT.K2SO4_K × 1000 / TOTAL_AREA`
+   - `Mg` within ±1 mg/m²/wk of `1379 × PRODUCT_PCT.MgSO4_Mg × 1000 / TOTAL_AREA`
+   - `B`  within ±0.01 mg/m²/wk of `9 × PRODUCT_PCT.Solubore_B × 1000 / TOTAL_AREA`
+   - `N`, `P`, `Ca`, `Fe`, `Mn`, `Zn`, `Cu`, `Mo` all numerically `0`.
+2. Calls `computeFertigationSupply('T5')` (no recipe arg) and asserts
+   the default reshape from `STORED_RECIPE.tomato.fertigation.T5` matches
+   the explicit-recipe call when given the same numeric grams.
+3. Registry-driven REQ-139 check: extend the registry tuple with
+   `(FertigationRecipeTomato, computeFertigationSupply, app/index.html)`
+   so a deleted call site fails the verifier.
+4. Inline-formula blacklist: extend with
+   `PRODUCT_PCT.(K2SO4_K|MgSO4_Mg|Solubore_B)) / area * 1000` shape
+   forbidden in `app/index.html` once the consumer is refactored.
+
+**Cert:** 4 — bright-line normative rule; auto-enforcement is partial
+in the same shape as REQ-139 (registry catches deleted call sites,
+blacklist catches new inline drift on the exact formula shape; can't
+enumerate every future inline reimplementation a priori).
 
 ---
 
@@ -223,3 +281,13 @@ The `LUXURY_FACTOR` supply cap in `app/index.html` is a *consumer-side*
 concern — it caps `supply.soil` (not fertigation supply) at `demand ×
 luxury`. Stays with `calcNutrSupply`; not part of this subproject's
 contract.
+
+---
+
+## Retired specs
+
+- **REQ-100** retired 2026-05-10 — concept dropped, fertigation supply
+  now reported at full barrel mass (no mixing-factor discount). The 0.5
+  stored-mode multiplier was a cert 2-3 guess and the double-count
+  framing was artificial; SME is reported as a separate channel. Number
+  not reused.

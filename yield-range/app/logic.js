@@ -1,258 +1,261 @@
-// ─── yield-range/app/logic.js — page wiring ────────────────────────────────
+// ─── yield-range/app/logic.js — Rendement semis admin page ─
 //
-// UI contract: yield-range/app/spec.md (REQ-072 to 078 + REQ-084).
-// Math: yield-range/{spec.md, derivation.md} via window.YieldRange.
+// Spec: yield-range/app/spec.md (REQ-119 two inputs · REQ-120 capacité
+// plafond display · REQ-121 chart with axis labels + reference line +
+// marker). Math contract: yield-range/spec.md (REQ-112 to REQ-118).
 //
-// Page state (4 inputs, REQ-072):
-//   yrPlateau   ∈ {32, 50}              (plateau toggle, default 50)
-//   yrWeeks     ∈ [1, 10]               (semaines germ→transplant, default 4)
-//   yrStrategy  ∈ {actuelle, parfaite}  (stratégie nutritive, default actuelle)
-//   yrDLI       ∈ [5, 29]               (DLI banc slider, default 27.5)
-//
-// REQ-073: every input change triggers renderYieldRange() — no button click.
-// REQ-074: stratégie nutritive is binary; map to CE multiplier without
-//          forcing a numeric CE input on the operator.
-// REQ-077: stratégie optimale auto-sweeps 4 combos via computeBestStrategy.
-// REQ-078: info block auto-renders from constants — no hardcoded duplicate
-//          numeric values in HTML.
+// State held in the DOM (no module-level vars). Page entry: buildYieldRange.
+// setupYieldRangeInputs is idempotent — wires listeners once across re-entries.
 
-let yrPlateau  = 50;
-let yrWeeks    = 4;
-let yrStrategy = 'actuelle';
-let yrDLI      = 27.5;
-
-// CE per-strategy mapping. "actuelle" matches Décembre's current Acadie-based
-// fertigation (cycle-average CE ≈ 1.8 mS/cm via Bluelab pour-through);
-// "parfaite" pushes into the luxury plateau (CE 2.4) where f_CE is at the
-// upper edge of the optimum band without tipping into salt stress. These
-// values must stay aligned with computeBestStrategy() in yield-range/calc.js.
-const YR_STRATEGY_CE = { actuelle: 1.8, parfaite: 2.4 };
-
-// Cycle-day mapping: weeks germ→transplant × 7. Spec inputs list cycleDays
-// directly; the operator thinks in weeks, so we expose weeks and convert.
-function yrCycleDays() { return Math.max(7, yrWeeks * 7); }
-
-// Plateau → cellVolumeML. Stored separately so the page reads spec values:
-// 50-cell ≈ 35 mL, 32-cell ≈ 90 mL (RootCap = volume × 1.6 → 56 g / 144 g).
-function yrCellVolumeML(plateau) { return plateau === 32 ? 90 : 35; }
-
-function yrFmtG(v)  { if (v == null || !isFinite(v)) return '—'; return v >= 100 ? v.toFixed(0) : v >= 10 ? v.toFixed(1) : v.toFixed(2); }
-function yrFmtKg(v) { if (v == null || !isFinite(v)) return '—'; return v >= 100 ? v.toFixed(0) : v.toFixed(1); }
-function yrFmtFr(v) { return String(v).replace('.', ','); }
-
-// REQ-069 → French label for binding constraint output. Kept terse.
-const YR_BINDING_LABEL = {
-  light:      'lumière',
-  Tday:       'T jour',
-  Tnight:     'T nuit',
-  CE:         'CE',
-  VPD:        'VPD',
-  CO2:        'CO₂',
-  root:       'volume racinaire (RootCap)',
-  senescence: 'sénescence',
-  none:       '—',
-};
-const YR_RISK_LABEL = {
-  tipburn:      'tipburn',
-  etiolation:   'étiolement',
-  water_stress: 'stress hydrique',
-  disease:      'maladie (VPD bas)',
-  bolting:      'montée en fleur',
-};
-const YR_LEVER_LABEL = {
-  Tday:   'T jour',
-  Tnight: 'T nuit',
-  CE:     'CE',
-  VPD:    'VPD',
-  CO2:    'CO₂',
-};
-
-// Render the 7-item info block (REQ-078). Values come from window.YieldRange
-// constants — no hardcoded HTML duplicates of numbers.
-function renderYieldRangeInfoBlock() {
-  const YR = window.YieldRange;
-  if (!YR) return;
-  const fmtFloat1 = v => String(Number(v).toFixed(1)).replace('.', ',');
-  // Fixed environmental defaults match what the model uses for inputs we
-  // don't expose on the page (cycle-average T_day 24, T_night 18, VPD 4.5,
-  // CO₂ photoperiod 500 — values traced in yield-range/app/derivation.md).
-  // These are model assumptions, not constants in data.js, but they are the
-  // exact values predictNurseryYield falls back to — so the info block
-  // stays honest when defaults change in calc.js.
-  const T_DAY_DEFAULT     = 24;
-  const T_NIGHT_DEFAULT   = 18;
-  const VPD_DEFAULT_GM3   = 4.5;
-  const CO2_DEFAULT_PPM   = 500;
-  const items = [
-    { label: 'T jour',                       value: `${T_DAY_DEFAULT} °C` },
-    { label: 'T nuit',                       value: `${T_NIGHT_DEFAULT} °C` },
-    { label: 'VPD photopériode',             value: `${fmtFloat1(VPD_DEFAULT_GM3)} g/m³` },
-    { label: 'CO₂ photopériode',             value: `${CO2_DEFAULT_PPM} ppm` },
-    { label: 'Seuil bolting',                value: `${YR.BOLTING_TDAY_THRESHOLD_C} °C` },
-    { label: 'RootCap 50-cell (35 mL)',      value: `${YR.rootCap(35).toFixed(0)} g` },
-    { label: 'RootCap 32-cell (90 mL)',      value: `${YR.rootCap(90).toFixed(0)} g` },
-  ];
-  const el = document.getElementById('yr-info-block');
-  if (!el) return;
-  el.innerHTML = items.map(it => `
-    <div style="font-weight:500;">${it.label}</div>
-    <div style="font-family:'DM Mono',monospace; color:var(--text); font-weight:600;">${it.value}</div>
-  `).join('');
-}
-
-// Live recompute. Called by every input change (REQ-073).
-function renderYieldRange() {
-  const YR = window.YieldRange;
-  if (!YR) return;
-
-  const cellsPerTray = yrPlateau;
-  const cellVolumeML = yrCellVolumeML(yrPlateau);
-  const cycleDays    = yrCycleDays();
-  const ceAvg        = YR_STRATEGY_CE[yrStrategy] || YR_STRATEGY_CE.actuelle;
-
-  // Single-cohort prediction with operator's chosen inputs. Other env
-  // inputs (T_day, T_night, VPD, CO₂) take calc.js defaults so the info
-  // block reflects the true model assumptions.
-  const r = YR.predictNurseryYield({
-    varietyKey:   'salanova',
-    cellVolumeML, cellsPerTray,
-    traysPerCohort: 50,
-    cycleDays,
-    dliBenchAvg:  yrDLI,
-    ceAvg,
-    wInitG:       YR.W_INIT_GERMINATED_G,
-  });
-
-  // Output 1 — Rendement par plant + ±15% band (REQ-067)
-  const op = document.getElementById('yr-out-perplant');
-  const opb = document.getElementById('yr-out-perplant-band');
-  if (op)  op.textContent  = `${yrFmtFr(yrFmtG(r.wPredictedG))} g`;
-  if (opb) opb.textContent = `bande ${yrFmtFr(yrFmtG(r.wLowG))}–${yrFmtFr(yrFmtG(r.wHighG))} g (±15 %)`;
-
-  // Output 2 — Jour de pic de croissance (REQ-075)
-  const opd = document.getElementById('yr-out-peakday');
-  const opdNote = document.getElementById('yr-out-peakday-note');
-  if (opd) opd.textContent = r.optimalHarvestDay > 0 ? `j ${r.optimalHarvestDay}` : '—';
-  if (opdNote) {
-    if (r.regressionWarning) {
-      opdNote.innerHTML = `<span style="color:#8a3e1e;">cycle ${cycleDays} j > pic — récolte tardive</span>`;
-    } else {
-      opdNote.textContent = 'depuis germination';
-    }
-  }
-
-  // Output 3 — Rendement par m² par an (REQ-076)
-  // gPerM2PerYear from calc; show in kg/m²/an for readability.
-  const oy = document.getElementById('yr-out-yearly');
-  const oyNote = document.getElementById('yr-out-yearly-note');
-  const kgPerM2 = r.gPerM2PerYear / 1000;
-  if (oy) oy.textContent = `${yrFmtFr(yrFmtKg(kgPerM2))} kg`;
-  if (oyNote) {
-    const pPerM2 = (cellsPerTray / YR.TRAY_AREA_M2).toFixed(0);
-    const cycles = (52 / r.cycleWeeks).toFixed(1);
-    oyNote.textContent = `${pPerM2} plants/m² × ${yrFmtFr(yrFmtG(r.wPredictedG))} g × ${yrFmtFr(cycles)} cycles/an`;
-  }
-
-  // Output 4 — Stratégie optimale (REQ-077)
-  const best = YR.computeBestStrategy(yrDLI, 50);
-  const ob = document.getElementById('yr-out-best');
-  const obNote = document.getElementById('yr-out-best-note');
-  if (ob) {
-    const w = best.winner;
-    const kg = (w.gPerM2PerYear / 1000);
-    ob.innerHTML = `${w.plateau}-cell · ${w.strategy}<br>`
-                 + `${w.weeksAtPeak} sem → <span style="color:var(--text);">${yrFmtFr(yrFmtKg(kg))} kg/m²/an</span>`;
-  }
-  if (obNote) {
-    const allStr = best.all4.map(c =>
-      `${c.plateau}·${c.strategy.slice(0,3)} ${(c.gPerM2PerYear/1000).toFixed(1)}`
-    ).join(' · ');
-    obNote.textContent = allStr;
-  }
-
-  // Context: binding constraint + risk flags + top levers
-  const ctx = document.getElementById('yr-context');
-  if (ctx) {
-    const bind = YR_BINDING_LABEL[r.bindingConstraint] || r.bindingConstraint;
-    const risks = (r.riskFlags || []).map(k => YR_RISK_LABEL[k] || k);
-    const levers = (r.topLevers || []).map(l => YR_LEVER_LABEL[l.key] || l.key);
-    let html = `<div><strong style="color:var(--text);">Contrainte limitante :</strong> ${bind}`;
-    if (r.bindingConstraint === 'root') {
-      html += ` · cellule pleine à j ${isFinite(r.daysToRootCap) ? r.daysToRootCap : '—'} (RootCap ${r.rootCapG.toFixed(0)} g)`;
-    }
-    html += `</div>`;
-    if (levers.length) {
-      html += `<div style="margin-top:4px;"><strong style="color:var(--text);">Top leviers :</strong> ${levers.join(' · ')}</div>`;
-    }
-    if (risks.length) {
-      html += `<div style="margin-top:4px;"><strong style="color:#8a3e1e;">Risques :</strong> ${risks.join(' · ')}</div>`;
-    } else {
-      html += `<div style="margin-top:4px;">Aucun signal de risque déclenché.</div>`;
-    }
-    ctx.innerHTML = html;
-  }
-}
-
-// Render once + wire input handlers (REQ-073). Idempotent — guarded so
-// repeated setPage('rendement') calls don't double-bind.
 let _yrInputsWired = false;
+
+function buildYieldRange() {
+  // Defensive: if the inputs are already in the DOM (page render), don't
+  // reset their values — re-entries (admin nav round-trip, hashchange) keep
+  // operator state. setupYieldRangeInputs is idempotent.
+  setupYieldRangeInputs();
+  renderYieldRange();
+}
+
 function setupYieldRangeInputs() {
   if (_yrInputsWired) return;
+  // Plateau toggle: button group with data-yr-plateau="18" / "24" / "32" / "50".
+  document.querySelectorAll('[data-yr-plateau]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('[data-yr-plateau]').forEach(b => b.classList.toggle('active', b === btn));
+      renderYieldRange();
+    });
+  });
+  // DEL hours slider — both 'input' (live drag) and 'change' (commit on
+  // release). REQ-121 chart re-renders on every input change.
+  const slider = document.getElementById('yr-led-hours');
+  if (slider) {
+    slider.addEventListener('input', renderYieldRange);
+    slider.addEventListener('change', renderYieldRange);
+  }
   _yrInputsWired = true;
-
-  // Plateau toggle (REQ-072 input #1)
-  document.querySelectorAll('#yr-plateau-selector [data-plateau]').forEach(b => {
-    b.addEventListener('click', () => {
-      const v = parseInt(b.dataset.plateau, 10);
-      if (v !== 32 && v !== 50) return;
-      yrPlateau = v;
-      document.querySelectorAll('#yr-plateau-selector [data-plateau]').forEach(x =>
-        x.classList.toggle('active', parseInt(x.dataset.plateau, 10) === yrPlateau)
-      );
-      renderYieldRange();
-    });
-  });
-
-  // Stratégie nutritive toggle (REQ-074)
-  document.querySelectorAll('#yr-strategy-selector [data-strategy]').forEach(b => {
-    b.addEventListener('click', () => {
-      const v = b.dataset.strategy;
-      if (v !== 'actuelle' && v !== 'parfaite') return;
-      yrStrategy = v;
-      document.querySelectorAll('#yr-strategy-selector [data-strategy]').forEach(x =>
-        x.classList.toggle('active', x.dataset.strategy === yrStrategy)
-      );
-      renderYieldRange();
-    });
-  });
-
-  // Semaines germ→transplant (REQ-072 input #2)
-  const wEl = document.getElementById('yr-weeks');
-  if (wEl) {
-    wEl.addEventListener('input', () => {
-      const v = parseInt(wEl.value, 10);
-      if (!isNaN(v) && v >= 1 && v <= 10) yrWeeks = v;
-      renderYieldRange();
-    });
-  }
-
-  // DLI banc slider (REQ-084) — live label + recompute on every move.
-  const dliEl   = document.getElementById('yr-dli');
-  const dliLab  = document.getElementById('yr-dli-label');
-  if (dliEl) {
-    dliEl.addEventListener('input', () => {
-      const v = parseFloat(dliEl.value);
-      if (!isNaN(v)) yrDLI = v;
-      if (dliLab) dliLab.textContent = yrFmtFr(yrDLI.toString());
-      renderYieldRange();
-    });
-  }
 }
 
-// Build entry point — called when the page is shown via setPage('rendement').
-// Mirrors buildNutriment / buildBanqueSol patterns.
-function buildYieldRange() {
-  setupYieldRangeInputs();
-  renderYieldRangeInfoBlock();
-  renderYieldRange();
+function renderYieldRange() {
+  // Read input state. Plateau toggle: the .active button's data attr.
+  // Fallbacks mirror the markup defaults (50, 16).
+  const activeBtn = document.querySelector('[data-yr-plateau].active');
+  const plateauSize = activeBtn ? parseInt(activeBtn.dataset.yrPlateau, 10) : 50;
+  const slider = document.getElementById('yr-led-hours');
+  const ledHours = slider ? parseInt(slider.value, 10) : 16;
+
+  // Update slider label.
+  const labelEl = document.getElementById('yr-led-hours-label');
+  if (labelEl) labelEl.textContent = `${ledHours} h`;
+
+  // Run the math model.
+  const { canopyCapG, daysToPotential, trajectory } = window.YieldRange.predictNurseryYield({ plateauSize, ledHours });
+
+  // REQ-120: capacité plafond display.
+  const capEl = document.getElementById('yr-canopy-cap');
+  if (capEl) capEl.textContent = canopyCapG.toFixed(0);
+
+  // REQ-133: daysToPotential rendered inline next to the cap value. Number
+  // → "· pic à J<n>"; null → "· pic non atteint dans la fenêtre de 49 jours".
+  // Empty string when the slot isn't in the DOM yet (defensive — same shape
+  // as capEl above).
+  const daysEl = document.getElementById('yr-days-to-potential');
+  if (daysEl) {
+    daysEl.textContent = (daysToPotential != null)
+      ? `· pic à J${daysToPotential}`
+      : `· pic non atteint dans la fenêtre de 49 jours`;
+  }
+
+  // REQ-132: clickable bench-DLI display. Recompute via the model API so
+  // the page tracks any future change in the DLI formula without a UI edit.
+  // REQ-134: page-card value rounded to integer for quick-read; the modal
+  // context line keeps one decimal for transparency.
+  // REQ-135: text colour reflects the f_light response zone at the current
+  // bench DLI (green optimum / yellow ramp / red stalled or saturated).
+  // Breakpoints sourced from F_LIGHT_BREAKPOINTS via f_light(); no
+  // hardcoded DLI thresholds in the UI (REQ-060).
+  const dliEl = document.getElementById('yr-dli-value');
+  const dliBench = window.YieldRange.dliBenchAvg(ledHours);
+  if (dliEl) {
+    dliEl.textContent = String(Math.round(dliBench));
+    const fLight = window.YieldRange.f_light(dliBench);
+    // Tier thresholds match the project's existing 3-tier convention
+    // (per REQ-016 in the tomato Block 7 drift gauge): ≤5%, ≤30%,
+    // and >30%. Here the same green/yellow/red palette signals
+    // "near optimum / partial / off-band".
+    let dliColor;
+    if      (fLight >= 0.95) dliColor = '#1e6b2d';  // green — optimum band
+    else if (fLight >= 0.70) dliColor = '#a08020';  // yellow — light-limited ramp or mild saturation
+    else                     dliColor = '#b03030';  // red — stalled (<4 mol) or saturation floor
+    dliEl.style.color = dliColor;
+  }
+
+  // REQ-121: chart re-render. Replace SVG markup wholesale on each call —
+  // simplest approach; trajectory is 50 points so cost is negligible.
+  const chartEl = document.getElementById('yr-chart-container');
+  if (chartEl) chartEl.innerHTML = renderYieldRangeChart(trajectory, canopyCapG, daysToPotential);
+}
+
+// REQ-132: f_light response modal. Auto-renders the breakpoint table from
+// window.YieldRange.F_LIGHT_BREAKPOINTS (REQ-060 — no hardcoded duplicate
+// of the breakpoint numeric values in HTML). Descriptive labels for each
+// row are kept here since they don't live in data.js.
+function openDliModal() {
+  const modal = document.getElementById('yr-dli-modal');
+  const body  = document.getElementById('yr-dli-modal-body');
+  if (!modal || !body) return;
+
+  const bp = window.YieldRange.F_LIGHT_BREAKPOINTS || [];
+  // Read current operator state for the context line. Mirrors renderYieldRange's
+  // input read so the modal context stays in sync without coupling to a shared
+  // state variable.
+  const activeBtn = document.querySelector('[data-yr-plateau].active');
+  const plateauSize = activeBtn ? parseInt(activeBtn.dataset.yrPlateau, 10) : 50;
+  const slider = document.getElementById('yr-led-hours');
+  const ledHours = slider ? parseInt(slider.value, 10) : 16;
+  const dliBench = window.YieldRange.dliBenchAvg(ledHours);
+
+  // Per-plant DLI at full canopy bind (d ≥ 28, packed-canopy floor 0.40 per
+  // REQ-116). Surfaced for context — operator can see what fraction of
+  // bench DLI an average plant actually receives once canopies overlap.
+  const dliPerPlantAtBind = dliBench * 0.40;
+
+  // Identify breakpoint roles by index, not by hardcoded x-values:
+  //   bp[0]/[1]: zero floor (< 4 mol/m²/d → f_light = 0)
+  //   bp[1]→[2]: linear ramp 0 → 1.0
+  //   bp[2]→[3]: optimum plateau (1.0)
+  //   bp[3]→[4]: saturation ramp 1.0 → 0.7
+  //   bp[4]→[5]: saturation floor (0.7)
+  // The labels match the f_light comment block in data.js and the spec table
+  // in yield-range/app/spec.md REQ-132.
+  const fmtX = v => Number.isInteger(v) ? `${v}` : v.toFixed(1);
+  const fmtY = v => v.toFixed(1).replace('.', ',');
+  const rows = [];
+  if (bp.length >= 6) {
+    rows.push({ range: `< ${fmtX(bp[1].x)}`,                              mult: `${fmtY(bp[1].y)} (photosynthèse arrêtée)` });
+    rows.push({ range: `${fmtX(bp[1].x)} → ${fmtX(bp[2].x)}`,             mult: `rampe linéaire ${fmtY(bp[1].y)} → ${fmtY(bp[2].y)}` });
+    rows.push({ range: `${fmtX(bp[2].x)} – ${fmtX(bp[3].x)}`,             mult: `${fmtY(bp[2].y)} (optimum)` });
+    rows.push({ range: `${fmtX(bp[3].x)} → ${fmtX(bp[4].x)}`,             mult: `rampe linéaire ${fmtY(bp[3].y)} → ${fmtY(bp[4].y)} (saturation)` });
+    rows.push({ range: `≥ ${fmtX(bp[4].x)}`,                              mult: `${fmtY(bp[4].y)} (plafond saturation)` });
+  }
+
+  let html = '';
+  // Context line: current bench DLI (early-cycle reality, what young plants
+  // feel pre-canopy-closure — the value the page colour code is anchored to)
+  // + per-plant DLI at full canopy bind (late-cycle reality, what mature
+  // plants get once canopies overlap).
+  html += `<div style="font-size:12px; color:var(--text-muted); margin-bottom:12px; line-height:1.55;">`
+       +    `DLI banc actuel <em style="font-style:normal; color:var(--text-muted);">(jeunes plants, j ≤ 14)</em> : <strong style="color:var(--text); font-family:'DM Mono',monospace;">${dliBench.toFixed(1)} mol/m²/j</strong><br>`
+       +    `DLI par plant à canopée fermée <em style="font-style:normal; color:var(--text-muted);">(j ≥ 28)</em> : <strong style="color:var(--text); font-family:'DM Mono',monospace;">${dliPerPlantAtBind.toFixed(1)} mol/m²/j</strong><br>`
+       +    `<em style="font-style:normal; font-size:11px;">La couleur du DLI banc reflète la condition des jeunes plants. Une fois la canopée fermée, chaque plant ne reçoit plus que ~40 % du DLI banc.</em>`
+       + `</div>`;
+  // Breakpoint table.
+  html += `<div style="display:grid; grid-template-columns:1fr 1.4fr; gap:6px 12px; font-size:12px; line-height:1.5;">`;
+  html +=   `<div style="font-weight:700; color:var(--text); padding-bottom:4px; border-bottom:1px solid var(--border);">DLI (mol/m²/j)</div>`;
+  html +=   `<div style="font-weight:700; color:var(--text); padding-bottom:4px; border-bottom:1px solid var(--border);">Multiplicateur f_light</div>`;
+  rows.forEach(r => {
+    html += `<div style="font-family:'DM Mono',monospace; color:var(--text);">${r.range}</div>`;
+    html += `<div style="color:var(--text-muted);">${r.mult}</div>`;
+  });
+  html += `</div>`;
+
+  body.innerHTML = html;
+  modal.classList.add('open');
+}
+
+function closeDliModal() {
+  const modal = document.getElementById('yr-dli-modal');
+  if (modal) modal.classList.remove('open');
+}
+
+// Close the f_light modal on Escape, mirroring the Pourquoi modal handler.
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') closeDliModal();
+});
+
+// renderYieldRangeChart(trajectory, canopyCapG, daysToPotential) → SVG markup string.
+//
+// REQ-121 contract:
+//   - x-axis labeled "Jours depuis germination" (range 0–49, integer, ticks every 7 days)
+//   - y-axis labeled "Poids tête (g)" (range 0 to canopyCapG × 1.1, auto-scale)
+//   - polyline series for trajectory
+//   - horizontal dashed reference line at canopyCapG, labeled "Plafond" at the right edge
+//   - vertical marker at daysToPotential when not null, labeled "Pic potentiel: J<n>"
+//   - when daysToPotential is null, render annotation
+//     "Plein potentiel non atteint dans la fenêtre de 49 jours" inside the chart area
+function renderYieldRangeChart(trajectory, canopyCapG, daysToPotential) {
+  // SVG canvas + plot-area math. viewBox keeps the chart responsive within
+  // its container; margins reserve room for axis labels and tick text.
+  const W = 600, H = 320;
+  const ML = 56, MR = 60, MT = 18, MB = 48;
+  const plotW = W - ML - MR;
+  const plotH = H - MT - MB;
+
+  const xMin = 0;
+  const xMax = trajectory[trajectory.length - 1].day; // 49
+  const yMin = 0;
+  const yMax = canopyCapG * 1.1;
+
+  const x = day => ML + (day - xMin) / (xMax - xMin) * plotW;
+  const y = w   => MT + plotH - (w - yMin) / (yMax - yMin) * plotH;
+
+  // X ticks every 7 days (0, 7, 14, 21, 28, 35, 42, 49).
+  const xTicks = [];
+  for (let d = 0; d <= xMax; d += 7) xTicks.push(d);
+  // Y ticks: 0, then evenly-spaced fractions of canopyCapG (0.25, 0.5, 0.75, 1.0).
+  const yTicks = [0, canopyCapG * 0.25, canopyCapG * 0.5, canopyCapG * 0.75, canopyCapG];
+
+  // Axis lines.
+  const axisColor = 'var(--text-muted)';
+  const gridColor = 'var(--border)';
+  const seriesColor = 'var(--text)';
+  const refLineColor = 'var(--text-muted)';
+  const markerColor = '#8a3e1e';
+
+  let svg = `<svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" style="width:100%; height:auto; display:block; font-family:inherit;">`;
+
+  // Y grid + tick labels.
+  yTicks.forEach(v => {
+    const yy = y(v);
+    svg += `<line x1="${ML}" y1="${yy}" x2="${ML + plotW}" y2="${yy}" stroke="${gridColor}" stroke-width="0.5"/>`;
+    svg += `<text x="${ML - 8}" y="${yy + 4}" text-anchor="end" font-size="11" fill="${axisColor}" font-family="'DM Mono',monospace">${v.toFixed(0)}</text>`;
+  });
+  // X grid + tick labels.
+  xTicks.forEach(d => {
+    const xx = x(d);
+    svg += `<line x1="${xx}" y1="${MT}" x2="${xx}" y2="${MT + plotH}" stroke="${gridColor}" stroke-width="0.5"/>`;
+    svg += `<text x="${xx}" y="${MT + plotH + 16}" text-anchor="middle" font-size="11" fill="${axisColor}" font-family="'DM Mono',monospace">${d}</text>`;
+  });
+
+  // Axis lines (over grid).
+  svg += `<line x1="${ML}" y1="${MT + plotH}" x2="${ML + plotW}" y2="${MT + plotH}" stroke="${axisColor}" stroke-width="1"/>`;
+  svg += `<line x1="${ML}" y1="${MT}" x2="${ML}" y2="${MT + plotH}" stroke="${axisColor}" stroke-width="1"/>`;
+
+  // Horizontal reference line at canopyCapG (REQ-121). Dashed, with a
+  // "Plafond" label at the right edge.
+  const yCap = y(canopyCapG);
+  svg += `<line x1="${ML}" y1="${yCap}" x2="${ML + plotW}" y2="${yCap}" stroke="${refLineColor}" stroke-width="1" stroke-dasharray="4 3"/>`;
+  svg += `<text x="${ML + plotW + 6}" y="${yCap + 4}" text-anchor="start" font-size="11" fill="${refLineColor}" font-family="'DM Mono',monospace">Plafond</text>`;
+
+  // Trajectory polyline.
+  const points = trajectory.map(p => `${x(p.day)},${y(p.weight_g)}`).join(' ');
+  svg += `<polyline points="${points}" fill="none" stroke="${seriesColor}" stroke-width="2"/>`;
+
+  // Vertical marker at daysToPotential (REQ-121) — or empty-state text.
+  if (daysToPotential != null) {
+    const xd = x(daysToPotential);
+    svg += `<line x1="${xd}" y1="${MT}" x2="${xd}" y2="${MT + plotH}" stroke="${markerColor}" stroke-width="1" stroke-dasharray="3 3"/>`;
+    svg += `<text x="${xd + 5}" y="${MT + 14}" text-anchor="start" font-size="11" fill="${markerColor}" font-weight="600">Pic potentiel: J${daysToPotential}</text>`;
+  } else {
+    svg += `<text x="${ML + plotW / 2}" y="${MT + plotH / 2}" text-anchor="middle" font-size="12" fill="${markerColor}" font-weight="600">Plein potentiel non atteint dans la fenêtre de 49 jours</text>`;
+  }
+
+  // Axis titles.
+  // X-axis title — REQ-121 "Jours depuis germination".
+  svg += `<text x="${ML + plotW / 2}" y="${H - 6}" text-anchor="middle" font-size="12" fill="${axisColor}" font-weight="600">Jours depuis germination</text>`;
+  // Y-axis title — REQ-121 "Poids tête (g)". Rotated 90° at left margin.
+  svg += `<text x="${14}" y="${MT + plotH / 2}" text-anchor="middle" font-size="12" fill="${axisColor}" font-weight="600" transform="rotate(-90 14 ${MT + plotH / 2})">Poids tête (g)</text>`;
+
+  svg += `</svg>`;
+  return svg;
 }

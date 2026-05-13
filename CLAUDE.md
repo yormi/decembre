@@ -21,7 +21,7 @@ I want a co-researcher who:
 
 Don't spare me. If I'm wrong, say so and show me why. Right now I need to fix the pH crisis before it kills this season.
 
-When building the app of procedures for the team, i don't want to see informations that are useful for calculation but are not a dynamic input to calculate what the action nor useful to know what action to take. Nevertheless, I want you to keep all the information necessary to the calculations as comment in the code so I can ask you later on and we have a trace.
+When building the app of procedures for the team, i don't want to see informations that are useful for calculation but are not a dynamic input to calculate what the action nor useful to know what action to take. The trace lives in `<subproject>/derivation.md` for current REQ-tied values and `<subproject>/learnings.md` for rejected alternatives and historical decisions — not in code comments. Code only does what the spec demands.
 
 When building the app of procedures for the team, include a brief "why" explanation for each instruction where the reason isn't obvious, so the team understands the rationale behind each step.
 
@@ -36,16 +36,14 @@ A **spec** is a normative, testable, minimal claim about what the system must do
 - Per-domain: `nutrition/spec.md`, `nutrition/tomato/spec.md`, `nutrition/lettuce/spec.md`, `yield-range/spec.md`, etc.
 - Per-subproject: `nutrition/tomato/plant-needs/spec.md`, `nutrition/tomato/app/spec.md`, `yield-range/app/spec.md`, …
 
-**Each spec entry has:**
+**Each spec entry is statement-only:**
 - A globally-unique `REQ-NNN` identifier (never reused, even after retirement).
-- A normative statement ("for every X, Y must hold").
-- A short rationale (one paragraph — *why we care*, not *how we got here*).
-- A verification path: a one-line pointer to the auto-wired check in `scripts/check-recipes.mjs` / `scripts/check-requirements.sh`, OR an explicit "deferred — wired when X" with documented trigger.
-- A transferability cert (0–5; canonical scale defined in `nutrition/tomato/plant-needs/spec.md`).
-- Optionally: a one-line implementation pointer (file + symbol) and cross-references to other REQs.
+- A normative statement ("for every X, Y must hold") — one paragraph.
+
+That's it. No Rationale, no Verification, no Cert, no Supersedes sub-sections in the spec body. The verifier file (`scripts/check-recipes.mjs` / `scripts/check-requirements.sh`) IS the verification record via its `header('REQ-NNN …')` / `echo "REQ-NNN…"` matchers. Rationale, when non-obvious, goes in the commit message or a sibling `derivation.md`. Cert is dropped from spec bodies. Supersession is noted in the commit message and applied by editing the superseded REQ in place. Model-layer specs (`*/plant-needs/spec.md`, `*/fertigation-recipe/spec.md`, etc.) may carry richer shape at the specialist persona's discretion; PO-scope specs are statement-only.
 
 **What does NOT belong in a spec:**
-- Formulas, derivations, source tables, calibration data → those live in `*/derivation.md`, `*/calibration-data.md`, `*/notes.md`, or as code comments.
+- Formulas, derivations, source tables, calibration data → those live in `*/derivation.md`, `*/calibration-data.md`, or `*/notes.md`. Rejected alternatives and historical decisions live in `*/learnings.md`.
 - Per-element values, magic numbers, datasets → those live in code (`data.js`) or calibration files.
 - Implementation walkthroughs, code excerpts longer than a one-liner, file paths to consumers.
 
@@ -55,6 +53,17 @@ A **spec** is a normative, testable, minimal claim about what the system must do
 - The verifier (`npm run check`) scans every `*/spec.md` for `^## REQ-` headers, dedups across the tree, and matches against `header('REQ-NNN ...')` (node) or `echo "REQ-NNN…"` (bash). A spec is **wired** when its REQ has a verifier check; **deferred** otherwise. Target: 100 % wired.
 
 **When a spec gains complexity (formulas, source tables, derivations, edge-case discussion), split it.** Keep `spec.md` to the bare normative claims. Move the *how* and the *why-this-number* into a sibling file (`derivation.md` is the convention so far). Future readers should be able to read `spec.md` end-to-end in under 5 minutes and know what the system promises.
+
+## Conventions inherited by every page (no need to restate)
+
+These cross-app specs apply to every routable page and subpage by default. Page-level `spec.md` files do NOT need to list them in an Inherited section — they're assumed unless the page explicitly opts out (and documents why).
+
+- **REQ-001** — French "CE" for electrical conductivity in user-facing text.
+- **REQ-005** — URL hash reflects current page and subpage. Every new admin or operational page MUST: register its slug in the `PAGES` const in `app/index.html`, define a `<div id="page-<slug>-content">` container, add a `setPage` visibility branch, and ensure routing setters call `syncHash()`. Subpage axes (crop, stage, week, etc.) follow the same pattern via `CROP_PAGES` or a new const + setter.
+- **REQ-006** — "Algue" not "Kelp" in user-facing text.
+- **REQ-007** — Plain French; no English/horticulture jargon in user-facing text (denylist enforced).
+
+A page-level `spec.md` only needs to mention these when **deviating** (e.g., "this page is intentionally not URL-routable because X"). Otherwise the verifier checks them automatically against every `<div id="page-…">` it finds.
 
 ## Retiring a recipe — audit trail
 

@@ -24,9 +24,9 @@
 //   - The resolver is purely textual — no template variables, no logic.
 //     If you need a variable, do it in the partial itself.
 
-import { readFile, writeFile, copyFile, mkdir } from 'node:fs/promises';
+import { readFile, writeFile, copyFile, mkdir, readdir } from 'node:fs/promises';
 import { watch } from 'node:fs';
-import { resolve, dirname } from 'node:path';
+import { resolve, dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const PROJECT_ROOT = resolve(fileURLToPath(import.meta.url), '../..');
@@ -47,8 +47,85 @@ const STATIC_ASSETS = [
 // hspace + optional newline. Consuming the newline avoids a stray blank line
 // after the partial content (which itself ends with its own newline).
 const INCLUDE_RE   = /^[ \t]*<!--\s*@include\s+(\S+?)\s*-->[ \t]*\r?\n?/gm;
-const WATCH_DIRS   = ['app', 'nutrition'];
-const WATCH_EXTS   = ['.html', '.css', '.js'];
+const SPEC_STRINGS_MARKER = /^[ \t]*<!--\s*@spec-strings\s*-->[ \t]*\r?\n?/m;
+const WATCH_DIRS   = ['app', 'nutrition', 'yield-range'];
+const WATCH_EXTS   = ['.html', '.css', '.js', '.md'];
+
+// Parse `Renders:` blocks out of a spec.md file.
+//
+// Convention (REQ-145+): inside a spec entry headed by `## REQ-NNN — title`,
+// every fenced code block whose info string is `render <key>` declares an
+// operator-facing string whose bytes the spec owns. The build collects them
+// into a SPEC_STRINGS map: { 'REQ-NNN': { '<key>': '<string>', ... }, ... }.
+//
+// Trailing/leading whitespace is trimmed; internal whitespace preserved.
+// Duplicate keys within the same REQ entry are an error (build fails).
+const REQ_HEADER_RE = /^##\s+(REQ-\d{3}[a-z]?)\b/gm;
+const RENDER_FENCE_RE = /^```render\s+(\S+)\s*\r?\n([\s\S]*?)^```\s*$/gm;
+
+function extractSpecStringsFromFile(source, sourcePath) {
+  const strings = {};
+  const reqHeaders = [...source.matchAll(REQ_HEADER_RE)];
+  for (let i = 0; i < reqHeaders.length; i++) {
+    const reqId = reqHeaders[i][1];
+    const start = reqHeaders[i].index;
+    const end = i + 1 < reqHeaders.length ? reqHeaders[i + 1].index : source.length;
+    const section = source.slice(start, end);
+    const blocks = [...section.matchAll(RENDER_FENCE_RE)];
+    if (blocks.length === 0) continue;
+    if (!strings[reqId]) strings[reqId] = {};
+    for (const block of blocks) {
+      const key = block[1];
+      const body = block[2].trim();
+      if (Object.prototype.hasOwnProperty.call(strings[reqId], key)) {
+        throw new Error(`duplicate render key "${reqId}.${key}" in ${sourcePath}`);
+      }
+      strings[reqId][key] = body;
+    }
+  }
+  return strings;
+}
+
+async function collectSpecMdFiles(dir, acc = []) {
+  let entries;
+  try {
+    entries = await readdir(dir, { withFileTypes: true });
+  } catch {
+    return acc;
+  }
+  for (const entry of entries) {
+    if (entry.name.startsWith('.') || entry.name === 'node_modules' || entry.name === 'dist') continue;
+    const full = join(dir, entry.name);
+    if (entry.isDirectory()) await collectSpecMdFiles(full, acc);
+    else if (entry.isFile() && (entry.name === 'spec.md' || entry.name === 'requirements.md')) acc.push(full);
+  }
+  return acc;
+}
+
+async function buildSpecStrings() {
+  const files = await collectSpecMdFiles(PROJECT_ROOT);
+  const combined = {};
+  for (const file of files) {
+    const text = await readFile(file, 'utf8');
+    const fileStrings = extractSpecStringsFromFile(text, file);
+    for (const [reqId, keys] of Object.entries(fileStrings)) {
+      if (!combined[reqId]) combined[reqId] = {};
+      for (const [key, body] of Object.entries(keys)) {
+        if (Object.prototype.hasOwnProperty.call(combined[reqId], key)) {
+          throw new Error(`duplicate render key "${reqId}.${key}" across spec files (last seen: ${file})`);
+        }
+        combined[reqId][key] = body;
+      }
+    }
+  }
+  return combined;
+}
+
+function renderSpecStringsScript(specStrings) {
+  // Inline as a JSON literal assigned to window.SPEC_STRINGS. The page reads
+  // it synchronously — no async fetch required.
+  return `<script>window.SPEC_STRINGS = ${JSON.stringify(specStrings)};</script>`;
+}
 
 async function resolveIncludes(content, sourcePath, depth = 0) {
   if (depth > 8) throw new Error(`@include depth > 8 (cycle?) at ${sourcePath}`);
@@ -71,14 +148,27 @@ async function build() {
   const t0 = Date.now();
   await mkdir(DIST_DIR, { recursive: true });
   const tpl = await readFile(SOURCE, 'utf8');
-  const out = await resolveIncludes(tpl, SOURCE);
+  let out = await resolveIncludes(tpl, SOURCE);
+
+  // Resolve the <!-- @spec-strings --> marker by parsing every spec.md /
+  // requirements.md file and injecting an inline <script> assigning
+  // window.SPEC_STRINGS. Always emitted: if no marker exists in source we
+  // skip silently (the page just won't have spec-anchored strings until
+  // the marker is added).
+  const specStrings = await buildSpecStrings();
+  const reqCount = Object.keys(specStrings).length;
+  const keyCount = Object.values(specStrings).reduce((acc, keys) => acc + Object.keys(keys).length, 0);
+  if (SPEC_STRINGS_MARKER.test(out)) {
+    out = out.replace(SPEC_STRINGS_MARKER, renderSpecStringsScript(specStrings) + '\n');
+  }
+
   await writeFile(OUTPUT, out);
   await Promise.all(STATIC_ASSETS.map(name =>
     copyFile(resolve(PROJECT_ROOT, 'app', name), resolve(DIST_DIR, name))
   ));
   const ms = Date.now() - t0;
   const ts = new Date().toLocaleTimeString('fr-CA', { hour12: false });
-  console.log(`[build] ${ts} → dist/index.html (+${STATIC_ASSETS.length} assets, ${ms}ms, ${out.length.toLocaleString()} chars)`);
+  console.log(`[build] ${ts} → dist/index.html (+${STATIC_ASSETS.length} assets, ${ms}ms, ${out.length.toLocaleString()} chars, SPEC_STRINGS: ${reqCount} REQ × ${keyCount} keys)`);
 }
 
 try {

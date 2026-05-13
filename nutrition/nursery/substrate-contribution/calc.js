@@ -43,8 +43,13 @@ function theoreticalSubstrateReleasePerWeek(week, featherMealPerTrayG) {
 }
 
 // Convenience: average release across the 5 weeks of the cycle (mg/tray/wk).
-// Used by the Bilan card to show "what the substrate is contributing on
-// average over the seedling cycle" — supply credit against the per-tray demand.
+// REQ-136 — returns { perTray_mg, details } where details[el] = { cert, cap }.
+// Cap fires for N when featherMealPerTrayG hits LIMITS.maxFeatherMealPerTrayG
+// (germination protection — REQ-094).
+//
+// Backwards-compat note: this function previously returned a flat
+// {N, P, K, Ca, Mg} map. After REQ-136 it returns the wrapped shape;
+// callers must read `result.perTray_mg[el]` instead of `result[el]`.
 function cycleAverageReleasePerTray(featherMealPerTrayG) {
   const W = OM2_RELEASE_CURVE_BY_WEEK.length;
   const sum = { N: 0, P: 0, K: 0, Ca: 0, Mg: 0 };
@@ -52,7 +57,33 @@ function cycleAverageReleasePerTray(featherMealPerTrayG) {
     const r = theoreticalSubstrateReleasePerWeek(w, featherMealPerTrayG);
     for (const el of Object.keys(sum)) sum[el] += r[el] || 0;
   }
-  const avg = {};
-  for (const el of Object.keys(sum)) avg[el] = sum[el] / W;
-  return avg;
+  const perTray_mg = {};
+  for (const el of Object.keys(sum)) perTray_mg[el] = sum[el] / W;
+
+  // REQ-136 (revised 2026-05-10 evening) — per-element details. `cap`
+  // describes the structural reason this channel may under-deliver, not
+  // whether a numerical limit currently binds. The UI shows the emoji only
+  // when manque sortant > 0; otherwise the emoji stays hidden even though
+  // cap is non-null. This separation lets the calc declare "if this
+  // element is short via this channel, here's why" without needing to know
+  // demand at calc time.
+  const fmCap = LIMITS.maxFeatherMealPerTrayG;
+  // REQ-136 (4-field schema 2026-05-11): constraint / limit / lever, no prose.
+  const details = {
+    N: {
+      cert: 2,
+      cap: {
+        kind: 'damage',
+        constraint: 'Protection germination',
+        limit: 'max ' + fmCap + ' g farine / plateau',
+        lever: '↑ poisson hydrolysé fertigation',
+        uncappedMg: perTray_mg.N * 2,
+      },
+    },
+    P:  { cert: 2, cap: { kind: 'other', constraint: 'Charge OM2 figée',  limit: 'sans levier substrat',     lever: '↑ poisson hydrolysé fertigation', uncappedMg: 0 } },
+    K:  { cert: 2, cap: { kind: 'other', constraint: 'Charge OM2 figée',  limit: 'sans levier substrat',     lever: 'ajouter K₂SO₄ fertigation',       uncappedMg: 0 } },
+    Ca: { cert: 2, cap: { kind: 'other', constraint: 'Chaux OM2 figée',   limit: 'sans levier substrat',     lever: 'Ca soluble Ecocert (rare)',       uncappedMg: 0 } },
+    Mg: { cert: 2, cap: { kind: 'other', constraint: 'Chaux OM2 figée',   limit: 'sans levier substrat',     lever: 'ajouter MgSO₄·7H₂O fertigation', uncappedMg: 0 } },
+  };
+  return { perTray_mg, details };
 }

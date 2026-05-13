@@ -1,108 +1,80 @@
-  <!-- ═══════════════ RENDEMENT (yield-range) PAGE — admin ═══════════════ -->
-  <!-- Salanova nursery yield prediction. Math model lives in
-       yield-range/{data,calc,model}.js; page wiring in yield-range/app/logic.js.
-       UI contract: yield-range/app/spec.md (REQ-072 to 078 + REQ-084).
-       4 inputs (plateau / semaines / stratégie nutritive / DLI banc).
-       4 outputs (rendement par plant / jour de pic / g/m²/an / stratégie optimale).
-       7 read-only info values (T jour / T nuit / VPD / CO₂ / seuil bolting /
-       RootCap 50-cell / RootCap 32-cell), auto-rendered from spec constants. -->
-  <div id="page-rendement-content" style="display:none;">
+  <!-- ═══════════════ RENDEMENT SEMIS PAGE (admin) ═══════════════ -->
+  <!-- Salanova nursery time-to-canopy-cap. Spec: yield-range/app/spec.md
+       (REQ-119 two inputs · REQ-120 capacité plafond display ·
+       REQ-121 chart with axis labels + reference line + marker). Math
+       contract: yield-range/spec.md (REQ-112 to REQ-118). -->
+  <div id="page-rendement-content" class="page-content" style="display:none;">
 
-    <!-- Card 1 — 4 inputs (REQ-072). REQ-073: live update via input/change. -->
     <div class="card">
-      <div class="card-title">Cohorte & stratégie</div>
-
-      <!-- Plateau toggle (REQ-072 input #1). 32 vs 50 cell. -->
-      <div style="font-size:12px; color:var(--text-muted); margin-bottom:6px;">Plateau (cellules par plateau)</div>
-      <div class="stage-selector" id="yr-plateau-selector" style="margin-bottom:12px;">
-        <button class="stage-btn" data-plateau="32"><span class="stage-label">32</span><span class="stage-weeks">90 mL/cell</span></button>
-        <button class="stage-btn active" data-plateau="50"><span class="stage-label">50</span><span class="stage-weeks">35 mL/cell</span></button>
-      </div>
-
-      <!-- Stratégie nutritive toggle (REQ-074). actuelle / parfaite. -->
-      <div style="font-size:12px; color:var(--text-muted); margin-bottom:6px;">Stratégie nutritive</div>
-      <div class="stage-selector" id="yr-strategy-selector" style="margin-bottom:12px;">
-        <button class="stage-btn active" data-strategy="actuelle"><span class="stage-label">Actuelle</span><span class="stage-weeks">CE 1,8</span></button>
-        <button class="stage-btn" data-strategy="parfaite"><span class="stage-label">Parfaite</span><span class="stage-weeks">CE 2,4</span></button>
-      </div>
-
-      <!-- Semaines germ → transplant (REQ-072 input #2). 1-10 weeks; cycle
-           expressed as weeks because that's how the team plans cohorts. -->
-      <div class="input-row">
-        <div class="input-group">
-          <label>Semaines germ → transplant</label>
-          <input type="number" id="yr-weeks" value="4" min="1" max="10" step="1" inputmode="numeric">
-          <div class="input-unit">semaines</div>
-        </div>
-      </div>
-
-      <!-- DLI banc slider (REQ-084). Range 5-29 mol/m²/j, step 0.5, default 27.5.
-           Sun (16) + LED 16h (11.5) = 27.5; upper 29 = sun + LED 18h. -->
-      <div style="margin-top:10px;">
-        <div style="display:flex; justify-content:space-between; align-items:baseline; margin-bottom:6px;">
-          <label style="font-size:12px; font-weight:600; color:var(--text-muted);">DLI banc</label>
-          <div style="font-family:'DM Mono',monospace; font-size:14px; font-weight:700; color:var(--text);">
-            <span id="yr-dli-label">27,5</span>
-            <span style="font-size:11px; color:var(--text-muted); font-weight:500;"> mol/m²/j</span>
-          </div>
-        </div>
-        <input type="range" id="yr-dli" min="5" max="29" step="0.5" value="27.5"
-               style="width:100%; -webkit-appearance:none; appearance:none; height:6px; background:var(--input-bg); border:1.5px solid var(--border); border-radius:var(--radius-sm); outline:none; cursor:pointer;">
-        <div style="display:flex; justify-content:space-between; font-size:10px; color:var(--text-muted); margin-top:4px;">
-          <span>5 (hiver bas)</span>
-          <span>27,5 (soleil + LED 16h)</span>
-          <span>29 (soleil + LED 18h)</span>
-        </div>
+      <div class="card-title">🥬 Rendement semis</div>
+      <div style="font-size:12.5px; color:var(--text-muted); line-height:1.5;">
+        Capacité plafond et trajectoire de croissance Salanova en pouponnière.
       </div>
     </div>
 
-    <!-- Card 2 — 4 outputs (REQ-072). Live-updated by renderYieldRange(). -->
+    <!-- REQ-119: exactly two inputs (plateau toggle + DEL slider). -->
     <div class="card">
-      <div class="card-title">Prédictions</div>
-      <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px 14px;">
+      <div class="card-title">Conditions</div>
 
-        <!-- Output 1: Rendement par plant (with ±15% band, REQ-067) -->
-        <div style="padding:10px 12px; background:var(--input-bg); border:1px solid var(--border); border-radius:var(--radius-sm);">
-          <div style="font-size:10px; text-transform:uppercase; letter-spacing:1.5px; color:var(--text-muted); font-weight:600;">Rendement par plant</div>
-          <div id="yr-out-perplant" style="font-family:'DM Mono',monospace; font-size:18px; font-weight:700; color:var(--text); margin-top:4px;">—</div>
-          <div id="yr-out-perplant-band" style="font-size:11px; color:var(--text-muted); margin-top:2px;">—</div>
-        </div>
-
-        <!-- Output 2: Jour de pic de croissance (REQ-075) -->
-        <div style="padding:10px 12px; background:var(--input-bg); border:1px solid var(--border); border-radius:var(--radius-sm);">
-          <div style="font-size:10px; text-transform:uppercase; letter-spacing:1.5px; color:var(--text-muted); font-weight:600;">Jour de pic de croissance</div>
-          <div id="yr-out-peakday" style="font-family:'DM Mono',monospace; font-size:18px; font-weight:700; color:var(--text); margin-top:4px;">—</div>
-          <div id="yr-out-peakday-note" style="font-size:11px; color:var(--text-muted); margin-top:2px;">depuis germination</div>
-        </div>
-
-        <!-- Output 3: Rendement par m² par an (REQ-076) -->
-        <div style="padding:10px 12px; background:var(--input-bg); border:1px solid var(--border); border-radius:var(--radius-sm);">
-          <div style="font-size:10px; text-transform:uppercase; letter-spacing:1.5px; color:var(--text-muted); font-weight:600;">Rendement par m² par an</div>
-          <div id="yr-out-yearly" style="font-family:'DM Mono',monospace; font-size:18px; font-weight:700; color:var(--text); margin-top:4px;">—</div>
-          <div id="yr-out-yearly-note" style="font-size:11px; color:var(--text-muted); margin-top:2px;">—</div>
-        </div>
-
-        <!-- Output 4: Stratégie optimale (REQ-077 auto-sweep) -->
-        <div style="padding:10px 12px; background:var(--input-bg); border:1px solid var(--border); border-radius:var(--radius-sm);">
-          <div style="font-size:10px; text-transform:uppercase; letter-spacing:1.5px; color:var(--text-muted); font-weight:600;">Stratégie optimale</div>
-          <div id="yr-out-best" style="font-family:'DM Mono',monospace; font-size:14px; font-weight:700; color:var(--text); margin-top:4px; line-height:1.35;">—</div>
-          <div id="yr-out-best-note" style="font-size:11px; color:var(--text-muted); margin-top:2px;">balayage 4 combos</div>
-        </div>
-
+      <!-- Plateau toggle (18 / 24 / 32 / 50) — default 50. Mirrors the
+           stage-selector pattern from nutrition/tomato/app/page.html. -->
+      <div style="font-size:12px; color:var(--text-muted); margin-bottom:8px;">Plateau</div>
+      <div class="stage-selector" id="yr-plateau-selector" style="margin-bottom:14px;">
+        <button class="stage-btn" data-yr-plateau="18"><span class="stage-label">18</span><span class="stage-weeks">cellules</span></button>
+        <button class="stage-btn" data-yr-plateau="24"><span class="stage-label">24</span><span class="stage-weeks">cellules</span></button>
+        <button class="stage-btn" data-yr-plateau="32"><span class="stage-label">32</span><span class="stage-weeks">cellules</span></button>
+        <button class="stage-btn active" data-yr-plateau="50"><span class="stage-label">50</span><span class="stage-weeks">cellules</span></button>
       </div>
 
-      <!-- Optional: binding constraint + risk flags surfaced for context -->
-      <div id="yr-context" style="margin-top:12px; padding:8px 10px; background:var(--input-bg); border:1px solid var(--border); border-radius:var(--radius-sm); font-size:11.5px; color:var(--text-muted); line-height:1.55;"></div>
+      <!-- LED hours slider — 0 to 18 h, default 16 h. -->
+      <div style="font-size:12px; color:var(--text-muted); margin-bottom:6px; display:flex; justify-content:space-between; align-items:baseline;">
+        <span>Heures DEL <span style="font-size:11px;">(200 µmol/m²/s)</span></span>
+        <span id="yr-led-hours-label" style="font-family:'DM Mono',monospace; color:var(--text); font-weight:600;">16 h</span>
+      </div>
+      <input type="range" id="yr-led-hours" min="0" max="18" step="1" value="16" style="width:100%;">
     </div>
 
-    <!-- Card 3 — 7 read-only info values (REQ-078). Auto-rendered from
-         constants in yield-range/data.js so values never drift. -->
+    <!-- REQ-120: capacité plafond as a labeled numeric display, separate
+         from the chart's reference line.
+         REQ-133: daysToPotential surfaced inline next to the cap so the
+         operator reads "how much" + "how long" in one glance without
+         hopping over to the chart marker. -->
     <div class="card">
-      <div class="card-title" style="color:var(--text-muted);">Hypothèses du modèle (fixes)</div>
-      <div style="font-size:11.5px; color:var(--text-muted); line-height:1.5; margin-bottom:8px;">
-        Conditions environnementales hardcodées et plafonds physiques. Mettre à jour les constantes dans <code>yield-range/data.js</code> si la zone serre change.
+      <div style="display:flex; align-items:baseline; justify-content:space-between; gap:12px;">
+        <div style="font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:1.5px; color:var(--text-muted);">Capacité plafond</div>
+        <div style="font-size:22px; font-weight:700; color:var(--text); line-height:1.1; font-family:'DM Mono',monospace;"><span id="yr-canopy-cap">—</span> g/plant <span id="yr-days-to-potential" style="font-size:13px; font-weight:600; color:var(--text-muted); margin-left:6px;"></span></div>
       </div>
-      <div id="yr-info-block" style="display:grid; grid-template-columns:1fr 1fr; gap:6px 14px; font-size:12px;"></div>
+    </div>
+
+    <!-- REQ-132: clickable DLI display — opens a modal with the f_light
+         response curve so the operator can read why the trajectory bends
+         the way it does at edge DLI values. -->
+    <div class="card" id="yr-dli-display" onclick="openDliModal()" style="cursor:pointer;">
+      <div style="display:flex; align-items:baseline; justify-content:space-between; gap:12px;">
+        <div style="font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:1.5px; color:var(--text-muted);">DLI banc <span style="color:var(--text-muted); font-size:11px; text-transform:none; letter-spacing:0; margin-left:4px;">ⓘ</span></div>
+        <div style="font-size:22px; font-weight:700; color:var(--text); line-height:1.1; font-family:'DM Mono',monospace;"><span id="yr-dli-value">—</span> mol/m²/j</div>
+      </div>
+    </div>
+
+    <!-- REQ-121: chart of head-weight trajectory vs days from germination,
+         with axis labels, horizontal reference line at canopyCapG, vertical
+         marker at daysToPotential, and empty-state annotation when null. -->
+    <div class="card">
+      <div class="card-title">Trajectoire de croissance</div>
+      <div id="yr-chart-container" style="width:100%; overflow:hidden;"></div>
+    </div>
+
+    <!-- REQ-132: f_light response modal — auto-rendered from
+         window.YieldRange.F_LIGHT_BREAKPOINTS in renderYrDliModal()
+         (REQ-060: no hardcoded duplicate of breakpoint values). Reuses
+         the .pq-modal class set defined globally for the Pourquoi modal. -->
+    <div id="yr-dli-modal" class="pq-modal" role="dialog" aria-modal="true" aria-labelledby="yr-dli-modal-title">
+      <div class="pq-modal-backdrop" onclick="closeDliModal()"></div>
+      <div class="pq-modal-content">
+        <button class="pq-modal-close" onclick="closeDliModal()" aria-label="Fermer">×</button>
+        <div id="yr-dli-modal-title" class="pq-modal-title">Réponse à la lumière (f_light)</div>
+        <div id="yr-dli-modal-body"></div>
+      </div>
     </div>
 
   </div><!-- end page-rendement-content -->

@@ -291,47 +291,62 @@ function from the consumer.
 
 ---
 
-## REQ-144 — Operator-facing prose requires declared provenance
+## REQ-144 — Operator-facing prose is a deterministic render of spec
 
 **Statement:** Inside any DOM container carrying
 `data-prose-check="strict"`, every visible text node (descendant text not
 inside `<script>` / `<style>`) MUST have an ancestor element carrying a
 `data-prose-source` attribute whose value is one of:
 
-- `"derived"` — the string is rendered by a function operating on live data.
-  The auto-derivation rule (REQ-060) governs correctness; REQ-144 only
-  enforces that *the provenance is declared*.
-- `"stable:<short-tag>"` — the string is hand-written stable domain
-  context. The `<short-tag>` is free-form (e.g., `stable:ca-saturation`,
-  `stable:phlock-chemistry`) and serves as a hint for human reviewers, not
-  a spec pointer. The `// stable —` comment convention next to the source
-  string literal continues to apply (REQ-060).
-- `"REQ-NNN"` — the string exists *because* a specific spec entry calls
-  for it. Used for copy whose existence is mandated by a normative spec
-  (rare; most stable copy uses `stable:` instead). The verifier asserts
-  `REQ-NNN` appears as a `## REQ-NNN` header somewhere in the spec tree.
+- `"derived:<funcName>"` — the string is emitted by a function declared
+  in source (`function funcName(`, `const funcName = (`, etc.). The
+  function operates on data structures governed by the spec. The
+  verifier confirms `<funcName>` is declared somewhere in `app/`,
+  `nutrition/`, or `yield-range/`.
+- `"REQ-NNN"` — the string is a deterministic render of bytes owned by
+  spec entry `REQ-NNN`. The bytes live in a `Renders:` block inside that
+  spec entry; the build step (`scripts/build.mjs`) parses every
+  `Renders:` block across the spec tree and injects them into
+  `dist/index.html` as `window.SPEC_STRINGS`. The runtime helper
+  `renderSpec(reqId, key, interp)` resolves the lookup + optional `${var}`
+  substitution. The verifier asserts `REQ-NNN` appears as `^## REQ-NNN`
+  in the spec tree.
+- `"label"` — static UI scaffolding with no semantic claim about the
+  world (page titles, section headers, column headers, button labels).
+  Reserved for nomenclature; never used for advice, interpretation, or
+  warnings.
 
-**Rationale:** REQ-060 prevents narrative from contradicting data and
-asks for a `// stable —` source comment, but the comment is self-attested
-and invisible to a DOM verifier. REQ-144 promotes provenance into the
-rendered DOM so the check is mechanical: prose without declared
-provenance, inside a locked-down container, fails the verifier. Global
-spec discipline (`spec is floor AND ceiling`) becomes enforced rather
-than honor-coded.
+**Removed 2026-05-11** per Guillaume's *"deterministic render of the
+spec"* directive:
 
-**Cert:** 4 — bright-line normative rule; mechanically enforceable inside
-opted-in subtrees. Cert is not 5 because the `stable:<tag>` form is a
-declarative honor system (tag isn't cross-validated against the source
-comment).
+- `"stable:<short-tag>"` — honor-coded self-attestation, invisible to
+  any cross-check. Replaced by REQ-NNN + `Renders:` blocks: prose that
+  used to be stable-annotated in code moves into a spec entry as a
+  named render string.
+- Bare `"derived"` — accepted any function-rendered output without a
+  pointer. Replaced by `derived:<funcName>` so the function is checked
+  against the source declaration set.
+
+**Rationale:** "Deterministic render of the spec" means every byte
+visible to the team traces to spec or to data governed by spec. The
+escape hatches (`stable:<tag>`, bare `derived`) were trust-based —
+nothing prevented a string from drifting from its source comment, and
+nothing tied a `derived` claim to an actual function. Failing those
+shapes loudly forces every operator-facing string to anchor on either
+(a) a function declared in source or (b) bytes owned by a spec entry.
+No third option.
+
+**Cert:** 5 — every accepted value has a mechanical cross-check
+(function declaration set OR spec entry OR static-label declaration).
 
 **Scope (opt-in by design):**
 
 REQ-144 enforcement only applies inside containers explicitly marked
 `data-prose-check="strict"`. This is deliberate — retrofitting every
-existing text node in one pass would be a large slog and gate-keep
-unrelated work. The migration plan is:
+existing text node in one pass would be a large slog. The migration
+plan is:
 
-1. The rule + verifier land first (this entry).
+1. The rule + verifier land first.
 2. When a developer (Claude or otherwise) materially touches an operator
    container, they opt that container into `strict` mode and tag each
    text node with `data-prose-source`. From that point on, drift on
@@ -339,12 +354,11 @@ unrelated work. The migration plan is:
 3. New operator surfaces (new pages, new blocks) opt in from day one.
 4. Periodically, dedicate a session to retrofitting the cleanest unmarked
    containers (Block 5 levers + the pH-lock reminder is the natural
-   starting point — already 100 % auto-derived plus one stable annotation).
+   starting point — already 100 % auto-derived plus one stable annotation
+   to migrate into a new REQ Renders: block).
 
-This staged rollout means REQ-144 starts "wired but not blocking" (zero
-containers opted in → check passes trivially) and incrementally bites
-more of the operator surface over time. The verifier prints the count
-of opted-in containers so the migration is visible.
+The verifier prints the count of opted-in containers so the migration
+is visible.
 
 **Verification:** `scripts/check-recipes.mjs` — `header('REQ-144 …')`
 block. Procedure:
@@ -356,16 +370,52 @@ block. Procedure:
 3. For each text node, walk up ancestors looking for the nearest
    `data-prose-source` attribute. If none → fail with the offending text
    snippet and the container path.
-4. If the `data-prose-source` value matches `REQ-NNN` shape, assert
-   `REQ-NNN` appears as a `^## REQ-NNN` header in the spec tree (any
-   `requirements.md` or `**/spec.md`). Unknown REQ → fail.
-5. Other values (`derived`, `stable:<tag>`) are accepted without further
-   validation (REQ-060 owns the `// stable —` source-comment side).
+4. Validate the attribute value:
+   - `derived:<fn>`: assert `<fn>` is in the declared-function set
+     (scanned from `app/`, `nutrition/`, `yield-range/` source files).
+   - `REQ-NNN`: assert `REQ-NNN` appears as a `^## REQ-NNN` header in
+     the spec tree.
+   - `label`: accept (no further validation).
+   - `derived` (bare) or `stable:*`: fail with deprecation notice.
+   - Any other shape: fail.
 
 **When you add a new operator-facing prose block:** add
-`data-prose-check="strict"` to the container. Wrap each text node in a
-`<span data-prose-source="...">` (or set the attribute directly on the
-parent element if it owns the text node). Run `npm run check`.
+`data-prose-check="strict"` to the container. For each text-bearing
+element inside, set `data-prose-source` to one of the three accepted
+shapes. If the prose can't be derived from data and isn't a static
+label, **add it to a spec entry as a `Renders:` block first**, then
+render it via `renderSpec()`. Run `npm run check`.
+
+**`Renders:` block convention** (consumed by `scripts/build.mjs`):
+
+Inside a spec entry headed by `## REQ-NNN`, declare named render strings
+as fenced code blocks with the info string `render <key>`:
+
+````
+## REQ-NNN — title
+
+**Renders:** (bytes owned by this entry)
+
+```render Ca
+Sol Ca-saturé — réservoir essentiellement inépuisable...
+```
+
+```render P
+Banque P "coffre" ; même au taux de drawdown actuel...
+```
+````
+
+The build step:
+1. Walks every `spec.md` + `requirements.md` file.
+2. Groups fenced `render <key>` blocks by the nearest preceding
+   `^## REQ-NNN` header.
+3. Emits `window.SPEC_STRINGS = { 'REQ-NNN': { 'key': '...' } }` inline
+   in `dist/index.html` via the `<!-- @spec-strings -->` marker.
+4. Fails the build on duplicate keys within a REQ entry or across
+   entries.
+
+The `${var}` placeholder in the string body is substituted by
+`renderSpec(reqId, key, { var: value })` at render time.
 
 ---
 

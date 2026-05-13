@@ -154,6 +154,130 @@ returns a positive finite number.
 
 ---
 
+## REQ-115 — `computeFoliarRecipeForGap(gap, opts)` builds gap-maximizing recipe
+
+**Statement:** The model exposes
+`computeFoliarRecipeForGap(gap, { sprayCount = 1, surfactant = false } = {})`
+which returns a foliar recipe per 15 L master tank, sized to maximize
+coverage of `gap` (per-element residual mg/m²/wk) subject to a per-element
+burn cap, a per-tank predicted-CE cap (REQ-025), and an operational
+dosing floor.
+
+**Algorithm:**
+
+1. For each foliar element `el ∈ {Mn, Zn, Cu, Fe, Mo, B}` with `gap[el] > 0`:
+   - `ideal_g = gap[el] × area_m² / (element_pct × 1000 × coverage × sprayCount)`
+   - If `ideal_g < 0.5` → `0` (operational floor — sub-half-gram doses aren't measurable on an organic-farm scale).
+   - Else cap at `burnCapG(el, surfactant)`; round up to nearest 0.5 g.
+2. Compute `predictedCE` on the proposed recipe. If
+   `predictedCE > REQ-025 cap × 0.95`: scale all non-zero doses by
+   `target_CE / predicted_CE`, re-round up to 0.5 g, recompute CE.
+   Bound at 4 iterations to guarantee termination.
+3. Return `{ MnSO4_g, ZnSO4_g, CuSO4_g, FeSO4_g, NaMoO4_g, Solubore_g }`.
+
+**Surfactant scope — coverage axis only:**
+
+Surfactant affects cuticle penetration / coverage (REQ-101 0.30 → 0.80
+with yucca, cert 4 — Sentís et al. *Crop Protection* 2017). It does
+**not** affect the burn-cap axis: `burnCapG(el, _surfactant) =
+BURN_CAP_BASE_G[el]` regardless of surfactant flag. Rejected
+alternative (per-element multiplier with surfactant override) is in
+`learnings.md`.
+
+**Rationale:** Foliar recipe was burn-cap-pinned in the static model —
+implicitly assumed gap = residual after upstream channels. That coupling
+broke when sprayCount and surfactant became operator levers. A gap-
+maximizing derivation closes the loop: levers + upstream state → recipe.
+The CE-cap-and-scale guarantees REQ-025 stays satisfied even when ideal
+doses aggregate above the per-element bound. The min-dose clamp
+prevents operationally-absurd recipes (e.g., 0.0003 g Mo).
+
+**Verification:** `scripts/check-recipes.mjs` REQ-115 — three behavioral
+assertions:
+- Tiny gap (every element 0.001 mg/m²/wk) → all doses = 0 (min-dose clamp).
+- Huge gap (every element 1000 mg/m²/wk) → every element clipped to its
+  `burnCapG(el)`.
+- Predicted tank CE on every returned recipe ≤ REQ-025 cap.
+
+**Cert:** 3 (research-grounded surfactant framing + per-element burn-cap
+base values from foliar-uptake literature mid-band, refinable when
+Décembre tissue + lesion data lands —
+that refinement is deferred per the spec-discipline principle).
+
+---
+
+## REQ-116 — FP foliar recipe is live-derived from current residual gap
+
+**Statement:** At Bilan render time, the FP-mode foliar recipe shown in
+Block 5 (and consumed by Block 7 drift gauge vs `STORED_RECIPE.tomato.foliaire`)
+is computed by calling `computeFoliarRecipeForGap` with the residual gap
+**after compost + sidedress + fertigation are applied**. No hand-pinned
+`FP_RECIPE_T5.foliaire` literal. Updates whenever any upstream supply
+or operator lever changes.
+
+**Rationale:** Today FP foliar mirrors stored — drift gauge is
+uninformative for the foliar channel. Live derivation makes drift
+meaningful: stored ≠ derived means the operator is leaving gap coverage
+on the table or risking burn vs the FP target. Block 7 becomes
+actionable for foliar.
+
+**Verification:** `scripts/check-recipes.mjs` REQ-116 — call
+`calcNutrSupply('T5', true, 1.0, 1.5, 'fp')` to capture baseline
+`FP_RECIPE_T5.foliar.MnSO4`, then bump `window.CompostContribution
+.releasePerWeek.Mn` to 1.0 g/m²/wk (≫ Mn demand), call `calcNutrSupply`
+again, and assert `FP_RECIPE_T5.foliar.MnSO4 = 0` (gap closed → min-dose
+clamp). Restores the original compost value and re-runs once at
+baseline so canonical state is preserved for downstream tests. This
+exercises the full integration: pre-foliar gap from compost + sidedress
++ fertigation, gap → `computeFoliarRecipeForGap`, mutation of
+`FP_RECIPE_T5.foliar` consumed by Block 5 / Block 7 / "Recette
+proposée".
+
+**Cert:** 4 (structural — derivation chain).
+
+---
+
+## REQ-112 — `computeFoliarSupply` accepts spray count + surfactant
+
+**Statement:** Function signature is
+`computeFoliarSupply(stage, { sprayCount = 1, surfactant = false } = {}, recipe?)`.
+`sprayCount` is clamped to integer 1-3 at the model boundary. The optional
+third argument `recipe` is a label-string array (same shape as
+`STORED_RECIPE.tomato.foliaire.A`) and defaults to that stored recipe when
+omitted, so the function stays a single source of truth for the supply
+formula across stored-mode and FP-mode callers. Output:
+
+```
+delivered_per_element = single_spray_delivery × sprayCount × coverage_factor
+coverage_factor = surfactant ? FOLIAR_COVERAGE_WITH_YUCCA : FOLIAR_COVERAGE_DEFAULT
+```
+
+Calling `computeFoliarSupply(stage)` without opts returns today's numbers
+exactly (defaults match the prior single-arg behavior).
+
+**Rationale:** Two operationally real levers the model didn't expose.
+Spray count is a recipe-cadence knob the team uses on Mn / Fe spike
+weeks. Surfactant toggles between the documented coverage constants
+that already lived in `data.js` but were unused — putting the lever in
+the operator's hands closes that gap.
+
+Out of scope: burn-cap warning when surfactant=false but recipe was
+sized with surfactant in mind. That's a recipe-sizing concern governed
+by `/retire-recipe` + REQ-025, not by this toggle.
+
+**Verification:** `scripts/check-recipes.mjs` REQ-112 — calls
+`computeFoliarSupply('T5')`, `…('T5', { sprayCount: 2 })`,
+`…('T5', { surfactant: true })`, plus the same triplet against an
+explicit stub `recipe` argument. Asserts (a) defaults match the prior
+numbers, (b) sprayCount=2 doubles every element, (c) surfactant=true
+multiplies by exactly `FOLIAR_COVERAGE_WITH_YUCCA / FOLIAR_COVERAGE_DEFAULT`,
+(d) the same multiplicative behavior holds when an explicit `recipe`
+label-string array is passed (pinning the recipe-agnostic property).
+
+**Cert:** 5 (structural).
+
+---
+
 ## Pending — yucca-coverage refinement trigger
 
 The single biggest lever in this subproject. If yucca surfactant
