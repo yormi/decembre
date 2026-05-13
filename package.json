@@ -9,7 +9,10 @@
     "build": "node scripts/build.mjs",
     "build:watch": "node scripts/build.mjs --watch",
     "dev": "bash scripts/dev-server.sh",
-    "test": "node --test '**/*.test.mjs'"
+    "test": "node --test"
+  },
+  "engines": {
+    "node": ">=18"
   },
   "devDependencies": {
     "jsdom": "^22.1.0"

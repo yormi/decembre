@@ -61,10 +61,6 @@ Same single-cert transferability scale as `nutrition/tomato/plant-needs/spec.md`
 Ca, Mg, Fe, Mn, Zn, B, Cu, Mo`. Adding or removing any element requires
 updating the verifier's expected set in lockstep.
 
-**Verification:** `scripts/check-recipes.mjs` — symmetric difference
-between `keys(LETTUCE_NURSERY_TISSUE_DW)` and the canonical 11-element
-set must be empty.
-
 ---
 
 ## REQ-090 — Demand linear in target weight
@@ -78,10 +74,6 @@ For every element, `calcNurseryDemand(2 g, days, cells)` returns exactly
 Catches accidental introduction of a non-linear adjustment (capping,
 saturation curve, stage-mix) that would silently distort the supply
 balance at non-default targets.
-
-**Verification:** `scripts/check-recipes.mjs` REQ-090 — calls
-`calcNurseryDemand(1, 35, 50)` and `calcNurseryDemand(2, 35, 50)`,
-asserts ratio = 2.0 within ±0.1 % per element on `perTray_mg`.
 
 **Cert:** 5 (structural — falls out of the formula by definition).
 
@@ -97,10 +89,6 @@ the total uptake budget"; doubling the cycle halves the per-week
 demand. A regression where someone replaces the factor with a fixed
 constant or a non-1/x function would silently miscalibrate every
 recipe — this asserts the inverse-linear shape.
-
-**Verification:** `scripts/check-recipes.mjs` REQ-091 — calls at
-`cycleDays = 35` and `cycleDays = 70`, asserts ratio = 0.5 within
-±0.1 % per element on `perTray_mg`.
 
 **Cert:** 5 (structural).
 
@@ -119,9 +107,6 @@ range and tight enough to fail on order-of-magnitude errors.
 
 Numerically: `90 × 0.07 × (7/35) × 0.05 × 1000 = 63 mg/plant/wk` — sits
 in the middle of the band by construction.
-
-**Verification:** `scripts/check-recipes.mjs` REQ-092 — calls
-`calcNurseryDemand(90, 35, 50)`, asserts `out.N.perPlant_mg ∈ [50, 70]`.
 
 **Cert:** 4 (band calibrated to current data, not a published threshold).
 
@@ -147,11 +132,6 @@ default targets).
 `CompostContribution` (REQ-080): consumers (Semis subpage UI, future
 nursery recipe calculators) read demand through this namespace so
 internals can be refactored without breaking call sites.
-
-**Verification:** `scripts/check-recipes.mjs` REQ-093 — namespace
-presence + key set + spot-check that `calcNurseryDemand(90, 35, 50).N`
-is shape `{ perPlant_mg: number, perTray_mg: number }` and
-`demandPerTray('N')` returns a number.
 
 **Cert:** 5 (structural assertion).
 

@@ -46,10 +46,6 @@ root-volume cap (cellVol × 1.6) is NOT used as the prediction ceiling.
 binds far before root volume. Root cap is achievable only at fully
 spread densities, which Décembre does not run.
 
-**Verification:** Deferred — wired when model lands. `CANOPY_CAP_BY_PLATEAU`
-constant present; `predictNurseryYield()` ceiling uses it; no `RootCap`
-or `cellVolumeML × 1.6` reference in the prediction integration.
-
 **Cert:** 5
 
 ---
@@ -64,10 +60,6 @@ than `f_light(dliPerPlant)`. No `f_Tday`, `f_Tnight`, `f_CE`, `f_VPD`,
 long until I'm at potential?" — a strategy planner, not a what-if
 calculator. Stress modeling adds inputs without sharpening the
 operational question.
-
-**Verification:** Deferred — wired when model lands. Predict function
-contains no calls to `f_Tday`, `f_Tnight`, `f_CE`, `f_VPD`, `f_CO2`,
-`f_pH`.
 
 **Cert:** 5
 
@@ -85,10 +77,6 @@ single annual constant.
 fixed annual constant for this iteration — adding seasonal sun input
 bloats the contract before it's needed.
 
-**Verification:** Deferred — wired when model lands.
-`DLI_SUN_GH_ANNUAL_AVG_QC` and `LED_PPFD` constants present; bench
-DLI formula matches.
-
 **Cert:** 4
 
 ---
@@ -105,10 +93,6 @@ operator update it if greenhouse film changes (e.g., aged 6-mil
 inflated double-poly drops from ~0.55 to ~0.45). Without the split,
 the post-transmission constant silently bundles two distinct inputs.
 
-**Verification:** Deferred — wired when verifier checks both
-constants present and that `DLI_SUN_GH_ANNUAL_AVG_QC` matches
-`DLI_SUN_OUTDOOR_QC_ANNUAL × GH_LIGHT_TRANSMISSION_DOUBLE_POLY`.
-
 **Cert:** 4
 
 ---
@@ -122,9 +106,6 @@ No senescence branch, no decay, no negative-growth flip.
 **Rationale:** Per operator instruction — decay/senescence are out
 of scope. Plants asymptote to `canopyCapG` and stay there.
 
-**Verification:** Deferred — wired when model lands. Trajectory is
-monotonically non-decreasing; no decay or senescence branch in code.
-
 **Cert:** 5
 
 ---
@@ -136,10 +117,6 @@ where `spacing_factor` decays from 1.0 (d ≤ 14) to 0.40 (d ≥ 28).
 No spread-schedule input.
 
 **Rationale:** Décembre operates packed only.
-
-**Verification:** Deferred — wired when model lands. `spacing_factor`
-constant present with floor ≤ 0.40 at d ≥ 28; no spread-schedule
-input on `predictNurseryYield()`.
 
 **Cert:** 5
 
@@ -154,9 +131,6 @@ trajectory window (49 days).
 **Rationale:** "How long until I get full value?" is the operator's
 primary question.
 
-**Verification:** Deferred — wired when model lands. Output present
-and integer-valued (or null).
-
 **Cert:** 5
 
 ---
@@ -167,9 +141,6 @@ and integer-valued (or null).
 from day 0 to day 49 inclusive (50 entries).
 
 **Rationale:** App page renders a chart of W(d).
-
-**Verification:** Deferred — wired when model lands. Output array
-length = 50; first entry day = 0; last entry day = 49.
 
 **Cert:** 5
 

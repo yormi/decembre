@@ -45,9 +45,6 @@ with explicit fractions per channel.
 **Rationale:** Without an explicit ownership table, "is fertigation supplying
 enough K?" has no formal answer. Forgotten elements get silently undelivered.
 
-**Verification:** Script extracts the union of element keys across
-`BIOMASS_DEMAND.T1..T5` and asserts each appears in `CHANNEL_ROLE`.
-
 ---
 
 ## REQ-013 — Flux supply ≥ demand × 0.9 (under-fert guard)
@@ -60,10 +57,6 @@ efficiency (REQ-017). Below 0.9 requires explicit `acceptedDeficit: { reason:
 **Rationale:** The whole point of a model. Below 90% means real plant deficit
 is on the way; an explicit override forces the operator to acknowledge it.
 
-**Verification:** Runtime test runs `calcNutrSupply` and `calcNutrDemand`
-for every (crop, stage, element); fails on any element below threshold
-without override.
-
 ---
 
 ## REQ-014 — Flux supply ≤ demand × 1.3 (luxury / waste guard)
@@ -75,8 +68,6 @@ or burn risk.
 **Rationale:** Over-feeding is a model failure too. Excess K antagonizes Mg
 uptake; excess N pushes vegetative; excess micros approach toxicity. In an
 organic operation, luxury feeding also burns input budget.
-
-**Verification:** Same runtime test as REQ-013, opposite bound.
 
 ---
 
@@ -113,6 +104,3 @@ positioning the model for yield ceiling, not survival.
 `TOMATO_FRUIT_EXPORT`, `BIOMASS_DEMAND`). Recipe-side coverage of demand
 is REQ-013/REQ-014's responsibility (deferred to Phase 2.5).
 
-**Verification:** Node verifier reads `TOMATO_REMOVAL` from instrumented
-`window` and asserts each macro is ≥ inter-source mean from the hardcoded
-reference table above.

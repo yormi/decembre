@@ -73,9 +73,6 @@ For every stage in `RECIPE_INPUTS.stageYield`, `computeStageSidedress(stage)`
 returns numeric per-product fields and `g_per_planche`. No `undefined`,
 `NaN`, or negative values.
 
-**Verification:** `scripts/check-recipes.mjs` — call once per stage and
-assert the shape + non-negativity.
-
 ---
 
 ## REQ-087 — Mass-balance: chosen product sized to N gap after compost
@@ -103,12 +100,6 @@ formula is product-agnostic — only `n_pct` and `eff` of the chosen
 product change. Switching products (farine ↔ alfalfa) does not change
 the model, only the dose.
 
-**Verification:** `scripts/check-recipes.mjs` REQ-087 — recomputes the
-formula from upstream constants for the wired-default product
-(`'FarinePlumes'`) and asserts every `computeStageSidedress(stage).farine_g`
-is within ±5 g of the expected value (rounding tolerance). Spot-checks the
-alfalfa branch separately.
-
 **Cert:** 3 (mass-balance is well-defined; values inherit cert 2 from
 plant-needs and cert 2-3 from compost — effective cert min = 2;
 formula application itself is structural, cert 4).
@@ -135,9 +126,6 @@ sites. `PRODUCTS` is the new entry — exposes the per-product chemistry
 table that REQ-089 reads from. `MIN_EFF` retained as a derived
 backwards-compat view for legacy consumers in `app/index.html`.
 
-**Verification:** `scripts/check-recipes.mjs` REQ-088 — namespace presence
-+ key set + spot-check of `computeStageSidedress('T5').farine_g` shape.
-
 **Cert:** 5 (structural assertion).
 
 ---
@@ -159,11 +147,6 @@ operator vigilance — pH-crisis safety wired into the model itself.
 Currently certified Ca-free products: farine de plumes 13-0-0, Eco-luzerne
 3-0.5-2 (alfalfa). Currently gated out: Actisol 5-3-2 (3 % Ca, calcitic
 carrier).
-
-**Verification:** `scripts/check-recipes.mjs` REQ-089 — for every stage,
-read `chosen` from the return value and assert
-`SIDEDRESS_PRODUCTS[chosen].ca_pct === 0`. Also assert that explicitly
-requesting a Ca-bearing product (e.g. `'Actisol'`) returns `g_per_planche === 0`.
 
 **Cert:** 4 (Ca-saturation is measured at Décembre; product Ca % is label-
 stated; trade-off is well-grounded in current data; gate generalizes

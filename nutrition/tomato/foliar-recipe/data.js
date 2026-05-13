@@ -14,10 +14,12 @@
 // pinned at the maximum cuticle-safe load; this subproject computes
 // delivered mg/m²/wk under the coverage discount. See derivation.md.
 
-// Cuticle-coverage efficiency without surfactant. Cert 4 — cuticle-uptake
-// literature midpoint of 25-40 % range for sulfate micros without yucca,
-// confirmed at Décembre via the Cu local-pool toxicity image (2026-05-05)
-// implying ~30 % effective uptake at the rest of the leaf surface.
+// Cuticle-coverage efficiency without surfactant. Cert 3 — cuticle-uptake
+// literature midpoint of 25-40 % range for sulfate micros without yucca;
+// not directly measured at Décembre. Cu local-pool-toxicity image is pool
+// concentration, not coverage; Sentís et al. 2017 cuticle Mn penetration
+// ~3 % without surfactant is absorption, not retention — 30 % blends both
+// axes. Bump to cert 4 when tissue panel correlates predicted vs measured.
 //
 // REQ-101 reads this to compute delivered = recipe_g × element_pct ×
 // 1000 / area × FOLIAR_COVERAGE_DEFAULT.

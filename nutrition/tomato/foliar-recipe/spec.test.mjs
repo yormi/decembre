@@ -16,15 +16,14 @@
 // invariants — clamp, cap, CE bound — instead of pinning numeric burn-cap
 // values that are flagged as refinable when tissue + lesion data lands).
 
-import { test, describe, before } from 'node:test';
+import { test, describe } from 'node:test';
 import assert from 'node:assert/strict';
 import { loadFoliarFixture, recipeAsLabelArray } from './test-helpers.mjs';
 
-let win;
-
-before(() => {
-  win = loadFoliarFixture();
-});
+// Eager fixture load at module scope — node:test top-level `before` does not
+// reliably fire before tests nested inside `describe` blocks, so we load the
+// (cached) jsdom window here. loadFoliarFixture is idempotent + memoized.
+const win = loadFoliarFixture();
 
 describe('REQ-101 — Coverage discount applied to foliar delivery', () => {
   // For pinned elements (Mn, Fe), recompute the formula

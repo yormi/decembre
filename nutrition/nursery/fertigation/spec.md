@@ -29,9 +29,6 @@ beyond `NH4+`, `K+`, `organic-matrix` — all already classified. Inheriting
 the global checks means a future product that DOES introduce a new ion
 (silicate, phosphite) will fail REQ-029b/c at build time.
 
-**Verification path:** Inherited from REQ-029a/b/c (`scripts/check-recipes.mjs`).
-NURSERY_PRODUCTS feeds into the same enumeration via REQ-102 below.
-
 ---
 
 ## REQ-098 — Predicted solution CE under nursery cap
@@ -48,9 +45,6 @@ push higher for tray-finishing (90–110 g target), recalibrate substrate-EC
 side too. Cert 3 — the cap is operationally chosen, not measured against
 yield drop.
 
-**Verification:** Node verifier — `header('REQ-098 …')` +
-`window.FertigationNursery.nurseryRecipeCE(NURSERY_RECIPE_DEFAULT, 1) ≤ 3.0`.
-
 ---
 
 ## REQ-099 — Predicted tank pH inside nursery envelope
@@ -62,10 +56,6 @@ yield drop.
 buffers in the 4.5–6.5 range; bucket pH outside this band either stalls
 microbial activity (>6.5) or cooks the substrate (<4.5). Cert 4 — peat-pH
 match is well established.
-
-**Verification:** Node verifier — `header('REQ-099 …')` +
-`tankPh = nurseryRecipeTankPh(NURSERY_RECIPE_DEFAULT)`,
-`tankPh ≥ 4.5 && tankPh ≤ 6.5`.
 
 ---
 
@@ -88,8 +78,6 @@ plant either eats the peat starter charge (variable batch-to-batch) or
 slows down. 50 % is a soft floor — full demand is the goal once tissue
 tests come back; we won't push >100 % until then because of CE pressure.
 
-**Verification:** Node verifier — `header('REQ-100 …')` + supply ≥ threshold.
-
 ---
 
 ## REQ-101 — Default recipe P supply ≥ 50 % of nursery demand
@@ -103,8 +91,6 @@ week** at 90 g / 35 d / 50 cells / DM 0.07 / tissue P 0.005.
 post-2-3 waterings. Acadie poisson 2-4-0.5 is the P workhorse — its 1.75 %
 P (label 4 % P₂O₅) is 4× Ocean's P concentration, so the recipe leans on
 Acadie for P even though it's a low-N source. Cert 3.
-
-**Verification:** Node verifier — `header('REQ-101 …')` + supply ≥ threshold.
 
 ---
 
@@ -124,9 +110,6 @@ a new nursery product could be added with a missing field and slip past the
 global checks because they don't know to look here. REQ-102 is the local
 mirror that closes the loophole. Cert 5 — pure schema check, no calibration.
 
-**Verification:** Node verifier — `header('REQ-102 …')` + per-field schema
-walk.
-
 ---
 
 ## REQ-103 — `window.FertigationNursery` namespace exposed
@@ -140,8 +123,6 @@ holds at least: `NURSERY_PRODUCTS`, `NURSERY_FERTIGATION_DEFAULTS`,
 disappears (file rename, build mis-include) the page silently goes blank for
 the fertigation card. Loud-failure on missing public surface, by analogy to
 REQ-080-class namespace checks. Cert 5.
-
-**Verification:** Node verifier — `header('REQ-103 …')` + presence walk.
 
 ---
 
@@ -162,10 +143,6 @@ as a degree of freedom**, not just dose. Splitting the same recipe across
 multiple weekly applications keeps each bucket's EC under the cap while
 multiplying the per-week supply.
 
-**Verification:** Runtime test — call `nurseryRecipeSupply` at N=1 and N=2
-with the same recipe, assert ratio == 2 ± 0.001 for every sourced element.
-Cert 5 — structural linearity assertion.
-
 ---
 
 ## REQ-123 — `minApplicationsPerWeek` solves for 100 % coverage
@@ -183,11 +160,6 @@ must we mix this recipe to hit 100 % demand on the elements it covers?"*
 Capped at `7` (daily) — beyond that is operationally implausible for the
 nursery team's current routine. Hitting the `null` return signals that
 frequency alone can't close the gap; recipe must change.
-
-**Verification:** Runtime test — at default recipe + 90 g demand + 1.25 L
-+ 3.0 mS/cm cap, `minApplicationsPerWeek` returns the integer ceiling of
-`max(demand[el] / per_fert_supply[el])` over sourced elements; assert
-returned value is finite and ≤ 7 OR explicitly `null`. Cert 4.
 
 ---
 
@@ -214,11 +186,6 @@ The literal "any source" semantics keeps these two cases distinguishable.
 A stricter "frequency can cover at N ≤ 7" check would lump them together
 under "unsourced" and hide the difference from the operator.
 
-**Verification:** Runtime test — at default recipe + 11-element demand,
-assert `sourced` ⊇ {`N`, `P`, `K`} (recipe delivers all three);
-`unsourced` ⊇ {`Mo`} (no product carries Mo); union covers the demand
-key set with no overlap. Cert 4.
-
 ---
 
 ## REQ-125 — EC cap respected per-fertigation, not per-week
@@ -237,11 +204,6 @@ that makes frequency a useful degree of freedom in the first place.
 Mixing the two would silently break the cap by treating cumulative weekly
 EC as the bound.
 
-**Verification:** Source-level assertion — `nurseryRecipeCE`'s signature
-contains `recipe, dilution` only; no third frequency-related parameter.
-Verifier greps the calc.js file or inspects the function's `.length`
-property. Cert 5 — structural separation, no math.
-
 ---
 
 ## REQ-126 — `applicationsPerWeek` is a positive integer
@@ -257,10 +219,6 @@ range; never a fractional or zero value.
 (every other day), 4-5 (most weekdays), 7 (daily). Fractional values are
 a model leak: they look like solutions but can't be executed. Better to
 round up to the next integer cadence the team can actually run.
-
-**Verification:** Runtime test — pass `applicationsPerWeek: 2.5`, assert
-rejection or rounding (project picks one); pass `0` or `8`, assert
-rejection. Cert 5 — input-domain assertion.
 
 ---
 

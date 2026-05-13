@@ -23,11 +23,6 @@ discounted Ca/Mg biomass demand for stunted canopy (REQ-081); without it,
 over-state Ca/Mg demand by ~40-60 % — operator-discoverable, not silent.
 Re-add as advanced toggle if it ever bites.
 
-**Verification:** `scripts/check-recipes.mjs` REQ-104 — DOM walk asserts
-the five input ids are present (`nutr-target`, `nutr-solar-per-gram`,
-`nutr-stage-selector`, `nutr-phlocked`, `nutr-recipe-{fp,stored}`) and
-that `nutr-current` is **not**.
-
 **Cert:** 5 (structural).
 
 ---
@@ -45,12 +40,6 @@ greenhouse tomato literature), not a measurement at Décembre. Surfacing
 it as an input lets the operator probe sensitivity ("if our system gives
 6 J/g, what's the ceiling?") without editing code.
 
-**Verification:** `scripts/check-recipes.mjs` REQ-105 — runtime
-behavioral. Read rendered `#nutr-light-ceiling` text at default
-`solarPerGram = 7`; set the input to `14`; trigger a re-render; re-read.
-Fails if the displayed ceiling number is unchanged. Source-grep remains
-as a belt: input default `7`, no hardcoded `/ 7000`.
-
 **Cert:** 4 (heuristic; cross-validated to ~14 g/MJ at default 7).
 
 ---
@@ -66,10 +55,6 @@ keeps mode + stage as a consistent pair. Default `recipeMode = 'fp'`.
 demand would silently show T5's recipe at the wrong demand level. The
 auto-revert and hash persistence keep the page coherent under reload
 and stage flips.
-
-**Verification:** `scripts/check-recipes.mjs` REQ-106 — grep
-`logic.js` for the auto-revert (`s !== 'T5' && nutrRecipeMode === 'fp'`)
-and the hash-router segment handling.
 
 **Cert:** 5 (structural).
 
@@ -92,11 +77,6 @@ fights the global FP convention. Removing the products-in-play list
 keeps the header minimal — every product is already named where it
 acts (Block 2-5).
 
-**Verification:** `scripts/check-recipes.mjs` REQ-107 — DOM walk asserts
-button order (FP first child, Stockée second), label text "First
-principles" (not "Premiers principes"), and that `nutr-products` does
-**not** appear in the page markup.
-
 **Cert:** 5 (structural).
 
 ---
@@ -111,11 +91,6 @@ the Block 1 render path.
 **Rationale:** Channel demand through the public API namespace so future
 internals refactors don't break consumers. Closes REQ-083's contract on
 the Bilan side.
-
-**Verification:** `scripts/check-recipes.mjs` REQ-108 — grep
-`nutrition/tomato/app/logic.js` for `PN.calcNutrDemand` reference inside
-the Block 1 render section; assert no bare `BIOMASS_DEMAND[` or
-`TOMATO_FRUIT_EXPORT[` lookups in that section.
 
 **Cert:** 5 (structural).
 
@@ -140,13 +115,6 @@ duplicated in the modal.
 beyond that is documentation drift waiting to happen — derivation.md is
 the single source for prose.
 
-**Verification:** `scripts/check-recipes.mjs` REQ-109 — DOM walk: assert
-row count in `#nutr-needs` matches `Object.keys(PN.TOMATO_FRUIT_EXPORT).length`;
-each row has `class="pq-row"` + `onclick` calling
-`showPourquoi('demand.<el>')`. Modal-content check: open one row's
-modal, assert `#pq-modal-interp` (or equivalent interpretation node) is
-absent OR empty.
-
 **Cert:** 5 (structural).
 
 ---
@@ -155,11 +123,6 @@ absent OR empty.
 
 **Statement:** Changing `nutr-target` or activating a different stage
 button re-renders Block 1 with new per-element numbers.
-
-**Verification:** `scripts/check-recipes.mjs` REQ-110 — runtime
-behavioral. Read `#nutr-needs` text at default `(target=1.5, stage=T5)`;
-mutate `target` to `0.5` + dispatch `input`; re-read; assert numbers
-changed. Same loop for stage T5 → T1 via the stage button click.
 
 **Cert:** 5 (structural).
 
@@ -175,10 +138,6 @@ symbol, fruit-export term (mg/m²/wk), biomass term (mg/m²/wk), total
 **Rationale:** Surfacing the split lets the operator see what physically
 leaves the farm in fruit vs what stays in canopy/new structures —
 critical for understanding why Ca demand is high but mostly retained.
-
-**Verification:** `scripts/check-recipes.mjs` REQ-111 — DOM walk: each
-row in `#nutr-needs` has 4 child cells (or grid columns). Header row
-text contains "Fruit" and "Biomasse" labels.
 
 **Cert:** 5 (structural).
 
@@ -200,10 +159,6 @@ changes trigger `buildNutriment` re-render.
 stays at REQ-104's 5-scalar limit; foliar-specific levers belong with
 the block they affect — discoverable next to the gap grid they drive.
 
-**Verification:** `scripts/check-recipes.mjs` REQ-113 — DOM walk: both
-inputs exist with the right id/type/defaults; both ids appear in the
-listener wiring array in `app/index.html`.
-
 **Cert:** 5 (structural).
 
 ---
@@ -214,12 +169,6 @@ listener wiring array in `app/index.html`.
 `nutr-foliar-surfactant` re-renders Block 5 with new per-element
 delivered numbers. The supply path passes the inputs through to
 `window.FoliarRecipeTomato.computeFoliarSupply(stage, { sprayCount, surfactant })`.
-
-**Verification:** `scripts/check-recipes.mjs` REQ-114 — runtime
-behavioral. Read `#nutr-foliar` text at default `(sprayCount=1,
-surfactant=false)`; mutate `sprayCount` to `2` + dispatch `input`;
-re-read; assert text changed. Toggle surfactant on + dispatch `change`;
-re-read; assert text changed.
 
 **Cert:** 5 (structural).
 
@@ -248,20 +197,6 @@ adjusts recipes on the operational pages; the Bilan is downstream.
 | Export fruit tomate | `TOMATO_FRUIT_EXPORT` — g/kg fresh fruit, fruit-only nutrient export (no vegetative tissue). Yara fruit-vs-vegetative split (N/P/K 60%, Ca 5%, Mg 25%, micros 60% default) applied to whole-plant `TOMATO_REMOVAL`. Replaces `TOMATO_REMOVAL × yield` on the demand side (2026-05-04) so it doesn't double-count canopy growth already in `BIOMASS_DEMAND`. | `calcNutrDemand(yield, stage)` reads it directly: `fruit_mg = yield × TOMATO_FRUIT_EXPORT × 1000`. | wired |
 | Demande végétative tomate (T1-T5) | `BIOMASS_DEMAND[stage]` — mg/m²/sem per element per stage (build-out of canopy, roots, trusses). Sources: Haifa F-144 stage program + Sonneveld/Voogt ratios. T4-T5 revised 2026-05-04 to represent the FULL ongoing canopy growth (no longer ~30%/15% of T3) since it's now paired with the fruit-only `TOMATO_FRUIT_EXPORT`. | `calcNutrDemand(yield, stage)` adds it on top of fruit export so T1-T3 (low/no fruit) shows real demand. Bilan Block 1 renders fruit + biomasse breakdown. | wired |
 | Sol — programme soufre | inline in `<div id="page-sol-content">` HTML | **not consumed by the Bilan directly** — pH is a checkbox input (`nutr-phlocked`), not a calculated supply. The soufre schedule is operational, not a nutrient flux. | n/a |
-
-**Verification:** `check-requirements.sh` greps `index.html` to confirm the
-Bilan supply function references the source constants. If a future edit
-inlines a duplicate value or stops reading from the source, the positive
-checks fail. Patterns currently checked:
-
-- `computeStageRecipe\(stage\)` (Bilan calls the stage-recipe function)
-- `FOLIAR\.tomato\.A` (Bilan reads weekly spray)
-- `TOMATO_SIDEDRESS\[stage\]` (Bilan reads granular side-dress)
-- `BIOMASS_DEMAND\[stage\]` (Bilan reads vegetative-stage demand)
-- `TOMATO_FRUIT_EXPORT\[el\]` (Bilan reads fruit-only export per kg fruit)
-
-Negative check (no hardcoded duplicate of stage recipe values inside
-the Bilan section) is left as manual review — too brittle to grep.
 
 **Remaining clean-up on side-dress** (low priority, future work):
 

@@ -60,10 +60,6 @@ contributes only the `N` channel. Adding a non-macro to OM2 (e.g., S)
 or a P/K-bearing front-load product requires extending this invariant
 in lockstep.
 
-**Verification:** `scripts/check-recipes.mjs` REQ-097 spot-checks the
-OM2 element-set inclusion and asserts feather meal carries only `N`
-on its label-pct table.
-
 ---
 
 ## INV-2 — Release curves sum to ≈ 1.0 ± 0.05
@@ -76,9 +72,6 @@ feather meal that's accounted for should be released across the cycle.
 A curve drifting outside the band usually means a typo (e.g. dropped a
 non-zero week) or that the model is silently dropping/double-counting
 some fraction of the front-load.
-
-**Verification:** `scripts/check-recipes.mjs` REQ-094 (folded into the
-front-load cap check) sums each curve and asserts it's within band.
 
 ---
 
@@ -96,10 +89,6 @@ Sonneveld guidance for peat substrate salt sensitivity backs it. Surfaced
 through the model so the Semis page slider clamps to it; otherwise a
 recipe author could request a 15 g/tray front-load and silently kill the
 cohort.
-
-**Verification:** `scripts/check-recipes.mjs` REQ-094 asserts
-`window.SubstrateContributionNursery.LIMITS.maxFeatherMealPerTrayG ≤ 9`.
-Also folds in the INV-2 curve-sum check.
 
 **Cert:** 4 (operational ceiling, observed by team + Sonneveld).
 
@@ -119,10 +108,6 @@ additive contributions. A bug that mixes them (e.g., scaling OM2 by
 feather meal rate) silently corrupts the supply credit. This invariant
 catches it.
 
-**Verification:** `scripts/check-recipes.mjs` REQ-095 evaluates the
-function at fmG = 0 / 9 / 18 g and asserts (a) feather meal N delta
-doubles, (b) OM2-only elements (P, K, Ca, Mg) are constant.
-
 **Cert:** 5 (structural).
 
 ---
@@ -136,10 +121,6 @@ contribution avg)` within ±10 %.
 **Rationale:** If the per-week curve sums to 1.0 (INV-2), the average
 must equal `total_mineralizable_N / 5`. Catches a curve that's "shaped
 right but normalized wrong".
-
-**Verification:** `scripts/check-recipes.mjs` REQ-096 computes both the
-function output and the closed-form mass-balance value at fmG = 9 g and
-asserts agreement within 10 %.
 
 **Cert:** 5 (structural).
 
@@ -166,10 +147,6 @@ At runtime, `window.SubstrateContributionNursery` exists and exposes:
 `PlantNeedsTomato` (REQ-083): the Semis page UI and any future recipe
 calculators read substrate contribution through this namespace so
 internals can be refactored without breaking call sites.
-
-**Verification:** `scripts/check-recipes.mjs` REQ-097 — namespace
-presence + key set + spot-check of `theoreticalSubstrateReleasePerWeek(1, 9)`
-return shape (object with all 5 macros, numeric).
 
 **Cert:** 5 (structural assertion).
 

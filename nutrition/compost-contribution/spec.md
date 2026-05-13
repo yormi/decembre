@@ -64,9 +64,6 @@ Same single-cert transferability scale as `nutrition/tomato/plant-needs/spec.md`
 Adding an element to the release table requires updating both source tables
 in lockstep.
 
-**Verification:** `scripts/check-recipes.mjs` — symmetric difference of
-keys must be empty.
-
 ---
 
 ## REQ-079 — Release values are within sanity band of mass-balance
@@ -81,11 +78,6 @@ release table (typo, decimal slip) while allowing conservative manual
 overrides (e.g. Mg rounded down for label-gap conservatism — see
 derivation). A tighter bound would force perfect formula match and
 disallow that override; a looser bound would miss real bugs.
-
-**Verification:** `scripts/check-recipes.mjs` REQ-079 — recomputes the
-theoretical value from `COMPOST_AMENDMENT.applicationRateKgPerM2`,
-`COMPOST_LABEL_PCT`, `COMPOST_MINERALIZATION_YEAR1`, `COMPOST_SEASONAL_FACTOR`
-and asserts every release entry is within the band.
 
 **Cert:** 4 (bound calibrated against current data, not a published threshold).
 
@@ -107,10 +99,6 @@ At runtime, `window.CompostContribution` exists and exposes:
 **Rationale:** Same as `PlantNeedsTomato` (REQ-083): consumers (Bilan UI
 for both crops, future recipe calculators) read compost data through this
 namespace so internals can be refactored without breaking call sites.
-
-**Verification:** `scripts/check-recipes.mjs` REQ-080 — namespace presence
-+ key set + spot-check of `releasePerWeek.N` and `theoreticalReleasePerWeek('N')`
-return shape.
 
 **Cert:** 5 (structural assertion).
 

@@ -55,4 +55,90 @@ When the plant-nutrition-specialist completes a request from `requests.md`, the 
 
 ---
 
+## B2 — Downgrade `FOLIAR_COVERAGE_DEFAULT` cert 4 → 3 (approved 2026-05-11)
+
+- **Action:**
+  1. Update `nutrition/tomato/foliar-recipe/spec.md` REQ-101 cert from `4` to `3` and rephrase the cert rationale to acknowledge the gap (no direct measurement, single-image inference is pool-concentration not coverage, no tissue test correlation yet).
+  2. Mirror the change in `data.js` comment block for `FOLIAR_COVERAGE_DEFAULT`.
+  3. Add a refinement-trigger entry in `derivation.md`: "bump back to cert 4 after 2026-05-12 tissue panel correlates predicted-Mn from `computeFoliarSupply` to measured petiole Mn ±20 %."
+- **Acceptance:**
+  - REQ-101 cert reads 3 in spec.md.
+  - Refinement-trigger entry exists and references the tissue panel.
+  - No other coverage cert claims (e.g. `FOLIAR_COVERAGE_WITH_YUCCA`) silently inherit cert 4 without their own defense — see also `B2'` if D2 gets approved.
+
+**Original finding:**
+
+> REQ-101 cert 4 — "coverage % from cuticle-uptake literature ranges 25-40 % without surfactant; pinned at 30 % matches operator observation of runoff at current dose; transferable to similar tomato-leaf morphology." But: the Cu-toxicity image cited as confirmation measures leaf-axil pool concentration, not coverage. Sentís et al. 2017 reports tomato-cuticle Mn penetration at 3 % without surfactant — that's absorption, distinct from retention. The 30 % blended number conflates retention × penetration without separating axes. PA Taillon hasn't weighed in. No tissue test correlates. Cert 4 ("small translation needed") implies meaningfully more confidence than the actual evidence base supports. Cost: coverage at 0.20 vs 0.40 doubles or halves every foliar delivery number — moves Mn from ~72 % demand to either ~48 % or ~96 %.
+
+### Specialist response (2026-05-12)
+
+**Files changed:**
+- `nutrition/tomato/foliar-recipe/spec.md` REQ-101 — replaced the one-paragraph cert 4 line with a cert 3 block that names the three evidence gaps (no direct Décembre measurement, Cu image is pool concentration not coverage, Sentís 2017 cuticle Mn ~3 % is absorption not retention so 30 % conflates two unseparated axes), states the bump-back trigger (2026-05-12 petiole panel correlating `computeFoliarSupply('T5').Mn` to measured Mn within ±20 %), and pins the cost sensitivity (0.20 vs 0.40 coverage halves/doubles every delivery number).
+- `nutrition/tomato/foliar-recipe/data.js` — `FOLIAR_COVERAGE_DEFAULT` comment block rewritten from `Cert 4 — … confirmed at Décembre via the Cu local-pool toxicity image` to `Cert 3 — … not directly measured at Décembre; Cu image is pool concentration not coverage; Sentís 2017 Mn penetration ~3 % is absorption not retention; bump to cert 4 when tissue panel correlates predicted vs measured.`
+- `nutrition/tomato/foliar-recipe/derivation.md` — "Coverage — why 0.30 without yucca" section: changed `midpoint, cert 4 — observed at Décembre via the Cu-toxicity feedback` to a cert 3 block stating the working-assumption framing + the two-axes-conflated argument, and flagged the parallel `FOLIAR_COVERAGE_WITH_YUCCA` claim as needing its own downgrade (B2' followup). Augmented the existing "Tissue test reveals per-element drift" refinement-trigger entry in place to spell out the cert-bump-back condition (no duplicate entry, per "never let stuff become vestigial").
+
+**Summary:** Three coupled cert claims (spec body, data.js comment, derivation.md prose) all moved 4 → 3 with a single shared rationale. The bump-back path is wired to a concrete, dated, measurable trigger (tissue panel ±20 % correlation), so the cert can re-rise without a new debate. Existing refinement-trigger entry was amended in place rather than duplicated.
+
+**Verifier:** `npm run check` → 114 passed / 0 failed (unchanged baseline). REQ-101's verifier asserts the formula (`recipe_g × element_pct × 1000 / area × coverage`), not the cert value — so the cert text edit is structurally neutral. No verifier code touched.
+
+**Open questions or counter-pushback:**
+
+1. **`FOLIAR_COVERAGE_WITH_YUCCA = 0.80` cert 4 untouched per scope.** Acceptance criterion (c) notes it without action — the with-yucca claim rests on the same Sentís-style literature pool and has zero direct Décembre validation (yucca isn't even on order). Recommend a follow-up B2' request to downgrade it 4 → 3 in parallel for evidence-base consistency. I flagged this inline in `derivation.md` so the next pass through the file surfaces the gap; haven't written a draft entry into challenger-side drafts.md (that's the challenger's lane).
+2. **Bump-back trigger date.** Request wording said "2026-05-12 tissue panel" but Guillaume clarified the panel was actually sampled Monday 2026-05-11, not 2026-05-05+7d as the original changelog estimate implied. Results land late this week given typical lab turnaround. `derivation.md` refinement-trigger updated to sampling-date-anchored rather than guessed-arrival-anchored. When the numbers arrive, specialist re-runs `computeFoliarSupply('T5').Mn` against measured petiole Mn and either bumps cert 3 → 4 or refits coverage downward (likely 25 %). Guillaume needs to forward me the panel when it lands.
+
+---
+
+## PO-145 — Implement REQ-152 contribution-block recipe table + amended REQ-137 (approved 2026-05-12; renumbered from REQ-145 → REQ-152 on 2026-05-12 per P-06)
+
+- **Source:** product-owner PO-145
+- **Action:**
+  1. **Build the recipe-table renderer** — a generic helper (likely in a shared `nutrition/render.js` or its current equivalent; non-generic crop-specific renderers stay inside the subproject per the standing rule) that takes a `recipe[]` of `{productId, doseLabel}` plus the `PRODUCT` registry and emits the 3-column table `Produit | Composition (% m/m) | Quantité` per REQ-152. Composition cell renders the product's label % as a `·`-separated string in canonical element order (N · P · K · Ca · Mg · Fe · Mn · Zn · Cu · B · Mo), elements at 0 % omitted.
+  2. **Wire it into every contribution channel block** on Tomato Nutrition (Compost, Sidedress, Fertigation, Foliaire), Salanova post-transplant (Sol, Fertigation, Front-load), and Semis Laitue (Réserve substrat, Fertigation). The Tomato Sol soil-bank block is explicitly excluded (no products applied) — leave it alone.
+  3. **Strip any prose / bullet / helper-text node** currently sitting between the block title and the existing gap-grid in each of those containers. The recipe table becomes the first DOM element after the block title; the gap-grid becomes its immediate next sibling. Spec-as-ceiling: nothing else may sit between title → recipe-table → gap-grid.
+  4. **Delete the entire "Recette proposée — modèle + ajustements opérationnels" block** from the Tomato Nutrition page (`app/index.html` + any partial under `nutrition/tomato/app/`). No REQ mandates its existence; it's pure prose-prescription that REQ-152 + Block 6 (stored vs FP drift gauge) together render redundant.
+  5. **Wire REQ-152 verifier** in `scripts/check-recipes.mjs` — new `header('REQ-152 …')` block that walks each contribution-block container across all three Nutrition pages, asserts (a) the first non-whitespace element after the block title is a `<table>` with header row `Produit | Composition (% m/m) | Quantité`, (b) at least one `<tbody>` row in modes where a recipe exists, (c) Composition cells match the canonical-order regex (elements appear in `[N,P,K,Ca,Mg,Fe,Mn,Zn,Cu,B,Mo]` order, `·` separator, no zero-value entries), (d) the gap-grid is the immediate next sibling of the recipe table.
+  6. **Update REQ-137 verifier** — REQ-137 was amended in place (statement now scoped to gap-grid only). Drop the old "recipe-header node containing at least one `<strong>` element" assertion; add a "gap-grid is the immediate next sibling of the recipe table per REQ-152" assertion instead. Keep the existing 5-col grid signature + `.pq-row` count checks.
+  7. **Append a changelog line** summarizing the implementation pass.
+
+- **Acceptance:**
+  - Every contribution-block container across the three Nutrition pages renders the 3-column recipe table immediately after its title and immediately before its gap-grid. No intervening DOM nodes.
+  - The "Recette proposée" block is gone from `app/index.html` and any partial that contributed to it.
+  - `npm run check` passes; REQ-152 + amended REQ-137 both report wired.
+  - Manual spot-check on the dev server (`http://localhost:<port>/#admin/nutriment`, then crop toggle to Salanova, then page toggle to Semis): each block's title → table → gap-grid order is visible and consistent.
+
+**Original PO context:** the contribution-block REQ (originally numbered REQ-145; now REQ-152 after collision resolution) was drafted, trimmed to statement-only shape, and committed to `nutrition/spec.md:947` during the 2026-05-12 PO session. REQ-137 was amended in place (recipe-header bullet dropped; scope narrowed to gap-grid only) per the new "never let stuff become vestigial" principle. The recipe-table → gap-grid ordering is the operative new contract; everything else in the contribution-block surface is unchanged. Cross-app rollout was Guillaume's explicit decision (vs. tomato-only as originally framed).
+
+### Specialist response (2026-05-12) — SCOPE FLAG, not executed
+
+**Not executed — flagging two issues that need PO / routing resolution before any code change.**
+
+**1. Routing: this request is out of scope for the plant-nutrition-specialist.**
+
+Per `.claude/agents/plant-nutrition-specialist.md` "Out of scope":
+
+> UI: `*/app/page.html`, `*/app/logic.js`, `app/index.html`, `dist/`.
+
+Action items 1-4 are overwhelmingly UI / render-layer work in `app/index.html` (plus optional new `nutrition/render.js` helper, plus `nutrition/tomato/app/`). The specialist authors model-layer specs + derivations and wires their verifiers; building a generic DOM renderer and stripping prose nodes from admin pages is the **coder** persona's lane (`.claude/agents/coder.md`).
+
+Action items 5-6 (verifier-wiring for REQ-152 + REQ-137) sit in `scripts/check-recipes.mjs` and are normally specialist-adjacent **when the REQ is model-layer** — but REQ-152 + REQ-137 are PO-level DOM-shape contracts in `nutrition/spec.md`, not model behavior. The verifier code for those should travel with whoever implements the renderer (one author, one PR — so the DOM walker and the renderer it asserts on stay coupled).
+
+**Recommend reroute to the coder persona** for the whole bundle (items 1-7).
+
+**2. REQ-NNN collision — resolved 2026-05-12 by team-leader.**
+
+Original collision: new contribution-block REQ at `nutrition/spec.md:947` shared the number with the existing `nutrition/soil-contribution/spec.md:209` ("Pourquoi modal interpretation strings"). Per P-06 the new entry was renumbered to **REQ-152**; old REQ-145 retains its slot and verifier wiring. All references throughout this PO-145 entry now point to REQ-152. Body action items below are the live contract.
+
+(Recurring-failure-mode note still stands: this was the second REQ-145 collision in one day across parallel sessions — silent allocation is losing to clock skew. Worth surfacing to the PO as process feedback, separate from the technical fix.)
+
+**Files changed:** none.
+
+**Verifier:** untouched.
+
+**Open questions or counter-pushback:**
+
+1. **Verifier wiring lane.** If the project wants the verifier wired by the specialist after the coder ships the renderer (current C3 pattern: specialist edits `check-recipes.mjs` to assert the spec's behavioral contract), I can do items 5-6 in a follow-up turn — but only after items 1-4 land and the REQ-NNN renumber is resolved. Flag back to me on `requests.md` when the coder is done.
+2. **PO-145 ID itself is a different namespace.** "PO-145" is the queue tag (separate from the spec REQ-145), so the queue ID doesn't collide. But the queue tag matches a spec number, which is going to confuse future readers — recommend the PO drop the `PO-` prefix matching spec numbers when restamping.
+
+---
+
 

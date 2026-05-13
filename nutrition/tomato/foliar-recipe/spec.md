@@ -86,9 +86,6 @@ returns numeric, finite, non-negative values for every element in
 `TOMATO_FRUIT_EXPORT` (currently 11). No `undefined`, `NaN`, or negative
 values.
 
-**Verification:** `scripts/check-recipes.mjs` — call once per stage and
-assert the shape + non-negativity.
-
 ---
 
 ## REQ-101 — Coverage discount applied to foliar delivery
@@ -114,17 +111,18 @@ is read. Tied to REQ-018 (no decorative products): a foliar product
 falling below 5 % effective uptake at the current coverage must be
 flagged or removed.
 
-**Verification:** `scripts/check-recipes.mjs` REQ-101 — for two pinned
-elements (Mn, Fe), recompute the formula from
-`STORED_RECIPE.tomato.foliaire` × `PRODUCT_PCT.{MnSO4_Mn, FeSO4_Fe}` ×
-`FOLIAR_COVERAGE_DEFAULT` / area and assert
-`computeFoliarSupply('T5').{Mn, Fe}` matches within 1 % of the expected
-value. Mn pins the surfactant-coverage logic; Fe pins the Fe-specific
-PRODUCT_PCT path (FeSO₄·7H₂O 20 % Fe).
-
-**Cert:** 4 (coverage % is from cuticle-uptake literature ranges 25-40 %
-without surfactant; pinned at 30 % matches operator observation of
-runoff at current dose; transferable to similar tomato-leaf morphology).
+**Cert:** 3 (coverage % is mid-range from cuticle-uptake literature
+25-40 % without surfactant; pinned at 30 % as a working assumption,
+**not directly measured at Décembre**. The Cu local-pool-toxicity image
+cited as "confirmation" measures axil-pool concentration, not surface
+coverage; Sentís et al. 2017 reports tomato-cuticle Mn penetration at
+~3 % without surfactant, distinct from retention — so 30 % blends
+retention × penetration along axes that haven't been separated.
+No tissue test correlates predicted delivery to measured uptake yet.
+Bump back to cert 4 once the 2026-05-12 petiole panel correlates
+`computeFoliarSupply('T5').Mn` to measured petiole Mn within ±20 %.
+Cost sensitivity: 0.20 vs 0.40 coverage doubles or halves every foliar
+delivery number — Mn moves from ~72 % demand to either ~48 % or ~96 %.
 
 ---
 
@@ -145,10 +143,6 @@ Consumers (Bilan supply chain, "Recette proposée" admin card, future
 yucca-decision drift gauge) read foliar supply through this namespace
 so internals can be reshaped (yucca on/off, per-stage dose differentiation,
 addition of B back to foliar) without breaking call sites.
-
-**Verification:** `scripts/check-recipes.mjs` REQ-103 — namespace
-presence + key set + spot-check that `computeFoliarSupply('T5').Fe`
-returns a positive finite number.
 
 **Cert:** 5 (structural assertion).
 
@@ -192,13 +186,6 @@ The CE-cap-and-scale guarantees REQ-025 stays satisfied even when ideal
 doses aggregate above the per-element bound. The min-dose clamp
 prevents operationally-absurd recipes (e.g., 0.0003 g Mo).
 
-**Verification:** `scripts/check-recipes.mjs` REQ-115 — three behavioral
-assertions:
-- Tiny gap (every element 0.001 mg/m²/wk) → all doses = 0 (min-dose clamp).
-- Huge gap (every element 1000 mg/m²/wk) → every element clipped to its
-  `burnCapG(el)`.
-- Predicted tank CE on every returned recipe ≤ REQ-025 cap.
-
 **Cert:** 3 (research-grounded surfactant framing + per-element burn-cap
 base values from foliar-uptake literature mid-band, refinable when
 Décembre tissue + lesion data lands —
@@ -220,18 +207,6 @@ uninformative for the foliar channel. Live derivation makes drift
 meaningful: stored ≠ derived means the operator is leaving gap coverage
 on the table or risking burn vs the FP target. Block 7 becomes
 actionable for foliar.
-
-**Verification:** `scripts/check-recipes.mjs` REQ-116 — call
-`calcNutrSupply('T5', true, 1.0, 1.5, 'fp')` to capture baseline
-`FP_RECIPE_T5.foliar.MnSO4`, then bump `window.CompostContribution
-.releasePerWeek.Mn` to 1.0 g/m²/wk (≫ Mn demand), call `calcNutrSupply`
-again, and assert `FP_RECIPE_T5.foliar.MnSO4 = 0` (gap closed → min-dose
-clamp). Restores the original compost value and re-runs once at
-baseline so canonical state is preserved for downstream tests. This
-exercises the full integration: pre-foliar gap from compost + sidedress
-+ fertigation, gap → `computeFoliarRecipeForGap`, mutation of
-`FP_RECIPE_T5.foliar` consumed by Block 5 / Block 7 / "Recette
-proposée".
 
 **Cert:** 4 (structural — derivation chain).
 
@@ -264,15 +239,6 @@ the operator's hands closes that gap.
 Out of scope: burn-cap warning when surfactant=false but recipe was
 sized with surfactant in mind. That's a recipe-sizing concern governed
 by `/retire-recipe` + REQ-025, not by this toggle.
-
-**Verification:** `scripts/check-recipes.mjs` REQ-112 — calls
-`computeFoliarSupply('T5')`, `…('T5', { sprayCount: 2 })`,
-`…('T5', { surfactant: true })`, plus the same triplet against an
-explicit stub `recipe` argument. Asserts (a) defaults match the prior
-numbers, (b) sprayCount=2 doubles every element, (c) surfactant=true
-multiplies by exactly `FOLIAR_COVERAGE_WITH_YUCCA / FOLIAR_COVERAGE_DEFAULT`,
-(d) the same multiplicative behavior holds when an explicit `recipe`
-label-string array is passed (pinning the recipe-agnostic property).
 
 **Cert:** 5 (structural).
 

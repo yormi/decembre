@@ -113,10 +113,6 @@ Keying by crop matches the existing per-crop split in `SME_TOMATO_PPM` /
 `SME_LETTUCE_PPM` and lets the spec evolve without renaming when more
 crops land.
 
-**Verification:** Node verifier asserts `window.SoilContribution.BANK_MG_M2.tomato`
-exists with all four macro keys (P / K / Ca / Mg) declared as positive
-numbers ≥ 1000 (the smallest historic Berger value × 100 is ~55 800).
-
 **Cert:** 4 (source data is cert 4 — Berger Labs accredited lab,
 single-sample-per-bed). Conversion arithmetic is cert 5.
 
@@ -144,11 +140,6 @@ compost-contribution + sidedress-recipe). Micros are not on the Berger
 test. Codifying the participating set as a constant makes the contract
 explicit and verifier-checkable.
 
-**Verification:** Node verifier asserts (a) `CONTRIBUTING.P === true`,
-`CONTRIBUTING.Ca === true`; (b) for `el ∈ ['N','K','Mg','Fe','Mn','Zn','B','Cu','Mo']`,
-`weeklyContribution('tomato', el, 1000) === 0` even when bank data is
-present (K, Mg case).
-
 **Cert:** 4 (scoping decision; revisit when soil chemistry changes —
 e.g., if pH drops below 6.5 and SME P climbs into spec, P might exit
 CONTRIBUTING because active channels can carry it).
@@ -172,13 +163,6 @@ plausibly carry the load if conditions changed; the routing tells you
 how it's modeled today. Splitting `CONTRIBUTING` from runway availability
 keeps both questions answerable from the same data.
 
-**Verification:** Node verifier asserts (a) numeric output for
-`monthsToDepletion('tomato', 'Ca', 300)` (Ca contributes + has bank);
-(b) numeric output for `monthsToDepletion('tomato', 'K', 3000)` (K does
-not contribute but has bank); (c) `null` for
-`monthsToDepletion('tomato', 'N', 1000)` (no bank data); (d) `null` for
-`monthsToDepletion('tomato', 'Ca', 0)` (zero demand → undefined runway).
-
 **Cert:** 5 (structural — arithmetic over declared constants).
 
 ---
@@ -196,11 +180,6 @@ factor, or a depth-resolved bank) without breaking call sites.
 REQ-097 (SubstrateContributionNursery), REQ-103 (FoliarRecipeTomato).
 REQ-139 enforces the no-inline-reimplementation rule at the verifier
 level for any consumer of the namespace.
-
-**Verification:** Node verifier asserts the namespace exists with all six
-keys, that `weeklyContribution` + `monthsToDepletion` + `renderGrid` are
-functions, and that the `BANK_MG_M2` / `CONTRIBUTING` shapes match the
-declarations.
 
 **Cert:** 5 (structural).
 
@@ -223,11 +202,6 @@ literal source of bytes, the build pipeline injects them via
 `window.SPEC_STRINGS`. Each key corresponds to a single conditional
 branch in `nutrition/tomato/app/logic.js` `buildNutrimentTomato` ↔
 soil block.
-
-**Verification:** Node verifier asserts (a) every key listed in this
-entry is present in `window.SPEC_STRINGS['REQ-145']`; (b) every call
-site to `renderSpec('REQ-145', …)` references one of these keys (greps
-the consumer source).
 
 **Cert:** 5 — bytes are spec-declared; render is deterministic.
 

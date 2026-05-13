@@ -213,6 +213,39 @@ describe('REQ-109 — Block 1 row click opens minimal pourquoi modal', () => {
         'modal interpretation node should be empty per REQ-109');
     }
   });
+
+  test('REQ-109 — opening a demand modal populates cert badge (piece 1 of 3)', () => {
+    const { window } = loadTomatoApp();
+    window.showPourquoi('demand.N');
+    const title = window.document.getElementById('pq-modal-title');
+    assert.ok(title, 'pq-modal-title must exist');
+    // certFor(stage, el) returns a number 0-5; showPourquoi injects
+    // <span class="diag-cert diag-cert-N"> into the title innerHTML.
+    assert.match(title.innerHTML || '', /diag-cert-\d/,
+      'cert badge (diag-cert-N) must be rendered in pq-modal-title');
+  });
+
+  test('REQ-109 — opening a demand modal populates equation (piece 2 of 3)', () => {
+    const { window } = loadTomatoApp();
+    window.showPourquoi('demand.N');
+    const eq = window.document.getElementById('pq-modal-eq');
+    assert.ok(eq, 'pq-modal-eq must exist');
+    // Spec: `demand[el] = …` symbolic form.
+    assert.match((eq.textContent || '').trim(), /demand\[N\]\s*=/,
+      'equation node must contain `demand[el] = …`');
+  });
+
+  test('REQ-109 — opening a demand modal populates plugged numbers (piece 3 of 3)', () => {
+    const { window } = loadTomatoApp();
+    window.showPourquoi('demand.N');
+    const plugged = window.document.getElementById('pq-modal-plugged');
+    assert.ok(plugged, 'pq-modal-plugged must exist');
+    const text = (plugged.textContent || '').trim();
+    assert.ok(text.length > 0,
+      'plugged-numbers node must not be empty per REQ-109');
+    // Plugged copy should contain at least one numeric value substitution.
+    assert.match(text, /\d/, 'plugged-numbers should contain at least one digit');
+  });
 });
 
 // ─── REQ-110 — Block 1 reactive to target + stage ──────────────────────

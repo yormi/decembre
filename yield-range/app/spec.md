@@ -25,9 +25,6 @@ No other operator-facing inputs.
 **Rationale:** Operator's only levers in this iteration. Sun is
 hardcoded; other env conditions assumed best (per math-model REQ-113).
 
-**Verification:** Deferred — wired when page lands. Trigger: scan
-`#page-rendement-content` for the two named inputs only.
-
 **Cert:** 5
 
 ---
@@ -43,10 +40,6 @@ this number names the ceiling value at a glance.
 **Rationale:** The chart's asymptote is visible but not labeled with
 its numeric value. Without this standalone display, the operator
 must read a y-axis tick or hover over the line to know the cap.
-
-**Verification:** Deferred — wired when page lands. Trigger: page
-contains a text element matching pattern `Capacité plafond: \d+ g/plant`
-with the value bound to `window.YieldRange.predictNurseryYield(...).canopyCapG`.
 
 **Cert:** 5
 
@@ -67,13 +60,6 @@ with the value bound to `window.YieldRange.predictNurseryYield(...).canopyCapG`.
 Explicit axis labels prevent confusion between days-from-germination
 and days-from-sow / weeks. Empty-state annotation prevents silent
 absence of the marker.
-
-**Verification:** Deferred — wired when page lands. Trigger: chart
-element renders; x-axis label = `Jours depuis germination`; y-axis
-label = `Poids tête (g)`; data series bound to `trajectory`;
-reference line bound to `canopyCapG`; marker bound to
-`daysToPotential`; empty-state text rendered when `daysToPotential`
-is null.
 
 **Cert:** 5
 
@@ -101,11 +87,6 @@ as it does at edge DLI values. Hiding the f_light response in the
 code makes the model opaque — when a slider change moves the
 trajectory unexpectedly, the curve explains it.
 
-**Verification:** Deferred — wired when verifier checks the DLI
-element exists with click handler binding to a modal that contains
-the 5 breakpoint rows (auto-rendered from
-`window.YieldRange.F_LIGHT_BREAKPOINTS` per REQ-060).
-
 **Cert:** 4
 
 ---
@@ -120,10 +101,6 @@ the 5 breakpoint rows (auto-rendered from
 adjacency to the cap value lets the operator compare "how much" + "how
 long" without reading the chart.
 
-**Verification:** Deferred — wired when verifier checks the
-`#yr-days-to-potential` slot is bound to `daysToPotential` and renders
-the number-vs-null branches.
-
 **Cert:** 4
 
 ---
@@ -137,10 +114,6 @@ line keeps one decimal for transparency.
 **Rationale:** The page-level number is a quick-read; integer is
 cleaner and the variation between integer values is operationally
 meaningful. The modal is the precise breakdown.
-
-**Verification:** Deferred — wired when verifier asserts
-`#yr-dli-value` text matches `^\d+$` and the modal context line keeps
-the `\d+,\d` shape.
 
 **Cert:** 5
 
@@ -162,13 +135,6 @@ setup is good for the early growth phase. Bench DLI is what young
 plants directly feel; the late-cycle reality (per-plant after canopy
 closure) is a separate consideration surfaced in the modal. Mirrors the
 project's 3-tier convention (REQ-016).
-
-**Verification:** Deferred — wired when verifier reads the colour at
-representative `ledHours` values (e.g. 0 → red, 16 → green, 18 →
-yellow) via `window.YieldRange.f_light(window.YieldRange.dliBenchAvg(h))`
-and asserts the inline `style.color` against the expected tier.
-Breakpoints come from `F_LIGHT_BREAKPOINTS` per REQ-060 — no hardcoded
-DLI thresholds in the UI.
 
 **Cert:** 4
 

@@ -1,22 +1,47 @@
 // Tests for nutrition/tomato/sidedress-recipe/spec.md
 //
-// Covers REQ-087 (chosen product sized to N gap after compost),
-// REQ-088 (window.SidedressRecipeTomato public API namespace),
-// REQ-089 (Ca-aware product gate).
+// Covers:
+//   INV-1   — stage coverage closed (shape + non-negativity)
+//   REQ-087 — mass-balance: chosen product sized to N gap after compost
+//   REQ-088 — window.SidedressRecipeTomato public API namespace
+//   REQ-089 — Ca-aware product gate
 //
 // Loads dist/index.html via jsdom (see ./test-helpers.mjs) so the model
 // runs against its real dependency wiring (RECIPE_INPUTS, BIOMASS_DEMAND,
 // TOMATO_FRUIT_EXPORT, PRODUCT_PCT, window.CompostContribution). Same
 // boot pattern as scripts/check-recipes.mjs.
+//
+// Top-level await loads jsdom once before any describe block registers.
+// node:test's `before` hook fires after describe-collection, which made
+// the dynamic per-stage / per-product test loops below see `undefined`.
 
-import { test, describe, before } from 'node:test';
+import { test, describe } from 'node:test';
 import assert from 'node:assert/strict';
 import { loadAppWindow } from './test-helpers.mjs';
 
-let window, ph1;
+const { window, ph1 } = await loadAppWindow();
 
-before(async () => {
-  ({ window, ph1 } = await loadAppWindow());
+// ────────────────────────────────────────────────────────────────────────
+// INV-1 — Stage coverage is closed
+// ────────────────────────────────────────────────────────────────────────
+
+describe('INV-1 — stage coverage is closed (shape + non-negativity)', () => {
+  test('INV-1 — every stage in RECIPE_INPUTS.stageYield returns a numeric shape', () => {
+    const offenders = [];
+    for (const stage of Object.keys(ph1.RECIPE_INPUTS.stageYield)) {
+      const result = ph1.computeStageSidedress(stage);
+      for (const field of ['actisol_g', 'farine_g', 'alfalfa_g', 'g_per_planche']) {
+        const value = result[field];
+        if (typeof value !== 'number' || !Number.isFinite(value) || value < 0) {
+          offenders.push(`${stage}.${field}=${value}`);
+        }
+      }
+      if (typeof result.chosen !== 'string' || result.chosen.length === 0) {
+        offenders.push(`${stage}.chosen=${result.chosen}`);
+      }
+    }
+    assert.deepEqual(offenders, [], offenders.join('; '));
+  });
 });
 
 // ────────────────────────────────────────────────────────────────────────
@@ -66,7 +91,7 @@ describe('REQ-087 — chosen product sized to N gap after compost', () => {
     }
   }
 
-  test('REQ-087 — formula is product-agnostic (alfalfa : farine ≈ (13×0.75)/(3×0.65) at T5)', () => {
+  test('REQ-087 — formula is product-agnostic (alfalfa : farine ratio = inverse of n_pct × eff at T5)', () => {
     // Same N gap, different denominators → ratio of doses equals the inverse
     // ratio of (n_pct × eff). Pinning this guards against a regression that
     // would couple the formula to one product's chemistry.
@@ -76,8 +101,9 @@ describe('REQ-087 — chosen product sized to N gap after compost', () => {
     const ap = ph1.SIDEDRESS_PRODUCTS.AlfalfaMeal;
     const expectedRatio = (fp.n_pct * fp.eff) / (ap.n_pct * ap.eff);
     const actualRatio   = alfalfa / farine;
+    // 5 % tolerance to absorb rounding to whole grams at low doses.
     assert.ok(
-      Math.abs(actualRatio - expectedRatio) / expectedRatio < 0.01,
+      Math.abs(actualRatio - expectedRatio) / expectedRatio < 0.05,
       `T5 alfalfa/farine ratio=${actualRatio.toFixed(3)} vs expected ${expectedRatio.toFixed(3)}`
     );
   });
@@ -97,7 +123,7 @@ describe('REQ-087 — chosen product sized to N gap after compost', () => {
     // Defensive: if a future yield-curve revision brings stage demand below
     // compost release, the model must clamp instead of returning a negative
     // dose. T1/T2 already exercise this in current data; this test pins the
-    // invariant explicitly.
+    // invariant explicitly across every stage.
     for (const stage of Object.keys(ph1.RECIPE_INPUTS.stageYield)) {
       const r = ph1.computeStageSidedress(stage, 'FarinePlumes');
       assert.ok(r.g_per_planche >= 0, `${stage}: g_per_planche=${r.g_per_planche} (must be ≥ 0)`);
@@ -128,12 +154,12 @@ describe('REQ-088 — window.SidedressRecipeTomato public API', () => {
     assert.deepEqual(missing, [], `missing keys: ${missing.join(', ')}`);
   });
 
-  test('REQ-088 — AREA_PER_PLANCHE is a number', () => {
+  test('REQ-088 — AREA_PER_PLANCHE is a positive number', () => {
     assert.equal(typeof window.SidedressRecipeTomato.AREA_PER_PLANCHE, 'number');
     assert.ok(window.SidedressRecipeTomato.AREA_PER_PLANCHE > 0);
   });
 
-  test('REQ-088 — PRODUCTS is an object keyed by product name', () => {
+  test('REQ-088 — PRODUCTS is an object keyed by product name with n_pct/eff/ca_pct', () => {
     const products = window.SidedressRecipeTomato.PRODUCTS;
     assert.equal(typeof products, 'object');
     // PRODUCTS surfaces the table REQ-089 reads from. Each entry must
@@ -165,6 +191,18 @@ describe('REQ-088 — window.SidedressRecipeTomato public API', () => {
       assert.ok(fp[stage], `FIRST_PRINCIPLES_BY_STAGE.${stage} missing`);
       assert.equal(typeof fp[stage].g_per_planche, 'number',
         `FIRST_PRINCIPLES_BY_STAGE.${stage}.g_per_planche not numeric`);
+    }
+  });
+
+  test('REQ-088 — MIN_EFF retains backwards-compat keys for legacy consumers', () => {
+    // Legacy consumers (calcNutrSupply, computeStageRecipe, buildBanqueSol,
+    // buildNutriment) still read these specific keys. Spec REQ-088 calls
+    // out MIN_EFF explicitly as the derived backwards-compat view.
+    const minEff = window.SidedressRecipeTomato.MIN_EFF;
+    for (const key of ['Actisol_N', 'Actisol_P', 'Actisol_K', 'FarinePlumes_N']) {
+      assert.equal(typeof minEff[key], 'number', `MIN_EFF.${key} must be a number`);
+      assert.ok(minEff[key] > 0 && minEff[key] <= 1,
+        `MIN_EFF.${key}=${minEff[key]} must be in (0, 1]`);
     }
   });
 });
@@ -219,7 +257,7 @@ describe('REQ-089 — Ca-aware product gate', () => {
     assert.deepEqual(offenders, [], offenders.join('; '));
   });
 
-  test("REQ-089 — Actisol carries Ca > 0 in SIDEDRESS_PRODUCTS (gate has something to reject)", () => {
+  test('REQ-089 — Actisol carries Ca > 0 in SIDEDRESS_PRODUCTS (gate has something to reject)', () => {
     // If Actisol's ca_pct ever drops to 0 (e.g. supplier reformulation or a
     // typo), the defensive-gate test above could pass vacuously. Pin the
     // input shape explicitly.

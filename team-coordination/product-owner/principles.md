@@ -12,4 +12,5 @@ A principle is transferable if it applies to **more than the case that revealed 
 
 ## Principles
 
-<!-- empty — append entries here as Guillaume's decisions reveal them -->
+- P-02 — When a new spec supersedes part of an existing one, amend the old in place; never leave bullets/branches that "technically still hold." *Because:* vestigial content always drifts and erodes trust in the spec tree. (2026-05-12)
+- P-01 — PO spec entries are statement-only: `## REQ-NNN — title` + one normative paragraph. No Rationale/Verification/Cert/Supersedes sub-sections. *Because:* verifier file IS the verification record; concision is operating mode. (2026-05-12)

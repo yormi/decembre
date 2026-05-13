@@ -68,14 +68,6 @@ abbreviation; "EC" is the English one.
 - No elision in front of "C" (consonant sound): "la CE" (not "l'CE")
 - "Mesurer **la** CE", "baisse **de** CE" (not "baisse d'CE")
 
-**Verification:** `check-requirements.sh` greps for forbidden patterns inside
-`index.html` user-facing text and fails if found. Patterns include:
-
-- `>EC` followed by space/dash/colon (text content starting with EC)
-- French phrases combined with EC: `EC pour-through`, `Mesurer EC`,
-  `Mesurer l'EC`, `EC du`, `EC dans`, `EC qui`, `EC trop`, `EC stable`,
-  `EC plus (basse|haute)`, `baisse d'EC`, `d'EC plus`, `l'EC `
-
 ---
 
 ## REQ-005 — URL hash reflects current page (and subpage)
@@ -109,14 +101,6 @@ position. The check has to fail loudly for new pages.
 | Crop on diagnostic | `diagCrop` (page-local) | second segment |
 | Admin mode | `parseHash().admin` | leading `admin/` |
 
-**Verification:** `check-requirements.sh`:
-
-- Extracts every `id="page-XXX-content"` slug and asserts it appears
-  in the `const PAGES = [...]` declaration.
-- Asserts `parseHash()` and `syncHash()` are defined.
-- Asserts `setPage`, `setCrop`, `setDiagCrop` each call `syncHash()`
-  inside their function body.
-
 **When you add a new page:** register it in `PAGES`, add a
 `page === 'newpage' ? 'block' : 'none'` line in `setPage` for its
 content div, and add a button that calls `setPage('newpage')`. If it
@@ -144,9 +128,6 @@ bottle the worker is holding.
 | Visible HTML text content | HTML/CSS/JS identifiers (`id="out-kelp"`) |
 | JS string literals rendered to the UI | Source code comments (`// Kelp stays at 2 mL/L`) |
 
-**Verification:** `check-requirements.sh` greps for `>Kelp` patterns
-inside HTML text content and fails if found.
-
 ---
 
 ## REQ-007 — No English/horticulture jargon in user-facing text
@@ -173,9 +154,6 @@ add the term to the `JARGON_DENY` array in
 `scripts/check-requirements.sh`. The check fails on any new occurrence
 inside HTML text or JS string literals (lines starting with `//` are
 excluded so the term can still appear in dev comments).
-
-**Verification:** `check-requirements.sh` greps each denylisted term
-across `index.html` excluding comment lines. Any hit fails the check.
 
 ---
 
@@ -208,16 +186,6 @@ The function must use the **Thursday-pivot algorithm**:
 
 This is the only shape that handles year-rollover weeks correctly
 (e.g. Dec 29 2025 belongs to ISO week 2026-W01).
-
-**Verification:** `check-requirements.sh` asserts that
-`getWeekNumber()`'s body contains both:
-
-- `|| 7` — the Sun=0 → 7 normalization
-- `4 -` — the Thursday-pivot offset
-
-If either disappears, the check fails. Brittle on purpose: those two
-fragments are the two halves of the algorithm; losing either is the
-exact regression to guard against.
 
 ---
 
@@ -258,30 +226,6 @@ shapes.)
 (the registry catches regression on existing call sites and the
 blacklist catches new drift on the foliar formula shape, but the
 verifier can't enumerate every future inline reimplementation a priori).
-
-**Verification:** Two layers in `scripts/check-recipes.mjs`:
-
-1. **Registry-driven positive check.** A small inline registry of
-   `(namespace, function, expectedConsumer)` tuples. For each tuple,
-   assert the consumer file (today: `app/index.html`) contains
-   `window.<Namespace>.<function>` at least once. Seed:
-   - `FoliarRecipeTomato.computeFoliarSupply`
-   - `FoliarRecipeTomato.computeFoliarRecipeForGap`
-   - `CompostContribution.releasePerWeek`
-
-   Catches regressions where someone deletes a call site and reinlines
-   the math. Extend the registry whenever a new public namespace
-   function gains a consumer.
-
-2. **Inline-formula blacklist.** Forbid the foliar-supply formula shape
-   `PRODUCT_PCT.<XSO4_X|Solubore_B|NaMoO4_Mo>) / area * 1000 * cov`
-   inside `app/index.html` — the exact pattern that drifted on
-   2026-05-10. Today, after the foliar fix, this pattern should not
-   appear inline anywhere; if it reappears the check fails.
-
-   Blacklist is foliar-only at first. Extend with fertigation and
-   sidedress formula shapes once `computeFertigationSupply` and
-   `computeSidedressSupply` exist.
 
 **When you add a new subproject namespace function with a consumer:**
 add a tuple to the registry. **When you inline a formula in
@@ -359,25 +303,6 @@ plan is:
 
 The verifier prints the count of opted-in containers so the migration
 is visible.
-
-**Verification:** `scripts/check-recipes.mjs` — `header('REQ-144 …')`
-block. Procedure:
-
-1. Find every element matching `[data-prose-check="strict"]`. Print the
-   count.
-2. For each strict container, walk its text-node descendants (skipping
-   `<script>` / `<style>`).
-3. For each text node, walk up ancestors looking for the nearest
-   `data-prose-source` attribute. If none → fail with the offending text
-   snippet and the container path.
-4. Validate the attribute value:
-   - `derived:<fn>`: assert `<fn>` is in the declared-function set
-     (scanned from `app/`, `nutrition/`, `yield-range/` source files).
-   - `REQ-NNN`: assert `REQ-NNN` appears as a `^## REQ-NNN` header in
-     the spec tree.
-   - `label`: accept (no further validation).
-   - `derived` (bare) or `stable:*`: fail with deprecation notice.
-   - Any other shape: fail.
 
 **When you add a new operator-facing prose block:** add
 `data-prose-check="strict"` to the container. For each text-bearing

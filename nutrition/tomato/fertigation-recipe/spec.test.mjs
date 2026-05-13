@@ -20,17 +20,16 @@
 // SIDEDRESS_*, STORED_RECIPE, TOMATO_NUM_BEDS, TOMATO_BED_AREA,
 // FP_RECIPE_T5, window.CompostContribution).
 
-import { test, describe, before } from 'node:test';
+import { test, describe } from 'node:test';
 import assert from 'node:assert/strict';
 
 import { loadAppWindow } from './test-helpers.mjs';
 
-let window;
-let ph1;
-
-before(async () => {
-  ({ window, ph1 } = await loadAppWindow());
-});
+// Node 16's node:test runner does not reliably fire a top-level `before()`
+// hook before subtests inside `describe()` blocks. Boot at module-load via
+// top-level await — the jsdom load is cached inside loadAppWindow() so
+// repeated callers are cheap.
+const { window, ph1 } = await loadAppWindow();
 
 describe('REQ-098 — computeStageRecipe matches mass-balance formula', () => {
   // Recompute the mass-balance derivation from upstream constants and

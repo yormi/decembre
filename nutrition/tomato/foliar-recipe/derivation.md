@@ -54,13 +54,19 @@ What the model DOES validate:
 Cuticle-uptake literature spans 25-40 % efficiency for sulfate
 micronutrient sprays without surfactant on tomato/cucurbit foliage
 (field-spread to retention to penetration, all stacked). 30 % is the
-midpoint, cert 4 — observed at Décembre via the Cu-toxicity feedback
-(local pooling concentrating ~3-4× the tank concentration on the leaf
-implies ~30 % of label dose is the real uptake at the rest of the leaf
-surface). With yucca surfactant, the same literature jumps to 70-85 %
+midpoint, **cert 3** — pinned as a working mid-band assumption, not
+directly measured at Décembre. The Cu local-pool-toxicity image
+sometimes cited as confirmation measures axil-pool concentration
+(retention × runoff geometry) rather than surface coverage; Sentís et
+al. *Crop Protection* 2017 reports tomato-cuticle Mn penetration at
+~3 % without surfactant, which is the absorption axis distinct from
+retention. The 30 % number conflates the two axes without separating
+them, and no tissue test correlates predicted delivery to measured
+uptake yet. With yucca surfactant the same literature jumps to 70-85 %
 (droplet-spread + cuticle-wetting agent acting together); we'd pin at
 `FOLIAR_COVERAGE_WITH_YUCCA = 0.80` if/when yucca returns to the
-program.
+program. The with-yucca cert claim is on the same evidence base and
+should be downgraded in parallel — handled separately (B2' followup).
 
 The constants live in `data.js`:
 
@@ -207,11 +213,16 @@ Update the model when:
   g, Mn 18 → 22 g, Zn 16 → 22 g back to pre-2026-05-05 levels).
   Verifier pinch points: REQ-101 still passes (formula unchanged),
   REQ-025 needs re-checked at the higher Mn / Zn / Cu doses.
-- **Tissue test reveals per-element drift.** Petiole micros land
-  ~2026-05-12. If Mn, Zn, Fe come in within deficit-tolerance bands,
-  the 30 % coverage assumption is validated at our scale; if not,
+- **Tissue test reveals per-element drift.** Petiole panel (NO₃-N + Mg
+  + Cu/Mn/Zn) sampled 2026-05-11; results land late this week given
+  typical lab turnaround. If Mn, Zn, Fe come in within deficit-tolerance
+  bands, the 30 % coverage assumption is validated at our scale; if not,
   refit (likely 25 % rather than 30 %). Cu is toxicity-bound at the
-  recipe level, less coverage-sensitive.
+  recipe level, less coverage-sensitive. **Cert bump-back:** if the
+  panel correlates `computeFoliarSupply('T5').Mn` to measured petiole
+  Mn within ±20 %, raise REQ-101 cert 3 → 4 (and mirror to data.js
+  comment + with-yucca constant). Until then, REQ-101 stays at cert 3
+  per the B2 downgrade (2026-05-12).
 - **Solubore moved fully to fertigation.** Already done conceptually
   (`FP_RECIPE_T5.foliar.Solubore = 0`); STORED recipe still carries
   Solubore 7 g for legacy. Next /retire-recipe pass should zero it —

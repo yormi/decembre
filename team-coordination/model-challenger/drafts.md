@@ -194,3 +194,48 @@ No-op pass. Hook re-fired again on the same uncommitted working-tree diff; no ne
 ## 2026-05-12 (re-fire #4) — `nutrition/tomato/fertigation-recipe/derivation.md`
 
 No-op pass. Same uncommitted working-tree diff as the original 2026-05-12 review (MIXING_FACTOR retirement + REQ-151 supply derivation section); no claim, constant, or numeric moved. Prior queue (B1–B4, C1–C3, D1–D2) unchanged.
+
+---
+
+## 2026-05-12 — review of `nutrition/tomato/foliar-recipe/derivation.md` (working-tree diff, uncommitted)
+
+Scope: One block changed — the "Coverage — why 0.30 without yucca" framing. Cert downgraded 4 → 3, with explicit acknowledgement that the Cu-toxicity-image inference confused retention-with-penetration, that Sentís 2017 reports tomato-cuticle Mn penetration at ~3 % without surfactant, and that no Décembre tissue test correlates predicted vs measured uptake yet. With-yucca cert is also flagged for parallel downgrade as "B2' followup". Sibling `spec.md` REQ-101 cert is updated in lockstep. This is the specialist's direct response to the 2026-05-11 B2 / D1 findings (both APPROVED).
+
+The cert downgrade is the right call and the new prose is honest. Two structural concerns and one open-loop TODO remain.
+
+### Blindspots
+
+**B1 — Sentís 3 % penetration vs 30 % coverage isn't reconciled — model value may be off by ~10×, not ~1.6×** · `PENDING`
+- **What the spec assumes:** new prose pins coverage at 0.30 as a "mid-range working assumption" from cuticle-uptake literature 25-40 %, while explicitly citing Sentís et al. 2017 reporting tomato-cuticle Mn penetration at ~3 % without surfactant — "the absorption axis distinct from retention." The text acknowledges the 30 % number "blends retention × penetration along axes that haven't been separated".
+- **What might be ignored:** if penetration is the rate-limiter at ~3 %, plant-side uptake is bounded by penetration, not by retention × penetration. Retention can be 50, 80, 100 % — none of that matters once the cuticle barrier caps absorbed mass at 3 % of what landed on the leaf. Reading 30 % as "delivered to plant" is then overstating actual uptake by **~10×**, not by the ~1.6× the cert-band sensitivity analysis (0.20 vs 0.40) suggests. The cert downgrade is honest about confusion but the model value 0.30 remains unchanged — the derivation acknowledges a possible order-of-magnitude error and then keeps the original number. If the 2026-05-12 petiole panel comes back with Mn tissue 3-5× *below* `computeFoliarSupply('T5').Mn`, that's the signal — and the spec should declare in advance what threshold flips the value, not just the cert.
+- **How to test it:** when the 2026-05-12 petiole panel returns (expected today per the 2026-05-05 ordering note + 5-7 day window), check Mn / Zn tissue ratios vs predicted. If observed petiole Mn sits at ~30 % of `computeFoliarSupply('T5').Mn` predicted, 30 % coverage is approximately right (retention dominates, penetration assumption was wrong). If observed sits at ~3 %, Sentís 2017 is right and coverage should drop to ~0.03 — `computeFoliarSupply` overstates foliar supply by ~10× across every element, every stage, every block reading it. The cost sensitivity line in the new spec text frames 0.20 vs 0.40 as the live band — Sentís suggests 0.03 should be on the table too.
+- **Cost if real:** **high.** The whole Bilan supply chain trusts `computeFoliarSupply`. If foliar Mn delivers 0.5 mg/m²/wk instead of 5.4, the under-fert call is severe, not the "manageable 72 % of demand" the prior B1 finding adjusted toward, and yucca restoration becomes existential rather than nice-to-have. Worse, REQ-014 luxury caps (Zn ~136 %, Mo ~413 % per prior B1) would then collapse to ~14 % and ~42 % — *under-fert*, not over-fert. Direction reverses. Worth pre-committing in the spec to a tissue-driven coverage refit before the panel lands.
+
+**B2 — Data.js still claims cert 4 on `FOLIAR_COVERAGE_WITH_YUCCA` while derivation flags it for parallel downgrade** · `PENDING`
+- **What the spec assumes:** new derivation text says "The with-yucca cert claim is on the same evidence base and should be downgraded in parallel — handled separately (B2' followup)."
+- **What might be ignored:** "B2' followup" is not a tracked artifact. It's not in `drafts.md`, not in `team-coordination/requests.md`, not in any todo file. `data.js:28` still reads `// With-yucca coverage; cert 4 — surfactant-assisted droplet spread + cuticle wetting jumps real uptake to 70-85 % (literature).` and the new derivation text contradicts that comment in the same subproject. The "handled separately" framing is the kind of loose-loop TODO that slips for weeks — and it points at exactly the cert (D2 from 2026-05-11, still PENDING) that the prior review flagged as needing source provenance. Tying the resolution to a process artifact ("split into separate request now or attach to the same one as REQ-101") would close the loop; the current wording is "trust we'll get to it".
+- **How to test it:** does `data.js` line 28 still say cert 4 the next time a `*/derivation.md` edit fires the hook? Or has D2 from 2026-05-11 been processed?
+- **Cost if real:** **low operationally, medium for spec coherence.** With-yucca constant isn't currently consumed (yucca dropped, no toggle code). When yucca returns to the program, the cert claim becomes load-bearing for Block 7 drift gauge and the refinement-trigger math; landing yucca restoration on an unflagged cert-4 number reintroduces the exact provenance gap the rest of this diff cleans up.
+
+### Complexity
+
+(No complexity findings — diff is wording + cert revision only. Nothing added.)
+
+### Cert defense
+
+**D1 — `FOLIAR_COVERAGE_DEFAULT` cert 3 may still be too high if Sentís 2017 governs** · `PENDING`
+- **Specialist's defense:** new spec text — "mid-range from cuticle-uptake literature 25-40 % without surfactant; pinned at 30 % as a working assumption, **not directly measured at Décembre**. … No tissue test correlates predicted delivery to measured uptake yet. Bump back to cert 4 once the 2026-05-12 petiole panel correlates `computeFoliarSupply('T5').Mn` to measured petiole Mn within ±20 %."
+- **What I'd need to accept cert ≥ 3:** cert 3 ("moderate translation; pre-tissue-validation, mid-band literature pin") is reasonable IF Sentís 2017 is fringe and the 25-40 % range is dominant. But Sentís is sole-cited evidence in the new derivation text — the 25-40 % is generic "cuticle-uptake literature" with no specific cites. If the 25-40 % range is retention-not-penetration and Sentís is the only penetration measurement in the file, the model value 0.30 has *less* evidentiary support than the cert-3 framing implies. Cert 2 ("major translation needed; load-bearing literature contradicts working value") becomes plausible.
+- **My read:** cert is at the boundary of 2 vs 3. The new prose acknowledges the conflation but doesn't resolve it; the cert downgrade addresses the confidence axis but the value 0.30 remains unchanged. Defensible at 3 IF the 2026-05-12 petiole panel lands within days and bumps to 4 (or drops to 2 with a value cut). Drift past ~2 weeks with no panel result + value still 0.30 = cert should drop to 2.
+
+### Verdict
+
+**Ship the cert downgrade — it's the right direction.** B1 is the structural concern worth surfacing as a request before the 2026-05-12 petiole panel lands; B2 closes the open loop on the with-yucca cert. D1 sharpens the cert reasoning but isn't urgent if the panel lands soon. The diff itself is good cleanup of the prior review's findings; it just doesn't go all the way to the value-side implications its own evidence raises.
+
+## 2026-05-12 (re-fire) — `nutrition/tomato/foliar-recipe/derivation.md`
+
+No-op pass. PostToolUse hook re-fired on the same uncommitted working-tree diff (cert 4 → 3 + Sentís 2017 citation + cert-bump-back trigger); no new claim, constant, or numeric moved since the original 2026-05-12 review above. Prior findings B1 / B2 / D1 from that review remain the active queue for this subproject.
+
+## 2026-05-12 (re-fire #2) — `nutrition/tomato/foliar-recipe/derivation.md`
+
+No-op pass. Hook re-fired again on the same uncommitted working-tree diff (cert 4 → 3 + Sentís 2017 citation + cert-bump-back trigger); diff content identical to the 2026-05-12 original review. Active queue (B1 / B2 / D1) unchanged.

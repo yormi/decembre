@@ -86,39 +86,29 @@ For every stage in `RECIPE_INPUTS.stageYield`, `computeStageRecipe(stage)`
 returns numeric `kSulfate` and `mgSulfate`. No `undefined`, `NaN`, or
 negative values.
 
-**Verification:** `scripts/check-recipes.mjs` — call once per stage and
-assert numeric ≥ 0 for both fields.
-
 ---
 
 ## REQ-098 — Mass-balance derivation matches the formula
 
 For each stage, `computeStageRecipe(stage)` returns values that match the
-mass-balance derivation (compost subtracted from offtake, sidedress
-subtracted from K only — Mg sidedress is zero by product chemistry):
+mass-balance derivation. Sidedress IS subtracted from K (Mg sidedress is
+zero by product chemistry). **Compost release is NOT subtracted** —
+fertigation replenishes offtake directly; compost contribution is
+accounted for separately as a soil-bank input (see CompostContribution
+domain), not as a fertigation-channel offset.
 
 ```
-compost_K_mg/m²/wk   = CompostContribution.releasePerWeek.K × 1000
-compost_Mg_mg/m²/wk  = CompostContribution.releasePerWeek.Mg × 1000
-
 k_offtake_mg/m²/wk   = TOMATO_FRUIT_EXPORT.K × stageYield × 1000 + BIOMASS_DEMAND[stage].K
 k_sidedress_mg/m²/wk = STORED_RECIPE.tomato.sidedress[stage].actisol_g
                         × PRODUCT_PCT.Actisol_K × SIDEDRESS_MIN_EFF.K × 1000
                         / SIDEDRESS_AREA_PER_PLANCHE
-k_needed_mg/m²/wk    = max(0, k_offtake − k_sidedress − compost_K)
+k_needed_mg/m²/wk    = max(0, k_offtake − k_sidedress)
 kSulfate_g_total     = round(k_needed / 1000 / PRODUCT_PCT.K2SO4_K × total_area)
 
 mg_offtake_mg/m²/wk  = TOMATO_FRUIT_EXPORT.Mg × stageYield × 1000 + BIOMASS_DEMAND[stage].Mg
-mg_needed_mg/m²/wk   = max(0, mg_offtake − compost_Mg)   // sidedress carries no Mg
+mg_needed_mg/m²/wk   = max(0, mg_offtake)   // sidedress + compost both excluded
 mgSulfate_g_total    = round(mg_needed / 1000 / PRODUCT_PCT.MgSO4_Mg × total_area)
 ```
-
-Compost release IS subtracted (current implementation at 2026-05-09
-extraction). The "no compost subtraction" framing in the comment block
-expresses an intended policy direction (mass-balance pure, replenish
-offtake regardless of compost) but the code has not yet been updated to
-match — see derivation.md "policy vs implementation drift" for the
-trade-off and reconciliation plan.
 
 The mass-balance is K- and Mg-only — those are the two macros where
 fertigation is the dominant channel. N stays with sidedress (organic-N
@@ -136,11 +126,6 @@ recipe number. Fertigation has historically been the heaviest-touched
 recipe channel (50+ references in Bilan + Banque sol pages); pinning the
 derivation in one place means future tuning happens here, not in scattered
 call sites.
-
-**Verification:** `scripts/check-recipes.mjs` REQ-098 — recomputes the
-formula from upstream constants and asserts every
-`computeStageRecipe(stage)` output is within ±5 g of the expected value
-(rounding tolerance) for both `kSulfate` and `mgSulfate`.
 
 **Cert:** 3 (mass-balance is well-defined; values inherit cert 3 from
 plant-needs and cert 3 from sidedress mineralization; effective cert
@@ -167,9 +152,6 @@ Consumers (`calcNutrSupply`, `renderProposedRecipe`,
 through this namespace so internals can be reshaped without breaking call
 sites. `FIRST_PRINCIPLES_T5` mirrors the wired
 `FP_RECIPE_T5.fertigation` shape (`K2SO4`, `MgSO4-7H2O`, `Solubore`).
-
-**Verification:** `scripts/check-recipes.mjs` REQ-099 — namespace presence
-+ key set + spot-check of `computeStageRecipe('T5').kSulfate` shape.
 
 **Cert:** 5 (structural assertion).
 
@@ -229,25 +211,6 @@ selects the source (stored, FP literal, computed sizer) and reshapes
 into the canonical input before calling. The model function applies one
 rule — delivery math — on the pre-normalized input. No mode flags, no
 shape detection.
-
-**Verification (deferred — wired when `calc.js` lands the function):**
-node verifier in `scripts/check-recipes.mjs`:
-
-1. Calls `computeFertigationSupply('T5', {}, { kSulfate_g: 5167, mgSulfate_g: 1379, solubore_g: 9 })`
-   and asserts:
-   - `K`  within ±1 mg/m²/wk of `5167 × PRODUCT_PCT.K2SO4_K × 1000 / TOTAL_AREA`
-   - `Mg` within ±1 mg/m²/wk of `1379 × PRODUCT_PCT.MgSO4_Mg × 1000 / TOTAL_AREA`
-   - `B`  within ±0.01 mg/m²/wk of `9 × PRODUCT_PCT.Solubore_B × 1000 / TOTAL_AREA`
-   - `N`, `P`, `Ca`, `Fe`, `Mn`, `Zn`, `Cu`, `Mo` all numerically `0`.
-2. Calls `computeFertigationSupply('T5')` (no recipe arg) and asserts
-   the default reshape from `STORED_RECIPE.tomato.fertigation.T5` matches
-   the explicit-recipe call when given the same numeric grams.
-3. Registry-driven REQ-139 check: extend the registry tuple with
-   `(FertigationRecipeTomato, computeFertigationSupply, app/index.html)`
-   so a deleted call site fails the verifier.
-4. Inline-formula blacklist: extend with
-   `PRODUCT_PCT.(K2SO4_K|MgSO4_Mg|Solubore_B)) / area * 1000` shape
-   forbidden in `app/index.html` once the consumer is refactored.
 
 **Cert:** 4 — bright-line normative rule; auto-enforcement is partial
 in the same shape as REQ-139 (registry catches deleted call sites,

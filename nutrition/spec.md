@@ -31,15 +31,6 @@ should not appear in the app, even for "what-if" framing.
 non-approved options forces the user to mentally filter every recommendation
 and creates audit risk if a non-approved input gets ordered by mistake.
 
-**Verification:** Node verifier scans non-comment lines of `index.html` against
-the `FORBIDDEN_PRODUCTS` blocklist defined in `scripts/check-recipes.mjs`. Any
-case-insensitive substring match fails the check. Code comments, `<!-- -->`
-blocks, and traceability notes (e.g., explaining WHY a product isn't used) are
-excluded. Curated list — not exhaustive; covers high-risk synthetics (urea,
-mono-ammonium phosphate, di-ammonium phosphate, potassium chloride, Fe-EDTA,
-glyphosate, etc.). Add new forbidden products to the blocklist as the team
-encounters edge cases.
-
 ---
 
 ## REQ-009 — Weekly solar radiation matches 20-year averages
@@ -75,11 +66,6 @@ matters as much as week 18's.
 - Weeks 19-52 fall back to the monthly approximation (`SOLAR_BY_MONTH`)
   until the weekly array is extended. Cert drops to 3 for those weeks.
 - Source: 20-year Quebec City weekly averages, provided 2026-05.
-
-**Verification:** `check-requirements.sh` greps `index.html` for each of
-the 18 expected `value, // week N` lines. If any are missing or modified,
-the check fails. Pattern per week:
-`^\s+VALUE,\s*//\s*week\s+N\b` (whitespace-tolerant).
 
 **When extending to weeks 19-52:** add the values to `SOLAR_BY_WEEK` and
 extend the verification array in `check-requirements.sh`. Update the
@@ -119,9 +105,6 @@ recipes are flux-driven means a well-supplied soil tells you to skip BER
 spray, which fails on translocation, not flux. Splitting the math forces
 honest reasoning per product.
 
-**Verification:** Script asserts every `PRODUCT[*].mode` is set and is
-one of the two values.
-
 ---
 
 ## REQ-012 — No double flux-ownership
@@ -134,8 +117,6 @@ the supply side; the recipe gets halved silently when both are evaluated.
 Same problem if total falls short of 1.0 — the gap is invisible until tissue
 test catches it.
 
-**Verification:** Runtime test sums fractions per element, asserts within band.
-
 ---
 
 ## REQ-015 — Concentration-driven dose within efficacy/safety band
@@ -147,9 +128,6 @@ safety_max]` declared in `PRODUCT[product]`.
 **Rationale:** A BER spray below efficacy = wasted spray. A Cu spray above
 safety = leaf burn. Flux-driven check (REQ-013) is irrelevant for these
 products; they need their own envelope.
-
-**Verification:** Runtime test reads each foliar/spot recipe, computes
-[active element]/[tank volume] in g/L, asserts within band.
 
 ---
 
@@ -165,10 +143,6 @@ A model ignoring pH treats them as equivalent — they aren't. Bilan must
 show the real, pH-dependent supply so the team sees the unlock land as
 sulfur drops pH.
 
-**Verification:** Script asserts `effectiveEff` function exists and
-multiplies `base × phResponse[phClass](currentPh)`. Asserts every `phClass`
-referenced has a `PH_RESPONSE` entry.
-
 ---
 
 ## REQ-018 — No "decorative" products at current pH
@@ -183,9 +157,6 @@ feeding the plant. Reintroduction triggers automatically when pH drops and
 efficiency crosses 0.05 (e.g., FeSO₄ in fertigation flips active when soil
 pH reaches ~6.5).
 
-**Verification:** Runtime test evaluates `effectiveEff` for every (recipe
-product, element, currentPh); fail on any below 0.05 not flagged.
-
 ---
 
 ## REQ-019 — `PRODUCT.phClass` covers every claimed element
@@ -196,9 +167,6 @@ map has a corresponding `phClass` (uniform string or per-element object).
 **Rationale:** Missing `phClass` defaults to silent 1.0 or 0 depending on
 implementation — both wrong. Catches the new-product-without-pH-classification
 case.
-
-**Verification:** Script parses `PRODUCT`; for each entry asserts `phClass`
-covers every key in `base`.
 
 ---
 
@@ -212,9 +180,6 @@ value. The bank cannot "supply" more than the root zone makes available.
 supply naively. Reality at pH 7.4 is SME 1.1 ppm × transpiration ≈ 50 mg/m²/wk.
 The model must reflect lockout, not bank.
 
-**Verification:** Runtime test: with `currentSoilPh = 7.4`, assert passive P
-supply ≤ 100 mg/m²/wk. With `currentSoilPh = 6.0`, allow up to bank-derived value.
-
 ---
 
 ## REQ-021 — Solubility cap per fertigation product
@@ -226,9 +191,6 @@ temperature (cold-water cap, since winter mornings are the binding case).
 **Rationale:** K₂SO₄ exceeds solubility at ~100 g/L cold water. Over-cap →
 undissolved residue at barrel bottom → under-dose at Dosatron + clogging
 risk. Currently checked by operator memory; should be a hard model check.
-
-**Verification:** Runtime test: barrel volume × per-stage recipe →
-concentration; assert ≤ cap. Cap stored at 5°C reference, not 20°C.
 
 ---
 
@@ -242,9 +204,6 @@ product where this is false or unset.
 review. Adding a non-allowed product fails the build, not just slips past
 human review.
 
-**Verification:** Script parses `PRODUCT`, asserts `organicAllowed: true`
-on every entry referenced by any active recipe.
-
 ---
 
 ## REQ-023 — `EC_FACTOR` covers every product
@@ -256,9 +215,6 @@ a comment, not be missing.
 
 **Rationale:** Missing entries default to 0, which gives the same predicted
 CE as a deliberately non-ionic product. Explicit 0 = confirmed; absent = bug.
-
-**Verification:** Script asserts every key in `PRODUCT` has a key in
-`EC_FACTOR`.
 
 ---
 
@@ -280,9 +236,6 @@ Bands (mS/cm at 25°C):
 CE to 4.5 mS/cm causes osmotic stress. CE envelope is independent of the
 per-element check.
 
-**Verification:** Runtime test runs `predictedCE` for every (crop, stage),
-asserts within band.
-
 ---
 
 ## REQ-025 — Foliar tank CE under burn cap
@@ -294,8 +247,6 @@ Cert 3.
 **Rationale:** Salt burn on leaf surface is concentration-dependent. CaCl₂
 alone in 15 L Spray B is fine; adding aggressive sulfates without checking
 would not be.
-
-**Verification:** Runtime test on each spray recipe.
 
 ---
 
@@ -322,9 +273,6 @@ check is a separate axis from CE envelope and from solubility cap (single
 product). Without it, the model's "supply" numbers lie when both members
 of a precipitating pair are in the same tank.
 
-**Verification:** Runtime test reads `KSP_PAIRS` table, evaluates each pair
-for every recipe, fails on any predicted concentration above threshold.
-
 ---
 
 ## REQ-029a — Every product declares `ions` and `chemistryTags`
@@ -343,9 +291,6 @@ Build fails if either field is missing or empty.
 bypasses the precipitation check (REQ-029) — its cation/anion don't appear
 in any pair so nothing fires. Tags catch non-ionic interactions (Cu-protein
 gel, ligand swap) that pure Ksp pair logic misses.
-
-**Verification:** Script parses `PRODUCT`; asserts every entry has
-non-empty `ions` and `chemistryTags`. Schema-shape check, not value check.
 
 ---
 
@@ -366,11 +311,6 @@ silicate-containing product would introduce a new anion `SiO3-2`; the
 script forces every existing cation × silicate pair to be classified before
 the build passes. Silent ungoverned pairs are eliminated by construction.
 
-**Verification:** Script enumerates the cartesian product of declared
-cations × anions, asserts each pair in `KSP_PAIRS` or `KSP_SAFE`. Diff
-message names the missing pair so the operator knows exactly what to
-classify.
-
 ---
 
 ## REQ-029c — Every `chemistryTags` value is classified
@@ -387,10 +327,6 @@ chlorinated-water → kill). A new tag invented and dropped on a product
 with no rule referencing it would let the product slip past the tag-based
 check. This spec forces classification at addition time.
 
-**Verification:** Script extracts the set of distinct tags used across
-`PRODUCT`, asserts each appears in `TAG_INCOMPATIBILITIES` or
-`TAGS_INERT`. Diff message names the unclassified tag.
-
 ---
 
 ## REQ-030 — `INCOMPATIBLE_RECIPES` declared
@@ -406,9 +342,6 @@ each card.
 **Rationale:** Mixing-order rules are operational; cross-recipe bans are
 structural. Without an explicit list, "don't mix A and B" lives in operator
 memory and erodes with team turnover.
-
-**Verification:** Runtime test asserts every recipe page renders the
-incompatibility warning when applicable.
 
 ---
 
@@ -428,9 +361,6 @@ the steps in this order. Defaults documented in the recipe header:
 when recipe and tank are otherwise correct. K₂SO₄ added cold = settles;
 chelate added before sulfate = ligand competition. Wrong order is hard to
 detect post-hoc — output looks right until the Dosatron clogs.
-
-**Verification:** Script asserts every recipe with `products.length > 1`
-has a `mixOrder` array of equal length.
 
 ---
 
@@ -452,9 +382,6 @@ warns if age > limit.
 contains FeSO₄ — by hour 4 most Fe is precipitated. Without time-stability
 declared, the team uses an aging stock and the plant has already
 been under-dosed by the time the team notices.
-
-**Verification:** Script asserts every fertigation stock recipe has
-`maxStableHours`. UI test asserts age display + threshold warning works.
 
 ---
 
@@ -481,11 +408,6 @@ Bands:
 independent axis from CE — same total salt mass can produce very different pH
 depending on cation/anion mix.
 
-**Verification:** Runtime test runs `predictedTankPh` for every (compartment,
-active recipe), asserts within band. Schema check that every entry in
-`PRODUCT` has a `phContribution` value (zero is allowed but must be explicit
-per the same pattern as REQ-023's `EC_FACTOR`).
-
 ---
 
 ## REQ-054 — Chelate stability pH range respected
@@ -508,10 +430,6 @@ effective dose. A Spray A tank at pH 4.8 from sulfate metals carrying Iron DL
 [5, 8] is applying destabilized iron — REQ-053's foliar envelope passes (4.8
 is below 5.0 only marginally), but the chelate fails. Without REQ-054, the
 model says "Fe delivered" while reality is "Fe precipitated in the tank."
-
-**Verification:** Schema check — every product whose `chemistryTags` includes
-a chelate tag has `stablePhRange` set. Runtime check — for every recipe,
-predicted tank pH ∈ ∩ of all chelate ranges in the recipe.
 
 ---
 
@@ -539,10 +457,6 @@ parallel: cuticle absorption is pH-dependent, peaking at slightly acidic.
 Without this multiplier, sulfate-heavy Spray A at pH 4.5 reads as "Mn
 delivered" while real uptake is ~70% of label. Curve is approximate (cuticle
 studies vary by species and wax thickness) — cert 3 explicitly captures that.
-
-**Verification:** `foliarPhResponse` function exists; `effectiveEff` for
-foliar-channel products multiplies `base × foliarPhResponse(predictedTankPh)
-× leafSurfaceMods`.
 
 ---
 
@@ -587,22 +501,6 @@ multiple operational misses since) show the cost: stale advice that
 silently misleads the operator. Auto-derivation guarantees consistency by
 construction; the discipline of `// stable —` comments forces explicit
 classification of every remaining hand-written line.
-
-**Verification (deferred to Phase 2.5):** Node verifier will:
-
-- Walk all narrative-bearing rendering functions (`buildNutriment`,
-  `buildBanqueSol`, `renderProposedRecipe`, `renderPhase1Comparison`)
-- For each forbidden phrase pattern in a curated list (the `STALE_PHRASE`
-  table — initial entries: "Pousser MnSO₄ à", "Augmenter Actisol",
-  "actuellement 1×", "rare car SME K =", etc.), assert the phrase does NOT
-  appear in any rendered output for the current data state
-- For each `// stable —` comment, assert the surrounding code block
-  contains only literal string content (no template interpolation of
-  data values), confirming the "stable" claim
-
-Until Phase 2.5 lands, this is target spec. Manual review during code
-changes, plus the `STALE_PHRASE` table grown empirically as new misses are
-found.
 
 **Maintenance protocol:** When a data table or recipe constant changes
 (e.g., `FOLIAR.tomato.A` Cu dose cut), the change-author MUST grep for any
@@ -652,11 +550,6 @@ biology and the cost structure.
 recipe-derivation function. The Nutrition page block ordering already
 reflects this chain visually (compost → sidedress → fertigation → foliar).
 
-**Verification:** Node verifier should assert, per element per stage, that
-`foliar_dose > 0` only when `offtake > (compost + sidedress + fertigation)`.
-Currently FOLIAR.tomato.A is hand-set so this isn't yet checkable; will
-activate when foliar refactor (mass-balance Phase 2) lands.
-
 ---
 
 ## REQ-062 — Single fertigation tank, single foliar spray per week
@@ -677,16 +570,6 @@ etc.).
 **Scope:** Tomato production. Lettuce nursery + production fertigation are
 separate recipes (tomato vs lettuce); the constraint is per-crop-channel:
 1 tomato fertigation + 1 tomato foliar + 1 lettuce fertigation per week.
-
-**Verification:** Node verifier asserts:
-
-- `Object.keys(FOLIAR.tomato)` filtered to spray-recipe keys (single-letter,
-  array-valued) length is exactly 1, and the surviving key is `'A'`
-  (currently `{ A: ... }` after Spray B retirement)
-- `LETTUCE` constant exists and is flat (one production fertigation recipe;
-  `feSulfate` is part of the same tank, not a separate recipe)
-- `computeStageRecipe(stage)` returns exactly one tank composition per stage
-  (no parallel "Spray A1 + Spray A2" patterns)
 
 **Acceptance:** A new spray (e.g., re-introducing Spray B) requires explicit
 operational sign-off — the spec failure is the gate.
@@ -777,20 +660,12 @@ scope here, but their burn-cap math (REQ-015, REQ-025) feeds the same
 `cap` structure when those products *are* exposed in a contribution
 block (e.g. foliar Mn capped to burn-safe dose → `cap.kind = 'damage'`).
 
-**Verification:** Node verifier walks every channel function exposed on
-its public namespace (`window.CompostContribution.releasePerWeek`,
-`window.SubstrateContributionNursery.cycleAverageReleasePerTray`,
-`window.FertigationNursery.nurseryRecipeSupply`, etc.) at default
-inputs; for every element with non-zero `mg`, asserts `details[el]`
-exists with `cert ∈ [0, 5]` and `cap` either `null` or matching the
-declared shape. Cert 5 — schema check.
-
 ---
 
 ## REQ-137 — Contribution-block gap-grid table
 
 Every contribution channel block on every Nutrition admin page renders,
-as the immediate next sibling of its recipe table (REQ-145), a 5-column
+as the immediate next sibling of its recipe table (REQ-152), a 5-column
 gap-grid: Él. / Manque entrant / Apport ici / Manque sortant / icon.
 Color coding ✅🟢🟡🔴 by residual ratio. The grid receives a
 per-element `details {cert, cap}` payload (REQ-136).
@@ -897,34 +772,6 @@ shows the cap *kind distribution* across elements without opening
 anything. Operators learn the icon vocabulary once and read the column
 visually.
 
-**Verification:** Node verifier:
-
-1. Asserts the `Apport ici` cells in each contribution block carry a
-   click handler keyed by **(blockId, element)** — e.g.
-   `data-cell-key="nursery-fert.cell.K"` or
-   `onclick="showCap('nursery-fert','K')"`. Selector must distinguish
-   blocks (a Block 2 cell and a Block 3 cell for the same element key
-   different modals).
-2. For at least one synthetic capped element (constructed by mutating
-   a recipe to trigger an EC cap, OR injecting a test `cap` payload),
-   assert the cell renders the corresponding emoji AND that the emoji
-   has its own click handler keyed by **(blockId, element, capKind)**
-   — distinct from the cell's own handler.
-3. After a synthetic click on the cell handler, assert the rendered
-   modal body contains exactly one element symbol (the clicked one)
-   and exactly one channel value — no enumeration of other elements.
-4. After a synthetic click on the emoji handler, assert the modal
-   body contains the clicked element's `cap.reason` and `uncappedMg`
-   only — no list of other capped elements.
-5. Asserts the modal markup exposes the auto-derived sentence — no
-   hand-written interpretation strings (REQ-060 inheritance).
-
-Cert 4 — UI assertion + behavioral test. Implementation may use
-existing `showPourquoi` modal infrastructure with new key shapes
-(`${blockId}.cell.${el}` for value clicks,
-`${blockId}.cap.${el}.${kind}` for emoji clicks) or introduce
-dedicated `showCellCert` / `showCapReason` helpers.
-
 ---
 
 ## Inherited / dependent specs
@@ -944,7 +791,7 @@ dedicated `showCellCert` / `showCapReason` helpers.
 
 ---
 
-## REQ-145 — Contribution-block recipe table
+## REQ-152 — Contribution-block recipe table
 
 On every Nutrition admin page, each contribution channel block
 (excluding the Tomato Sol soil-bank block) MUST render, between its

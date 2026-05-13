@@ -64,9 +64,6 @@ For every stage, `keys(BIOMASS_DEMAND[stage]) ⊆ keys(TOMATO_FRUIT_EXPORT)`
 and `keys(TOMATO_DEMAND_CERT[stage]) ⊆ keys(TOMATO_FRUIT_EXPORT)`. Adding
 an element requires updating all three tables in lockstep.
 
-**Verification:** `scripts/check-recipes.mjs` — symmetric difference of
-keys must be empty.
-
 ---
 
 ## REQ-081 — Ca and Mg biomass demand coupled to transpiration
@@ -80,10 +77,6 @@ solution concentration. Mg is partially xylem-mobile. Phloem-mobile macros
 and active-transport micros decouple from instantaneous transpiration over
 weekly windows.
 
-**Verification:** `scripts/check-recipes.mjs` REQ-081 — `calcNutrDemand`
-called at tf=1.0 vs tf=0.5 must halve Ca/Mg `biomass` term within ±1 %
-and leave N/P/K/micros unchanged.
-
 **Cert:** 4 (physiological grounding in xylem-only Ca behaviour).
 
 ---
@@ -96,9 +89,6 @@ For every adjacent stage pair `(Tn, Tn+1)` and every element in
 **Rationale:** Catches order-of-magnitude hand-edit errors (typo, unit
 slip) while allowing legitimate phenological spikes (P at flowering, Fe
 drop at production montante).
-
-**Verification:** `scripts/check-recipes.mjs` REQ-082 — bound asserted
-on every pair × every element.
 
 **Cert:** 4 (bound calibrated to current data, not a published threshold).
 
@@ -122,9 +112,6 @@ At runtime, `window.PlantNeedsTomato` exists and exposes:
 **Rationale:** Consumers (Bilan UI, recipe calculators, future ports to
 lettuce / nursery) read demand from this namespace. Renaming any internal
 fails at check time, not at runtime.
-
-**Verification:** `scripts/check-recipes.mjs` REQ-083 — namespace presence
-+ key set + shape of `demandTotal` and `certFor` return values.
 
 **Cert:** 5 (structural assertion).
 

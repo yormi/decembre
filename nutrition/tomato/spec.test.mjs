@@ -218,7 +218,10 @@ describe('REQ-014 — Σ(channel_supply) ≤ 1.3 × demand (luxury / waste guard
 
   test('REQ-014 — every ACCEPTED_EXCESSES entry carries a non-empty `reason`', () => {
     const empty = G.ACCEPTED_EXCESSES.filter(e => !e.reason || !e.reason.trim());
-    assert.deepEqual(empty, [],
+    // assert.equal on length (not deepEqual on the array): G.ACCEPTED_EXCESSES
+    // is a jsdom-realm array, and deepEqual across realms fails the prototype
+    // check even when both sides are empty.
+    assert.equal(empty.length, 0,
       `ACCEPTED_EXCESSES entries without reason: ${empty.map(e => `${e.stage}.${e.element}`).join(', ')}`);
   });
 });

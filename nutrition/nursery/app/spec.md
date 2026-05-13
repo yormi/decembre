@@ -39,11 +39,6 @@ gap closes. Per-tray and per-cohort are computational steps, not
 display surface — they live inside the model and surface in Blocks 2/3
 where the gap-chain math needs them.
 
-**Verification:** Runtime DOM check — `#nutr-n-needs` contains a grid
-with exactly 3 columns; assert ≥ 3 rows (at least N + P + K visible);
-each row has element symbol + numeric "mg/sem" cell + "cert N" cell.
-Cert 5 — structural assertion.
-
 ---
 
 ## REQ-127 — Block 2 (Réserve substrat) layout
@@ -76,12 +71,6 @@ header above the table is the *scannable* part — what's in the bucket
 without needing to read the table — and the table is the *analytical*
 part. Two zones, distinct purposes.
 
-**Verification:** Runtime — render the Semis page at default inputs;
-assert `#nutr-n-substrate` contains exactly one node with class
-`pq-row` per element shown (= ≥ 1 row); assert column count = 5;
-assert at least one element renders with one of the four icons.
-Cert 4.
-
 ---
 
 ## REQ-128 — Block 3 (Fertigation) layout
@@ -104,11 +93,6 @@ operational summary) and the per-element math (gap analysis) in one
 card — the user can decide whether to push frequency up or modify the
 recipe just by reading top-to-bottom. CE / pH stay in the header
 because they're recipe-level constraints, not per-element gaps.
-
-**Verification:** Runtime — render at default inputs; assert
-`#nutr-n-fertigation` contains the per-fert CE readout and the gap-grid
-with `nutrseryRecipeSupply × applicationsPerWeek` values reflected in
-the "Apport ici" column. Cert 4.
 
 ---
 
@@ -137,12 +121,6 @@ fertigation as the primary supply and substrate as a top-up, which
 inverts the operational meaning. The leviers card answers *"what's
 still missing after both passive and active supply have been applied?"*
 — that's what `gapAfterFert` represents.
-
-**Verification:** Runtime — assert Block 2's "Manque entrant" column
-matches the demand model exactly for at least three macros; assert
-Block 3's "Manque entrant" column matches Block 2's "Manque sortant"
-column exactly; assert Block 4's residual is Block 3's "Manque
-sortant". Cert 5 — structural consistency.
 
 ---
 
