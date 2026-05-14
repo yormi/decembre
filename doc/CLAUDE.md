@@ -10,7 +10,7 @@ Primary-source documents for Ferme Décembre that aren't crop-nutrition-specific
 Décembre operations baseline — what was true about beds, infrastructure, agronomic plan before the 2026 pH crisis. Reach for this when: investigating "what changed" timelines or pre-crisis decisions.
 
 ### `test de sol - pré-serre.pdf`
-Pré-greenhouse soil test PDF (Agriquanta or similar — confirm). Reach for this when: comparing pre- vs post-construction soil state alongside the post-construction Agriquanta report in `nutrition/doc/`.
+EnvironeX certificate 4016171 (July 2024). Heavy-metals soil contamination test (As/Cd/Cr/Hg/Ni/Pb/Se) — pre-construction environmental baseline, NOT a nutrition test. Pb 23 mg/kg, others below detection. Reach for this when: organic-cert paperwork, food-safety due diligence. For pre-greenhouse soil chemistry (pH, P, K, Ca, Mg, micros), use `nutrition/doc/Analyse de sol avant installation serre.pdf` instead.
 
 ### `Logo - Décembre.png`
 Brand asset.

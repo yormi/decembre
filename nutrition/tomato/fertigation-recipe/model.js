@@ -8,8 +8,10 @@
 // of the bare constants — the internal mass-balance and T5 anchor can
 // then be reshaped without breaking call sites.
 window.FertigationRecipeTomato = {
-  // T5 refined first-principles target (PA Taillon April 2026 anchor),
-  // wired into FP_RECIPE_T5.fertigation by wireFpFertigation() at script load
+  // T5 refined first-principles target. K2SO4 / MgSO4-7H2O values are
+  // populated at boot from computeStageRecipe('T5') (REQ-154); Solubore is
+  // hand-coded (single-channel B at T5, REQ-061). Propagated to
+  // FP_RECIPE_T5.fertigation by wireFpFertigation() at script load.
   FIRST_PRINCIPLES_T5:   FIRST_PRINCIPLES_T5_FERTIGATION,
   // Mass-balance derivation function (REQ-098) — { kSulfate, mgSulfate } per stage
   computeStageRecipe,

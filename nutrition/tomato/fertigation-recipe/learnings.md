@@ -5,6 +5,28 @@ Rejected alternatives and historical decisions for this subproject. Current live
 
 ---
 
+## PA Taillon April 2026 fertigation anchor — retired 2026-05-14
+
+Hand-locked T5 fertigation anchor recommended by PA Taillon (agronomist) in April 2026:
+
+| Product       | Anchor dose | Rationale at the time                                          | Cert |
+|---------------|-------------|----------------------------------------------------------------|------|
+| K₂SO₄         | 5 167 g     | Mass-balance T5 with compost-credit subtraction (K offtake 6 000 mg/m²/wk less compost K release ≈ 232 mg/m²/wk, scaled). | 3    |
+| MgSO₄·7H₂O    | 1 379 g     | Mass-balance T5 with compost-credit subtraction (Mg offtake 355 mg/m²/wk less compost Mg release ≈ 220 mg/m²/wk, scaled).  | 3    |
+| Solubore      | 9 g         | Single-channel B at T5 (unchanged — still live in `data.js`). | 3    |
+
+**Retired because:** the model's reference frame shifted on 2026-05-12 when REQ-098 was amended to drop compost-subtraction from the K and Mg branches of `computeStageRecipe`. PA Taillon's K 5 167 / Mg 1 379 numbers were calibrated against the *retired* compost-credited formula and could only be reproduced from the model with that credit term in place. Holding them as the FP target while the model moved on created an artificial 58 % Mg gap that the prior derivation framed as "normal field correction" — a category mismatch (compost-credited anchor vs offtake-only model), not field correction in the agronomic sense.
+
+Guillaume's call (2026-05-13, captured as principle P-02): "keep policy direction; forget about pleasing the agronomist." Compost-as-soil-bank reframe stays; PA Taillon's anchor goes legacy. The live FP target is now the bare mass-balance output (K ≈ 5 322 / Mg ≈ 3 319 at T5), pinned to `computeStageRecipe('T5')` by REQ-154.
+
+**Refinement trigger — when to revisit:**
+- If tissue petiole consistently shows luxury Mg accumulation (Mg > 0.7 % DW) while the team is weighing-to-FP under the new target, the model's no-compost-subtraction policy may be overshooting. Path back: re-introduce a compost-credit term in `computeStageRecipe` (would require its own spec change, not a hand-locked FP override).
+- If PA Taillon shifts to a new anchor, change the **model inputs** (`TOMATO_FRUIT_EXPORT`, `BIOMASS_DEMAND`, sidedress mineralization) rather than overriding the FP target.
+
+**Audit-trail intent:** preserved here for organic-cert (the FP recipe in service of the team through April-May 2026 was the PA Taillon anchor) and for future re-evaluation if the model's reference frame ever shifts back to compost-credited offtake.
+
+---
+
 ## Compost subtraction in K/Mg mass-balance — retired 2026-05-13
 
 REQ-098 amended 2026-05-12 to drop compost release from the K and Mg

@@ -2985,16 +2985,12 @@ const STORED_RECIPE = {
 // when SME is wrong. Mass-balance — replenish offtake regardless of bank — is
 // the safer organic-soil strategy.
 //
-// Fertigation: K + Mg + Solubore (B). Mass-balance from RECIPE_INPUTS.
-//   K2SO4 5 167 g (cert 3): offtake 6 000 − compost 400 − sidedress 0 = 5 600 mg/m²/sem.
-//                           5 600 / 0.415 × 382.9 m² ÷ 1000 = 5 167 g.
-//   MgSO4·7H2O 1 379 g (cert 3): offtake 855 − compost 500 = 355 mg/m²/sem.
-//                                 355 / 0.0986 × 382.9 ÷ 1000 = 1 379 g.
-//   Solubore 9 g (cert 3 dose, cert 1-2 demand): offtake B 4.5 mg/m²/sem.
-//                  Boric acid non-ionic → 100% efficiency at any pH (REQ-018 OK).
-//                  9 × 0.205 / 382.9 × 1000 = 4.82 mg/m²/sem = 107% demand.
-//                  Foliaire B = 0 (single-channel: fertigation owns B).
-//                  Ecocert validated 2026-05-08.
+// Fertigation: K + Mg + Solubore (B). K and Mg values populated at boot
+// from computeStageRecipe('T5') via wireFpFertigation() (REQ-154 — mirror
+// the mass-balance derivation by construction). Solubore hand-coded —
+// single-channel B at T5 (REQ-061), non-ionic so 100% efficient at any
+// pH (REQ-018 OK), 9 × 0.205 / 382.9 × 1000 = 4.82 mg/m²/sem = 107% T5
+// demand. Foliaire B = 0. Ecocert validated 2026-05-08.
 // Sidedress: farine alone — Actisol dropped (Ca-aware, soil saturated).
 //   FarinePlumes 1 655 g/planche/sem (cert 3): wired live from
 //   computeStageSidedress(T5). N offtake 4 050 − compost 1 100 = 2 950 mg/m²/sem.
@@ -3012,8 +3008,8 @@ const FP_RECIPE_T5 = {
   // (single source of truth = FIRST_PRINCIPLES_T5_FERTIGATION in
   // nutrition/tomato/fertigation-recipe/data.js). Spec: REQ-098 / REQ-099.
   fertigation: {
-    'K2SO4':       5167,      // mass-balance T5 — replenishes offtake K
-    'MgSO4-7H2O':  1379,      // mass-balance T5 — replenishes offtake Mg
+    'K2SO4':          0,      // populated at boot from computeStageRecipe('T5').kSulfate (REQ-154)
+    'MgSO4-7H2O':     0,      // populated at boot from computeStageRecipe('T5').mgSulfate (REQ-154)
     'Solubore':       9,      // boric acid non-ionic, 100% eff at pH 7,4 — sole B channel
   },
   sidedress: {
@@ -3170,6 +3166,8 @@ function calcLettuceNutrSupply(currentG, targetG, density, phLocked, frontload_g
 <!-- @include nutrition/soil-contribution/render.js -->
 <!-- @include nutrition/soil-contribution/model.js -->
 
+<!-- @include nutrition/render.js -->
+
 // ─── RECIPE_INPUTS — first-principles inputs for fertigation recipe sizing ──
 //
 // Recipe values returned by computeStageRecipe(stage) are DERIVED from these
@@ -3289,9 +3287,9 @@ const ACCEPTED_EXCESSES = [
 // ─── Fertigation-recipe subproject (computeStageRecipe + FP T5) ──
 // Math model: data → calc → model. Mirrors plant-needs / sidedress-recipe.
 // Owns: computeStageRecipe(stage), the T5 FP target wired into
-// FP_RECIPE_T5.fertigation (PA Taillon April 2026 anchor). Spec:
-// nutrition/tomato/fertigation-recipe/spec.md (REQ-098 mass-balance,
-// REQ-099 namespace). Includes
+// FP_RECIPE_T5.fertigation (REQ-154 — mirrors computeStageRecipe('T5')
+// by construction). Spec: nutrition/tomato/fertigation-recipe/spec.md
+// (REQ-098 mass-balance, REQ-099 namespace, REQ-154 invariant). Includes
 // must come AFTER RECIPE_INPUTS, sidedress-recipe/data.js (provides
 // SIDEDRESS_AREA_PER_PLANCHE / SIDEDRESS_MIN_EFF), and the FP_RECIPE_T5
 // declaration above (the wireFpFertigation IIFE overwrites .fertigation).
@@ -4848,7 +4846,7 @@ function calcNutrSupply(stage, phLocked, transpFactor, targetYield, recipeMode) 
   return {
     total, fert, foliar, soil, sidedress,
     raw: {
-      mnSO4_g, znSO4_g, sb_g, cuSO4_g, moNa_g, feApplied_g,
+      mnSO4_g, znSO4_g, sb_g, cuSO4_g, moNa_g, feApplied_g, feSO4_g,
       k_g_total, mg_g_total, feSourceLabel, area,
       sd_actisol_g: sd.actisol_g, sd_farine_g: sd.farine_g,
     }

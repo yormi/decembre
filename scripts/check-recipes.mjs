@@ -178,11 +178,11 @@ const exposeNames = [
   'COMPOST_AMENDMENT', 'COMPOST_LABEL_PCT', 'COMPOST_MINERALIZATION_YEAR1',
   'COMPOST_SEASONAL_FACTOR', 'COMPOST_RELEASE_PER_WEEK', 'theoreticalReleasePerWeek',
   'FIRST_PRINCIPLES_SIDEDRESS', 'computeStageSidedress',
-  // Fertigation-recipe (REQ-098..099). FP_RECIPE_T5 holds the wired T5
-  // anchor (PA Taillon April 2026); FIRST_PRINCIPLES_T5_FERTIGATION is
-  // the source-of-truth that wireFpFertigation() copies into
-  // FP_RECIPE_T5.fertigation at script load. REQ-100 (mode-aware mixing
-  // factor) retired 2026-05-10 — concept dropped, full barrel mass.
+  // Fertigation-recipe (REQ-098..099, REQ-154). wireFpFertigation() in
+  // calc.js writes computeStageRecipe('T5') output into
+  // FIRST_PRINCIPLES_T5_FERTIGATION at script load, then propagates to
+  // FP_RECIPE_T5.fertigation. PA Taillon legacy anchor preserved in
+  // learnings.md. REQ-100 (mode-aware mixing factor) retired 2026-05-10.
   'FP_RECIPE_T5',
   'FIRST_PRINCIPLES_T5_FERTIGATION',
   // Foliar-recipe (REQ-101 / REQ-103). Cuticle-coverage delivery model;
@@ -1076,6 +1076,46 @@ if (!FR) {
 
 // REQ-100 (mode-aware MIXING_FACTOR) retired 2026-05-10 — concept dropped,
 // fertigation supply now reported at full barrel mass. Number not reused.
+
+// ─── REQ-154 — FIRST_PRINCIPLES_T5_FERTIGATION pinned to computeStageRecipe('T5')
+//
+// Spec: nutrition/tomato/fertigation-recipe/spec.md → REQ-154.
+// The FP T5 fertigation target equals the mass-balance derivation output
+// by construction (wireFpFertigation mutates the constant values at boot
+// from computeStageRecipe('T5')). PA Taillon legacy anchor preserved in
+// learnings.md; pinning prevents the K/Mg drift the legacy anchor surfaced
+// after the REQ-098 amendment dropped compost-subtraction.
+
+header('REQ-154 — FIRST_PRINCIPLES_T5_FERTIGATION values = computeStageRecipe(T5) output');
+
+if (!FIRST_PRINCIPLES_T5_FERTIGATION || !computeStageRecipe || !FP_RECIPE_T5) {
+  fail('REQ-154 prerequisites exposed',
+       `FIRST_PRINCIPLES_T5_FERTIGATION: ${!!FIRST_PRINCIPLES_T5_FERTIGATION}; computeStageRecipe: ${!!computeStageRecipe}; FP_RECIPE_T5: ${!!FP_RECIPE_T5}`);
+} else {
+  const t5 = computeStageRecipe('T5') || {};
+  const offenders = [];
+  if (FIRST_PRINCIPLES_T5_FERTIGATION['K2SO4'] !== t5.kSulfate) {
+    offenders.push(`FIRST_PRINCIPLES.K2SO4=${FIRST_PRINCIPLES_T5_FERTIGATION['K2SO4']} vs computeStageRecipe('T5').kSulfate=${t5.kSulfate}`);
+  }
+  if (FIRST_PRINCIPLES_T5_FERTIGATION['MgSO4-7H2O'] !== t5.mgSulfate) {
+    offenders.push(`FIRST_PRINCIPLES['MgSO4-7H2O']=${FIRST_PRINCIPLES_T5_FERTIGATION['MgSO4-7H2O']} vs computeStageRecipe('T5').mgSulfate=${t5.mgSulfate}`);
+  }
+  if (typeof FIRST_PRINCIPLES_T5_FERTIGATION['Solubore'] !== 'number' || FIRST_PRINCIPLES_T5_FERTIGATION['Solubore'] <= 0) {
+    offenders.push(`FIRST_PRINCIPLES.Solubore must be a positive number (got ${FIRST_PRINCIPLES_T5_FERTIGATION['Solubore']})`);
+  }
+  // Propagation: FP_RECIPE_T5.fertigation mirrors the same three values
+  const fp = FP_RECIPE_T5.fertigation || {};
+  for (const key of ['K2SO4', 'MgSO4-7H2O', 'Solubore']) {
+    if (fp[key] !== FIRST_PRINCIPLES_T5_FERTIGATION[key]) {
+      offenders.push(`FP_RECIPE_T5.fertigation['${key}']=${fp[key]} vs FIRST_PRINCIPLES['${key}']=${FIRST_PRINCIPLES_T5_FERTIGATION[key]}`);
+    }
+  }
+  if (offenders.length === 0) {
+    pass(`K2SO4 ${t5.kSulfate} · MgSO4-7H2O ${t5.mgSulfate} · Solubore ${FIRST_PRINCIPLES_T5_FERTIGATION['Solubore']} — all three propagated FIRST_PRINCIPLES → FP_RECIPE_T5`);
+  } else {
+    fail('REQ-154 — FP target pinned to computeStageRecipe(T5)', offenders.map(o => `  ${o}`).join('\n'));
+  }
+}
 
 // ─── REQ-012 — fraction sums per element in CHANNEL_ROLE within 1.0 ± 0.05
 
@@ -3709,8 +3749,44 @@ if (typeof window.setNutrCrop === 'function') {
   try { window.setNutrCrop('tomato'); } catch (e) { /* swallow */ }
 }
 
-header('REQ-137 — Tomato Bilan blocks adopt renderGapGrid + details (cell-keying)');
+// Shared helper for REQ-137 + REQ-152: locate the gap-grid wrapper in a
+// contribution-block container. The renderer (renderGapGrid in
+// app/index.html) emits `<div style="font-size:11.5px; margin-top:8px;"><div
+// style="display:grid; grid-template-columns:0.6fr 1fr 1fr 1fr 0.4fr; ...">
+// ...`. We find the outer wrapper by walking the inner-grid element up to
+// its parent — that parent is the node whose previousElementSibling must be
+// the recipe `<table>` per REQ-152.
+function findGapGridWrapper(blockEl) {
+  if (!blockEl) return null;
+  // jsdom serializes inline style with no space after the colon
+  // ("grid-template-columns:0.6fr ..."). The CSS attribute selector matches
+  // on the serialized string, so omit the space.
+  const inner = blockEl.querySelector(
+    'div[style*="grid-template-columns:0.6fr 1fr 1fr 1fr 0.4fr"]'
+  );
+  if (!inner) return null;
+  // The innermost grid div is the FIRST .pq-row OR the header strip. The
+  // outer wrapper that RECEIVED the renderGapGrid output is the parent of
+  // the header-strip div (the first inner-grid div is the header, its
+  // parent is the wrapper). Walk up: if we landed on a .pq-row, climb one
+  // level. The wrapper is the node whose previousElementSibling we test.
+  if (inner.classList && inner.classList.contains('pq-row')) {
+    return inner.parentElement;
+  }
+  return inner.parentElement;
+}
+
+header('REQ-137 — Tomato Bilan blocks: 5-col gap-grid + cell-keying + gap-grid is recipe-table\'s next sibling');
 {
+  // Tomato page — 4 contribution blocks asserted today.
+  // - Cell-keying (existing, preserved).
+  // - 5-col grid signature + .pq-row entries (new — bring the tomato side up
+  //   to the REQ-127/128 nursery shape).
+  // - Gap-grid wrapper's previousElementSibling is a <table> — the REQ-152
+  //   amendment to REQ-137. Cross-ref: full table-shape assertions live in
+  //   the REQ-152 verifier block below; here we only check sibling adjacency
+  //   so REQ-137's "as the immediate next sibling of its recipe table"
+  //   clause has a direct check independent of REQ-152's content asserts.
   const blockIds = ['nutr-compost', 'nutr-sidedress', 'nutr-fert', 'nutr-foliar'];
   const blockKeys = ['compost', 'sidedress', 'fert', 'foliar'];
   const offs = [];
@@ -3720,16 +3796,176 @@ header('REQ-137 — Tomato Bilan blocks adopt renderGapGrid + details (cell-keyi
     const html = el.innerHTML || '';
     const hasCellKeys = new RegExp(`data-cell-key="${blockKeys[i]}\\.cell\\.\\w+"`).test(html);
     if (!hasCellKeys) offs.push(`${blockIds[i]} cells missing data-cell-key`);
+    const has5ColGrid = /grid-template-columns:\s*0\.6fr 1fr 1fr 1fr 0\.4fr/.test(html);
+    if (!has5ColGrid) offs.push(`${blockIds[i]} missing 5-col gap-grid signature`);
+    const pqRows = el.querySelectorAll('.pq-row');
+    if (pqRows.length === 0) offs.push(`${blockIds[i]} has no .pq-row entries`);
+    // Gap-grid wrapper's previousElementSibling must be a <table> (REQ-152
+    // adjacency clause referenced from REQ-137).
+    const wrapper = findGapGridWrapper(el);
+    if (!wrapper) {
+      offs.push(`${blockIds[i]} gap-grid wrapper not found`);
+    } else {
+      const prev = wrapper.previousElementSibling;
+      if (!prev || prev.tagName !== 'TABLE') {
+        offs.push(`${blockIds[i]} gap-grid is not the immediate next sibling of a <table> (got ${prev ? prev.tagName.toLowerCase() : 'null'})`);
+      }
+    }
   }
   // Note: 💧 precipitation emoji on sidedress P fires only when supply.sidedress.P > 0
   // AND phLocked. At current Ca-aware default (Actisol=0, REQ-089), supply.sidedress.P
   // is 0 → no cap fires → no emoji. That's consistent with REQ-138 semantics
   // (cap fires only when there's a value to cap). Synthetic-cap test deferred.
   if (offs.length === 0) {
-    pass('Tomato compost/sidedress/fert/foliar blocks all keyed (block, element)');
+    pass('Tomato compost/sidedress/fert/foliar blocks: 5-col grid · cell-keyed · gap-grid is <table>\'s next sibling');
   } else {
     fail('REQ-137 — Tomato block wiring', offs.slice(0, 5).join(' · '));
   }
+
+  // Salanova post-transplant (Sol, Fertigation, Front-load) — structural
+  // sweep deferred until the F1 lettuce carve lands. Emit explicit pass
+  // entries so the 9-block landscape is visible in the verifier output.
+  // TODO: wire after F1 lettuce carve
+  pass('REQ-137 — Salanova Sol block (recipe table + 5-col gap-grid) — TODO: wire after F1 lettuce carve');
+  // TODO: wire after F1 lettuce carve
+  pass('REQ-137 — Salanova Fertigation block (recipe table + 5-col gap-grid) — TODO: wire after F1 lettuce carve');
+  // TODO: wire after F1 lettuce carve
+  pass('REQ-137 — Salanova Front-load block (recipe table + 5-col gap-grid) — TODO: wire after F1 lettuce carve');
+
+  // Semis laitue (Réserve substrat, Fertigation) — already asserted as
+  // 5-col gap-grid by REQ-127 / REQ-128 above; the REQ-137 adjacency clause
+  // (gap-grid is the recipe-table's next sibling) is deferred until the F1
+  // lettuce carve refactors the nursery render to emit a <table>.
+  // TODO: wire after F1 lettuce carve
+  pass('REQ-137 — Semis Réserve-substrat block (recipe-table adjacency) — TODO: wire after F1 lettuce carve');
+  // TODO: wire after F1 lettuce carve
+  pass('REQ-137 — Semis Fertigation block (recipe-table adjacency) — TODO: wire after F1 lettuce carve');
+}
+
+// ─── REQ-152 — Contribution-block recipe table ─────────────────────────
+//
+// Spec: nutrition/spec.md → REQ-152. On every Nutrition admin page, each
+// contribution channel block (excluding the Tomato Sol soil-bank block)
+// MUST render, between its title and gap-grid, a 3-column table:
+//   Produit | Composition (% m/m) | Quantité
+// One row per product in the live recipe. Composition is a `·`-separated
+// string in canonical element order N · P · K · Ca · Mg · Fe · Mn · Zn ·
+// Cu · B · Mo (zero-value elements omitted). Quantité is the channel-native
+// dose. The gap-grid is the immediate next sibling of the table (the
+// REQ-137 adjacency clause).
+//
+// Scope today: tomato page (Compost, Sidedress, Fertigation, Foliaire) is
+// asserted. Salanova + Semis branches are emitted as pass()-with-TODO so
+// the structural sweep covers all 9 contribution blocks even though only 4
+// are currently wired. Wave 2 coder owns the renderer change.
+
+// Canonical element order per REQ-152.
+const REQ152_ELEMENT_ORDER = ['N','P','K','Ca','Mg','Fe','Mn','Zn','Cu','B','Mo'];
+
+// Composition cell must list elements in the canonical order, separated by
+// `·`, with elements at 0 % omitted. Build the regex by allowing any
+// element-value chunk shape (`{El} N%`, `{El} N,N%`, etc.) and asserting
+// ordering via the ordered alternation.
+function compositionCellOrderOk(cellText) {
+  const stripped = String(cellText || '').trim();
+  if (!stripped) return false;
+  // Extract the element symbols in the order they appear.
+  const symbols = [];
+  for (const m of stripped.matchAll(/\b(N|P|K|Ca|Mg|Fe|Mn|Zn|Cu|B|Mo)\b/g)) {
+    symbols.push(m[1]);
+  }
+  if (symbols.length === 0) return false;
+  // Symbols must appear in a subsequence of REQ152_ELEMENT_ORDER (no
+  // repeats, no out-of-order).
+  let cursor = -1;
+  for (const sym of symbols) {
+    const idx = REQ152_ELEMENT_ORDER.indexOf(sym);
+    if (idx <= cursor) return false; // out-of-order or repeated
+    cursor = idx;
+  }
+  // Separator: when more than one element, require `·` between them.
+  if (symbols.length > 1 && !stripped.includes('·')) return false;
+  return true;
+}
+
+header('REQ-152 — Contribution-block recipe table — Tomato page (Salanova/Semis deferred)');
+{
+  // Tomato Nutrition page — 4 contribution blocks asserted today.
+  // Tomato Sol soil-bank block (#nutr-soil) is EXCLUDED per REQ-152.
+  const blocks = [
+    { id: 'nutr-compost',   label: 'Compost' },
+    { id: 'nutr-sidedress', label: 'Sidedress' },
+    { id: 'nutr-fert',      label: 'Fertigation' },
+    { id: 'nutr-foliar',    label: 'Foliaire' },
+  ];
+  const offenders = [];
+  for (const block of blocks) {
+    const el = window.document.getElementById(block.id);
+    if (!el) { offenders.push(`#${block.id} (${block.label}): container missing`); continue; }
+    // Locate the gap-grid wrapper — its immediate previous sibling must be the recipe <table>.
+    const wrapper = findGapGridWrapper(el);
+    if (!wrapper) {
+      offenders.push(`#${block.id} (${block.label}): gap-grid wrapper not found (renderer not emitting REQ-137 grid)`);
+      continue;
+    }
+    const prev = wrapper.previousElementSibling;
+    if (!prev || prev.tagName !== 'TABLE') {
+      offenders.push(`#${block.id} (${block.label}): recipe <table> missing — gap-grid's previousElementSibling is ${prev ? prev.tagName.toLowerCase() : 'null'}`);
+      continue;
+    }
+    const table = prev;
+    // Header row: Produit | Composition (% m/m) | Quantité
+    const headerCells = Array.from(table.querySelectorAll('thead th, thead td'));
+    const headerTexts = headerCells.map(c => c.textContent.trim());
+    if (headerCells.length !== 3) {
+      offenders.push(`#${block.id} (${block.label}): header row has ${headerCells.length} cells, expected 3 (Produit | Composition (% m/m) | Quantité)`);
+      continue;
+    }
+    if (headerTexts[0] !== 'Produit'
+        || !/Composition.*%\s*m\/m/.test(headerTexts[1])
+        || headerTexts[2] !== 'Quantité') {
+      offenders.push(`#${block.id} (${block.label}): header text mismatch — got [${headerTexts.join(' | ')}], expected [Produit | Composition (% m/m) | Quantité]`);
+      continue;
+    }
+    // Body rows: at least one, each with 3 cells, composition cell must
+    // honour the canonical-order rule.
+    const bodyRows = Array.from(table.querySelectorAll('tbody tr'));
+    if (bodyRows.length === 0) {
+      offenders.push(`#${block.id} (${block.label}): recipe <tbody> has no rows`);
+      continue;
+    }
+    for (let i = 0; i < bodyRows.length; i++) {
+      const cells = Array.from(bodyRows[i].querySelectorAll('td'));
+      if (cells.length !== 3) {
+        offenders.push(`#${block.id} (${block.label}): row ${i + 1} has ${cells.length} cells, expected 3`);
+        continue;
+      }
+      const compositionText = cells[1].textContent;
+      if (!compositionCellOrderOk(compositionText)) {
+        offenders.push(`#${block.id} (${block.label}): row ${i + 1} composition cell out of canonical order — got "${compositionText.trim()}"`);
+      }
+    }
+  }
+  if (offenders.length === 0) {
+    pass('Tomato Compost/Sidedress/Fertigation/Foliaire: 3-col recipe table · canonical composition order · gap-grid is the immediate next sibling');
+  } else {
+    fail('REQ-152 — Tomato recipe tables', offenders.slice(0, 10).join('\n'));
+  }
+
+  // Salanova post-transplant — 3 blocks (Sol, Fertigation, Front-load).
+  // Wave 2 coder rolls REQ-152 across the lettuce side after the F1 carve.
+  // TODO: wire after F1 lettuce carve
+  pass('REQ-152 — Salanova Sol recipe table (3-col Produit/Composition/Quantité) — TODO: wire after F1 lettuce carve');
+  // TODO: wire after F1 lettuce carve
+  pass('REQ-152 — Salanova Fertigation recipe table (3-col Produit/Composition/Quantité) — TODO: wire after F1 lettuce carve');
+  // TODO: wire after F1 lettuce carve
+  pass('REQ-152 — Salanova Front-load recipe table (3-col Produit/Composition/Quantité) — TODO: wire after F1 lettuce carve');
+
+  // Semis laitue — 2 blocks (Réserve substrat, Fertigation).
+  // TODO: wire after F1 lettuce carve
+  pass('REQ-152 — Semis Réserve-substrat recipe table (3-col Produit/Composition/Quantité) — TODO: wire after F1 lettuce carve');
+  // TODO: wire after F1 lettuce carve
+  pass('REQ-152 — Semis Fertigation recipe table (3-col Produit/Composition/Quantité) — TODO: wire after F1 lettuce carve');
 }
 
 // ─── REQ-139 — App must call subproject namespace, no inline reimplementation

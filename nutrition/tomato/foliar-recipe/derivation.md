@@ -71,8 +71,8 @@ should be downgraded in parallel — handled separately (B2' followup).
 The constants live in `data.js`:
 
 ```js
-const FOLIAR_COVERAGE_DEFAULT     = 0.30;  // no yucca; cert 4
-const FOLIAR_COVERAGE_WITH_YUCCA  = 0.80;  // surfactant-assisted; cert 4
+const FOLIAR_COVERAGE_DEFAULT     = 0.30;  // no yucca; cert 3
+const FOLIAR_COVERAGE_WITH_YUCCA  = 0.80;  // surfactant-assisted; cert 4 (B2' downgrade pending)
 ```
 
 `computeFoliarSupply(stage)` reads `FOLIAR_COVERAGE_DEFAULT` directly;

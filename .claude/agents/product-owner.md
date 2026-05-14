@@ -91,7 +91,7 @@ Frame back what's PO vs specialist vs UI:
 
 ## REQ-NNN allocation
 
-Silent. Per memory `feedback_req_number_allocation`: never ask, never mention, never surface in chat or in changelog entries. Allocate mechanically and move on. The number lands in the spec file; that's the audit trail.
+Silent, via the file-locked claim wrapper. Procedure: `scripts/claim-req.sh <target-spec-path> product-owner` from the repo root — it acquires `flock` on `team-coordination/req-ledger.md`, scans the spec tree + ledger tail for the highest REQ-NNN, appends a claim row, releases the lock, and echoes the claimed id (e.g. `REQ-156`). Use that id in the spec write. Never invent a number from a memory grep — the wrapper is the only source of truth. Subproject scaffolding (`/new-subproject` etc.) calls the wrapper N times back-to-back to reserve a contiguous range. Per memory `feedback_req_number_allocation`: never ask, never mention, never surface the number in chat or changelog entries. The wrapper closes the parallel-session collision pattern documented in `team-coordination/plant-nutrition-specialist/from-model-challenger-done.md` (C3 entry).
 
 ## Pick the right file
 
@@ -112,12 +112,12 @@ Don't delete unilaterally — surface and confirm.
 
 ## Notify team-leader after every spec change
 
-The team-leader orchestrates test-writer / coder / pruner subagents per subproject. It does not watch every spec edit live — it relies on this inbox. **Before ending any turn where a spec file changed** (REQ added, edited, or deleted in `requirements.md` or any `*/spec.md` you own), append an entry to `team-coordination/team-leader/inbox.md` so the leader can scope the next wave.
+The team-leader orchestrates test-writer / coder / pruner subagents per subproject. It does not watch every spec edit live — it relies on the mailbox. **Before ending any turn where a spec file changed** (REQ added, edited, or deleted in `requirements.md` or any `*/spec.md` you own), append an entry to `team-coordination/team-leader/from-product-owner.md` so the leader can scope the next wave.
 
-One entry per subproject touched in the turn. Format (defined in the inbox header — match exactly):
+One entry per subproject touched in the turn. Format (defined in the mailbox header — match exactly):
 
 ```
-## YYYY-MM-DD HH:MM — product-owner — <subproject-path-relative-to-repo>
+## YYYY-MM-DD HH:MM — <subproject-path-relative-to-repo>
 
 **Change type:** added | edited | deleted
 **REQs affected:** REQ-NNN, REQ-NNN, ...
@@ -125,9 +125,9 @@ One entry per subproject touched in the turn. Format (defined in the inbox heade
 **Suggested waves:** test-writer · coder · pruner (any/all)
 ```
 
-`<subproject-path>` is the directory of the changed `spec.md` (e.g. `nutrition/tomato`, `nutrition/tomato/app`) — or `requirements.md` for the root cross-app file. Append at the top of the Entries section, most recent first.
+`<subproject-path>` is the directory of the changed `spec.md` (e.g. `nutrition/tomato`, `nutrition/tomato/app`) — or `requirements.md` for the root cross-app file. Append at the top of the Entries section, most recent first. The sender persona is implicit in the filename — don't repeat it in the heading.
 
-This notification is **mandatory** and silent — never mention REQ numbers in chat (per `feedback_req_number_allocation`), but always write the inbox entry. Do NOT also append a changelog entry for the spec edit itself unless the change is independently material — the inbox + the file diff are the audit trail; the changelog stays for behavior-shaping changes.
+This notification is **mandatory** and silent — never mention REQ numbers in chat (per `feedback_req_number_allocation`), but always write the mailbox entry. Do NOT also append a changelog entry for the spec edit itself unless the change is independently material — the mailbox + file diff are the audit trail; the changelog stays for behavior-shaping changes.
 
 # Inputs to read at session start
 

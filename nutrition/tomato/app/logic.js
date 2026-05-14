@@ -40,6 +40,35 @@ function buildNutriment() {
   // grid hand `pqKeyPrefix` so rows get a click handler.
   window.currentPourquoi = {};
 
+  // Product registry for the REQ-152 recipe tables. Composition values are
+  // mass fractions (label-stated %). Source: PRODUCT_PCT + compost label
+  // (window.CompostContribution.COMPOST_LABEL_PCT).
+  const PRODUCT_REGISTRY = {
+    OrganimixSavaria: { label: 'Savaria ORGANIMIX marin',
+      composition: { N: 0.005, P: 0.000437, K: 0.00083, Ca: 0.011, Mg: 0.003 } },
+    Actisol:       { label: 'Actisol 5-3-2',
+      composition: { N: PRODUCT_PCT.Actisol_N, P: PRODUCT_PCT.Actisol_P, K: PRODUCT_PCT.Actisol_K } },
+    FarinePlumes:  { label: 'Farine de plumes 13-0-0',
+      composition: { N: PRODUCT_PCT.FarinePlumes_N } },
+    K2SO4:         { label: 'K₂SO₄',
+      composition: { K: PRODUCT_PCT.K2SO4_K } },
+    MgSO4:         { label: 'MgSO₄·7H₂O',
+      composition: { Mg: PRODUCT_PCT.MgSO4_Mg } },
+    Solubore:      { label: 'Solubore 20-B',
+      composition: { B: PRODUCT_PCT.Solubore_B } },
+    MnSO4:         { label: 'MnSO₄',
+      composition: { Mn: PRODUCT_PCT.MnSO4_Mn } },
+    ZnSO4:         { label: 'ZnSO₄',
+      composition: { Zn: PRODUCT_PCT.ZnSO4_Zn } },
+    CuSO4:         { label: 'CuSO₄',
+      composition: { Cu: PRODUCT_PCT.CuSO4_Cu } },
+    NaMoO4:        { label: 'Molybdate de sodium',
+      composition: { Mo: PRODUCT_PCT.NaMoO4_Mo } },
+    FeSO4:         { label: 'FeSO₄·7H₂O',
+      composition: { Fe: PRODUCT_PCT.FeSO4_Fe } },
+  };
+  const fmtGrams = (g) => Math.round(g).toLocaleString('fr-CA') + ' g';
+
   // Mass-balance gap chain (2026-05-11): offtake (fruit + biomass) draws on
   // the soil bank first (Ca + P only, both reservoir-dominant), then is
   // replenished by four channels in order: compost → sidedress → fertigation
@@ -222,7 +251,10 @@ function buildNutriment() {
   // First active replenishment channel after the soil-bank tap (Block 2):
   // soil → compost → sidedress → fertigation → foliar.
   const TOMATO_AREA = TOMATO_NUM_BEDS * TOMATO_BED_AREA;
-  let html3c = `<div style="font-size:12.5px; line-height:1.5; color:var(--text-muted); margin-bottom:10px;">Minéralisation hebdomadaire du compost Savaria ORGANIMIX appliqué à l'automne 2025 (~25,4 kg/m², étiquette N 0,5 · P₂O₅ 0,1 · K₂O 0,1 · Ca 1,1 · Mg ~0,5 %). Décline avec le temps ; à revisiter quand le compost vieillit (~18-24 mois post-application).</div>`;
+  let html3c = renderRecipeTable(
+    [{ productId: 'OrganimixSavaria', doseLabel: '25,4 kg/m² (automne 2025)' }],
+    PRODUCT_REGISTRY,
+  );
   // Per-element compost-supply pourquoi entries — modal opens on row click.
   // Interpretation: stable domain context. Live values come from
   // window.CompostContribution.releasePerWeek (single source of truth).
@@ -258,7 +290,6 @@ function buildNutriment() {
       interpretation: note
     });
   });
-  html3c += `<div style="font-size:11.5px; color:var(--text-muted); margin-bottom:4px;">Manque entrant (après banque sol) → manque restant après libération du compost :</div>`;
   // REQ-136..138 (4-field schema 2026-05-11) — compost block.
   const compostDetails = {};
   ['N','P','K','Ca','Mg','Fe','Mn','Zn','B','Cu','Mo'].forEach(el => {
@@ -299,11 +330,13 @@ function buildNutriment() {
   // Per-element supply computed in calcNutrSupply (supply.sidedress) using
   // PRODUCT_PCT analysis × SIDEDRESS_MIN_EFF mineralization × pH-lockout
   // factor for P. Second replenishment channel in the mass-balance gap chain.
-  let html3sd = `<div style="font-size:12px; color:var(--text-muted); line-height:1.6; padding:10px 12px; background:var(--input-bg); border-radius:var(--radius-sm); margin-bottom:10px;">`;
-  html3sd += `<div><strong style="color:var(--text);">Stade ${nutrStage}</strong> — Actisol 5-3-2 : ${r.sd_actisol_g} g/planche · farine de plumes 13-0-0 : ${r.sd_farine_g} g/planche (par semaine).</div>`;
-  html3sd += `<div style="margin-top:6px;">N → <strong style="color:var(--text);">${supply.sidedress.N.toFixed(0)} mg/m²/sem</strong> · K → <strong style="color:var(--text);">${supply.sidedress.K.toFixed(0)} mg/m²/sem</strong> · P → <strong style="color:var(--text);">${supply.sidedress.P.toFixed(1)} mg/m²/sem</strong>${phLocked ? ' (pH ≥ 7 : P précipite en Ca-P avant absorption — facteur 10 % appliqué)' : ''}.</div>`;
-  html3sd += `<div style="margin-top:4px; font-size:11px; color:var(--text-muted); line-height:1.5;">Efficacité minéralisation : Actisol N 60 % / P 50 % (× 10 % à pH ≥ 7) / K 85 % · farine N 75 %. Régime stade établi en serre tempérée (cert 3).</div>`;
-  html3sd += `</div>`;
+  let html3sd = renderRecipeTable(
+    [
+      { productId: 'Actisol',      doseLabel: `${fmtGrams(r.sd_actisol_g)} / planche / sem` },
+      { productId: 'FarinePlumes', doseLabel: `${fmtGrams(r.sd_farine_g)} / planche / sem` },
+    ],
+    PRODUCT_REGISTRY,
+  );
   // Per-element sidedress pourquoi entries.
   ['N','P','K'].forEach(el => {
     const v = supply.sidedress[el] || 0;
@@ -342,7 +375,6 @@ function buildNutriment() {
       interpretation: `Les produits granulaires actifs (Actisol 5-3-2 + farine de plumes 13-0-0) ne livrent que N/P/K. ${el} doit venir d'un autre canal (compost, fertigation, foliaire).`
     });
   });
-  html3sd += `<div style="font-size:11.5px; color:var(--text-muted); margin-bottom:4px;">Manque entrant (après compost) → manque restant après granulaire :</div>`;
   // REQ-136..138 (4-field schema) — sidedress block.
   const sdDetails = {};
   ['N','P','K','Ca','Mg','Fe','Mn','Zn','B','Cu','Mo'].forEach(el => {
@@ -385,16 +417,15 @@ function buildNutriment() {
   // (locked PA Taillon values, audit-trail captured in RECIPE_HISTORY).
   // The Block 8 drift gauge compares stored vs computeStageRecipe (FP target,
   // mass-balance from RECIPE_INPUTS).
-  let html3 = `<div style="font-size:12px; color:var(--text-muted); line-height:1.6; padding:10px 12px; background:var(--input-bg); border-radius:var(--radius-sm); margin-bottom:10px;">`;
-  html3 += `<div>K₂SO₄ → <strong style="color:var(--text);">${supply.fert.K.toFixed(0)} mg K/m²/sem</strong></div>`;
-  html3 += `<div>MgSO₄ → <strong style="color:var(--text);">${supply.fert.Mg.toFixed(0)} mg Mg/m²/sem</strong></div>`;
-  if (supply.fert.B != null && supply.fert.B > 0) {
-    html3 += `<div>Solubore → <strong style="color:var(--text);">${supply.fert.B.toFixed(2)} mg B/m²/sem</strong></div>`;
-    html3 += `<div style="margin-top:6px; padding-top:6px; border-top:1px dashed var(--border); font-size:11.5px;">Pas de N (biofilm). Sulfates d'oligos (Mn/Zn/Cu/Fe) précipitent au pH actuel — foliaire les porte. Acide borique (Solubore) non-ionique : OK en fertigation à tout pH.</div>`;
-  } else {
-    html3 += `<div style="margin-top:6px; padding-top:6px; border-top:1px dashed var(--border); font-size:11.5px;">Pas de N (biofilm) · pas d'oligos (verrouillage racinaire à pH actuel).</div>`;
+  const fertRows = [
+    { productId: 'K2SO4', doseLabel: `${fmtGrams(r.k_g_total)} / sem` },
+    { productId: 'MgSO4', doseLabel: `${fmtGrams(r.mg_g_total)} / sem` },
+  ];
+  const sb_fert_g_row = (nutrRecipeMode === 'fp') ? (FP_RECIPE_T5.fertigation['Solubore'] || 0) : 0;
+  if (sb_fert_g_row > 0) {
+    fertRows.push({ productId: 'Solubore', doseLabel: `${fmtGrams(sb_fert_g_row)} / sem` });
   }
-  html3 += `</div>`;
+  let html3 = renderRecipeTable(fertRows, PRODUCT_REGISTRY);
   // Per-element fertigation pourquoi entries — modal opens on row click.
   // K and Mg: full equation (barrel × analysis / area).
   // Other elements: no contribution from current fertigation (stated in modal).
@@ -454,7 +485,6 @@ function buildNutriment() {
       interpretation: reason
     });
   });
-  html3 += `<div style="font-size:11.5px; color:var(--text-muted); margin-bottom:4px;">Manque entrant (après granulaire) → manque restant après fertigation :</div>`;
   // REQ-136..138 (4-field schema) — fertigation block.
   const fertDetails = {};
   ['N','P','K','Ca','Mg','Fe','Mn','Zn','B','Cu','Mo'].forEach(el => {
@@ -511,11 +541,16 @@ function buildNutriment() {
   // Mass-balance numbering 2026-05-11: 1 besoin · 2 sol (banque) ·
   // 3 compost · 4 sidedress · 5 fertigation · 6 foliaire · 7 leviers ·
   // 8 stockée vs FP.
-  let html4 = `<div style="font-size:12px; color:var(--text-muted); line-height:1.6; padding:10px 12px; background:var(--input-bg); border-radius:var(--radius-sm); margin-bottom:10px;">`;
-  html4 += `<div style="font-weight:600; color:var(--text); margin-bottom:4px;">Spray hebdomadaire (oligos)</div>`;
-  html4 += `<div>MnSO₄ ${r.mnSO4_g} g · ZnSO₄ ${r.znSO4_g} g · Solubore ${r.sb_g} g · CuSO₄ ${r.cuSO4_g} g · NaMoO₄ ${r.moNa_g} g · ${r.feSourceLabel}</div>`;
-  html4 += `<div style="font-size:11px; color:var(--text-muted); margin-top:6px;">Spray B (CaCl₂ anti-BER) retiré 2026-05-06 — Ca foliaire = 0 dans le bilan; BER géré par ventilation + humidité.</div>`;
-  html4 += `</div>`;
+  const foliarDoseUnit = `g / ${STORED_RECIPE.tomato.foliaire.masterVol} L`;
+  const foliarRows = [
+    { productId: 'MnSO4',    doseLabel: `${r.mnSO4_g} ${foliarDoseUnit}` },
+    { productId: 'ZnSO4',    doseLabel: `${r.znSO4_g} ${foliarDoseUnit}` },
+    { productId: 'Solubore', doseLabel: `${r.sb_g} ${foliarDoseUnit}` },
+    { productId: 'CuSO4',    doseLabel: `${r.cuSO4_g} ${foliarDoseUnit}` },
+    { productId: 'NaMoO4',   doseLabel: `${r.moNa_g} ${foliarDoseUnit}` },
+    { productId: 'FeSO4',    doseLabel: `${r.feSO4_g} ${foliarDoseUnit}` },
+  ];
+  let html4 = renderRecipeTable(foliarRows, PRODUCT_REGISTRY);
   // Per-element foliar pourquoi entries — modal opens on row click.
   // Mn/Zn/B/Cu/Mo/Fe share the same equation shape (g × analysis / area × cov);
   // Ca was Spray B (retired 2026-05-06). Other elements not on a foliar.
@@ -564,8 +599,6 @@ function buildNutriment() {
           : `${el} couvert par fertigation + sol ; foliaire pas nécessaire.`
     });
   });
-  // gap chain: demand → soil → fert → foliar (sidedress is bank-maintenance, not in the chain).
-  html4 += `<div style="font-size:11.5px; color:var(--text-muted); margin-bottom:4px;">Manque entrant (après fertigation) → manque restant après foliaire :</div>`;
   // REQ-136..138 (4-field schema) — foliar block.
   const foliarDetails = {};
   ['N','P','K','Ca','Mg','Fe','Mn','Zn','B','Cu','Mo'].forEach(el => {

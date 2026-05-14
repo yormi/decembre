@@ -102,21 +102,32 @@ function computeFertigationSupply(stage, opts, recipe) {
   };
 }
 
-// Wire the FP recipe table at script load. FP_RECIPE_T5.fertigation in
-// app/index.html holds the T5-only refined target (PA Taillon April 2026
-// anchor); this IIFE overwrites it with values from
-// FIRST_PRINCIPLES_T5_FERTIGATION (data.js) so the source-of-truth lives in
-// one place. The Banque sol comparison reflects first principles.
+// Wire the FP recipe table at script load. FIRST_PRINCIPLES_T5_FERTIGATION
+// in data.js declares the canonical product-keyed shape but is filled HERE
+// with the live `computeStageRecipe('T5')` output (K2SO4, MgSO4-7H2O) plus
+// the hand-coded Solubore dose (B is single-channel by REQ-061, not in the
+// computeStageRecipe surface). Then FP_RECIPE_T5.fertigation in
+// app/index.html is propagated from the same constant.
 //
-// Mirrors `wireFpSidedress()` in nutrition/tomato/sidedress-recipe/calc.js.
-// Single source of truth for the T5 fertigation FP target =
-// FIRST_PRINCIPLES_T5_FERTIGATION (data.js).
+// Invariant (REQ-154): FIRST_PRINCIPLES_T5_FERTIGATION values match the
+// computeStageRecipe('T5') reshape by construction — they cannot drift
+// because they are written from one function call at boot.
 //
-// To re-tune (e.g. PA Taillon revises the anchor), edit data.js. Editing
-// the live STORED_RECIPE.tomato.fertigation requires `/retire-recipe` audit
-// cycle — the FP target alone shifts here, but the team's weighed-out
-// stored recipe must follow before the team's actions reflect the change.
+// PA Taillon's April 2026 anchor (K 5167 / Mg 1379) is retired legacy —
+// preserved in learnings.md for audit. The model output (K ≈ 5537 / Mg
+// ≈ 3320 at T5) supersedes it because the model's reference frame shifted
+// when compost-subtraction was dropped (REQ-098 amended 2026-05-12) —
+// fertigation now replenishes plant offtake directly; compost is a soil-
+// bank input, not a fertigation-channel credit.
+//
+// Editing the live STORED_RECIPE.tomato.fertigation requires `/retire-
+// recipe` audit cycle; the FP target shifting here surfaces as drift in
+// Block 7/8 until the team's weighed-out stored recipe follows.
 (function wireFpFertigation() {
+  const t5 = computeStageRecipe('T5') || {};
+  FIRST_PRINCIPLES_T5_FERTIGATION['K2SO4']      = t5.kSulfate  || 0;
+  FIRST_PRINCIPLES_T5_FERTIGATION['MgSO4-7H2O'] = t5.mgSulfate || 0;
+  // Solubore stays at its declared value in data.js — single-channel B at T5.
   if (typeof FP_RECIPE_T5 !== 'undefined' && FP_RECIPE_T5) {
     FP_RECIPE_T5.fertigation = {
       'K2SO4':       FIRST_PRINCIPLES_T5_FERTIGATION['K2SO4'],

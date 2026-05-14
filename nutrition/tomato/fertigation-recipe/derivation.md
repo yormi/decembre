@@ -64,27 +64,40 @@ function computeStageRecipe(stage) {
 
 ---
 
-## T5 refined target — PA Taillon April 2026
+## T5 refined target — mass-balance output
 
-`FP_RECIPE_T5.fertigation` is a T5-only refined override on top of the
-mass-balance derivation:
+`FP_RECIPE_T5.fertigation` at T5 is the live `computeStageRecipe('T5')`
+reshape, wired at boot by `wireFpFertigation()`. REQ-154 pins the
+invariant: `FIRST_PRINCIPLES_T5_FERTIGATION` values equal the function
+output by construction, so the FP target cannot drift from the model.
 
 ```js
 {
-  'K2SO4':       5167,   // PA Taillon April 2026 anchor
-  'MgSO4-7H2O':  1379,   // PA Taillon April 2026 anchor
-  'Solubore':       9,   // boric acid non-ionic, 100% eff at pH 7,4
+  'K2SO4':       5322,   // computeStageRecipe('T5').kSulfate (live at boot)
+  'MgSO4-7H2O':  3319,   // computeStageRecipe('T5').mgSulfate (live at boot)
+  'Solubore':       9,   // hand-coded — single-channel B at T5 (REQ-061)
 }
 ```
 
-The K2SO4 and MgSO4·7H2O numbers are the PA Taillon agronomist anchor —
-they are NOT the bare mass-balance output of `computeStageRecipe('T5')`
-under the current no-compost-subtraction policy. Mass-balance currently
-returns kSulfate ≈ 5 322 g and mgSulfate ≈ 3 319 g at T5 (see per-stage
-table below); the 5 167 / 1 379 anchor is held intentionally at PA
-Taillon's April 2026 recommendation. The drift is normal field
-correction (~3 % K, ~58 % Mg) and tracked at the Block 7 stored-vs-FP
-gauge. Solubore (boric acid) is added as the T5-only B dose — see below.
+PA Taillon's April 2026 anchor (K 5 167 / Mg 1 379) was the prior
+hand-locked target. It is **retired legacy** — preserved in `learnings.md`
+for organic-cert audit and future re-evaluation. The reason it was
+retired: the model's reference frame shifted when compost-subtraction
+was dropped from the K/Mg branches (REQ-098 amended 2026-05-12).
+Fertigation now replenishes plant offtake directly; compost flows as a
+soil-bank input, not a fertigation-channel credit (compost-as-soil-bank
+reframe). PA Taillon's 1 379 g Mg recommendation was calibrated against
+the *retired* compost-subtraction term, so holding it while the model
+moved on created a category mismatch, not "field correction".
+
+The K drift (5 167 → 5 322 g, ~3 %) is within `LUXURY_FACTOR.K = 1.15`
+headroom — ordinary stoichiometric rounding. The Mg shift (1 379 → 3 319 g,
+~141 %) is the real category change — that delta is now visible at Block
+7/8 as a stored-vs-FP gap until the team's weighed-out
+`STORED_RECIPE.tomato.fertigation` follows via `/retire-recipe` (operator
+call: weigh-to-FP vs hold-on-stored).
+
+Solubore (boric acid) is added as the T5-only B dose — see below.
 
 ### Per-element derivation at T5 (stageYield = 1.5 kg/m²/wk):
 
@@ -135,17 +148,18 @@ coverage discount: all three products in current fertigation use are
 non-precipitating at pH 7.4 in the dripper line (K₂SO₄, MgSO₄·7H₂O,
 H₃BO₃), and the barrel delivers their full mass to the bed.
 
-### Per-element table (canonical T5 recipe — PA Taillon April 2026 anchor)
+### Per-element table (canonical T5 recipe — mass-balance output)
 
 | Element | Product            | g/area/wk | `element_pct` | Delivered mg/m²/wk |
 |---------|--------------------|-----------|---------------|--------------------|
-| K       | K₂SO₄              | 5 167     | 0.4150        | 5 597              |
-| Mg      | MgSO₄·7H₂O         | 1 379     | 0.0985        | 355                |
+| K       | K₂SO₄              | 5 322     | 0.4150        | 5 765              |
+| Mg      | MgSO₄·7H₂O         | 3 319     | 0.0985        | 854                |
 | B       | Solubore (H₃BO₃)   | 9         | 0.205         | 4.82               |
 
-(Numbers shift with the recipe; the table is illustrative at the
-canonical T5 anchor — refresh from `data.js` × `computeFertigationSupply`
-when re-checking.)
+(Numbers shift with `computeStageRecipe('T5')`; the table is illustrative
+at the current model output. Refresh from
+`FIRST_PRINCIPLES_T5_FERTIGATION` × `PRODUCT_PCT` when re-checking, or
+just read the `REQ-154` verifier line for the live values.)
 
 ### Why no pH-response gate
 
@@ -262,20 +276,20 @@ either column.
 fertigation-recipe test-helpers boot. Re-derive with
 `computeStageRecipe(stage)` for the current truth.)
 
-T5 kSulfate (5 322) and mgSulfate (3 319) differ from the wired
-`FP_RECIPE_T5.fertigation` override (5 167 / 1 379) — that's the PA
-Taillon April 2026 anchor, intentionally held by hand and not updated to
-the bare mass-balance. `wireFpFertigation()` at script load reads from
-`FIRST_PRINCIPLES_T5_FERTIGATION` (data.js); the verifier (REQ-098)
-confirms `computeStageRecipe('T5')` matches its own formula (not the
-FP_RECIPE_T5 override — those are different concerns: model coherence
-vs operator anchor).
+T5 kSulfate (5 322) and mgSulfate (3 319) match
+`FP_RECIPE_T5.fertigation` and `FIRST_PRINCIPLES_T5_FERTIGATION` by
+construction (REQ-154): `wireFpFertigation()` writes both constants
+from `computeStageRecipe('T5')` at script load. REQ-098 verifies the
+function output matches the mass-balance formula; REQ-154 verifies
+the constants equal the function output. The model and the FP target
+cannot drift.
 
 `STORED_RECIPE.tomato.fertigation` (operational, weighed by team) is
 hand-locked at PA Taillon's April 2026 values — `/retire-recipe` audit
 trail governs edits there. This subproject defines only the
 **first-principles target**; the stored values are operational and may
-intentionally differ.
+intentionally differ. The stored-vs-FP gap surfaces at Block 7/8 as
+the drift gauge.
 
 ---
 
@@ -292,13 +306,17 @@ intentionally differ.
   9 g / 382.9 m² because demand is roughly flat 4-5 mg/m²/wk across
   T1-T5 and the Solubore dose at the dripper is the same for the full
   cycle.
-- **Mass-balance vs PA Taillon T5 anchor.** `computeStageRecipe('T5')`
-  recomputes from scratch every call; the FP target stored in
-  `FP_RECIPE_T5.fertigation` is the agronomist-anchored value. Drift is
-  normal (field correction). REQ-098 verifier checks
-  `computeStageRecipe(stage)` matches its own formula, not the
-  FP_RECIPE_T5 override — those are two different concerns (model
-  coherence vs operator anchor).
+- **FP target tracks the model by construction (REQ-154).** The PA
+  Taillon agronomist anchor (K 5 167 / Mg 1 379) is retired legacy
+  (see `learnings.md`); `FIRST_PRINCIPLES_T5_FERTIGATION` and
+  `FP_RECIPE_T5.fertigation` are now both populated at boot from
+  `computeStageRecipe('T5')`, so they cannot drift from the
+  mass-balance derivation. REQ-098 verifies the function output
+  matches its own formula; REQ-154 verifies the FP target equals
+  that function output. The stored-vs-FP drift visible at Block 7/8
+  is the operator-facing concern (does the team's weighed recipe
+  match the model target?) and is resolved through `/retire-recipe`,
+  not through hand-locked FP overrides.
 - **Total area hardcoded.** `TOMATO_NUM_BEDS × TOMATO_BED_AREA = 382.9 m²`
   — if beds reconfigure, both constants drift in lockstep. Tag a
   refinement trigger.
@@ -315,10 +333,13 @@ Update the model when:
 - **`stageYield` retunes.** If the target yield curve changes, the
   derived dose shifts proportionally — predictable, no model edit
   needed.
-- **PA Taillon revises the T5 fertigation anchor.** Trigger
-  `/retire-recipe` to capture the OLD `STORED_RECIPE.tomato.fertigation`
-  and `FP_RECIPE_T5.fertigation`; update both. The mass-balance formula
-  in `computeStageRecipe` does not change.
+- **PA Taillon recommends a model-input change.** PA Taillon's anchor
+  is no longer held as an FP override (REQ-154; legacy values in
+  `learnings.md`). To shift the FP target, change the **inputs** to
+  `computeStageRecipe` — `TOMATO_FRUIT_EXPORT`, `BIOMASS_DEMAND`,
+  `RECIPE_INPUTS.stageYield`, or sidedress mineralization — not the
+  output. STORED_RECIPE changes still flow through `/retire-recipe`
+  audit; FP target updates automatically as the model recomputes.
 - **Sidedress switches to alfalfa default** (`computeStageSidedress`
   default product `AlfalfaMeal`). Alfalfa carries 1.66 % K (vs Actisol
   1.66 % K — same elemental, different `eff`); if `eff` changes for

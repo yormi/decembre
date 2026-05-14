@@ -157,6 +157,46 @@ sites. `FIRST_PRINCIPLES_T5` mirrors the wired
 
 ---
 
+## REQ-154 — `FIRST_PRINCIPLES_T5_FERTIGATION` mirrors `computeStageRecipe('T5')` by construction
+
+**Statement:** At runtime, after `wireFpFertigation()` runs at script load,
+`FIRST_PRINCIPLES_T5_FERTIGATION['K2SO4']` equals `computeStageRecipe('T5').kSulfate`
+and `FIRST_PRINCIPLES_T5_FERTIGATION['MgSO4-7H2O']` equals
+`computeStageRecipe('T5').mgSulfate`. `Solubore` is hand-coded (B is
+single-channel by REQ-061, not in the `computeStageRecipe` surface).
+The same values propagate to `FP_RECIPE_T5.fertigation` in the same
+boot pass, so the FP target read by Block 7/8 drift gauges, the Banque
+sol view, and the consumer-side cascade is a deterministic function of
+the mass-balance derivation — not a hand-locked agronomist anchor.
+
+**Rationale:** Closes the loop opened by REQ-098. Without this invariant,
+`FIRST_PRINCIPLES_T5_FERTIGATION` could legitimately hold any number and
+the verifier would still pass REQ-098 (because that check tests the
+function, not the constant). The historical state — PA Taillon's April
+2026 anchor (K 5167 / Mg 1379) hand-coded into the constant — drifted
+58 % from the model output when the compost-subtraction term was
+retired (REQ-098 amended 2026-05-12). Pinning the constant to the
+function output prevents that re-occurring: any future shift in the
+mass-balance reference frame propagates to the FP target in one boot
+cycle, and Block 7/8 surfaces the resulting stored-vs-FP drift instead
+of silently masking it.
+
+PA Taillon's legacy anchor numbers are preserved in `learnings.md` for
+audit (organic-cert + future re-calibration if the model's reference
+frame ever shifts back).
+
+**Verification:** `scripts/check-recipes.mjs` REQ-154 — call
+`computeStageRecipe('T5')`, compare `FIRST_PRINCIPLES_T5_FERTIGATION.K2SO4`
+to `.kSulfate` and `FIRST_PRINCIPLES_T5_FERTIGATION['MgSO4-7H2O']` to
+`.mgSulfate` (exact equality, no tolerance — both numbers come from
+the same function call at boot). Solubore checked as a presence + numeric
+assertion only. Also asserts `FP_RECIPE_T5.fertigation` mirrors the
+same three values (propagation step).
+
+**Cert:** 5 (structural — invariant by construction).
+
+---
+
 ## REQ-151 — `computeFertigationSupply(stage, opts, recipe)` delivers per-element supply
 
 **Statement:** `computeFertigationSupply(stage, opts = {}, recipe?)`

@@ -1,12 +1,14 @@
-# Inbound requests → Specialist
+# plant-nutrition-specialist ← model-challenger
 
-Approved findings from peer personas (`model-challenger`, `context-coherence`, …) queued for the plant-nutrition-specialist to action. Source persona is stamped on each entry's `**Source:**` line.
+Approved findings from the model-challenger persona queued for the plant-nutrition-specialist to action.
+
+Peer personas (`context-coherence`, …) route through this channel via the challenger's gatekeeping — source is stamped on each entry's `**Source:**` line.
 
 **Workflow:**
 1. **Challenger writes here** when Guillaume approves a draft finding. The finding is copied verbatim from drafts.md plus an `### Action` block stating what the specialist should do.
 2. **Specialist reads this file at session start** (per `plant-nutrition-specialist.md` startup checklist).
 3. **Specialist picks one request per turn**, edits spec/derivation/code/data accordingly in their own session.
-4. **On completion**, specialist **moves the entry** from this file into `requests-done.md` with a `### Specialist response` block (what was changed, file:line pointers).
+4. **On completion**, specialist **moves the entry** from this file into `from-model-challenger-done.md` with a `### Specialist response` block (what was changed, file:line pointers).
 5. **Challenger verifies** at next session — pass → leave in done; fail → move back here with an updated Action.
 
 **Request schema per entry:**
@@ -154,30 +156,28 @@ Approved findings from peer personas (`model-challenger`, `context-coherence`, �
 
 ---
 
-## B1 — Keep policy direction; FP recipe must reflect bare mass-balance, not be pinned to PA Taillon anchor (approved 2026-05-13)
+## Foliar B1 — Declare a downward-trigger for `FOLIAR_COVERAGE_DEFAULT` (approved 2026-05-14)
 
-- **Source:** model-challenger 2026-05-13 (fertigation-recipe REQ-098 amendment review).
-- **Guillaume's call:** "keep the policy direction and forget about pleasing the agronomist." Compost-as-soil-bank reframe stays; PA Taillon's 1 379 g Mg recommendation was calibrated against the *retired* compost-subtraction term and is now legacy. Principle P-02 captured.
+- **Source:** model-challenger 2026-05-12 foliar-recipe / B1.
+- **Guillaume's call:** approved as challenger framed — value stays, downward-trigger lands in `derivation.md` only. **Do NOT bring uncertainty messaging into the app** (operator-facing surfaces stay deterministic per [[feedback_no_unspecced_narrative.md]]). Principle P-03 (cert-downgrade asymmetry) captured.
 
 - **Action:**
-  1. **Refit `FP_RECIPE_T5.fertigation` to the bare mass-balance output of `computeStageRecipe('T5')`.** Replace the hand-locked PA Taillon values with the model's own output:
-     - `K2SO4`: 5 167 → ~5 322 g (3 % shift)
-     - `MgSO4·7H2O`: 1 379 → ~3 319 g (140 % shift)
-     - `Solubore`: unchanged (no compost B credit anyway)
-     - The right way to do this is to make `FP_RECIPE_T5.fertigation` either (a) a live getter that reads `computeStageRecipe('T5')` at consumer time, or (b) a `wireFpFertigation()` call that overwrites the data.js constant at app boot from the model output. Either way, the FP value must equal `computeStageRecipe('T5')` by construction so it can never drift again.
-  2. **Drop the "field correction" framing from `nutrition/tomato/fertigation-recipe/derivation.md`.** The 58 % Mg gap is not field correction — it's the legacy anchor calibrated against the retired compost-subtraction term. Rewrite the gap section to: "Model output supersedes PA Taillon's April 2026 anchor because the model's reference frame changed (compost contribution moved from fertigation-credit to soil-bank). PA Taillon's number is preserved in `learnings.md` as legacy calibration; the live FP recipe is the bare mass-balance." Be honest about the disagreement and the policy choice; don't shrug-label it.
-  3. **The 3 % K drift is the actual field correction-sized number;** treat that one as ordinary stoichiometric rounding (it's within `LUXURY_FACTOR.K = 1.15` head-room) and frame it that way in the rewrite.
-  4. **Update `STORED_RECIPE.tomato.fertigation` decision pending — do NOT touch the stored recipe yet.** The stored recipe is what the team weighs; changing it requires `/retire-recipe` (audit trail). The action above only updates the FP target — the diff between stored and FP is what Block 7/8 should surface (operator decision: weigh-to-FP or stay-on-PA-Taillon-stored). Surface that as a separate decision; this request is just about getting FP off the agronomist anchor.
-  5. **Append a changelog line.**
+  1. **Value unchanged:** `FOLIAR_COVERAGE_DEFAULT` stays at 0.30 in `nutrition/tomato/foliar-recipe/data.js`. Do not move it on this pass.
+  2. **Add a downward-trigger** to the refinement-triggers section of `nutrition/tomato/foliar-recipe/derivation.md`, paired with the existing upward-trigger ("bump back to cert 4 once tissue panel correlates ±20 %"). Draft language:
+     > "**Downward trigger** — if measured petiole Mn is ~10× lower than `computeFoliarSupply('T5').Mn` predicted (e.g. observed ≈ predicted × 0.10), Sentís 2017 cuticle-penetration ceiling governs and retention is irrelevant. `FOLIAR_COVERAGE_DEFAULT` refits to ~0.03. Foliar's role for Mn / Zn / Cu collapses — these elements become fertigation-only as soil pH drops and Mn / Zn uptake opens up at the root."
+  3. **Restate the cert reasoning to declare both directions** in the same paragraph that today declares only the upward bump. The cert downgrade 4 → 3 captured the confidence axis; the value 0.30 also has an order-of-magnitude band, not just a 1.6× band. Both bands deserve sentences in the same prose paragraph; today only the upward-bump scenario is described.
+  4. **`learnings.md`** — note that the Sentís 3 % penetration vs 30 % coverage discrepancy was raised + analyzed but the value was held; record the reasoning ("single-cultivar single-study; 25-40 % literature mid-band remains defensible working assumption pending tissue data") so a future contributor doesn't re-litigate the case.
+  5. **No operator-facing prose** about the ±10× uncertainty band. Block 7 / Bilan / Nutrition page surfaces stay as they are — Mn at 72 % of demand displays as 72 %, not as a "7-72 %" band. The uncertainty lives in `derivation.md` only.
+  6. **Append a changelog line.**
 
 - **Acceptance:**
-  - `FP_RECIPE_T5.fertigation.MgSO4_7H2O_g` reads ~3 319 (or whatever `computeStageRecipe('T5').mgSulfate_g` returns), not 1 379.
-  - `derivation.md` no longer contains the phrase "normal field correction" applied to the Mg gap. The gap section names the reframe explicitly.
-  - PA Taillon's 1 379 g preserved as legacy calibration in `learnings.md` with cert annotation + reason ("calibrated against retired compost-subtraction term").
-  - `npm run check` passes; REQ-098 verifier still wires.
-  - Block 7/8 drift gauge at T5 now shows a real `STORED_RECIPE vs FP_RECIPE` Mg gap (~140 %, will register as red under any sensible threshold).
+  - `derivation.md` refinement-triggers section contains both an upward path (cert 3 → 4 if validated) AND a downward path (value 0.30 → ~0.03 if disconfirmed). Pair is symmetric per P-03.
+  - `learnings.md` has an entry capturing the Sentís 3 % vs 30 % analysis and why the value was held.
+  - `grep -E "uncertainty band|±10|×0\.10|7-72" app/index.html nutrition/tomato/app/page.html` returns nothing — operator surfaces unchanged.
+  - `npm run check` passes; REQ-101 verifier still wires.
 
-**Original finding (model-challenger B1, 2026-05-13):**
+**Original finding (model-challenger 2026-05-12 foliar-recipe / B1):**
 
-> 58 % Mg drift between bare mass-balance and PA Taillon anchor is the compost contribution being claimed by the agronomist and dropped by the model — not "field correction". By learnings.md's own admission, PA Taillon's 1 379 g recommendation was reproducible from the model only with the compost-subtraction term in place. The model's reference frame just shifted from "fertigation tops up what compost doesn't deliver" to "fertigation replenishes full plant offtake." PA Taillon's number was calibrated against the former. Holding PA Taillon's value while changing the model's reference frame creates an artificial 58 % drift — a category mismatch, not field correction.
+> Sentís 3 % penetration vs 30 % coverage isn't reconciled — model value may be off by ~10×, not ~1.6×. If penetration is the rate-limiter at ~3 %, plant-side uptake is bounded by penetration, not by retention × penetration. Retention can be 50, 80, 100 % — none of that matters once the cuticle barrier caps absorbed mass at 3 % of what landed on the leaf. The cert downgrade is honest about confusion but the model value 0.30 remains unchanged — the derivation acknowledges a possible order-of-magnitude error and then keeps the original number. The cert downgrade addresses the confidence axis but the value 0.30 also has an order-of-magnitude band, not just a 1.6× band. Under Sentís regime, foliar Zn drops from 136 % of demand (over-fert) to 14 % (under-fert) — direction reverses.
+
 

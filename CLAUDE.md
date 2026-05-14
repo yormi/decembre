@@ -49,7 +49,7 @@ That's it. No Rationale, no Verification, no Cert, no Supersedes sub-sections in
 
 **Operating rules:**
 - *If not auto-enforceable, not a spec.* Manual-review items belong in team process (Catherine's #review channel), not in a `spec.md`. (Codified after REQ-003/056/057 were removed 2026-05-08.)
-- REQ-NNN allocation: reserve a contiguous range when starting a subproject (yield-range took 063–077; plant-needs took 081–083). Cross-check the spec tree before claiming a number.
+- REQ-NNN allocation: every claim goes through `scripts/claim-req.sh <target-spec-path> <persona>` from the repo root. The wrapper acquires `flock` on `team-coordination/req-ledger.md`, scans the spec tree + ledger tail for the highest `REQ-NNN`, appends a claim row, releases the lock, and echoes the claimed id. Use that id in the spec write — never invent a number from a memory grep. Subproject scaffolding reserves a contiguous range by calling the wrapper N times back-to-back. The wrapper closes the parallel-session collision pattern documented in `team-coordination/plant-nutrition-specialist/from-model-challenger-done.md` (C3 entry — two REQ-145 collisions in one day under silent grep-allocation, 2026-05-12).
 - The verifier (`npm run check`) scans every `*/spec.md` for `^## REQ-` headers, dedups across the tree, and matches against `header('REQ-NNN ...')` (node) or `echo "REQ-NNN…"` (bash). A spec is **wired** when its REQ has a verifier check; **deferred** otherwise. Target: 100 % wired.
 
 **When a spec gains complexity (formulas, source tables, derivations, edge-case discussion), split it.** Keep `spec.md` to the bare normative claims. Move the *how* and the *why-this-number* into a sibling file (`derivation.md` is the convention so far). Future readers should be able to read `spec.md` end-to-end in under 5 minutes and know what the system promises.
@@ -91,16 +91,21 @@ Any edit to the three STORED recipe channels — `STORED_RECIPE.tomato.fertigati
 
 Cross-persona handshake files. Two recurring patterns:
 
-### Producer ↔ consumer queue: `<work>.md` ↔ `<work>-done.md`
+### Producer → consumer mailbox: `<recipient>/from-<sender>.md` ↔ `<recipient>/from-<sender>-done.md`
 
-Both files always exist as a pair. **Producer** persona appends an entry to the pending file (`<work>.md`). **Consumer** persona cuts the entry to the archive (`<work>-done.md`) once processed and appends an outcome / verdict block directly under the original. Archive grows monotonically — never delete entries, never amend in place.
+Every channel lives under the **recipient's** subdirectory, named for the **sender**. The filename `from-<sender>.md` makes the producer/consumer relationship readable without opening the file (e.g. `team-leader/from-product-owner.md` = product-owner writes, team-leader reads). Both files always exist as a pair. **Producer** persona appends an entry to the pending file. **Consumer** persona cuts the entry to the archive (`from-<sender>-done.md`) once processed and appends an outcome / verdict block directly under the original. Archive grows monotonically — never delete entries, never amend in place.
+
+The `from-` prefix and the `-done` suffix are reserved words — no persona is named `from-*` or ends in `-done`, so the hyphens in persona names (every persona has at least one) parse unambiguously: the filename is `from-` + `<persona>` (+ optional `-done`) + `.md`.
+
+If a recipient takes input from multiple senders, there is one channel per sender (no fan-in). The team-leader, for example, listens on two files: `from-product-owner.md` and `from-plant-nutrition-specialist.md`. The recipient treats them as a single logical queue with sender tagged by filename.
 
 Live instances:
 
 | Pending file | Archive file | Producer | Consumer | Outcome block |
 |---|---|---|---|---|
-| `requests.md` | `requests-done.md` | model-challenger (refinement requests) | plant-nutrition-specialist (responds & moves to done) | `### Challenger verdict — PASS \| FAIL` appended by challenger on next verification |
-| `team-leader/inbox.md` | `team-leader/inbox-done.md` | product-owner + plant-nutrition-specialist (spec-change notifications) | team-leader (auto-starts incremental test/code/prune waves) | `### Team-leader outcome (YYYY-MM-DD)` with waves run + npm test / npm run check status |
+| `plant-nutrition-specialist/from-model-challenger.md` | `plant-nutrition-specialist/from-model-challenger-done.md` | model-challenger (refinement requests) | plant-nutrition-specialist (responds & moves to done) | `### Challenger verdict — PASS \| FAIL` appended by challenger on next verification |
+| `team-leader/from-product-owner.md` | `team-leader/from-product-owner-done.md` | product-owner (spec-change notifications) | team-leader (auto-starts incremental test/code/prune waves) | `### Team-leader outcome (YYYY-MM-DD)` with waves run + npm test / npm run check status |
+| `team-leader/from-plant-nutrition-specialist.md` | `team-leader/from-plant-nutrition-specialist-done.md` | plant-nutrition-specialist (spec-change notifications) | team-leader (auto-starts incremental test/code/prune waves) | `### Team-leader outcome (YYYY-MM-DD)` with waves run + npm test / npm run check status |
 
 ### Persona-local principles: `<persona>/principles.md`
 

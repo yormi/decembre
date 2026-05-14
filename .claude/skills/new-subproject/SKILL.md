@@ -149,7 +149,7 @@ Match the verbosity of past subproject-creation entries (search the changelog fo
 
 ## Anti-patterns
 
-- **Don't allocate REQ numbers proactively.** Guillaume reserves ranges himself (CLAUDE.md: "Reserve a contiguous range when starting a subproject"). This skill scaffolds structure, not numbering.
+- **Allocate REQs through the wrapper only.** When extracting REQs from a parent spec, keep their existing IDs (never renumber). When carving a "from scratch" subproject that needs new REQs, call `scripts/claim-req.sh <subproject>/spec.md <persona>` once per REQ — under one outer `flock team-coordination/req-ledger.md` if you need a contiguous range. Never grep the spec tree by hand to pick the next number; that's the parallel-session race the wrapper exists to close (`team-coordination/plant-nutrition-specialist/from-model-challenger-done.md` — C3 entry).
 - **Don't create empty companion files.** No empty `derivation.md`. Create it only when you have content. Empty files become stale and confuse readers.
 - **Don't copy code when extracting — move it.** Leaving a duplicate constant in `app/index.html` after extraction creates a divergence bomb. If the build artifact must stay byte-identical, replace the source block with `@include` markers in the same slot.
 - **Don't skip the parent-spec update.** A subproject that exists on disk but isn't pointed to from the parent `spec.md` is invisible to anyone reading top-down.

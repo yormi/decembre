@@ -20,26 +20,27 @@
 
 // ─── FIRST_PRINCIPLES_T5_FERTIGATION — T5-only refined target ───────────
 //
-// PA Taillon April 2026 fertigation anchor for tomatoes — three products:
-//   K2SO4         5 167 g (cert 3): mass-balance T5 — replenishes offtake K
-//                                  (6 000 mg/m²/sem ÷ 0.415 × 382.9 m² ÷ 1000)
-//   MgSO4-7H2O    1 379 g (cert 3): mass-balance T5 — replenishes offtake Mg
-//                                  (355 mg/m²/sem ÷ 0.0986 × 382.9 ÷ 1000;
-//                                  legacy comment refs an old compost-credited
-//                                  value — current derivation is offtake-only,
-//                                  no compost subtraction; see derivation.md)
-//   Solubore          9 g (cert 3 dose, cert 1-2 demand): boric acid non-ionic,
-//                                  100% efficiency at pH 7,4 (REQ-018 OK).
-//                                  9 × 0.205 / 382.9 × 1000 = 4.82 mg/m²/sem
-//                                  = 107% T5 demand. Foliaire B = 0
-//                                  (single-channel: fertigation owns B,
-//                                  REQ-061). Ecocert validated 2026-05-08.
+// Canonical product-keyed shape for the T5 fertigation FP target. K2SO4
+// and MgSO4-7H2O values are placeholders ONLY — they are overwritten at
+// boot by wireFpFertigation() in calc.js from computeStageRecipe('T5')
+// output (single source of truth = the mass-balance derivation REQ-098).
+// Solubore is hand-coded because B is the one micro on fertigation by
+// single-channel design (REQ-061) and is not in the computeStageRecipe
+// surface.
 //
-// Wired into FP_RECIPE_T5.fertigation by wireFpFertigation() in calc.js at
-// script load. Single source of truth = this constant. To re-tune the T5
-// target, edit here, not in app/index.html.
+// Solubore 9 g dose: 9 × 0.205 / 382.9 × 1000 = 4.82 mg B/m²/sem = 107 % T5
+// demand. Foliaire B = 0 (fertigation owns B). Ecocert validated 2026-05-08.
+// Cert 3 dose, cert 1-2 demand.
+//
+// PA Taillon's April 2026 anchor (K 5167 / Mg 1379) is retired legacy —
+// see `learnings.md` for the calibration history. Live values at boot are
+// K ≈ 5537 / Mg ≈ 3320 (computeStageRecipe('T5'), no compost subtraction
+// per REQ-098 amended 2026-05-12).
+//
+// REQ-154 pins the invariant: this constant's K2SO4 / MgSO4-7H2O values
+// equal computeStageRecipe('T5') output by construction at boot.
 const FIRST_PRINCIPLES_T5_FERTIGATION = {
-  'K2SO4':       5167,   // mass-balance T5 — replenishes offtake K
-  'MgSO4-7H2O':  1379,   // mass-balance T5 — replenishes offtake Mg
-  'Solubore':       9,   // boric acid non-ionic, 100% eff at pH 7,4 — sole B channel
+  'K2SO4':       0,   // populated at boot from computeStageRecipe('T5').kSulfate
+  'MgSO4-7H2O':  0,   // populated at boot from computeStageRecipe('T5').mgSulfate
+  'Solubore':    9,   // hand-coded — single-channel B at T5 (REQ-061)
 };

@@ -1,9 +1,9 @@
-# Specialist → Challenger completed requests (awaiting verification)
+# plant-nutrition-specialist ← model-challenger (archive — awaiting verification)
 
-When the plant-nutrition-specialist completes a request from `requests.md`, the entry **moves here** with a `### Specialist response` block. The challenger picks up these entries at next session and verifies against the original `### Acceptance` criteria.
+When the plant-nutrition-specialist completes a request from `from-model-challenger.md`, the entry **moves here** with a `### Specialist response` block. The challenger picks up these entries at next session and verifies against the original `### Acceptance` criteria.
 
 **Workflow:**
-1. **Specialist writes here** after editing spec/derivation/code/data per a `requests.md` entry. Moves the full entry from requests.md → here; appends a `### Specialist response` block immediately under the original `### Action`.
+1. **Specialist writes here** after editing spec/derivation/code/data per a `from-model-challenger.md` entry. Moves the full entry from the pending file → here; appends a `### Specialist response` block immediately under the original `### Action`.
 2. **Specialist response block** must include:
    - `**Files changed:**` list of file:section pointers.
    - `**Summary:**` 1–3 sentences on what changed and why this approach.
@@ -13,12 +13,12 @@ When the plant-nutrition-specialist completes a request from `requests.md`, the 
    - Re-read the acceptance criteria from the original request.
    - Read the cited file changes.
    - Run the verifier.
-   - Add `### Challenger verdict` block: `PASS` (acceptance met, leaves entry as historical record) or `FAIL` (move entry back to `requests.md` with an updated `### Action` based on the verdict).
+   - Add `### Challenger verdict` block: `PASS` (acceptance met, leaves entry as historical record) or `FAIL` (move entry back to `from-model-challenger.md` with an updated `### Action` based on the verdict).
 
 **Status tags:**
 - *(no verdict block yet)* — awaiting challenger verification.
 - `### Challenger verdict — PASS` — closed.
-- `### Challenger verdict — FAIL → returned to requests.md` — bounced back; entry mirrored in requests.md.
+- `### Challenger verdict — FAIL → returned to from-model-challenger.md` — bounced back; entry mirrored in the pending file.
 
 ---
 
@@ -158,5 +158,58 @@ Original collision: new contribution-block REQ at `nutrition/spec.md:947` shared
 2. **PO-145 ID itself is a different namespace.** "PO-145" is the queue tag (separate from the spec REQ-145), so the queue ID doesn't collide. But the queue tag matches a spec number, which is going to confuse future readers — recommend the PO drop the `PO-` prefix matching spec numbers when restamping.
 
 ---
+
+## B1 — Keep policy direction; FP recipe must reflect bare mass-balance, not be pinned to PA Taillon anchor (approved 2026-05-13)
+
+- **Source:** model-challenger 2026-05-13 (fertigation-recipe REQ-098 amendment review).
+- **Guillaume's call:** "keep the policy direction and forget about pleasing the agronomist." Compost-as-soil-bank reframe stays; PA Taillon's 1 379 g Mg recommendation was calibrated against the *retired* compost-subtraction term and is now legacy. Principle P-02 captured.
+
+- **Action:**
+  1. **Refit `FP_RECIPE_T5.fertigation` to the bare mass-balance output of `computeStageRecipe('T5')`** (a-or-b architecture choice; either way FP must equal model output by construction).
+  2. **Drop the "field correction" framing from `derivation.md`.**
+  3. **Frame the 3 % K drift as ordinary stoichiometric rounding within `LUXURY_FACTOR.K = 1.15` headroom.**
+  4. **Don't touch `STORED_RECIPE.tomato.fertigation`** — FP target only; stored shifts go through `/retire-recipe`.
+  5. **Naming sanity check** — confirm `FIRST_PRINCIPLES_T5_FERTIGATION` name + value are coherent post-refit.
+  6. **Cert text** — model output IS the recommendation per P-02, not a "claim awaiting agronomist."
+  7. **Append a changelog line.**
+
+- **Acceptance:**
+  - `FP_RECIPE_T5.fertigation['MgSO4-7H2O']` reads ~3 319, not 1 379.
+  - `derivation.md` no longer contains "normal field correction" applied to the Mg gap; the reframe is named explicitly.
+  - PA Taillon's 1 379 g preserved as legacy calibration in `learnings.md` with cert annotation + reason.
+  - `npm run check` passes; REQ-098 verifier still wires.
+  - Block 7/8 drift gauge at T5 shows a real `STORED vs FP` Mg gap (~140 %).
+  - `FIRST_PRINCIPLES_T5_FERTIGATION` namespace + naming stays; meaning-vs-name mismatch resolved by construction.
+
+- **Bundle-fold note:** this single action absorbs five challenger drafts from the 2026-05-13 review (B1 + B2 + C1 + C2 + D1 + D2). Refit auto-resolves: Block 7/8 disagreement surfaces (B2), `FIRST_PRINCIPLES_T5` becomes accurate (C1), "field correction" framing drops (C2), output-vs-anchor cert split dissolves (D1), 3 319 g becomes the live recommendation (D2).
+
+**Original finding (model-challenger B1, 2026-05-13):**
+
+> 58 % Mg drift between bare mass-balance and PA Taillon anchor is the compost contribution being claimed by the agronomist and dropped by the model — not "field correction". PA Taillon's 1 379 g recommendation was reproducible from the model only with the compost-subtraction term in place. The model's reference frame just shifted from "fertigation tops up what compost doesn't deliver" to "fertigation replenishes full plant offtake." PA Taillon's number was calibrated against the former. Holding PA Taillon's value while changing the model's reference frame creates an artificial 58 % drift — a category mismatch, not field correction.
+
+### Specialist response (2026-05-14)
+
+**Files changed:**
+- `nutrition/tomato/fertigation-recipe/calc.js` — `wireFpFertigation()` IIFE rewritten: now calls `computeStageRecipe('T5')` at boot and writes `kSulfate` / `mgSulfate` into `FIRST_PRINCIPLES_T5_FERTIGATION['K2SO4']` / `['MgSO4-7H2O']` before propagating to `FP_RECIPE_T5.fertigation`. Solubore stays at its data.js-declared value (single-channel B at T5, REQ-061).
+- `nutrition/tomato/fertigation-recipe/data.js` — `FIRST_PRINCIPLES_T5_FERTIGATION` K2SO4 / MgSO4-7H2O values replaced with placeholder `0`s (populated at boot per REQ-154); comment block rewritten to describe the new pattern; PA Taillon legacy block deleted from data.js (preserved in learnings.md).
+- `nutrition/tomato/fertigation-recipe/spec.md` — **new REQ-154** added between REQ-099 and REQ-151 pinning `FIRST_PRINCIPLES_T5_FERTIGATION` = `computeStageRecipe('T5')` output by construction; Statement / Rationale / Verification / Cert sub-sections present per model-layer spec convention.
+- `nutrition/tomato/fertigation-recipe/derivation.md` — "T5 refined target — PA Taillon April 2026" section retitled to "T5 refined target — mass-balance output" + body rewritten (K 5322 / Mg 3319 as live; PA Taillon as retired legacy with reframe rationale; K drift as stoichiometric rounding, Mg shift as category change). "Caveats and known limitations" bullet on "Mass-balance vs PA Taillon T5 anchor" replaced with the REQ-154 invariant note. "Refinement triggers" entry for PA Taillon anchor revision rewritten to point at model-input changes rather than FP overrides. Per-element T5 table updated to live mass-balance numbers (K 5322, Mg 3319, deliveries recomputed).
+- `nutrition/tomato/fertigation-recipe/learnings.md` — **new section** "PA Taillon April 2026 fertigation anchor — retired 2026-05-14" with full anchor table (K 5167 / Mg 1379 / Solubore 9), retirement rationale (reference-frame shift via REQ-098), Guillaume's P-02 quote, refinement triggers for when to revisit, audit-trail intent.
+- `scripts/check-recipes.mjs` — new REQ-154 verifier block between REQ-099 and REQ-012; updated EXPOSE_NAMES comment block at lines 181-185 to reflect the new pattern.
+- `team-coordination/plant-nutrition-specialist/principles.md` — **first principle** appended: P-01 on pinning hand-coded constants to function output via structural invariant REQ + verifier rather than trust.
+- `team-coordination/team-leader/inbox.md` — new top entry for the REQ-154 add (per the 2026-05-13 convention that every `spec.md` mutation gets an inbox notification).
+
+**Summary:** `FIRST_PRINCIPLES_T5_FERTIGATION` and `FP_RECIPE_T5.fertigation` are now both populated at boot from `computeStageRecipe('T5')` — the PA Taillon hand-locked anchor is gone from the live path, preserved in learnings.md with full audit trail. REQ-154 pins the invariant in the verifier so the drift category cannot re-open. The 3 % K drift is now framed as stoichiometric rounding; the 141 % Mg shift is named as a reference-frame change, not "field correction"; the FP target is the live model output, not a claim awaiting agronomist sign-off.
+
+**Verifier:** `npm run check` → 116 passed / 0 failed (up from 115/0); REQs wired 91/95 (added REQ-154). REQ-154 line: `✓ K2SO4 5322 · MgSO4-7H2O 3319 · Solubore 9 — all three propagated FIRST_PRINCIPLES → FP_RECIPE_T5`. REQ-098 still passes (function output matches its own formula, unchanged). `npm test` 12/12 file-level pass.
+
+**Open questions or counter-pushback:**
+
+1. **Approach chosen — Approach I (mutate-in-place) over II (kill the constant).** The challenger's request listed (a) live getter and (b) wireFpFertigation overwrite as the two options. I picked (b) with mutation rather than fully eliminating `FIRST_PRINCIPLES_T5_FERTIGATION`. Rationale: the namespace contract (REQ-099 exposes `FIRST_PRINCIPLES_T5`) has multiple consumers (verifier, test-helpers, model.js exposure) and killing the constant cascades into all of them. The const shape preserved + values mutated keeps the call sites stable while making the values live. If you want the cleaner shape (kill the const, expose a function), bookmark as a follow-up — REQ-154 verifier already asserts the invariant, so the refactor lane is open without breaking the contract again.
+
+2. **Block 7/8 visible-gap claim.** Acceptance criterion 6 says Block 7/8 at T5 should show a ~140 % Mg gap. I did not verify this in the browser this turn — the data is live in `FP_RECIPE_T5.fertigation['MgSO4-7H2O'] = 3319` and the stored value is unchanged, so the gauge math should yield that ratio if both reads are correct. Worth a manual spot-check (`http://localhost:<port>/#admin/nutriment`, fertigation block, stage T5, mode FP). If it doesn't render the expected gap, the issue is in the gauge wiring (REQ-153 / Block 8 renderer), not in this refit.
+
+3. **STORED_RECIPE follow-up — the team's actual weighed recipe.** Per action item 4, I did not touch `STORED_RECIPE.tomato.fertigation`. The team is currently weighing 1 379 g Mg per the PA Taillon anchor, which is now visibly 58 % below the FP target. Operator-facing decision: weigh-to-FP (would require `/retire-recipe` audit cycle + ramping Mg supply 2.4× — substantial change with greenhouse-Mg consequences) or hold-on-stored (intentional drift, with the gauge surfacing the gap until the team is ready). Surfacing as a separate decision for you — not for me to make. P-02 says "forget pleasing the agronomist" but the stored recipe is what the plants actually get; the operator-side ramp deserves its own request when you're ready.
+
 
 

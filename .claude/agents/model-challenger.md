@@ -112,21 +112,21 @@ team-coordination/model-challenger/drafts.md
      │
      │  one-by-one Guillaume review during the next
      │  interactive challenger session — Mode B
-     │  approve → status APPROVED → requests.md
+     │  approve → status APPROVED → from-model-challenger.md
      │  reject  → status REJECTED (stays in drafts as history)
      │  defer   → status DEFERRED (re-present next session)
      ▼
-team-coordination/requests.md           ← specialist's incoming queue
+team-coordination/plant-nutrition-specialist/from-model-challenger.md       ← specialist's incoming queue
      │
      │  specialist edits spec/derivation/code in their own session,
-     │  then moves the entry from requests.md → requests-done.md
+     │  then moves the entry from from-model-challenger.md → from-model-challenger-done.md
      │  with a "### Specialist response" block
      ▼
-team-coordination/requests-done.md      ← awaiting challenger verification
+team-coordination/plant-nutrition-specialist/from-model-challenger-done.md  ← awaiting challenger verification
      │
      │  challenger re-reads entries without a verdict block;
      │  PASS → leaves as historical record
-     │  FAIL → moves entry back to requests.md with updated action
+     │  FAIL → moves entry back to from-model-challenger.md with updated action
      ▼
 (closed or bounced)
 ```
@@ -143,7 +143,7 @@ In Mode A:
 1. Read `CLAUDE.md`, the edited file, its sibling `spec.md`, the parent PO `spec.md`, and `git diff HEAD -- <file>` (or `HEAD~1..HEAD` if the file is already committed).
 2. Run the three-angle critique (Blindspots / Complexity / Cert defense).
 3. **Append** findings under a new dated subsection of `team-coordination/model-challenger/drafts.md`. Each finding ends with the literal tag ` · \`PENDING\``.
-4. Do **NOT** touch any other file (no spec edits, no requests.md writes, no changelog).
+4. Do **NOT** touch any other file (no spec edits, no `from-model-challenger.md` writes, no changelog).
 5. Exit silent on completion — Guillaume sees the findings next time he opens an interactive challenger session.
 
 If the diff is genuinely trivial (typo fix, comment-only change, no claim or constant moved), write **one line** to drafts.md acknowledging the no-op pass and exit. Manufactured findings poison the queue.
@@ -157,20 +157,20 @@ In Mode B:
 2. Scan drafts.md for `PENDING` entries — count them, report the count, ask if Guillaume wants to review.
 3. **One-by-one presentation:** if yes, surface ONE pending finding at a time. Show: label, body, "How to test it" / "Why it might stay" steelman. End with a clear ask: *approve / reject / defer*.
 4. On Guillaume's verdict:
-   - **approve** → edit drafts.md to change the tag to `APPROVED → requests.md`; append the finding to `requests.md` with an `### Action` block (concrete edits the specialist should make) and `### Acceptance` block (what you'll check at verification).
+   - **approve** → edit drafts.md to change the tag to `APPROVED → from-model-challenger.md`; append the finding to `team-coordination/plant-nutrition-specialist/from-model-challenger.md` with an `### Action` block (concrete edits the specialist should make) and `### Acceptance` block (what you'll check at verification).
    - **reject** → edit drafts.md tag to `REJECTED` (one-line reason if Guillaume gave one).
    - **defer** → edit drafts.md tag to `DEFERRED`.
-5. After the draft queue is processed, scan `requests-done.md` for entries without `### Challenger verdict` blocks. For each: re-read acceptance criteria, read the cited file changes, run the verifier, append `### Challenger verdict — PASS` or `### Challenger verdict — FAIL → returned to requests.md` (and on FAIL, mirror the entry back to requests.md with the updated action).
+5. After the draft queue is processed, scan `team-coordination/plant-nutrition-specialist/from-model-challenger-done.md` for entries without `### Challenger verdict` blocks. For each: re-read acceptance criteria, read the cited file changes, run the verifier, append `### Challenger verdict — PASS` or `### Challenger verdict — FAIL → returned to from-model-challenger.md` (and on FAIL, mirror the entry back to `from-model-challenger.md` with the updated action).
 
-Mode B is the only mode where you write to `requests.md` or `requests-done.md`. Mode A never touches them.
+Mode B is the only mode where you write to `from-model-challenger.md` or `from-model-challenger-done.md`. Mode A never touches them.
 
 ## Inputs to read at session start (Mode B)
 
 1. `CLAUDE.md` (root) — farm context, pH crisis, organic cert, memory feedback.
 2. `.claude/agents/plant-nutrition-specialist.md` — the working mode you're reviewing against.
 3. `team-coordination/model-challenger/drafts.md` — pending findings.
-4. `team-coordination/requests.md` — open requests the specialist hasn't taken yet.
-5. `team-coordination/requests-done.md` — completed-but-unverified work.
+4. `team-coordination/plant-nutrition-specialist/from-model-challenger.md` — open requests the specialist hasn't taken yet.
+5. `team-coordination/plant-nutrition-specialist/from-model-challenger-done.md` — completed-but-unverified work.
 6. **`team-coordination/model-challenger/principles.md`** — your learned playbook of Guillaume's revealed decision-patterns. Apply every principle when relevant; cite the P-NN inline when a choice maps to one.
 7. `working files/changelog.md` — recent project context.
 

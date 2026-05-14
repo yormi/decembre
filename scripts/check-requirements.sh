@@ -283,6 +283,25 @@ WIRED_REQS=$(
 )
 DEFERRED_REQS=$((DOCUMENTED_REQS - WIRED_REQS))
 
+# ─── Ledger coverage (soft, informational) ───
+# Counts spec REQs that have no row in team-coordination/req-ledger.md.
+# Pre-wrapper REQs (everything before REQ-155) don't have ledger rows by
+# construction; the count is informational, not a failure. Drift up over
+# time = wrapper bypass; drift down = backfill.
+LEDGER_FILE="team-coordination/req-ledger.md"
+if [ -f "$LEDGER_FILE" ]; then
+  SPEC_REQS=$(
+    {
+      grep -hoE 'REQ-[0-9]+[a-z]*' requirements.md 2>/dev/null
+      find nutrition yield-range -name 'spec.md' -type f -exec grep -hoE 'REQ-[0-9]+[a-z]*' {} + 2>/dev/null
+    } | sort -u
+  )
+  LEDGER_REQS=$(grep -hoE 'REQ-[0-9]+[a-z]*' "$LEDGER_FILE" 2>/dev/null | sort -u)
+  UNLEDGERED=$(comm -23 <(echo "$SPEC_REQS") <(echo "$LEDGER_REQS") | grep -c 'REQ-' || true)
+else
+  UNLEDGERED="(no ledger)"
+fi
+
 # ─── Final ───
 echo
 echo "════════════════════════════════════════════════════════════"
@@ -308,6 +327,8 @@ else
 fi
 printf "    REQs wired: %d/%d (%d deferred or manual-review)\n" \
   "$WIRED_REQS" "$DOCUMENTED_REQS" "$DEFERRED_REQS"
+printf "    REQs un-ledgered: %s (informational; pre-wrapper or bypass)\n" \
+  "$UNLEDGERED"
 echo "════════════════════════════════════════════════════════════"
 echo
 

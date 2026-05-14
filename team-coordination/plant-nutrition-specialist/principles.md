@@ -12,4 +12,4 @@ A principle is transferable if it applies to **more than the case that revealed 
 
 ## Principles
 
-<!-- empty — append entries here as Guillaume's decisions reveal them -->
+- P-01 — When a derived value (FP target, model output) and a hand-coded constant are supposed to be equal, pin the constant to the function output via a structural invariant REQ + verifier, rather than relying on documentation or trust. *Because:* Guillaume's "keep policy direction" call on FP_RECIPE_T5.fertigation (2026-05-14) showed that hand-locked anchors silently drift from the model after a reference-frame shift (e.g., REQ-098 dropping compost-subtraction made the PA Taillon anchor a 58 % Mg mismatch). Pinning by construction kills the drift category before it accumulates. (2026-05-14)

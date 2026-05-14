@@ -1,4 +1,4 @@
-# nutrition/info — reference docs index
+# nutrition/doc — reference docs index
 
 Primary-source documents for Ferme Décembre's nutrition work: lab reports, fertilizer/amendment datasheets, agronomist correspondence. When investigating a nutrition question (soil chemistry, fertigation, foliar program, root cause of the pH crisis, organic-cert sourcing), reach for these BEFORE relying on session memory.
 
@@ -95,15 +95,15 @@ Reach for this when: re-ordering boron, swapping suppliers, or verifying the Sol
 
 ## Lives elsewhere — partial nutrition relevance
 
-### `farm info/farm-baseline-updated.md`
-Farm-wide baseline (operation overview, infrastructure, crops, yield targets, root-cause diagnosis, monitoring protocol). Heavy nutrition content (>70%) but covers the whole operation, so kept in `farm info/`.
+### `doc/farm-baseline-updated.md`
+Farm-wide baseline (operation overview, infrastructure, crops, yield targets, root-cause diagnosis, monitoring protocol). Heavy nutrition content (>70%) but covers the whole operation, so kept in `doc/`.
 Reach for this when: you need quick context on the crisis, soil test summary tables, the active fertigation/foliar/nursery program, or the action plan status. This is the single most-referenced doc — start here.
 
-### `farm info/test de sol - pré-serre.pdf`
+### `doc/test de sol - pré-serre.pdf`
 EnvironeX certificate 4016171 (July 2024). Heavy-metals soil contamination test (As/Cd/Cr/Hg/Ni/Pb/Se) — pre-construction environmental baseline, NOT a nutrition test. Pb came in at 23 mg/kg, others below detection.
 Reach for this when: needed for organic-cert paperwork (heavy metals baseline), food-safety due diligence, or if a soil-Pb question ever surfaces. NOT useful for nutrition decisions.
 
-### `farm info/Logo - Décembre.png`
+### `doc/Logo - Décembre.png`
 Branding asset. Not nutrition-related.
 
 ---
