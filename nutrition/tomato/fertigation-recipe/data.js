@@ -5,8 +5,8 @@
 //
 // Fertigation is the liquid replenishment of K, Mg, and B (boric acid) at
 // the dripper per tomato stage. computeStageRecipe(stage) returns
-// { kSulfate, mgSulfate } in grams of product per total tomato area
-// (TOMATO_NUM_BEDS × TOMATO_BED_AREA = 7 × 54.7 = 382.9 m²) per week.
+// { kSulfate, mgSulfate, solubore } in grams of product per total tomato
+// area (TOMATO_NUM_BEDS × TOMATO_BED_AREA = 7 × 54.7 = 382.9 m²) per week.
 
 // ─── MIXING_FACTOR retired 2026-05-10 ───────────────────────────────────
 // Previously this file declared MIXING_FACTOR_FERT_STORED = 0.5 and

@@ -50,6 +50,7 @@ const EXPOSE_NAMES = [
   'RECIPE_INPUTS',
   // Fertigation-recipe subproject
   'computeStageRecipe', 'FIRST_PRINCIPLES_T5_FERTIGATION', 'FP_RECIPE_T5',
+  'PH_UPTAKE_FACTOR_AT_CURRENT_SOIL',
   // Sidedress-recipe subproject
   'computeStageSidedress', 'FIRST_PRINCIPLES_SIDEDRESS',
   'SIDEDRESS_AREA_PER_PLANCHE', 'SIDEDRESS_MIN_EFF', 'SIDEDRESS_PRODUCTS',
