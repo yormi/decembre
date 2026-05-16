@@ -4828,35 +4828,14 @@ function calculateNutritionSupply(stage, phLocked, transpFactor, targetYield, re
     P: sd.actisol_g * PRODUCT_PCT.Actisol_P * phLockoutFactor_P * sdAreaFactor,
     K: sd.actisol_g * PRODUCT_PCT.Actisol_K * SIDEDRESS_MINIMUM_EFFICIENCY.Actisol_K * sdAreaFactor,
   };
-  // REQ-157 — per-element efficiency map for sidedress channel. For routed
-  // elements only (mg > 0). N blends Actisol + farine de plumes mineralization
-  // efficiencies weighted by their N contribution; P is Actisol-only with
-  // pH-lockout factor; K is Actisol-only.
-  sidedress.efficiency = {};
-  if (sidedress.N > 0) {
-    const nActisolMass = sd.actisol_g * PRODUCT_PCT.Actisol_N;
-    const nFarineMass  = sd.farine_g  * PRODUCT_PCT.FarinePlumes_N;
-    const nTotal       = nActisolMass + nFarineMass;
-    sidedress.efficiency.N = nTotal > 0
-      ? (nActisolMass * SIDEDRESS_MINIMUM_EFFICIENCY.Actisol_N + nFarineMass * SIDEDRESS_MINIMUM_EFFICIENCY.FarinePlumes_N) / nTotal
-      : SIDEDRESS_MINIMUM_EFFICIENCY.Actisol_N;
-  }
-  if (sidedress.P > 0) sidedress.efficiency.P = SIDEDRESS_MINIMUM_EFFICIENCY.Actisol_P * phLockoutFactor_P;
-  if (sidedress.K > 0) sidedress.efficiency.K = SIDEDRESS_MINIMUM_EFFICIENCY.Actisol_K;
+  sidedress.efficiency = window.SidedressRecipeTomato.efficiency;
 
   // Fertigation contributions — barrel-loaded mass per m²/sem, full
   // delivery (no mixing-factor discount; concept retired 2026-05-10).
   // B only present in FP mode (Solubore added 2026-05-08, single-channel for B).
   const fert = { K: fertK, Mg: fertMg };
   if (fertB > 0) fert.B = fertB;
-  // REQ-157 — per-element efficiency for fertigation channel. Soil-pH-driven
-  // (REQ-017): soluble-cation salts (K₂SO₄, MgSO₄) follow PH_RESPONSE
-  // ['soluble-cation']; Solubore (boric acid) is non-ionic in soil, 100%.
-  const fertSoilPh = phLocked ? 7.4 : 6.4;
-  fert.efficiency = {};
-  if (fert.K > 0)  fert.efficiency.K  = PH_RESPONSE['soluble-cation'](fertSoilPh);
-  if (fert.Mg > 0) fert.efficiency.Mg = PH_RESPONSE['soluble-cation'](fertSoilPh);
-  if (fert.B  > 0) fert.efficiency.B  = PH_RESPONSE['borate'](fertSoilPh);
+  fert.efficiency = window.FertigationRecipeTomato.efficiency;
 
   // REQ-157 — per-element efficiency for foliar channel. Foliar bypasses
   // soil pH; uses foliarPhResponse(sprayPh) × coverage (FOLIAR_COVERAGE_DEFAULT

@@ -11,6 +11,26 @@ Most recent at the top.
 
 ## Entries
 
+## 2026-05-16 — nutrition/tomato/fertigation-recipe
+
+**Change type:** edited
+**REQs affected:** REQ-099 (namespace table extended)
+**Summary:** Per Guillaume's call to extend PO-157 to the three remaining specialist-owned tomato channels, `window.FertigationRecipeTomato` now exposes `efficiency` alongside `FIRST_PRINCIPLES_T5` + `computeStageRecipe`. New `FERTIGATION_EFFICIENCY_AT_CURRENT_SOIL` constant in `data.js` (K 0.94 / Mg 0.94 from `PH_RESPONSE['soluble-cation'](7.4)`, B 1.0 from `PH_RESPONSE['borate']` non-ionic). This is the **channel-product → bed** delivery axis; the orthogonal **bed → plant** uptake axis stays in `PH_UPTAKE_FACTOR_AT_CURRENT_SOIL` (REQ-155). Cert 4. New "Channel efficiency map (REQ-157)" section in `derivation.md` documents the per-element values + refinement trigger (re-pin when next Berger soil-pH reading lands). Verifier `scripts/check-recipes.mjs` REQ-157 block extended to assert the new namespace handle.
+**Suggested waves:** test-writer (no `spec.test.mjs` numeric assertion needed — verifier covers shape + values); coder (`app/index.html` inline `supply.fert.efficiency` derivation can now read `window.FertigationRecipeTomato.efficiency` instead of re-deriving from `PH_RESPONSE`); pruner (sweep any other `PH_RESPONSE`-derived efficiency in the integrator that should now read from the namespace).
+
+### Team-leader outcome (2026-05-16)
+Sub-wave C coder substitution applied: `app/index.html` inline `supply.fert.efficiency` derivation (3-line block reading `PH_RESPONSE['soluble-cation'](fertSoilPh)` per K/Mg + `PH_RESPONSE['borate']` for B) collapsed to single namespace read `supply.fert.efficiency = window.FertigationRecipeTomato.efficiency`. Verifier (REQ-157 fertigation block) stays green — namespace value matches the prior inline derivation under FP T5 conditions. **Risk surfaced**: namespace constant declares K + Mg + B as routed unconditionally; if any future integrator path drives `supply.fert.B = 0` (e.g. STORED mode without Solubore), namespace-aligned read would violate REQ-157's "efficiency[el] absent for non-routed" invariant. Verifier currently exercises FP mode only where B IS routed, so passes today. Same pattern as the foliar Mo issue surfaced below — likely warrants a unified integrator filter `Object.fromEntries(Object.entries(ns.efficiency).filter(([el]) => supply.X[el] > 0))` or namespace-side per-call awareness; deferred to specialist + PO call. Final: npm test 189/189/0 · npm run check 141/0/141.
+
+## 2026-05-16 — nutrition/tomato/sidedress-recipe
+
+**Change type:** edited
+**REQs affected:** REQ-088 (namespace table extended)
+**Summary:** Per the PO-157 extension, `window.SidedressRecipeTomato` now exposes `efficiency`. New `SIDEDRESS_EFFICIENCY_AT_CURRENT_PRODUCTS` constant in `data.js`: **N-only at 0.75** because the REQ-089 Ca-aware gate locks Actisol out on the current Ca-saturated soil — only FarinePlumes (N-only by label) routes through the channel. K and P absent from the map; if Actisol re-enters the channel (soil Ca drops below saturation), the map gains K + P entries. Refinement triggers documented in `derivation.md` including the REQ-089 gate release, default-product swap to AlfalfaMeal, and tissue-feedback paths. Verifier extended.
+**Suggested waves:** test-writer (no change); coder (integrator-side `supply.sidedress.efficiency` reads the namespace; the N-blend over Actisol+FarinePlumes that the Wave 2 coder did inline collapses to a single namespace read once Actisol's path returns); pruner (no work).
+
+### Team-leader outcome (2026-05-16)
+Sub-wave C coder substitution applied: `app/index.html` inline `supply.sidedress.efficiency` derivation (mass-weighted blend of `SIDEDRESS_MINIMUM_EFFICIENCY.Actisol_N` + `.FarinePlumes_N`, conditional P with phLockoutFactor, conditional K) collapsed to single namespace read `supply.sidedress.efficiency = window.SidedressRecipeTomato.efficiency`. Verifier (REQ-157 sidedress block) stays green — namespace N-only value matches the integrator's REQ-089 Ca-gate state (Actisol locked out → only FarinePlumes routes → only N has efficiency entry). **Coupled to REQ-089 gate state**: when Actisol re-enters (soil Ca drops below saturation per REQ-089 release condition), the namespace constant gains K + P entries and the integrator's namespace read auto-tracks. No additional integrator change needed for that future state. Final: npm test 189/189/0 · npm run check 141/0/141.
+
 ## 2026-05-15 (evening) — nutrition/compost-contribution
 
 **Change type:** edited
