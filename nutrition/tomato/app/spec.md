@@ -1,9 +1,9 @@
 # Nutrition — tomate — app UI specs
 
 UI invariants for the Tomato Nutrition admin page (Bilan, Block 1-7
-mass-balance flow, drift gauge thresholds, recipe-source toggle behavior).
-Crop-side recipe/biology specs live in `nutrition/tomato/spec.md`;
-chemistry / cross-crop rules in `nutrition/spec.md`.
+mass-balance flow, drift gauge, recipe-source toggle). Crop-side
+recipe/biology specs live in `nutrition/tomato/spec.md`; chemistry /
+cross-crop rules in `nutrition/spec.md`.
 
 ---
 
@@ -16,15 +16,6 @@ other displayed number is derived from these + source-of-truth constants.
 No `current` input — the page answers "what's needed at target", not
 "what's needed given current canopy".
 
-**Rationale:** One scalar per knob the operator actually turns. The
-removed `current` input fed `transpirationFactor(current, target)` which
-discounted Ca/Mg biomass demand for stunted canopy (REQ-081); without it,
-`transpFactor` pins to 1.0 (full canopy). Mid-cycle stunted-plant cases
-over-state Ca/Mg demand by ~40-60 % — operator-discoverable, not silent.
-Re-add as advanced toggle if it ever bites.
-
-**Cert:** 5 (structural).
-
 ---
 
 ## REQ-105 — Light ceiling derived from operator-driven J/g
@@ -35,13 +26,6 @@ Re-add as advanced toggle if it ever bites.
 When `target > ceiling`, the card shifts to a warning style (orange bg +
 ⚠ message). No hardcoded `7000` literal in the ceiling computation.
 
-**Rationale:** The 7 J/g constant is a heuristic (~14 g/MJ at canopy in
-greenhouse tomato literature), not a measurement at Décembre. Surfacing
-it as an input lets the operator probe sensitivity ("if our system gives
-6 J/g, what's the ceiling?") without editing code.
-
-**Cert:** 4 (heuristic; cross-validated to ~14 g/MJ at default 7).
-
 ---
 
 ## REQ-106 — FP recipe mode locks stage to T5
@@ -50,13 +34,6 @@ it as an input lets the operator probe sensitivity ("if our system gives
 to `T5`. Switching off T5 while in FP mode auto-reverts mode to `stored`.
 The hash router persists `recipeMode` (third path segment) so reload
 keeps mode + stage as a consistent pair. Default `recipeMode = 'fp'`.
-
-**Rationale:** `FP_RECIPE_T5` is only defined for T5; rendering FP at T2
-demand would silently show T5's recipe at the wrong demand level. The
-auto-revert and hash persistence keep the page coherent under reload
-and stage flips.
-
-**Cert:** 5 (structural).
 
 ---
 
@@ -70,15 +47,6 @@ products-in-play list (`nutr-products`) is **removed** from the header —
 per-block product names appear inline in each Block 1-5 card body
 instead.
 
-**Rationale:** First principles is the default mental model the admin
-should be in; visual primacy (left button) reflects that. The English
-label is a stable term-of-art; translating it ("Premiers principes")
-fights the global FP convention. Removing the products-in-play list
-keeps the header minimal — every product is already named where it
-acts (Block 2-5).
-
-**Cert:** 5 (structural).
-
 ---
 
 ## REQ-108 — Block 1 demand sourced from `PlantNeedsTomato`
@@ -87,12 +55,6 @@ acts (Block 2-5).
 `window.PlantNeedsTomato.calcNutrDemand(target, stage, transpFactor)`.
 No bare-global access to `BIOMASS_DEMAND` or `TOMATO_FRUIT_EXPORT` in
 the Block 1 render path.
-
-**Rationale:** Channel demand through the public API namespace so future
-internals refactors don't break consumers. Closes REQ-083's contract on
-the Bilan side.
-
-**Cert:** 5 (structural).
 
 ---
 
@@ -107,15 +69,8 @@ modal showing **exactly three pieces of content**:
 3. The plugged-in numbers (formula with current values substituted).
 
 No interpretation prose, no per-element rationale paragraphs, no
-tissue-test caveats, no transpiration-coupling notes — those exist
-already in `nutrition/tomato/plant-needs/derivation.md` and shouldn't be
-duplicated in the modal.
-
-**Rationale:** The modal answers "what's the cert and the math". Anything
-beyond that is documentation drift waiting to happen — derivation.md is
-the single source for prose.
-
-**Cert:** 5 (structural).
+tissue-test caveats, no transpiration-coupling notes — those live in
+`nutrition/tomato/plant-needs/derivation.md`.
 
 ---
 
@@ -123,8 +78,6 @@ the single source for prose.
 
 **Statement:** Changing `nutr-target` or activating a different stage
 button re-renders Block 1 with new per-element numbers.
-
-**Cert:** 5 (structural).
 
 ---
 
@@ -134,12 +87,6 @@ button re-renders Block 1 with new per-element numbers.
 symbol, fruit-export term (mg/m²/wk), biomass term (mg/m²/wk), total
 (mg/m²/wk). Numbers come from `PN.calcNutrDemand(...)` returning the
 `{fruit, biomass, total}` shape per element.
-
-**Rationale:** Surfacing the split lets the operator see what physically
-leaves the farm in fruit vs what stays in canopy/new structures —
-critical for understanding why Ca demand is high but mostly retained.
-
-**Cert:** 5 (structural).
 
 ---
 
@@ -155,12 +102,6 @@ of the card body:
 Both ids are present in the `app/index.html` input-listener wiring so
 changes trigger `buildNutriment` re-render.
 
-**Rationale:** Block-local inputs (first instance of the pattern). Header
-stays at REQ-104's 5-scalar limit; foliar-specific levers belong with
-the block they affect — discoverable next to the gap grid they drive.
-
-**Cert:** 5 (structural).
-
 ---
 
 ## REQ-114 — Block 5 reactive to spray count + surfactant changes
@@ -169,8 +110,6 @@ the block they affect — discoverable next to the gap grid they drive.
 `nutr-foliar-surfactant` re-renders Block 5 with new per-element
 delivered numbers. The supply path passes the inputs through to
 `window.FoliarRecipeTomato.computeFoliarSupply(stage, { sprayCount, surfactant })`.
-
-**Cert:** 5 (structural).
 
 ---
 
@@ -181,10 +120,6 @@ numbers by reading from the same constants/recipes that drive the
 team-facing Fertigation, Foliaire, and Side-dressing pages. No duplicated
 dose tables. If a recipe changes on a team-facing page, the Bilan reflects
 it on next render with no separate edit.
-
-**Rationale:** Two copies of a dose table inevitably drift. When they
-drift, the Bilan lies — which is worse than not having it. The team
-adjusts recipes on the operational pages; the Bilan is downstream.
 
 **Scope today:**
 
@@ -200,13 +135,12 @@ adjusts recipes on the operational pages; the Bilan is downstream.
 
 **Remaining clean-up on side-dress** (low priority, future work):
 
-- The soil page HTML still hardcodes the per-stage numbers; ideally it should
-  render from `TOMATO_SIDEDRESS` so there's truly ONE source-of-truth. For
-  now, hand-synced. If you edit `TOMATO_SIDEDRESS`, also edit the soil page
-  HTML — both must match.
-- Manual drench (EZ-GRO Ocean) was removed from the program 2026-05-02. If
-  reintroduced, add a `TOMATO_DRENCH[stage]` constant + `supply.drench` in
-  `calcNutrSupply` + a Block 3b (or merge into Block 3) in the Bilan.
+- Soil page HTML still hardcodes per-stage numbers; ideally renders from
+  `TOMATO_SIDEDRESS` for true single source-of-truth. Hand-synced for now —
+  edits to `TOMATO_SIDEDRESS` must mirror to soil page HTML.
+- Manual drench (EZ-GRO Ocean) removed 2026-05-02. If reintroduced, add
+  `TOMATO_DRENCH[stage]` + `supply.drench` in `calcNutrSupply` + Block 3b
+  (or merge into Block 3) in the Bilan.
 
 ---
 

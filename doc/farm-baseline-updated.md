@@ -5,10 +5,9 @@
 - Greenhouse: 108 × 120 ft (1,204 m²), built summer 2025
 - Crops: tomatoes, lettuce (Salanova — sold processed/bagged), spinach
 - Channel: grocery stores
-- Certification: organic (required, non-negotiable)
-- Certifier: [CONFIRM — Ecocert / Québec Vrai / other]
+- Certification: organic (required). Certifier: [CONFIRM — Ecocert / Québec Vrai / other]
 - Team: 2 R&D (Jordane + partner), 3 production/ops
-- Current tomato yield: ~1.3 kg/m²/wk peak rate (~87% of 1.5 kg/m²/wk target) — recovering post-pH-correction; closing the gap, not catastrophic anymore but still under target. Lettuce status: TBD pending separate update. (Earlier "~15% of target" reading reflected pre-recovery state, ~April 2026.)
+- Tomato yield (May 2026): ~1.3 kg/m²/wk peak (~87% of 1.5 target). Recovering post-pH-correction. Lettuce status: TBD.
 
 ## Infrastructure
 - Climate control: temperature + humidity automated
@@ -57,32 +56,28 @@
 | Conservative target (next season) | 30-35 | 11,487-13,402 kg |
 | Jordane's target | 45 | 17,231 kg |
 
-- 45 kg/m² is at the high end for organic soil-based greenhouse with no supplemental lighting in Quebec
-- Conventional hydroponic benchmarks: 50-70 kg/m²/year
-- Organic soil-based benchmarks: 25-40 kg/m²/year
-- This season's tomato crop has 4+ months of starvation damage — structural recovery limited
-- **Recommendation:** Target 30-35 kg/m² for first full season post-correction (2026-27)
+Benchmarks: hydroponic 50-70 kg/m²/yr; organic soil-based 25-40 kg/m²/yr.
+45 kg/m² = high end for organic soil + no supplemental lighting in Quebec.
+**Recommendation:** target 30-35 kg/m² for first full post-correction season (2026-27).
 
 ### Lettuce (Salanova)
 | Scenario | kg/bed/cycle | Heads/m² | Head weight | Annual total (4 beds × 26 cycles) |
 |---|---|---|---|---|
 | Current (15%) | ~30 | — | — | ~3,120 kg |
-| Near-term (with bridge strategies, 6-8 weeks) | 80-120 | 25 | 65-95g | 8,320-12,480 kg |
+| Near-term (bridge strategies, 6-8 wk) | 80-120 | 25 | 65-95g | 8,320-12,480 kg |
 | Conservative (plan) | 200 | 25 | 160g | 20,800 kg |
 | Optimistic (stretch) | 250 | 25 | 200g | 26,000 kg |
-| Aspirational (don't plan on this) | 300 | 25 | 240g | 31,200 kg |
+| Aspirational | 300 | 25 | 240g | 31,200 kg |
 
-- 200 kg/bed/cycle (4 kg/m²) at the top of published soil-based research
-- 300 kg/bed/cycle requires head weights beyond typical Salanova range (150-200g commercial)
-- **Recommendation:** Plan on 200, stretch to 250. Do not model revenue at 300 for Salanova.
+200 kg/bed/cycle = top of published soil-based research. 300 requires head
+weights beyond typical Salanova commercial range (150-200g).
+**Recommendation:** plan 200, stretch 250. Do not model revenue at 300.
 
-### Tray-finished Salanova (alternative SKU — exploratory)
-- 5-week tray-grown Salanova in 50-cell trays under your light + CO₂ conditions
-- Estimated 70-110g per plant in spring/summer (May-September)
-- Estimated 25-50g per plant in winter (light-limited)
-- 150g target NOT achievable in 50-cell trays — requires 32-cell minimum
-- Worth piloting in mid-May for late-June harvest as comparison to bed-finished
-- Tradeoffs: skips transplant labor but lower yield/plant, higher seed cost, requires market validation
+### Tray-finished Salanova (exploratory SKU)
+- 5-week 50-cell trays under current light + CO₂: 70-110 g/plant spring/summer; 25-50 g winter.
+- 150 g target requires 32-cell minimum (cell volume binding).
+- Pilot worth: mid-May seed → late-June harvest, compare to bed-finished.
+- Tradeoffs: skips transplant labor, lower yield/plant, higher seed cost, market validation needed.
 
 ## ROOT CAUSE DIAGNOSIS — CONFIRMED
 
@@ -132,10 +127,10 @@
 | Aluminum (ppm) | 0.1 – 0.3 | **⬆ 1.35** | 0.29 |
 
 **Critical findings (revised May 2026):**
-- **Mn and Zn lockouts are confirmed binding constraints** — plants have no effective root-scavenging mechanism for these at pH 7.4. Foliar program is the unlock; soil pH correction is the long-term fix.
-- **P "lockout" likely overstated.** SME P at 0.8-1.1 ppm is below the 5-50 spec range, but that range is calibrated for soilless/hydroponic systems. In soil-based growing, plants access P via root acid exudation (citric/malic/oxalic), acid phosphatase enzymes, root architecture plasticity, and AMF associations — none of which the SME captures. Mehlich-3 reserves of 558-678 kg/ha represent a *vault* of P (5-10× typical field veg requirements), not a depleted bank. PA Taillon (agronomist) confirmed he's never seen a P deficiency problem even in soils with very low test P.
-- **Tissue test pending to confirm.** Until tissue numbers are in, treat P as "probably adequate via scavenging" and Mn/Zn as the real targets.
-- **Implication:** sulfur application is justified for Mn/Zn unlock and overall pH normalization, not specifically for P. Foliar P stays correctly excluded.
+- Mn / Zn lockouts = confirmed binding constraints at pH 7.4. Foliar unlocks; pH correction is the long-term fix.
+- P "lockout" likely overstated. SME 5-50 ppm spec is calibrated for soilless; soil-based plants access P via root acid exudation, acid phosphatase, AMF. Mehlich-3 reserves 558-678 kg/ha = 5-10× field-veg requirement. PA Taillon: never seen P deficiency even at very low test P.
+- Tissue test pending. Treat P as probably-adequate; Mn/Zn as the real targets.
+- Sulfur justified for Mn/Zn unlock + pH normalization, not P. Foliar P excluded.
 
 ## Equipment
 
@@ -153,10 +148,10 @@
 - Yucca surfactant (Therm-X 70, Yucca Ag, or Quillaja) — confirm with certifier
 - Tissue test budget ($40 each, 6-8/year recommended)
 
-### No longer needed
-- ~~Citric acid for fertigation~~ — water alkalinity (25 ppm) is too low to matter; water acid load (0.001 meq/L) dwarfed by soil buffering (~140 meq/L at CEC 28). Single-cycle root pH effect is negligible. **Sulfur application is the real soil pH lever.**
-- ~~Plantiful (BioSun)~~ — fermented kelp + Bacillus + yucca; mechanism doesn't address Ca-saturated alkaline lockout. Saves ~$900-1500/year.
-- ~~Fertigation oligos (Fe/Mn/Zn/Cu/B/Mo sulfates)~~ — sulfate forms precipitate at pH 7.4. Foliar handles all micros. Reintroduce when soil pH < 6.5.
+### Retired (do not reintroduce until trigger)
+- Citric acid — soil buffering (~140 meq/L) dwarfs water acid load (0.001 meq/L). Sulfur is the real lever.
+- Plantiful (BioSun) — kelp + Bacillus + yucca; doesn't address Ca-saturated alkaline lockout. ~$900-1500/yr saved.
+- Fertigation oligos (Fe/Mn/Zn/Cu/B/Mo sulfates) — precipitate at pH 7.4. Reintroduce when pH < 6.5.
 
 ## Active Programs
 
@@ -171,26 +166,16 @@
 
 **Daily check (Tue-Fri):** if barrel empty → close Dosatron valves + open bypass + post Slack.
 
-### Foliar program (Wednesday morning, alternating weekly)
-**Schedule:** Wednesday morning. Window = sunrise + 30 min to min(sunrise + 3h, 10:00). Auto-adapts year-round.
+### Foliar program
 
-**Spray A (Mn+Zn+B+Cu+Mo) — even weeks**
-- Tomato master 45L: MnSO₄ 66g, ZnSO₄ 66g, Solubore 21g, CuSO₄ 12g, Na molybdate 3g, yucca 45 mL
-- Lettuce master 15L: 22g, 22g, 7g, 4g, 1g, 15 mL
+Note: April 2026 baseline. Current foliar recipe lives in
+`nutrition/tomato/foliar-recipe/` (Fe-EDDHA dropped 2026-04-29; Iron DL +
+yucca dropped 2026-05-05; CuSO₄ cut 4 → 2 g — see `working files/changelog.md`).
 
-**Spray B (Fe-EDDHA only) — odd weeks**
-- Tomato 45L: Fe-EDDHA 33g, yucca 45 mL
-- Lettuce 15L: 11g, 15 mL
+**Schedule:** Wednesday morning. Window = sunrise + 30 min to min(sunrise + 3h, 10:00).
 
-**Mixing order:** yucca FIRST (disperser), then other products. Never mix A+B (Fe+P precipitate).
-
-**Mixing workflow:**
-- **Tomato (45L):** master bucket → divide into 3 backpacks of 15L. Master bucket needed for dose consistency across the 3 backpacks.
-- **Lettuce (15L):** mix directly in the backpack. 1 backpack = full dose for all 4.5 beds. No master bucket needed — Spray A is ~3.7 g/L, Spray B is ~0.7 g/L, both well below solubility limits, dissolves in cold tap water with pump-agitation.
-
-**Cu and Mo doses:** use existing fertigation stock products (no new purchase needed).
-- Cu has narrowest safe range — watch for leaf burn
-- Mo has wide tolerance (~100× margin), 1g vs 1.5g doesn't matter — no precision scale needed
+Mixing order: yucca FIRST (disperser), then other products. Never mix A+B (Fe+P precipitate).
+Tomato 45L master → 3 × 15L backpacks. Lettuce 15L direct in backpack.
 
 ### Nursery fertigation (Semis laitue — Salanova, 5-week cycle)
 **Recipe (per tray, weekly):**
@@ -212,77 +197,53 @@
 - **Stop watering 4 days before transplant** — physically separate week-5 trays
 - Hardening duration: 3 days summer, 4 days spring/fall (with 220 µmol supplemental), 5-6 days winter (rough rule: 60 ÷ total DLI)
 
-## Key Decisions Made (April 2026 Conversation)
+## Key Decisions (April 2026)
 
-### Acid/pH Management
-- **Removed citric acid from fertigation** — water alkalinity 25 ppm is negligible; soil buffering dominates (~140 meq/L vs water's 0.001 meq/L). Empirical data: 7g/10L clean water → pH 2.7; 50g/60L stock → pH 3.5; stock 3.5 → output 6.4; stock 2.7 → output 5.8. Buffered stock at same pH ≠ same output as clean stock.
-- **Sulfur application is the real soil pH lever** — not water acidification.
+- **Citric acid removed from fertigation.** Soil buffering ~140 meq/L vs water's 0.001 meq/L. Sulfur is the real pH lever.
+- **Plantiful (BioSun) removed.** Kelp + Bacillus + yucca doesn't address Ca-saturated alkaline lockout.
+- **Fulvic acid skipped.** No clear evidence transformative for this situation.
+- **Fertigation oligos dropped.** Sulfate forms precipitate at pH 7.4. Foliar handles micros. Reintroduce when pH < 6.5.
+- **Cu and Mo from existing fertigation stock** added to Spray A.
+- **Foliar P dropped (2026-04-29).** Cuticle barrier limits uptake to 5-15%; Cu-protein precipitation risk with fish hydrolysate; real fix is sulfur → unlock 557-678 kg/ha Mehlich-3 P bank. Diagnosis path = tissue test ($40).
+- **Nursery fish dose 10 → 13 mL/L** for tray-finishing strategy. EC measurement added (solution + substrate). Top-watering with hardening: stop water 4 days before transplant, separate week-5 trays.
+- **Tray-finishing exploration.** 50-cell 5-wk = 70-110 g/plant spring/summer; 150 g target needs 32-cell. Pilot before committing.
+- **Sonotubes:** permanent Ca leach; maintenance sulfur applications required indefinitely.
 
-### Biostimulants
-- **Removed Plantiful (BioSun)** — contains fermented kelp + Bacillus amyloliquefaciens/velezensis + yucca, NOT fulvic/humic acid. Mechanism doesn't address Ca-saturated alkaline lockout.
-- **Skipped fulvic acid addition** — no clear evidence it's transformative for this specific situation. Marginal benefit at best.
+## Action Plan — Status (April 28, 2026; deltas in changelog)
 
-### Foliar Strategy (Option C — drop all fertigation oligos)
-- **Drop all fertigation oligos** (Fe, Mn, Zn, Cu, B, Mo sulfates) — sulfate forms precipitate at pH 7.4
-- **Foliar handles all micros** — bypasses soil chemistry entirely
-- **Cu and Mo from existing fertigation stock products** — added to Spray A
-- **Yucca surfactant added to both sprays** — improves leaf coverage from ~30% to ~80-90%
-- Reintroduce fertigation oligos when soil pH < 6.5 (sulfate forms become viable again)
-- **Dropped foliar P (April 29, 2026)** — foliar P only covers 5-15% of crop demand (cuticle barrier limits uptake), risks Cu-protein precipitation if using fish hydrolysate, and adds nozzle-clog/jar-test complexity. Real fix is sulfur → unlock existing Mehlich-3 P bank (557-678 kg/ha already in soil). Fertigated P also rejected: precipitates as Ca-phosphate at pH 7.4. P diagnosis path = tissue test ($40), not foliar trial.
+### Done
+- Water analysis (clean), compost identified as root cause
+- Bluelab pH + EC pens in use
+- Foliar program (Spray A/B alternating Wednesday); Cu/Mo from existing stock
+- Fertigation simplified (K + Mg only)
+- Nursery fertigation (13 mL/L fish, 2 mL/L kelp, EC monitoring, hardening protocol)
+- Team app built (Semaine/Fertigation/Foliaire/Irrigation pages)
 
-### Nursery (Semis laitue)
-- Bumped fish dose 10 → 13 mL/L for tray-finishing strategy
-- Added EC measurement (solution + substrate)
-- Confirmed top-watering practice (no bottom-watering infrastructure)
-- Salt accumulation at cell bottom is a known consequence of top-watering — substrate EC tracking catches drift
-- Hardening procedure: stop watering 4 days before transplant, separate week-5 trays from regular cycle
+### Pending
+- Source elemental sulfur (OMRI-listed) — apply 2-3 kg/100m²
+- First sulfur application (week 2-4)
+- Soil pH retest 6 wk post-sulfur
+- Tissue tests ($40 × 6-8/year)
+- Tray-finishing pilot — 5 trays mid-May through week 5
+- CO₂ enrichment evaluation ($1500-3000, 15-30% biomass)
 
-### Tray-finishing Exploration
-- 5-week harvest in 50-cell trays could produce 70-110g/plant in spring/summer
-- 150g/plant requires 32-cell trays minimum (cell volume becomes binding constraint)
-- CO₂ enrichment in production beds = highest-leverage cycle-shortening change for current setup
-- **Test before committing** — pilot 5 trays through week 5 instead of transplanting
-
-### Sonotube Long-term Implication
-- Sonotubes in beds will continue to leach Ca slowly even after pH is corrected
-- **Periodic maintenance sulfur applications required indefinitely**
-
-## Action Plan — Current Status (April 28, 2026)
-
-### Done ✅
-- Water analysis (clean — not the cause)
-- Compost identified as root cause (Savaria ORGANIMIX marin)
-- Bluelab pH pen acquired and in use
-- Bluelab EC pen acquired
-- Foliar program established (Spray A/B alternating, Wednesday mornings)
-- Cu and Mo added to foliar (using existing stock)
-- Yucca surfactant identified as next purchase
-- Fertigation simplified (K + Mg only; no acids, oligos, or Plantiful)
-- Nursery fertigation implemented (13 mL/L fish, 2 mL/L kelp, EC monitoring)
-- Hardening protocol defined (stop watering 4 days before transplant)
-- App for team built (fertigation calculator with Semaine/Fertigation/Foliaire/Irrigation pages)
-
-### Pending 🟡
-- **Source elemental sulfur (OMRI-listed)** — apply 2-3 kg/100m²
-- **Source yucca surfactant** (Therm-X 70, Yucca Ag, or Quillaja) — confirm with Ecocert/Québec Vrai
-- **First sulfur application** (week 2-4)
-- **Soil pH retest** in 6 weeks post-sulfur
-- **Tissue tests** ($40 each, 6-8/year recommended)
-- **Tray-finishing pilot** — 5 trays seeded mid-May, run through week 5 instead of transplanting
-- **CO₂ enrichment evaluation** for production beds (~$1500-3000 capital, 15-30% biomass increase)
+### Decided post-baseline (see `working files/changelog.md` for live state)
+- Yucca surfactant NOT on order (2026-05-05). Foliar coverage fixed at 30%.
+- Iron DL dropped permanently. Foliar Fe stays on FeSO₄ 80 g/15 L.
+- CuSO₄ cut 4 → 2 g in Spray A (toxicity risk without surfactant).
 
 ### Future
-- Trial 32-cell nursery trays for tray-finishing experiment
-- Trial 25 vs 43 plants/m² density for processed Salanova
-- Reintroduce fertigation oligos once soil pH < 6.5
+- 32-cell tray trial for tray-finishing
+- 25 vs 43 plants/m² density trial for processed Salanova
+- Reintroduce fertigation oligos when soil pH < 6.5
 
 ## Monitoring Protocol
-- **Irrigation output pH/EC:** spot check (low priority now that water is clean)
-- **Bed soil pH (1:1 slurry):** weekly during sulfur correction phase, same spots, track trend
-- **Nursery solution EC:** every batch (verification)
-- **Nursery substrate EC:** post-watering, 2-3 cells/tray averaged
-- **SME retest:** every 4-6 weeks (lab) — track P, Mn, Zn recovery
-- **Tissue tests:** 6-8/year — track foliar program effectiveness
+- Irrigation output pH/EC: spot check (low priority)
+- Bed soil pH (1:1 slurry): weekly during sulfur correction, same spots
+- Nursery solution EC: every batch
+- Nursery substrate EC: post-watering, 2-3 cells/tray averaged
+- SME retest: every 4-6 wk (track P, Mn, Zn recovery)
+- Tissue tests: 6-8/year
 
 ## Open Questions
 1. What is OM2 pour-through pH at week 1 vs week 5?

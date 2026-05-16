@@ -4,18 +4,17 @@ Specs for the model that estimates the **weekly per-element nutrient release
 from past compost amendments** (currently: Savaria ORGANIMIX marin applied
 fall 2025, ~25.4 kg/m² across all production beds).
 
-This file is the *spec* (what the model must do or be). Formulas, source
-tables, per-element rationale, label values, current cert per element, and
-refinement triggers live in `derivation.md` next door.
+Formulas, source tables, per-element rationale, label values, current cert
+per element, and refinement triggers live in `derivation.md` next door.
 
 The model answers exactly one question: **"how much of element X is the
 soil expected to release this week from the residual compost amendment?"**
 
 It does NOT answer:
-- How much was applied originally (that's static historic state, in `data.js`).
-- How fast the amendment decays year-over-year (the v1 model is a flat
-  year-1 estimate; a decline curve is deferred — see refinement triggers
-  in `derivation.md`).
+- How much was applied originally (static historic state, in `data.js`).
+- How fast the amendment decays year-over-year (v1 is a flat year-1
+  estimate; decline curve deferred — see refinement triggers in
+  `derivation.md`).
 - Per-bed or per-section variation (uniform across all beds; verified by
   Berger soil tests showing similar Ca-saturation on tomato + lettuce planches).
 - Contributions from any other channel (sidedress, fertigation, foliar) —
@@ -36,17 +35,23 @@ week-of-year, months-since-application).
 
 ### Output
 
-`window.CompostContribution.releasePerWeek` — object keyed by element,
-values in **g/m²/wk**:
+Two per-element maps, keyed by element, closed at the 5 macros declared
+on the Savaria label (plus Mg, assumed conservative — see `derivation.md`):
+
+- `window.CompostContribution.releasePerWeek` — values in **g/m²/wk**
+  (mass released per unit area per week, applied to the bed).
+- `window.CompostContribution.efficiency` — values in `[0, 1]`
+  (share of applied compost mass plant-available within year 1 for that
+  element under current Décembre conditions; see REQ-157 + `derivation.md`).
 
 ```
-{ N, P, K, Ca, Mg }
+releasePerWeek: { N, P, K, Ca, Mg }
+efficiency:     { N, P, K, Ca, Mg }
 ```
 
-Element coverage is closed at the 5 macros declared on the Savaria label
-(plus Mg, assumed conservative — see `derivation.md`). Adding a sixth
-element requires entries in **all** of `COMPOST_LABEL_PCT`,
-`COMPOST_MINERALIZATION_YEAR1`, and `COMPOST_RELEASE_PER_WEEK`.
+Adding a sixth element requires entries in **all** of `COMPOST_LABEL_PCT`,
+`COMPOST_MINERALIZATION_YEAR1`, `COMPOST_RELEASE_PER_WEEK`, and
+`COMPOST_EFFICIENCY`.
 
 ---
 
@@ -73,11 +78,9 @@ For every element `el`, `COMPOST_RELEASE_PER_WEEK[el]` falls within
 `(applied_g_per_m2[el] × COMPOST_MINERALIZATION_YEAR1[el] / 52) ×
 COMPOST_SEASONAL_FACTOR`.
 
-**Rationale:** Catches order-of-magnitude transcription errors in the
-release table (typo, decimal slip) while allowing conservative manual
-overrides (e.g. Mg rounded down for label-gap conservatism — see
-derivation). A tighter bound would force perfect formula match and
-disallow that override; a looser bound would miss real bugs.
+Catches order-of-magnitude transcription errors while allowing conservative
+manual overrides (e.g. Mg rounded down for label-gap conservatism — see
+derivation).
 
 **Cert:** 4 (bound calibrated against current data, not a published threshold).
 
@@ -94,11 +97,13 @@ At runtime, `window.CompostContribution` exists and exposes:
 | `MINERALIZATION_YEAR1`         | object   |
 | `SEASONAL_FACTOR`              | number   |
 | `releasePerWeek`               | object   |
+| `efficiency`                   | object   |
 | `theoreticalReleasePerWeek`    | function |
 
-**Rationale:** Same as `PlantNeedsTomato` (REQ-083): consumers (Bilan UI
-for both crops, future recipe calculators) read compost data through this
-namespace so internals can be refactored without breaking call sites.
+`efficiency` (REQ-157) is the channel-side contract for the Efficacité
+column (REQ-156). Numerically equal to `MINERALIZATION_YEAR1` in the
+current model (pH-lockout already baked into per-element rates),
+re-exposed for the canonical-handle reason.
 
 **Cert:** 5 (structural assertion).
 

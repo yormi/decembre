@@ -23,3 +23,7 @@ One claim per line. Most recent at the bottom (true append).
 ## Claims
 
 2026-05-14T07:30:00Z — REQ-154 — seed — bootstrap — nutrition/tomato/fertigation-recipe/spec.md
+2026-05-15T12:28:09Z — REQ-155 — plant-nutrition-specialist — claude-code — nutrition/tomato/fertigation-recipe/spec.md
+2026-05-15T19:06:15Z — REQ-156 — product-owner — claude-code — nutrition/spec.md
+2026-05-15T19:19:25Z — REQ-157 — product-owner — claude-code — nutrition/spec.md
+2026-05-16T01:40:52Z — REQ-158 — product-owner — claude-code — requirements.md

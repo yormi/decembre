@@ -1,22 +1,18 @@
 # Substrate-contribution (nursery)
 
 Specs for the model that estimates the **weekly per-element nutrient
-release from the seedling substrate** in the Salanova nursery (Berger OM2
-peat-based organic mix front-loaded with feather meal at potting; 50-cell
-trays, ~1.65 L substrate/tray).
+release from the seedling substrate** (Berger OM2 peat-based organic mix
+front-loaded with feather meal at potting; 50-cell trays, ~1.65 L/tray).
 
-This file is the *spec* (what the model must do or be). Formulas, source
-tables, per-element rationale, label values, current cert per element, and
-refinement triggers live in `derivation.md` next door.
+Spec only. Formulas, source tables, per-element rationale, label values,
+current cert per element, and refinement triggers live in `derivation.md`.
 
-The model answers exactly one question: **"how much of element X does the
-substrate release per tray per week, given the front-load rate and the
-substrate volume?"**
+Question answered: **"how much of element X does the substrate release
+per tray per week, given the front-load rate and substrate volume?"**
 
-It does NOT answer:
-- The plant's demand (that's `nutrition/nursery/...plant-needs/`).
-- The fertigation contribution (that's `nutrition/nursery/.../fertigation`).
-- Whether to switch substrates or front-load products (operational).
+Out of scope: plant demand (`nutrition/nursery/.../plant-needs/`),
+fertigation contribution (`nutrition/nursery/.../fertigation`),
+substrate/product selection (operational).
 
 ---
 
@@ -24,25 +20,36 @@ It does NOT answer:
 
 ### Inputs
 
-- `week` (1-5) — week of the seedling cycle.
-- `featherMealPerTrayG` — front-load rate, g of feather meal per tray.
-  Defaults to `NURSERY_FEATHER_MEAL_DEFAULT_G_PER_TRAY` (= 9 g) when
-  omitted. Bounded above by `LIMITS.maxFeatherMealPerTrayG` (REQ-094).
+- `week` (1-5).
+- `featherMealPerTrayG` — front-load rate g/tray. Defaults to
+  `NURSERY_FEATHER_MEAL_DEFAULT_G_PER_TRAY` (= 9 g). Capped by
+  `LIMITS.maxFeatherMealPerTrayG` (REQ-094).
 
 ### Output
 
 `window.SubstrateContributionNursery.theoreticalSubstrateReleasePerWeek(week, fmG)`
-returns an object keyed by element, values in **mg/tray/wk**:
+→ object keyed by element, values in **mg/tray/wk**:
 
 ```
 { N, P, K, Ca, Mg }
 ```
 
 `window.SubstrateContributionNursery.cycleAverageReleasePerTray(fmG)`
-returns the same shape, averaged across the 5 weeks of the cycle.
+→ cycle-averaged result:
+
+```
+{
+  perTray_mg: { N, P, K, Ca, Mg },     // mg/tray/wk averaged across cycle
+  details:    { el: {cert, cap}, … },  // REQ-136 per-element payload
+  efficiency: { N, P, K, Ca, Mg },     // REQ-157, ∈ [0, 1] per element
+}
+```
+
+`window.SubstrateContributionNursery.efficiency` also exposed at namespace
+level (REQ-157) — same object as the function's `efficiency` key.
 
 OM2 contributes the 5 macros; feather meal contributes ONLY N (label
-13-0-0). Element coverage is closed at the 5 macros (INV-1).
+13-0-0). Element coverage closed at the 5 macros (INV-1).
 
 ---
 
@@ -56,9 +63,7 @@ Same single-cert transferability scale as `nutrition/tomato/plant-needs/spec.md`
 ## INV-1 — Element coverage closure
 
 `keys(OM2_STARTER_CHARGE_PPM) ⊆ {N, P, K, Ca, Mg}` and feather meal
-contributes only the `N` channel. Adding a non-macro to OM2 (e.g., S)
-or a P/K-bearing front-load product requires extending this invariant
-in lockstep.
+contributes only the `N` channel.
 
 ---
 
@@ -67,28 +72,12 @@ in lockstep.
 `Σ OM2_RELEASE_CURVE_BY_WEEK ∈ [0.95, 1.05]` and
 `Σ FEATHER_MEAL_RELEASE_CURVE_BY_WEEK ∈ [0.95, 1.05]`.
 
-**Rationale:** Mass balance — every gram of OM2 starter or mineralizable
-feather meal that's accounted for should be released across the cycle.
-A curve drifting outside the band usually means a typo (e.g. dropped a
-non-zero week) or that the model is silently dropping/double-counting
-some fraction of the front-load.
-
 ---
 
 ## REQ-094 — Feather meal front-load cap (germination protection)
 
-`LIMITS.maxFeatherMealPerTrayG ≤ 9`.
-
-**Statement:** Substrate front-load is capped at 9 g feather meal per
-tray. Going higher risks germination loss in Salanova (peat substrate +
-salty feather-meal-N pulse → poor radicle emergence).
-
-**Rationale:** This is an operational ceiling, not a soft target — the
-team has observed germination drop-off above this threshold and
-Sonneveld guidance for peat substrate salt sensitivity backs it. Surfaced
-through the model so the Semis page slider clamps to it; otherwise a
-recipe author could request a 15 g/tray front-load and silently kill the
-cohort.
+`LIMITS.maxFeatherMealPerTrayG ≤ 9`. Substrate front-load capped at
+9 g feather meal per tray; higher risks germination loss in Salanova.
 
 **Cert:** 4 (operational ceiling, observed by team + Sonneveld).
 
@@ -98,15 +87,9 @@ cohort.
 
 For any week `w`,
 `theoreticalSubstrateReleasePerWeek(w, 2X).N − theoreticalSubstrateReleasePerWeek(w, X).N`
-equals `theoreticalSubstrateReleasePerWeek(w, X).N − theoreticalSubstrateReleasePerWeek(w, 0).N`
-(feather meal N component scales linearly with the front-load rate).
-The OM2 component (P / K / Ca / Mg, plus the OM2-N fraction) is unchanged
-when the feather meal rate doubles.
-
-**Rationale:** The model treats OM2 and feather meal as independent,
-additive contributions. A bug that mixes them (e.g., scaling OM2 by
-feather meal rate) silently corrupts the supply credit. This invariant
-catches it.
+equals `theoreticalSubstrateReleasePerWeek(w, X).N − theoreticalSubstrateReleasePerWeek(w, 0).N`.
+OM2 component (P/K/Ca/Mg + OM2-N fraction) unchanged when feather meal
+rate doubles.
 
 **Cert:** 5 (structural).
 
@@ -117,10 +100,6 @@ catches it.
 `cycleAverageReleasePerTray(fmG).N ≈ (fmG × FEATHER_MEAL_LABEL_PCT.N ×
 FEATHER_MEAL_MINERALIZATION_FRAC × 1000) / weeksInCycle + (OM2 N
 contribution avg)` within ±10 %.
-
-**Rationale:** If the per-week curve sums to 1.0 (INV-2), the average
-must equal `total_mineralizable_N / 5`. Catches a curve that's "shaped
-right but normalized wrong".
 
 **Cert:** 5 (structural).
 
@@ -140,37 +119,29 @@ At runtime, `window.SubstrateContributionNursery` exists and exposes:
 | `NURSERY_TRAY_SUBSTRATE_VOL_L`         | number   |
 | `NURSERY_FEATHER_MEAL_DEFAULT_G_PER_TRAY` | number |
 | `LIMITS`                               | object   |
+| `efficiency`                           | object   |
 | `theoreticalSubstrateReleasePerWeek`   | function |
 | `cycleAverageReleasePerTray`           | function |
 
-**Rationale:** Same pattern as `CompostContribution` (REQ-080) and
-`PlantNeedsTomato` (REQ-083): the Semis page UI and any future recipe
-calculators read substrate contribution through this namespace so
-internals can be refactored without breaking call sites.
+`efficiency` added per REQ-157 — channel-side contract for the
+Efficacité column (REQ-156).
 
 **Cert:** 5 (structural assertion).
 
 ---
 
-## Pending — OM2 datasheet pull
+## Pending
 
-OM2 starter charge values are cert 2 placeholders (typical peat-based
-organic mix) until the Berger OM2 technical sheet is dropped into
-`nutrition/nursery/doc/`. Refinement trigger: pull the datasheet,
-replace `OM2_STARTER_CHARGE_PPM` with vendor-stated values, raise cert
-to 4.
-
-## Pending — tissue-test calibration
-
-Feather meal mineralization rate (75 %) and the per-week release curve
-shape are textbook-derived (Sonneveld & Voogt). Décembre's first
-seedling tissue tests will calibrate them — bumping cert 3 → 4 on the
-curve, or refitting if the shape disagrees.
+- **OM2 datasheet pull** — `OM2_STARTER_CHARGE_PPM` is cert 2 placeholder
+  until Berger OM2 technical sheet lands in `nutrition/nursery/doc/`;
+  vendor values then raise cert to 4.
+- **Tissue-test calibration** — feather meal mineralization (75 %) and
+  per-week curve shape are textbook-derived (Sonneveld & Voogt); first
+  seedling tissue tests will calibrate (cert 3 → 4 or refit).
 
 ---
 
 ## Inherited specs
 
-- **REQ-022** (`nutrition/spec.md`) — Every product mentioned in the
-  app is Ecocert-allowed. Feather meal: CAN/CGSB-32.311 ✓ (animal
-  by-product). OM2: CAN/CGSB-32.311 ✓ (Berger organic mix).
+- **REQ-022** (`nutrition/spec.md`) — Every product Ecocert-allowed.
+  Feather meal: CAN/CGSB-32.311 ✓. OM2: CAN/CGSB-32.311 ✓.

@@ -12,4 +12,4 @@ constants (`LETTUCE_NURSERY_TISSUE_DW`, `LETTUCE_NURSERY_DM_FRACTION`,
 `NURSERY_DEFAULTS`, `calcLettuceNurseryDemand`) exist in `index.html` but
 have no enforcement specs yet. Add specs here as the model matures.
 
-Add new specs here with the next available REQ-NNN id from the global pool.
+Allocate new REQ-NNN via `scripts/claim-req.sh <spec-path> <persona>`.

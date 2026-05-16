@@ -156,28 +156,111 @@ Peer personas (`context-coherence`, …) route through this channel via the chal
 
 ---
 
-## Foliar B1 — Declare a downward-trigger for `FOLIAR_COVERAGE_DEFAULT` (approved 2026-05-14)
+## B4 — Reconcile Solubore chemistry naming (approved 2026-05-16)
 
-- **Source:** model-challenger 2026-05-12 foliar-recipe / B1.
-- **Guillaume's call:** approved as challenger framed — value stays, downward-trigger lands in `derivation.md` only. **Do NOT bring uncertainty messaging into the app** (operator-facing surfaces stay deterministic per [[feedback_no_unspecced_narrative.md]]). Principle P-03 (cert-downgrade asymmetry) captured.
+- **Source:** model-challenger 2026-05-12 fertigation-recipe / B4 (re-fire pass).
+
+- **Confirmed product identity:** `nutrition/doc/context.md` links to the supplier page for "Solubore 20 % B — Eti Maden Etidot-67." Etidot-67 is Eti Maden's trade name for **disodium octaborate tetrahydrate** (Na₂B₈O₁₃·4H₂O, ~20.8 % elemental B), matching the project-wide 20.5 % constant. Organic-cert status: CAN-CGSB-32.311 lists sodium borates as allowed micronutrient sources — disodium octaborate qualifies.
 
 - **Action:**
-  1. **Value unchanged:** `FOLIAR_COVERAGE_DEFAULT` stays at 0.30 in `nutrition/tomato/foliar-recipe/data.js`. Do not move it on this pass.
-  2. **Add a downward-trigger** to the refinement-triggers section of `nutrition/tomato/foliar-recipe/derivation.md`, paired with the existing upward-trigger ("bump back to cert 4 once tissue panel correlates ±20 %"). Draft language:
-     > "**Downward trigger** — if measured petiole Mn is ~10× lower than `computeFoliarSupply('T5').Mn` predicted (e.g. observed ≈ predicted × 0.10), Sentís 2017 cuticle-penetration ceiling governs and retention is irrelevant. `FOLIAR_COVERAGE_DEFAULT` refits to ~0.03. Foliar's role for Mn / Zn / Cu collapses — these elements become fertigation-only as soil pH drops and Mn / Zn uptake opens up at the root."
-  3. **Restate the cert reasoning to declare both directions** in the same paragraph that today declares only the upward bump. The cert downgrade 4 → 3 captured the confidence axis; the value 0.30 also has an order-of-magnitude band, not just a 1.6× band. Both bands deserve sentences in the same prose paragraph; today only the upward-bump scenario is described.
-  4. **`learnings.md`** — note that the Sentís 3 % penetration vs 30 % coverage discrepancy was raised + analyzed but the value was held; record the reasoning ("single-cultivar single-study; 25-40 % literature mid-band remains defensible working assumption pending tissue data") so a future contributor doesn't re-litigate the case.
-  5. **No operator-facing prose** about the ±10× uncertainty band. Block 7 / Bilan / Nutrition page surfaces stay as they are — Mn at 72 % of demand displays as 72 %, not as a "7-72 %" band. The uncertainty lives in `derivation.md` only.
-  6. **Append a changelog line.**
+  1. In `nutrition/tomato/fertigation-recipe/derivation.md`, replace the prose framing Solubore as "Boric acid (H₃BO₃, ~17.5 % B mass)" with "Solubor / disodium octaborate tetrahydrate (Na₂B₈O₁₃·4H₂O, 20.5 % B mass — Eti Maden Etidot-67, supplier link in `nutrition/doc/context.md`)."
+  2. Rerun the inline B-delivery example at 20.5 % so it matches the per-element table: 9 g × 20.5 % B / 382.9 m² × 1000 ≈ 4.82 mg B/m² (was 4.11 mg/m² at the wrong 17.5 %).
+  3. Sweep the rest of the spec / derivation / learnings tree for any other "boric acid" or "H₃BO₃" mentions referring to Solubore and reconcile to the disodium octaborate wording. Generic chemistry mentions ("H₃BO₃ is non-ionic at pH ≤ 9," etc., describing the species in solution) can stay if they're about chemistry, not product identity.
+  4. Append a changelog line.
 
 - **Acceptance:**
-  - `derivation.md` refinement-triggers section contains both an upward path (cert 3 → 4 if validated) AND a downward path (value 0.30 → ~0.03 if disconfirmed). Pair is symmetric per P-03.
-  - `learnings.md` has an entry capturing the Sentís 3 % vs 30 % analysis and why the value was held.
-  - `grep -E "uncertainty band|±10|×0\.10|7-72" app/index.html nutrition/tomato/app/page.html` returns nothing — operator surfaces unchanged.
-  - `npm run check` passes; REQ-101 verifier still wires.
+  - `grep -nri "boric acid\|H₃BO₃\|H3BO3\|17\.5 *% *B" nutrition/tomato/fertigation-recipe/` returns no live references to Solubore-the-product; only generic chemistry mentions if any.
+  - The inline example B-delivery figure in `derivation.md` matches the per-element table within rounding (~4.82 mg B/m² at the current 9 g Solubore dose).
+  - `npm run check` passes; no verifier change required for this fix (the constant `PRODUCT_PCT.Solubore_B = 0.205` is already correct and was the source of truth all along).
 
-**Original finding (model-challenger 2026-05-12 foliar-recipe / B1):**
+- **Out of scope:** the certainty defense on the live 9 g dose itself, and the soil-adsorption-at-Ca-rich-bed uptake discount captured under REQ-155 (B factor 0.80) — separate concerns, not part of this naming fix.
 
-> Sentís 3 % penetration vs 30 % coverage isn't reconciled — model value may be off by ~10×, not ~1.6×. If penetration is the rate-limiter at ~3 %, plant-side uptake is bounded by penetration, not by retention × penetration. Retention can be 50, 80, 100 % — none of that matters once the cuticle barrier caps absorbed mass at 3 % of what landed on the leaf. The cert downgrade is honest about confusion but the model value 0.30 remains unchanged — the derivation acknowledges a possible order-of-magnitude error and then keeps the original number. The cert downgrade addresses the confidence axis but the value 0.30 also has an order-of-magnitude band, not just a 1.6× band. Under Sentís regime, foliar Zn drops from 136 % of demand (over-fert) to 14 % (under-fert) — direction reverses.
+**Original finding (model-challenger 2026-05-12 / B4 re-fire):**
 
+> derivation.md prose at lines 134-138 frames Solubore as "Boric acid (H₃BO₃, ~17.5 % B mass) ... 9 g × 17.5 % B / 1000 ≈ 4.11 mg B/m²" while the NEW per-element table introduced by the same diff uses `element_pct = 0.205`. The rest of the project (`PRODUCT_PCT.Solubore_B`, the verifier script, the nutrient-model-reference doc) converges on 20.5 % — disodium octaborate tetrahydrate. The H₃BO₃ prose is documentation leftover from before the product identity got pinned. Operationally low impact (the dose is 9 g either way; the supply calc uses the constant, not the prose), but the audit surface — Catherine reading derivation.md prose for CAN-CGSB-32.311 review — sees "boric acid" while the bag says "Solubor / Etidot-67" (disodium octaborate). Sodium borates are explicitly allowed; boric acid framing is fuzzier and reads as a different product.
+
+---
+
+## YUCCA-CERT — Downgrade `FOLIAR_COVERAGE_WITH_YUCCA` certainty 4 → 3 in `data.js` (approved 2026-05-16)
+
+- **Source:** model-challenger 2026-05-11 foliar-recipe / D2 + 2026-05-12 foliar-recipe / B2 (same finding raised twice). Autonomous challenger approval per P-08 — impact 2/5, hygiene fix.
+
+- **Concern:** `nutrition/tomato/foliar-recipe/data.js` line 28 still reads `// With-yucca coverage; cert 4 — surfactant-assisted droplet spread + cuticle wetting jumps real uptake to 70-85 % (literature)`. The companion constant `FOLIAR_COVERAGE_DEFAULT` was downgraded from 4 to 3 on 2026-05-12 (request B2, shipped). The derivation.md prose already flags `FOLIAR_COVERAGE_WITH_YUCCA` for a parallel downgrade as a "B2' followup," but the data.js comment never caught up. Same evidence base (Sentís 2017 + literature mid-band, no Décembre tissue correlation, retention-vs-penetration axes unseparated), same certainty floor.
+
+- **Action:**
+  1. Rewrite the `FOLIAR_COVERAGE_WITH_YUCCA` comment block in `nutrition/tomato/foliar-recipe/data.js` to read certainty 3 with the same three-axis rationale used for `FOLIAR_COVERAGE_DEFAULT` (no direct Décembre measurement; literature 70-85 % range conflates retention with penetration; bump-back trigger when tissue panel correlates predicted vs measured uptake within ±20 %).
+  2. Drop the "B2' followup" callout in `derivation.md` since the followup is now landed (per `feedback_no_vestigial.md`).
+  3. No verifier change required; the certainty annotation isn't enforced by code.
+  4. Append a changelog line.
+
+- **Acceptance:**
+  - `data.js` line 28 comment block reads certainty 3 (not 4), with rationale matching the default-coverage downgrade.
+  - `derivation.md` no longer mentions "B2' followup" or "handled separately" for the yucca-coverage certainty downgrade.
+  - `grep -n "WITH_YUCCA.*cert 4\|with-yucca.*cert 4" nutrition/tomato/foliar-recipe/` returns no live references.
+  - `npm run check` passes.
+
+- **Operational impact:** none. `FOLIAR_COVERAGE_WITH_YUCCA` isn't consumed by live code today (yucca dropped from program 2026-05-05, not on order). The certainty claim becomes load-bearing only if yucca returns and the constant gets wired into Block 7 or refinement-trigger math. Fix is preventive — close the loop now so the constant doesn't carry an over-stated certainty when it next gets read.
+
+**Original findings (bundled):**
+
+> **2026-05-11 D2:** `FOLIAR_COVERAGE_WITH_YUCCA = 0.80` (stated cert 4). Specialist's defense: "surfactant-assisted droplet spread + cuticle wetting jumps real uptake to 70-85 % (literature)." Citation is missing from `derivation.md`. Sentís 2017 (cited next door for the burn-cap research note) reports surfactant-assisted Mn penetration at 20 % on tomato cuticle, not 80 %. The discrepancy may be retention-vs-penetration framing again, but the spec doesn't say. Provenance gap.
+>
+> **2026-05-12 B2:** The "B2' followup" framing is a loose-loop TODO that slips for weeks. `data.js` line 28 still reads cert 4 while the same subproject's `derivation.md` says it should be downgraded. Tying the resolution to a process artifact would close the loop; the current wording is "trust we'll get to it."
+
+---
+
+## MIN-DOSE-FLOOR — Replace uniform 0.5 g foliar min-dose floor with per-element floors (approved 2026-05-16)
+
+- **Source:** model-challenger 2026-05-11 foliar-recipe / B4. Autonomous challenger approval per P-08 — impact 2/5, hygiene with Cu narrow-toxicity edge.
+
+- **Concern:** REQ-115 in `nutrition/tomato/foliar-recipe/spec.md` currently defines a uniform "if `ideal_g < 0.5` → `0`, else `clamp(ideal_g, 0.5, burnCapG(element))`" floor in `computeFoliarRecipeForGap`. The floor is element-blind. For tiny-demand elements (Cu, Mo), the floor produces a guaranteed luxury-cap violation any time the algorithm's ideal dose lands above 0 but below 0.5 g. Cu has narrow root-uptake toxicity (the 4 → 2 g cut on 2026-05-06 happened for exactly this reason — local-pool toxicity image diagnostic). A future CE-cap reduction or Cu-gap recompute that lands at ideal_g = 0.2 g would get bumped to 0.5 g floor and deliver 2.5× the modelled need.
+
+- **Action:**
+  1. Replace the uniform 0.5 g floor in `nutrition/tomato/foliar-recipe/calc.js` `computeFoliarRecipeForGap` with a per-element floor map keyed by element, exported from `data.js`. Suggested values (your call on the exact numbers, subject to operator weigh-scale realism):
+     - K, Mg, Fe, B: 0.5 g (uniform stays — these are mass-dominant and not toxicity-narrow)
+     - Mn, Zn: 0.5 g (same — burn-cap is the binding constraint, not luxury)
+     - Cu: 0.2 g (narrow toxicity, no benefit to forcing higher mass)
+     - Mo: 0.1 g (Sonneveld 50-200 mg/L band tolerates wide range; tiny demand)
+  2. Add an alternative or complementary guard: if applying the floor would push `delivered_per_gap > 1.3 × luxury_cap`, drop the element to 0 instead. This catches the edge case where even the per-element floor is too coarse.
+  3. Update REQ-115 statement in `nutrition/tomato/foliar-recipe/spec.md` to describe the per-element floor (or the guard, whichever you choose — both work; the spec just needs to declare which rule is in force).
+  4. Update `derivation.md` with the rationale (operator scale resolution × per-element luxury-cap risk; Cu the load-bearing case).
+  5. Update REQ-115 verifier in `scripts/check-recipes.mjs` — add an assertion: `computeFoliarRecipeForGap({Cu: 0.05 * area / 1000}, {})` should produce a Cu dose ≤ 0.2 g (or 0 if the guard kicks in), not 0.5 g.
+  6. Append a changelog line.
+
+- **Acceptance:**
+  - Per-element floor map (or luxury-cap guard) lives in `data.js`; `computeFoliarRecipeForGap` reads from it.
+  - REQ-115 spec statement and `derivation.md` describe whichever rule is in force.
+  - REQ-115 verifier asserts the Cu edge case can't trip 2.5× luxury via the floor.
+  - `npm run check` passes.
+
+- **Operational impact today:** none. The current STORED recipe doesn't go through `computeFoliarRecipeForGap` for active dosing; the function feeds the FP-target side of Block 7/8. The fix is preventive — preserves correctness for the next time the algorithm recomputes a CE-constrained recipe with a small Cu gap.
+
+**Original finding (model-challenger 2026-05-11 / B4):**
+
+> REQ-115 — "If `ideal_g < 0.5` → `0` (operational floor — sub-half-gram doses aren't measurable on an organic-farm scale)." For Cu and Mo, the 0.5 g floor doesn't trigger a zero — it triggers a zero OR a delivery at the floor mass, which is ~2-4× demand for small-demand elements. Effectively the min-dose floor is a guaranteed luxury-cap violation for tiny-demand elements when the gap is non-trivial. Spec frames the floor as a safety / dosing-realism rule; doesn't acknowledge it's element-blind and violates REQ-014 on small-demand elements. Cu the load-bearing case (narrow toxicity, 4 → 2 g cut on 2026-05-06 happened for exactly this reason); Mo wide tolerance, lower stakes.
+
+---
+
+## CU-BURN-CERT — Downgrade `BURN_CAP_BASE_G.Cu` certainty 3 → 2; other elements stay at 3 (approved 2026-05-16)
+
+- **Source:** model-challenger 2026-05-11 foliar-recipe / D3. Autonomous challenger approval per P-08 — impact 2/5, certainty-provenance hygiene.
+
+- **Concern:** `BURN_CAP_BASE_G` in `nutrition/tomato/foliar-recipe/data.js` declares all six element caps at certainty 3, defended as "mid-band of Sonneveld, Yara, Cornell, U. Delaware, U. Missouri extension publications." Cu is the outlier: the live 2 g/15 L value came from a Décembre Cu-toxicity image diagnostic on 2026-05-06 (a halving from PA Taillon's original 4 g), not from extension mid-band. Extension publications support 0.05-0.1 % Cu solutions = 7.5-15 g CuSO₄/15 L, several × Décembre's 2 g. The Décembre observation is solid (certainty 3 within Décembre), but the transferability claim implicit in "extension mid-band" is wrong — that's a certainty 2 transferability bar, not 3.
+
+- **Action:**
+  1. Restructure the certainty annotation on `BURN_CAP_BASE_G` in `nutrition/tomato/foliar-recipe/data.js` to declare per-element certainties instead of the current single block: Mn/Zn/Fe/Mo/B stay at certainty 3 (extension mid-band defensible); Cu drops to certainty 2 with rationale "Décembre-internal observation 2026-05-06 — Cu local-pool-toxicity image triggered halving from PA Taillon's 4 g to 2 g; extension publications support 7.5-15 g CuSO₄/15 L on conventional ops; the lower Décembre value is defensible by local observation but not transferable."
+  2. Mirror the per-element certainty split in `nutrition/tomato/foliar-recipe/derivation.md` and `spec.md` REQ-115 (whichever already carries the certainty annotation).
+  3. Refinement-trigger entry: if tissue + lesion data across multiple seasons stabilizes the Cu cap, bump Cu back to certainty 3 (Décembre-empirical, transferable to similar Ca-saturated soil ops).
+  4. No verifier change required.
+  5. Append a changelog line.
+
+- **Acceptance:**
+  - `BURN_CAP_BASE_G` certainty annotation declares Cu at 2, other elements at 3.
+  - Derivation prose names Décembre-internal-observation as the Cu source, distinguishes from extension mid-band.
+  - Refinement trigger declares the bump-back path.
+  - `npm run check` passes.
+
+**Original finding (model-challenger 2026-05-11 / D3):**
+
+> The 2 g/15 L Cu cap came from a Décembre-specific event (Cu local-pool toxicity image, 2026-05-05) — a halving from PA Taillon's original 4 g. That's a Décembre measurement (certainty 3 within Décembre, certainty 2 transferability), not an inter-source midpoint. The extension publications support 0.05-0.1 % Cu = 7.5-15 g CuSO₄/15 L, several × Décembre's 2 g. So the Cu value is below extension guidance, defensible by Décembre observation but not by the cited sources. Cu specifically should be certainty 2; other elements (Mn 18, Zn 16, Fe 80, Mo 1, B 9) can stay certainty 3.
 

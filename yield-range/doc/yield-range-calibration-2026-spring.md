@@ -1,14 +1,6 @@
 # Yield Range — Calibration data
 
-Observed seedling weights from Décembre nursery, used to calibrate the
-yield prediction model. Spec lives in `spec.md`; formula derivation,
-constants history, and stress-function tables live in `derivation.md`.
-Each row here is a single observation; add new rows as more cohorts are
-weighed.
-
-This file is the source-of-truth for empirical anchors. When
-`RGR_MAX_LETTUCE_NURSERY` or `SHOOT_PER_ML_SUBSTRATE` change in
-`derivation.md`, the rationale + n must trace back here.
+Observed seedling weights from Décembre nursery. Source-of-truth for empirical anchors: when `RGR_MAX_LETTUCE_NURSERY` or `SHOOT_PER_ML_SUBSTRATE` change in `derivation.md`, the rationale + n trace back here. Spec in `spec.md`; formula derivation and stress-function tables in `derivation.md`.
 
 ---
 
@@ -39,10 +31,7 @@ This file is the source-of-truth for empirical anchors. When
 > laitue de qualité. Ils apprécient des températures plus basses que
 > les tomates. Proposition: essayer de les faire en pépinière à la place?"
 
-→ Implication: T_day setpoint optimized for tomato (~22–26°C) likely runs
-above lettuce optimum (18–22°C). Bolting + senescence at d28→d35
-consistent with chronic mild heat stress. The model flags sustained
-T_day > 26°C as a bolting-risk trigger.
+→ T_day setpoint optimized for tomato (~22–26°C) likely above lettuce optimum (18–22°C). Bolting + senescence at d28→d35 consistent with chronic mild heat stress. Model flags sustained T_day > 26°C as bolting-risk trigger.
 
 ### Patterns extracted
 
@@ -75,61 +64,34 @@ Backed-out parameters that fit the 4 observations:
 | Spacing floor | 0.40 at d30+ | 3 |
 | Cycle-avg stress product | ≈ 0.76 (excl. light, which is rarely binding) | 2 |
 
-**DLI correction note.** Initial fit (RGR_max = 0.35) assumed DLI = 11.5
-(LED only). That was wrong: the greenhouse gets natural sun too. With
-corrected DLI ≈ 27.5 (sun 16 + LED 11.5), the spacing decay no longer
-creates a light-starvation cliff past d18, so RGR_max refit lower
-(0.22). Operationally the d28→d35 mass loss is dominated by **bolting
-+ heat + root-cap saturation**, not light starvation.
+**DLI correction note.** Initial fit (RGR_max = 0.35) assumed DLI = 11.5 (LED only) — wrong; greenhouse gets sun too. With corrected DLI ≈ 27.5 (sun 16 + LED 11.5), spacing decay no longer creates a light-starvation cliff past d18, so RGR_max refit to 0.22. Operationally d28→d35 mass loss is dominated by **bolting + heat + root-cap saturation**, not light starvation.
 
-These values are starting points for the integration. Iteratively refit
-when integration code lands and we run it against the 4 observations.
+Starting points; refit iteratively when integration code runs against the 4 observations.
 
 ---
 
 ## How to add new observations
 
-1. **New cohort, same conditions:** append a row to the existing batch table.
-2. **New cohort, different conditions** (cell type, zone, spread schedule):
-   start a new dated batch section. Conditions are part of the calibration
-   key — don't pool unlike cohorts.
-3. **At n ≥ 5** under matching conditions: refit `RGR_MAX_LETTUCE_NURSERY`
-   to minimize squared residual against the integration. Update spec.md
-   constant + cert level.
-4. **Mark the spec calibration anchor** with the date of the most recent
-   refit and the n at refit time.
-5. **If a cohort's measured FW is outside ±25% of the predicted band**:
-   investigate before refitting — likely an environmental anomaly worth
-   capturing as a qualitative note rather than averaging into RGR_max.
+1. **Same conditions:** append a row to the existing batch table.
+2. **Different conditions** (cell type, zone, spread schedule): start a new dated batch section. Conditions are part of the calibration key — don't pool unlike cohorts.
+3. **At n ≥ 5** under matching conditions: refit `RGR_MAX_LETTUCE_NURSERY` to minimize squared residual; update spec.md constant + cert level.
+4. Mark the spec calibration anchor with refit date and n.
+5. **Measured FW outside ±25 % of predicted band**: investigate before refitting — likely an environmental anomaly to capture as a qualitative note, not averaged into RGR_max.
 
 ## Model behaviors not yet anchored by data
 
-These parts of the model run on theory + literature alone — no Décembre
-observations to constrain them yet:
+Theory + literature only — no Décembre observations:
 
-- **Cooler-zone growth ceiling.** Whether moving lettuce out of the
-  tomato zone actually recovers the d28→d35 mass loss. The bolting
-  flag (REQ-071) and `f_Tday` curve are predictions, not
-  measurements at Décembre.
-- **Spread-tray uplift.** `f_light` lift from spacing past d14 has
-  never been measured here (REQ-063 keeps it off the user surface,
-  but the model's prediction of "spread = #1 lever" is unverified).
-- **32-cell behaviour.** The 0.55 spacing-floor estimate is purely
-  geometric; no observed weights at this density.
-- **Variety differences.** `varietyRootFactor` is reserved but
-  unpopulated; no comparator data to set it from (REQ-068 holds the
-  library at Salanova-only until then).
+- **Cooler-zone growth ceiling.** Whether moving lettuce out of the tomato zone recovers the d28→d35 mass loss. Bolting flag (REQ-071) and `f_Tday` curve are predictions.
+- **Spread-tray uplift.** `f_light` lift from spacing past d14 never measured here (REQ-063 keeps it off the user surface; "spread = #1 lever" prediction unverified).
+- **32-cell behaviour.** 0.55 spacing-floor estimate is purely geometric; no observed weights at this density.
+- **Variety differences.** `varietyRootFactor` reserved but unpopulated (REQ-068 holds library at Salanova-only).
 
 ## Future cohorts to log
 
-To improve the model in priority order (impact × ease):
+Priority order (impact × ease):
 
-1. **32-cell cohort** in same zone: anchors `RootCap_32cell` + tests whether
-   the RGR_max estimate generalizes across cell sizes.
-2. **50-cell cohort in cooler zone** (target T_day 18–22°C): tests the heat-
-   stress hypothesis. Predicted yield should be higher and senescence later.
-3. **50-cell with spread schedule** (spread at d18): tests `f_light` ceiling.
-   Predicted yield should be substantially higher (model surfaces this as the
-   #1 lever).
-4. **Different variety** (e.g., compact Salanova or another butterhead):
-   anchors `varietyRootFactor` and unlocks the variety library.
+1. **32-cell, same zone** — anchors `RootCap_32cell` + tests RGR_max generalization across cell sizes.
+2. **50-cell, cooler zone** (target T_day 18–22°C) — tests heat-stress hypothesis; predicted yield higher, senescence later.
+3. **50-cell with spread schedule** (spread at d18) — tests `f_light` ceiling; predicted yield substantially higher (#1 lever).
+4. **Different variety** (compact Salanova or another butterhead) — anchors `varietyRootFactor`, unlocks library.

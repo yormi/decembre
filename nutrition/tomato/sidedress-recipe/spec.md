@@ -1,32 +1,25 @@
 # Tomate — sidedress-recipe
 
 Specs for the model that **derives the first-principles weekly sidedress
-dose** (granular pre-application of organic N to the soil) per tomato
-production stage, in g per planche per week.
+dose** (granular pre-application of organic N to soil) per tomato stage,
+in g per planche per week.
 
-This file is the *spec* (what the model must do or be). The mass-balance
-derivation, per-stage table, mineralization rationale, Ca-aware product
-gate rationale and refinement triggers live in `derivation.md` next door.
-Operational *stored* values that the team currently weighs out
-(`STORED_RECIPE.tomato.sidedress`) are governed by the `/retire-recipe`
-audit-trail skill, not by this spec.
+Spec only. Mass-balance derivation, per-stage table, mineralization
+rationale, Ca-aware gate rationale, refinement triggers live in
+`derivation.md`. Operational stored values (`STORED_RECIPE.tomato.sidedress`)
+are governed by `/retire-recipe`, not this spec.
 
-The model answers exactly one question: **"how much of the chosen Ca-free
-sidedress product per planche per week does the plant need at stage S to
-cover the N gap left after compost residual mineralization?"**
+Question answered: **"how much of the chosen Ca-free sidedress product
+per planche per week to cover the N gap left after compost residual
+mineralization at stage S?"**
 
-It does NOT answer:
-- What the team currently weighs out (that's `STORED_RECIPE.tomato.sidedress`).
-- *Which* Ca-free product to pick (farine de plumes vs alfalfa) — operator
-  decision; the Ca-aware gate (REQ-089) only enforces that whatever is
-  picked has `ca_pct === 0`. Product comparisons live in `nutrition/doc/`.
-- Sidedress timing within the week (single-shot vs split applications) —
-  steady-state mineralization assumed; see derivation.
+Out of scope: what the team weighs out (`STORED_RECIPE.tomato.sidedress`);
+which Ca-free product to pick (operator); within-week timing (steady-state
+assumed).
 
-Cross-channel scope: sidedress is *part of* the weekly replenishment chain
-(compost → sidedress → fertigation → foliar). This subproject owns the
-**sidedress-only** sizing. The chain itself is in
-`nutrition/tomato/spec.md` (REQ-013 / REQ-014 supply bounds).
+Cross-channel: sidedress is part of the replenishment chain (compost →
+sidedress → fertigation → foliar). Chain bounds in `nutrition/tomato/spec.md`
+(REQ-013 / REQ-014).
 
 ---
 
@@ -39,9 +32,8 @@ Cross-channel scope: sidedress is *part of* the weekly replenishment chain
 | `stage`   | string | `T1` / `T2` / `T3` / `T4` / `T5` | Tomato production stage selector  |
 | `product` | string | key of `SIDEDRESS_PRODUCTS` with `ca_pct === 0` (optional, default `'FarinePlumes'`) | Operator product choice |
 
-All other dependencies (plant-needs offtake, compost residual, product
-chemistry, planche area) are pulled from upstream subprojects /
-constants — see derivation.
+Plant-needs offtake, compost residual, product chemistry, planche area
+pulled from upstream — see derivation.
 
 ### Output
 
@@ -52,18 +44,17 @@ constants — see derivation.
   chosen: string,    g_per_planche: number }
 ```
 
-All masses in **grams per planche per week** (planche area =
-`SIDEDRESS_AREA_PER_PLANCHE`). `chosen` is the product key that was actually
-selected; `g_per_planche` is its dose. Per-product fields hold 0 for
-unselected products. `actisol_g` stays at 0 in the Ca-aware variant — the
-gate prevents Actisol from ever being selected while soil is Ca-saturated.
+All masses in **g per planche per week** (planche area =
+`SIDEDRESS_AREA_PER_PLANCHE`). `chosen` is the selected product key;
+`g_per_planche` is its dose. Per-product fields hold 0 for unselected.
+`actisol_g` stays 0 in the Ca-aware variant (REQ-089 gate).
 
 ---
 
 ## Cert scale
 
 Same single-cert transferability scale as
-`nutrition/tomato/plant-needs/spec.md` ("Cert scale" section — canonical).
+`nutrition/tomato/plant-needs/spec.md` ("Cert scale" — canonical).
 
 ---
 
@@ -87,22 +78,13 @@ g/m²/wk            = n_needed_mg / (p.n_pct × p.eff) / 1 000
 g/planche/wk       = g/m² × SIDEDRESS_AREA_PER_PLANCHE  (rounded)
 ```
 
-The mass-balance is N-only — sidedress's natural strength (concentrated
-organic-N pellets). Other elements are covered by upstream channels
-(compost residual + fertigation + foliar).
+N-only — sidedress's natural strength. Other elements covered upstream
+(compost residual + fertigation + foliar). Formula is product-agnostic;
+switching products changes `n_pct` and `eff` only.
 
-**Rationale:** Sidedress sizing has historically drifted from agronomist
-intuition over time. Grounding it in plant-needs offtake minus compost
-release makes the dose a function of inputs that already have their own
-specs (REQ-013/014 bounds, REQ-079 compost band). Drift surfaces at the
-upstream-spec level instead of being hidden inside a recipe number. The
-formula is product-agnostic — only `n_pct` and `eff` of the chosen
-product change. Switching products (farine ↔ alfalfa) does not change
-the model, only the dose.
-
-**Cert:** 3 (mass-balance is well-defined; values inherit cert 2 from
-plant-needs and cert 2-3 from compost — effective cert min = 2;
-formula application itself is structural, cert 4).
+**Cert:** 3 (mass-balance well-defined; values inherit cert 2 from
+plant-needs and cert 2-3 from compost; effective cert min = 2; formula
+itself structural, cert 4).
 
 ---
 
@@ -114,17 +96,17 @@ At runtime, `window.SidedressRecipeTomato` exists and exposes:
 |------------------------------|----------|
 | `AREA_PER_PLANCHE`           | number   |
 | `PRODUCTS`                   | object   |
-| `MIN_EFF`                    | object   |
+| `MINIMUM_EFFICIENCY`         | object   |
+| `efficiency`                 | object   |
 | `FIRST_PRINCIPLES_BY_STAGE`  | object   |
 | `computeStageSidedress`      | function |
 
-**Rationale:** Same as `PlantNeedsTomato` (REQ-083) and
-`CompostContribution` (REQ-080). Consumers (Banque sol page, "Recette
-proposée" admin card, future per-stage drift gauges) read sidedress
-through this namespace so internals can be reshaped without breaking call
-sites. `PRODUCTS` is the new entry — exposes the per-product chemistry
-table that REQ-089 reads from. `MIN_EFF` retained as a derived
-backwards-compat view for legacy consumers in `app/index.html`.
+`MINIMUM_EFFICIENCY` is a derived backwards-compat view for legacy
+consumers in `app/index.html`. `efficiency` added per REQ-157 —
+channel-side contract for Efficacité column (REQ-156); per-element
+delivery fraction at the channel's current FP-default product
+(FarinePlumes); N-only at 0.75 (Sonneveld mineralization); K / P / other
+macros absent (no routing under current product mix).
 
 **Cert:** 5 (structural assertion).
 
@@ -134,23 +116,14 @@ backwards-compat view for legacy consumers in `app/index.html`.
 
 The product chosen by `computeStageSidedress(stage, product)` must have
 `SIDEDRESS_PRODUCTS[chosen].ca_pct === 0`. Any product with `ca_pct > 0`
-must return `g_per_planche === 0` even when explicitly requested by the
-caller (defensive gate — caller cannot bypass).
+must return `g_per_planche === 0` even when explicitly requested
+(defensive gate — caller cannot bypass).
 
-**Rationale:** The current soil is Ca-saturated (10 989 kg/ha tomato
-planches per Berger Apr 2026) and pH is 7.28-7.48 — adding Ca extends the
-pH crisis. The previous spec locked Actisol-specifically (`actisol_g === 0`),
-which is too narrow: a future "let's try Selectus 4-2-5" or a new
-Ca-bearing frass product would slip through. Generalizing the gate to
-`ca_pct === 0` rejects any Ca-bearing sidedress automatically without
-operator vigilance — pH-crisis safety wired into the model itself.
-Currently certified Ca-free products: farine de plumes 13-0-0, Eco-luzerne
-3-0.5-2 (alfalfa). Currently gated out: Actisol 5-3-2 (3 % Ca, calcitic
-carrier).
+Current Ca-free products: farine de plumes 13-0-0, Eco-luzerne 3-0.5-2.
+Currently gated out: Actisol 5-3-2 (3 % Ca, calcitic carrier).
 
-**Cert:** 4 (Ca-saturation is measured at Décembre; product Ca % is label-
-stated; trade-off is well-grounded in current data; gate generalizes
-beyond the specific Actisol-vs-farine pair).
+**Cert:** 4 (Ca-saturation measured at Décembre; product Ca % label-stated;
+gate generalizes beyond Actisol-specific lock).
 
 ---
 
@@ -159,17 +132,16 @@ beyond the specific Actisol-vs-farine pair).
 Sidedress consumes plant-needs and compost-contribution outputs:
 
 - **REQ-083** (`nutrition/tomato/plant-needs/spec.md`) —
-  `PlantNeedsTomato.demandTotal` is the canonical demand source.
+  `PlantNeedsTomato.demandTotal` canonical demand source.
 - **REQ-080** (`nutrition/compost-contribution/spec.md`) —
-  `CompostContribution.releasePerWeek` is the canonical compost source.
+  `CompostContribution.releasePerWeek` canonical compost source.
 
-Specs that *consume* the sidedress output:
+Specs that *consume* sidedress output:
 
 - **REQ-013 / REQ-014** (`nutrition/tomato/spec.md`) — supply chain bounds.
   Sidedress N is one of four channels summed against demand.
-- **REQ-022** (`nutrition/spec.md`) — every product is Ecocert-allowed.
-  Farine de plumes 13-0-0 is on the certified-input list. Eco-luzerne
-  3-0.5-2 organic-cert is **TBD** until the Ecocert evaluation lands in
-  `nutrition/doc/eco-luzerne-3-0-5-2/` — the alfalfa branch should not be
-  selected as default product until that cert chain extends.
+- **REQ-022** (`nutrition/spec.md`) — every product Ecocert-allowed.
+  Farine de plumes 13-0-0 ✓. Eco-luzerne 3-0.5-2 cert **TBD** pending
+  Ecocert evaluation in `nutrition/doc/eco-luzerne-3-0-5-2/` — alfalfa
+  branch not default until cert lands.
 - **REQ-002** (`nutrition/spec.md`) — no forbidden products.

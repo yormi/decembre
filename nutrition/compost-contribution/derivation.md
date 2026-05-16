@@ -1,9 +1,7 @@
 # Compost-contribution · derivation
 
-How the model is built. The **spec** (what it must do or be) is in
-`spec.md`. This file is everything else: source product, mass-balance
-formula, per-element values + rationale, cert per element, edge cases,
-caveats, refinement triggers.
+Source product, mass-balance formula, per-element values, cert.
+Spec in `spec.md`. Rejected alternatives in `learnings.md`.
 
 ---
 
@@ -17,13 +15,10 @@ caveats, refinement triggers.
 | Datasheet              | `nutrition/info/compost.pdf`                        |
 | Application date       | Fall 2025                                            |
 | Application rate       | ~25.4 kg/m² (≈ 2 inches × ~520 m² of bed surface)   |
-| Coverage               | All production beds — both tomato and lettuce       |
+| Coverage               | All production beds — tomato and lettuce            |
 
-This amendment is the *root cause* of the current pH crisis: it added
-~2 788 kg Ca/ha to soil that was already near saturation. The
-contribution model is therefore both an asset (residual N + K + Mg
-release reduces fertigation requirements) and the source of the
-soil-chemistry problem — see `farm info/farm-baseline-updated.md`.
+Root cause of current pH crisis: added ~2 788 kg Ca/ha to soil already
+near saturation. See `farm info/farm-baseline-updated.md`.
 
 ---
 
@@ -37,11 +32,8 @@ annual_release_g = applied_g_per_m2 × MINERALIZATION_YEAR1[el]
 release_per_week = (annual_release_g / 52) × SEASONAL_FACTOR
 ```
 
-`SEASONAL_FACTOR = 1.5` represents a flat-band Q10 boost across the warm
-production window (T3-T5). Cert 2 — textbook Q10 ≈ 2 for soil microbial
-activity, scaled to the mid-band of greenhouse soil temperature (12-22 °C
-across seasons; production months sit closer to the upper end so 1.5×
-the annual mean is the realistic effective rate).
+`SEASONAL_FACTOR = 1.5` — flat-band Q10 boost across T3-T5. Cert 2.
+Derivation in `learnings.md`.
 
 ---
 
@@ -53,92 +45,67 @@ Values in `g/m²/wk`. Calculation: `(applied_g_m² × year1_fraction / 52) × 1.
 |---------|-------------|--------------|----------------------|---------------------|----------------|------|-------|
 | N       | 0.5 %       | 127          | 30 %                 | 1.099               | **1.10**       | 2    | Standard organic-N rate (Stanford & Smith) |
 | K       | 0.1 % (K₂O → K factor 0.83) | 21.1 | 65 %       | 0.395               | **0.40**       | 2    | Highly soluble in compost |
-| Ca      | 1.1 %       | 279          | 60 %                 | 4.83                | **4.82**       | 3    | Released as carbonate matrix degrades. Part of the Ca-saturation problem. |
-| Mg      | ~0.3 % assumed (NOT on label) | 76 | 30 %    | 0.658               | **0.50**       | 1    | Conservative override — rounded DOWN from theoretical because Mg % is missing from Savaria label and the assumption is data-gap. Verify with vendor. |
-| P       | 0.1 % (P₂O₅ → P factor 0.437) | 11.1 | 5 % | 0.016              | **0.016**      | 2    | pH-locked at current soil pH 7.3-7.5 → effective release very low. |
+| Ca      | 1.1 %       | 279          | 60 %                 | 4.83                | **4.82**       | 3    | Carbonate matrix degrades. Part of Ca-saturation problem. |
+| Mg      | ~0.3 % assumed (NOT on label) | 76 | 30 %    | 0.658               | **0.50**       | 1    | Conservative override — label gap. See `learnings.md`. |
+| P       | 0.1 % (P₂O₅ → P factor 0.437) | 11.1 | 5 % | 0.016              | **0.016**      | 2    | pH-locked at soil pH 7.3-7.5. |
 
-The "Stored" column is what consumers read via
-`window.CompostContribution.releasePerWeek`. The "Theoretical" column is
-what `theoreticalReleasePerWeek(el)` returns. The verifier (REQ-079)
-asserts the stored values fall within `[0.5×, 1.5×]` of theoretical so
-typos surface; conservative overrides like Mg pass.
-
-### Why Mg gets a manual override
-
-The Savaria label declares N / P / K / Ca explicitly. Mg is absent. We
-assume ~0.3 % (low-end shrimp-base compost). The theoretical value at
-0.3 % runs 0.658 g/m²/wk; the stored value sits at 0.50 — about 25 %
-below theoretical. Rationale:
-- Label gap → cert 1 on the underlying assumption.
-- Conservative-down on supply protects against silent under-fertigation
-  (we'd add Mg if needed, vs. silently relying on compost Mg that
-  may not be there).
-- If a future Savaria QC sheet confirms Mg %, recompute and remove the
-  override.
+Stored column → `window.CompostContribution.releasePerWeek`.
+Theoretical column → `theoreticalReleasePerWeek(el)`.
+REQ-079 asserts stored ∈ `[0.5×, 1.5×]` × theoretical.
 
 ---
 
 ## Cert per element
 
-Compost-release cert per element on the merged transferability scale
-(`min` across the contributing inputs):
+Merged transferability scale (`min` across contributing inputs):
 
 | Element | Label cert | Mineralization rate cert | Effective cert |
 |---------|------------|--------------------------|----------------|
 | N       | 4 (label)  | 2 (textbook)             | **2**          |
 | K       | 4          | 2                        | **2**          |
-| Ca      | 4          | 3 (consistent with Berger soil-test signal post-application) | **3** |
+| Ca      | 4          | 3 (Berger Mehlich-3 post-application 10 612-10 989 kg Ca/ha confirms order of magnitude) | **3** |
 | Mg      | 1 (label gap) | 2                     | **1**          |
 | P       | 4          | 2                        | **2**          |
 
-Ca cert 3 is the only one that climbs above 2 — the Berger Mehlich-3
-results post-application (10 612-10 989 kg Ca/ha) confirm the released-Ca
-order of magnitude, dragging the cert one tier closer to "Décembre-
-adjacent measurement".
+---
+
+## Efficiency map (REQ-157)
+
+`window.CompostContribution.efficiency[el] = COMPOST_MINERALIZATION_YEAR1[el]`.
+Year-1 mineralization IS the efficiency for compost (pH-lockout already
+encoded — P at 0.05 reflects pH 7.3-7.5; neutral-pH reference ≈ 0.20).
+`SEASONAL_FACTOR` lives in `releasePerWeek`, NOT in `efficiency` —
+keeps the operator-facing percent as a year-1 fraction (e.g. "65 % of K
+applied → plant-available year 1") rather than peak-season flux.
+
+Per-element cert (`min` of mineralization-rate cert and label-input cert):
+
+| Element | Cert | Driver                                                |
+|---------|------|-------------------------------------------------------|
+| N       | 2    | Mineralization (Stanford & Smith textbook)           |
+| P       | 2    | Mineralization (pH-locked at 7.3-7.5)                 |
+| K       | 2    | Mineralization (highly soluble in compost)            |
+| Ca      | 3    | Berger soil-test signal post-application              |
+| Mg      | 1    | LABEL_PCT.Mg gap (assumed, not measured)              |
 
 ---
 
-## Caveats and known limitations
+## Caveats
 
-- **Flat year-1 rate, no decline curve.** The current model holds release
-  constant through ~2027-04 (18 months post-application). After that the
-  labile fraction depletes and the rate should drop — but the curve
-  shape isn't known yet without measured data. See `spec.md → Pending`.
-- **Cross-bed uniform.** Application was uniform 2-inch coverage; soil
-  tests confirm similar Ca-saturation across tomato + lettuce planches.
-  If future soil tests show drift, model would need per-bed scaling.
-- **Mg label gap.** Conservative-down assumption (see above). Confirm
-  with vendor QC if Mg becomes operationally critical.
-- **Sonotube Ca leaching not modeled here.** The 60 concrete sonotubes
-  installed summer 2025 leach Ca slowly and indefinitely; they're a
-  *separate* contribution (sidedress / no-amendment context) and live
-  outside this subproject. Reflects in pH program design, not in the
-  per-week compost release.
-- **Q10 seasonal factor is a single 1.5×.** Could be split into per-month
-  multipliers if the Bilan ever needs sub-stage temporal resolution.
-  Today's stage-aware demand model already smooths this; deferred.
+- **Flat year-1 rate.** Accurate through ~2027-04; decline curve deferred (spec.md → Pending; `learnings.md`).
+- **Cross-bed uniform.** Berger tests confirm similar Ca-saturation tomato + lettuce. Per-bed scaling if future drift.
+- **Mg label gap.** Conservative-down assumption. Confirm via vendor QC.
+- **Sonotube Ca leaching.** Separate channel, not modeled here. Reflects in pH program.
 
 ---
 
 ## Refinement triggers
 
-Update the model when:
-
-- **Compost ages out (~2027-04).** Mineralization rate drops as labile
-  fraction depletes. Replace flat year-1 with a piecewise or exponential
-  decline curve; target shape from organic-N residue literature
-  (Stanford & Smith, ~50 % year-1, ~25 % year-2, ~12 % year-3 for
-  high-quality compost).
-- **New compost amendment is applied.** Either (a) extend
-  `COMPOST_AMENDMENT` to a list of overlapping amendments and sum
-  contributions, or (b) replace the constant when the new amendment
-  dominates. The mass-balance formula is identical per amendment.
-- **Mg vendor QC arrives.** Drop the manual override and recompute Mg
-  release from the actual label %.
-- **Soil-test re-test reveals drift.** If Mehlich-3 N or K changes
-  significantly faster than the model predicts (cumulative drawdown
-  vs. compost release should net out), the year-1 mineralization
-  fractions are off — refit.
+- **~2027-04** — labile fraction depletes → replace flat rate with decline curve (target shape in `learnings.md`).
+- **New amendment applied** — extend `COMPOST_AMENDMENT` or replace (see `learnings.md`).
+- **Mg vendor QC arrives** — drop override, recompute from measured %.
+- **Soil-test drift** — if Mehlich-3 N/K shifts faster than predicted, refit year-1 mineralization fractions.
+- **Tissue panel persistent under/over-supply on element X** — refit mineralization rate (and efficiency) for X.
 
 ---
 
@@ -149,10 +116,9 @@ Update the model when:
 | `nutrition/compost-contribution/data.js`      | `COMPOST_AMENDMENT`, `COMPOST_LABEL_PCT`, `COMPOST_MINERALIZATION_YEAR1`, `COMPOST_SEASONAL_FACTOR`, `COMPOST_RELEASE_PER_WEEK` |
 | `nutrition/compost-contribution/calc.js`      | `theoreticalReleasePerWeek(el)`                                |
 | `nutrition/compost-contribution/model.js`     | `window.CompostContribution` namespace wrapper                 |
-| `nutrition/compost-contribution/spec.md`      | Spec — what the model must do or be                            |
-| `nutrition/compost-contribution/derivation.md`| This file                                                      |
+| `nutrition/compost-contribution/spec.md`      | Spec                                                            |
+| `nutrition/compost-contribution/derivation.md`| This file                                                       |
+| `nutrition/compost-contribution/learnings.md` | Rejected alternatives, historical decisions                    |
 
-`app/index.html` includes them in dependency order: `data.js` → `calc.js`
-→ `model.js`, all before any consumer. Consumers (tomato and lettuce
-Bilan, recipe calculators) read via the public
-`window.CompostContribution.releasePerWeek` namespace.
+Include order in `app/index.html`: `data.js` → `calc.js` → `model.js`,
+before any consumer. Consumers read via `window.CompostContribution`.

@@ -1,20 +1,17 @@
 # Tomate — plant-needs
 
 Specs for the model that estimates the **weekly nutrient uptake of the
-tomato plant**, per element, at a given target yield and crop stage.
+tomato plant**, per element, at target yield and crop stage.
 
-This file is the *spec* (what the model must do or be). Formulas,
-derivations, source tables, cert values per (stage, element), edge-case
-notes, caveats, and refinement triggers live in `derivation.md` next door.
+Spec only. Formulas, derivations, source tables, cert values per (stage,
+element), edge-case notes, caveats, and refinement triggers live in
+`derivation.md`.
 
-The model answers exactly one question: **"how much of element X does the
-plant need to take up this week to hit target yield Y at stage S?"**
+Question answered: **"how much of element X does the plant need to take
+up this week to hit target yield Y at stage S?"**
 
-It does NOT answer:
-- How much is *available* to the plant (that's the supply chain).
-- How much was *actually* taken up last week (that's tissue tests).
-- How much should be *added to the soil* (that's the recipe — supply minus
-  passive sources).
+Out of scope: availability (supply chain); actual uptake (tissue tests);
+soil amendment (recipe = supply minus passive sources).
 
 ---
 
@@ -30,11 +27,11 @@ It does NOT answer:
 
 ### Output
 
-`calcNutrDemand(yieldKgPerM2, stage, transpFactor)` returns an object keyed
-by element, each entry shaped `{ fruit, biomass, total }` in mg/m²/wk.
+`calcNutrDemand(yieldKgPerM2, stage, transpFactor)` → object keyed by
+element, each entry shaped `{ fruit, biomass, total }` in mg/m²/wk.
 
-Element coverage is fixed at the 11 elements present in
-`TOMATO_FRUIT_EXPORT` (currently N, P, K, Ca, Mg, Fe, Mn, Zn, B, Cu, Mo).
+Element coverage fixed at the 11 elements in `TOMATO_FRUIT_EXPORT`
+(N, P, K, Ca, Mg, Fe, Mn, Zn, B, Cu, Mo).
 
 ---
 
@@ -61,21 +58,15 @@ quality is implicit — a value can't have transfer cert > source cert.
 ## INV-1 — Element coverage is closed
 
 For every stage, `keys(BIOMASS_DEMAND[stage]) ⊆ keys(TOMATO_FRUIT_EXPORT)`
-and `keys(TOMATO_DEMAND_CERT[stage]) ⊆ keys(TOMATO_FRUIT_EXPORT)`. Adding
-an element requires updating all three tables in lockstep.
+and `keys(TOMATO_DEMAND_CERT[stage]) ⊆ keys(TOMATO_FRUIT_EXPORT)`.
 
 ---
 
 ## REQ-081 — Ca and Mg biomass demand coupled to transpiration
 
 For elements `Ca` and `Mg`, the biomass term is multiplied by
-`transpFactor`. N, P, K, and the micros are not. Fruit-export term is
-never scaled.
-
-**Rationale:** Ca is xylem-mobile only; its uptake *is* mass-flow ×
-solution concentration. Mg is partially xylem-mobile. Phloem-mobile macros
-and active-transport micros decouple from instantaneous transpiration over
-weekly windows.
+`transpFactor`. N, P, K, and micros are not. Fruit-export term is never
+scaled.
 
 **Cert:** 4 (physiological grounding in xylem-only Ca behaviour).
 
@@ -86,11 +77,7 @@ weekly windows.
 For every adjacent stage pair `(Tn, Tn+1)` and every element in
 `BIOMASS_DEMAND`, `|demand[Tn+1] − demand[Tn]| / demand[Tn] ≤ 2.5`.
 
-**Rationale:** Catches order-of-magnitude hand-edit errors (typo, unit
-slip) while allowing legitimate phenological spikes (P at flowering, Fe
-drop at production montante).
-
-**Cert:** 4 (bound calibrated to current data, not a published threshold).
+**Cert:** 4 (bound calibrated to current data, not published threshold).
 
 ---
 
@@ -108,35 +95,26 @@ At runtime, `window.PlantNeedsTomato` exists and exposes:
 | `calcNutrDemand`          | function |
 | `certFor`                 | function |
 
-**Rationale:** Consumers (Bilan UI, recipe calculators, future ports to
-lettuce / nursery) read demand from this namespace. Renaming any internal
-fails at check time, not at runtime.
-
 **Cert:** 5 (structural assertion).
 
 ---
 
 ## Pending — tissue-test back-test invariant
 
-When tissue test data lands (~2026-05-12) and a back-test runs against
-2025-2026 actual fertigation + compost mineralization + measured yield:
-
-> Predicted demand (annual) − measured uptake (estimated from tissue-test
-> concentration × estimated dry biomass at crop-out) shall fall within
-> ±25 % per macro and ±50 % per micro.
-
-Will replace the v1 "split-sum reconciles" identity with an actual check
-against external data.
+When tissue test data lands (~2026-05-12), back-test against 2025-2026
+actual fertigation + compost mineralization + measured yield: predicted
+demand (annual) − measured uptake within ±25 % per macro and ±50 % per
+micro. Will replace the v1 "split-sum reconciles" identity.
 
 ---
 
 ## Inherited specs
 
-- **REQ-033** (`nutrition/tomato/spec.md`) — `TOMATO_REMOVAL` macros must
-  sit at or above the inter-source mean of {Yara, Sonneveld, Koller}.
+- **REQ-033** (`nutrition/tomato/spec.md`) — `TOMATO_REMOVAL` macros sit
+  at or above the inter-source mean of {Yara, Sonneveld, Koller}.
   Anchors Term 1 and the T5 derivation of Term 2.
 
-Specs that *consume* the demand output:
+Specs that *consume* demand output:
 
 - **REQ-013** (`nutrition/tomato/spec.md`) — supply ≥ 0.9 × demand
 - **REQ-014** (`nutrition/tomato/spec.md`) — supply ≤ 1.3 × demand

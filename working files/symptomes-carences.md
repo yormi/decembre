@@ -1,23 +1,18 @@
 # Diagnostic visuel — Ferme Décembre
 
-Guide pratique : on observe un symptôme sur le plant, on cherche le titre qui correspond, et on lit la cause + comment confirmer.
+Source data pour `app/index.html` DIAG_SYMPTOMS (keep in sync).
+Observer un symptôme → titre correspondant → cause + confirmation + action.
 
 ---
 
-## Règle de base avant de commencer
+## Règle de base
 
-Demande-toi toujours : **le symptôme est-il sur les jeunes feuilles (haut) ou les vieilles feuilles (bas) ?**
-
-- **Symptôme en HAUT du plant** = élément immobile (Fe, Mn, Zn, B, Cu, Ca) — la plante ne peut pas le déplacer, donc la nouvelle croissance souffre
-- **Symptôme en BAS du plant** = élément mobile (N, P, K, Mg, Mo) — la plante prend dans les vieilles feuilles pour nourrir le haut
-
-Cette règle élimine la moitié des possibilités d'un coup d'œil.
+Symptôme sur jeunes feuilles (HAUT) = élément immobile (Fe, Mn, Zn, B, Cu, Ca).
+Symptôme sur vieilles feuilles (BAS) = élément mobile (N, P, K, Mg, Mo).
 
 ---
 
 # 🍅 TOMATE
-
-Parcourir le plant du haut vers le bas, puis vérifier les fruits.
 
 ---
 
@@ -139,7 +134,7 @@ Parcourir le plant du haut vers le bas, puis vérifier les fruits.
 
 # 🥬 SALANOVA
 
-Parcourir la plante de l'intérieur (cœur) vers l'extérieur (feuilles enveloppes), puis vérifier la pomme.
+Parcours : cœur → feuilles externes → pomme (à la coupe).
 
 ---
 
@@ -255,17 +250,10 @@ Parcourir la plante de l'intérieur (cœur) vers l'extérieur (feuilles envelopp
 
 ---
 
-## Comment utiliser ce guide
+## Notes
 
-1. **Repère le symptôme** sur le plant
-2. **Trouve le titre qui correspond** (chercher d'abord par emplacement : haut/bas/fruit/cœur/externe)
-3. **Lis la cause probable** + cert
-4. **Confirme** avec le critère "comment confirmer" (différentiation des autres causes)
-5. **Agis** selon la recommandation
-
-Si plusieurs symptômes coïncident → souvent une seule cause sous-jacente (ex : signes B sur fruits + tiges + apex = certitude B).
-
-Si symptômes contradictoires (haut + bas du plant en même temps) → souvent un problème non nutritionnel (eau, racines, environnement).
+- Plusieurs symptômes cohérents → souvent une seule cause (ex : signes B sur fruits + tiges + apex).
+- Symptômes contradictoires (haut + bas simultanément) → souvent non-nutritionnel (eau, racines, environnement).
 
 ---
 
