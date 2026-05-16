@@ -1,7 +1,7 @@
 // Tests for nutrition/tomato/app/spec.md.
 //
-// REQs covered (11): REQ-104, REQ-105, REQ-106, REQ-107, REQ-108, REQ-109,
-// REQ-110, REQ-111, REQ-113, REQ-114, REQ-004.
+// REQs covered (13): REQ-104, REQ-105, REQ-106, REQ-107, REQ-108, REQ-109,
+// REQ-110, REQ-111, REQ-113, REQ-114, REQ-004, REQ-153, REQ-163.
 //
 // Strategy (post-2026-05-12 spec rewrite — no more `**Verification:**`
 // sub-sections to lean on):
@@ -795,5 +795,149 @@ describe('REQ-153 — Drift gauge ratio direction is FP ÷ Stockée', () => {
     } finally {
       restore();
     }
+  });
+});
+
+// ─── REQ-163 — Foliar Efficacité reactive to surfactant lever ──────────
+//
+// Spec: nutrition/tomato/app/spec.md → REQ-163. Two clauses:
+//   (a) Capability passthrough — the foliar consumer the page renders
+//       from must read a surfactant-aware efficiency map. Today the page
+//       binds `foliar.efficiency = window.FoliarRecipeTomato.efficiency`
+//       (the static default-regime map) regardless of the operator's
+//       surfactant lever. Until Wave 2 routes the surfactant flag into
+//       `calculateNutritionSupply` (via `window.FoliarRecipeTomato.efficiencyFor`),
+//       supply.foliar.efficiency values are identical between surfactant
+//       on/off → this test fails.
+//   (b) Reactive render — toggling #nutr-foliar-surfactant must change at
+//       least one cell text in the Efficacité column (index 2) of the
+//       foliar gap-grid. REQ-114 already pins that *some* Block 5 text
+//       changes on toggle (dose labels shift via computeFoliarSupply), but
+//       the Efficacité column specifically is fed by the static map and
+//       won't move until Wave 2 lands.
+//
+// Helper: locate the gap-grid wrapper inside #nutr-foliar by walking the
+// inline grid-template-columns marker the renderer emits. Matches the
+// approach scripts/check-recipes.mjs uses for REQ-137 / REQ-156.
+
+// Find the gap-grid wrapper div under a block container. The wrapper's
+// first child is the 6-col header strip; subsequent children are `.pq-row`
+// data rows.
+function findFoliarGapGridDataRows(window) {
+  const block = window.document.getElementById('nutr-foliar');
+  if (!block) return [];
+  // jsdom serializes inline style with no space after the colon.
+  const inner = block.querySelector('div[style*="grid-template-columns:0.6fr"]');
+  if (!inner) return [];
+  const wrapper = inner.classList.contains('pq-row') ? inner.parentElement : inner.parentElement;
+  return Array.from(wrapper.querySelectorAll('.pq-row'));
+}
+
+describe('REQ-163 — Foliar Efficacité reactive to surfactant lever', () => {
+  test('REQ-163(a) — supply.foliar.efficiency differs between surfactant off / on for ≥1 routed element', () => {
+    // Capability passthrough: the page's nutrition-supply function must
+    // read a surfactant-aware efficiency surface. The route in scope is
+    // window.calculateNutritionSupply(stage, phLocked, transp, target, mode)
+    // — the page's Block 5 renderer feeds supply.foliar.efficiency into
+    // renderGapGrid. The supply function must read the current
+    // #nutr-foliar-surfactant state and produce a different efficiency
+    // map when toggled.
+    //
+    // Today the page binds the static `window.FoliarRecipeTomato.efficiency`
+    // (default-regime, surfactant=false equivalent) → identical maps in
+    // both states → this asserts fails. Wave 2: thread surfactant into
+    // calculateNutritionSupply's foliar branch via efficiencyFor(surfactant).
+    const { window } = loadTomatoApp();
+    const surf = window.document.getElementById('nutr-foliar-surfactant');
+    assert.ok(surf, '#nutr-foliar-surfactant must exist (REQ-113)');
+    assert.equal(typeof window.calculateNutritionSupply, 'function',
+      'window.calculateNutritionSupply must be exposed');
+
+    surf.checked = false;
+    surf.dispatchEvent(new window.Event('change', { bubbles: true }));
+    const supplyOff = window.calculateNutritionSupply('T5', true, 1.0, 1.5, 'stored');
+    const efficiencyOff = (supplyOff && supplyOff.foliar && supplyOff.foliar.efficiency) || {};
+
+    surf.checked = true;
+    surf.dispatchEvent(new window.Event('change', { bubbles: true }));
+    const supplyOn = window.calculateNutritionSupply('T5', true, 1.0, 1.5, 'stored');
+    const efficiencyOn = (supplyOn && supplyOn.foliar && supplyOn.foliar.efficiency) || {};
+
+    // Restore default state for downstream tests.
+    surf.checked = false;
+    surf.dispatchEvent(new window.Event('change', { bubbles: true }));
+
+    const routed = ['Mn', 'Zn', 'Cu', 'Fe'];
+    const differs = routed.some(element =>
+      typeof efficiencyOff[element] === 'number'
+      && typeof efficiencyOn[element] === 'number'
+      && efficiencyOn[element] !== efficiencyOff[element]
+    );
+    assert.ok(differs,
+      `supply.foliar.efficiency is identical between surfactant off/on for every routed element — `
+      + `off=${JSON.stringify(efficiencyOff)} on=${JSON.stringify(efficiencyOn)}. `
+      + `Wave 2: route surfactant through calculateNutritionSupply via FoliarRecipeTomato.efficiencyFor(surfactant).`);
+
+    // Bonus check: with surfactant ON, at least one routed element must
+    // have a strictly higher efficiency than OFF. Spec REQ-163: "with
+    // surfactant on, foliar efficiency for routed elements is higher
+    // than without."
+    const anyHigher = routed.some(element =>
+      typeof efficiencyOff[element] === 'number'
+      && typeof efficiencyOn[element] === 'number'
+      && efficiencyOn[element] > efficiencyOff[element]
+    );
+    assert.ok(anyHigher,
+      `surfactant=true did not raise efficiency for any routed element — `
+      + `off=${JSON.stringify(efficiencyOff)} on=${JSON.stringify(efficiencyOn)}`);
+  });
+
+  test('REQ-163(b) — toggling #nutr-foliar-surfactant changes ≥1 Efficacité cell text in #nutr-foliar', () => {
+    // Reactive render: the Efficacité column (index 2 in the 6-col gap-grid
+    // per REQ-137: Él. | Manque entrant | Efficacité | Apport ici | Manque
+    // sortant | emoji) MUST update when the operator toggles the surfactant
+    // lever. REQ-114 already asserts SOME text in Block 5 changes on toggle
+    // (dose labels shift via computeFoliarSupply); this assertion narrows
+    // to the Efficacité column specifically, which is fed by the static
+    // map today and stays put across the toggle.
+    const { window } = loadTomatoApp();
+    // Use stored mode so the foliar branch renders deterministically
+    // against STORED_RECIPE.tomato.foliaire (matches REQ-114's reactive
+    // test pattern).
+    window.setNutrRecipeMode('stored');
+    const surf = window.document.getElementById('nutr-foliar-surfactant');
+    assert.ok(surf, '#nutr-foliar-surfactant must exist (REQ-113)');
+
+    const EFFICACITE_COL_INDEX = 2;
+    const readEfficaciteCells = () => {
+      const rows = findFoliarGapGridDataRows(window);
+      return rows.map(row => {
+        const cells = Array.from(row.children);
+        return cells.length > EFFICACITE_COL_INDEX
+          ? (cells[EFFICACITE_COL_INDEX].textContent || '').trim()
+          : null;
+      });
+    };
+
+    surf.checked = false;
+    surf.dispatchEvent(new window.Event('change', { bubbles: true }));
+    const cellsOff = readEfficaciteCells();
+    surf.checked = true;
+    surf.dispatchEvent(new window.Event('change', { bubbles: true }));
+    const cellsOn = readEfficaciteCells();
+    // Restore.
+    surf.checked = false;
+    surf.dispatchEvent(new window.Event('change', { bubbles: true }));
+    window.setNutrRecipeMode('fp');
+
+    assert.ok(cellsOff.length > 0,
+      'Foliar gap-grid has no data rows — Efficacité column unreachable');
+    assert.equal(cellsOff.length, cellsOn.length,
+      `row count changed on toggle: off=${cellsOff.length} on=${cellsOn.length}`);
+    const changed = cellsOff.some((text, index) => text !== cellsOn[index]);
+    assert.ok(changed,
+      `Efficacité column did not change when surfactant toggled — `
+      + `off=[${cellsOff.join(' | ')}] on=[${cellsOn.join(' | ')}]. `
+      + `Wave 2: render path must read FoliarRecipeTomato.efficiencyFor(surfactant) instead of the static .efficiency map.`);
   });
 });

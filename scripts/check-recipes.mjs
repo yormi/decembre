@@ -5986,45 +5986,95 @@ header('REQ-162 — Mois d\'épuisement rendered for every row with reservoir + 
 // ─── REQ-163 — Foliar Efficacité is surfactant-aware ───────────────────
 //
 // Spec: nutrition/tomato/app/spec.md → REQ-163. Two assertions:
-//   (a) Differential — the foliar channel's efficiency map differs
-//       between surfactant on / off for at least one routed element
-//       (Mn / Zn / Cu / Fe / Mo).
-//   (b) Reactive render — toggling #nutr-foliar-surfactant re-renders
-//       Block 5's Efficacité column (at least one cell text changes).
+//   (a) Reactive render — toggling #nutr-foliar-surfactant re-renders
+//       Block 5's Efficacité column (column index 2 in the 6-col gap-grid
+//       per REQ-137: Él. | Manque entrant | Efficacité | Apport ici |
+//       Manque sortant | emoji). At least one cell text must change
+//       across the toggle.
+//   (b) Strict-increase semantics — when surfactant is engaged, at least
+//       one routed element's Efficacité cell must render a higher integer
+//       % than its surfactant-off value (spec wording: "with surfactant
+//       on, foliar efficiency for routed elements is higher than without").
 //
-// Both assertions require the specialist's surfactant-aware efficiency
-// surface (filed on plant-nutrition-specialist/from-product-owner.md)
-// AND the coder-side wiring (Wave 2 — Block 5 toggle handler must pass
-// surfactant state into the foliar consumer's efficiency lookup). Until
-// either lands, pass-with-TODO so the matcher block is structurally
-// present and the coder flips the TODO to a real check in one edit.
+// Model-side capability (window.FoliarRecipeTomato.efficiencyFor) is
+// already verified by REQ-170; this block targets the page-side wiring
+// (Wave 2 coder threads the surfactant flag from #nutr-foliar-surfactant
+// into the foliar branch of calculateNutritionSupply via
+// FoliarRecipeTomato.efficiencyFor). Designed-to-fail today: the page
+// binds the static `.efficiency` map regardless of lever state.
 
-header('REQ-163 — Foliar Efficacité reactive to surfactant lever (TODO: specialist + coder wiring)');
+header('REQ-163 — Foliar Efficacité column reactive to surfactant lever');
 {
-  // TODO: wire after specialist exposes surfactant-aware efficiency surface
-  // AND coder routes the surfactant flag into the foliar consumer.
-  // Once landed, the matcher body should:
-  //
-  //   (a) Differential check:
-  //       const eOff = window.FoliarRecipeTomato.efficiencyFor({ surfactant: false });
-  //       const eOn  = window.FoliarRecipeTomato.efficiencyFor({ surfactant: true });
-  //       const routed = ['Mn', 'Zn', 'Cu', 'Fe', 'Mo'];
-  //       const differs = routed.some(el => eOn[el] !== eOff[el]);
-  //       assert differs (REQ-163(a))
-  //
-  //   (b) Reactive-render check:
-  //       const surfInp = window.document.getElementById('nutr-foliar-surfactant');
-  //       const foliarBlock = window.document.getElementById('nutr-foliar');
-  //       surfInp.checked = false;
-  //       surfInp.dispatchEvent(new window.Event('change', { bubbles: true }));
-  //       const before = collectGapGridDataCells(foliarBlock)
-  //         .filter(c => c.columnIndex === 2).map(c => c.cellText);
-  //       surfInp.checked = true;
-  //       surfInp.dispatchEvent(new window.Event('change', { bubbles: true }));
-  //       const after = collectGapGridDataCells(foliarBlock)
-  //         .filter(c => c.columnIndex === 2).map(c => c.cellText);
-  //       assert before.some((t, i) => t !== after[i]) (REQ-163(b))
-  pass('REQ-163 — foliar Efficacité reactive to surfactant — TODO: specialist + coder wiring pending');
+  const surfInput = window.document.getElementById('nutr-foliar-surfactant');
+  const foliarBlock = window.document.getElementById('nutr-foliar');
+  const offenders = [];
+  if (!surfInput) {
+    offenders.push('#nutr-foliar-surfactant input missing (REQ-113 precondition)');
+  } else if (!foliarBlock) {
+    offenders.push('#nutr-foliar block missing');
+  } else {
+    const EFFICACITE_COL_INDEX = 2;
+    const readEfficaciteCellTexts = () => {
+      const rows = findGapGridDataRows(foliarBlock);
+      return rows.map(row => {
+        const cells = Array.from(row.children);
+        return cells.length > EFFICACITE_COL_INDEX
+          ? (cells[EFFICACITE_COL_INDEX].textContent || '').trim()
+          : null;
+      });
+    };
+    surfInput.checked = false;
+    surfInput.dispatchEvent(new window.Event('change', { bubbles: true }));
+    const cellsOff = readEfficaciteCellTexts();
+    surfInput.checked = true;
+    surfInput.dispatchEvent(new window.Event('change', { bubbles: true }));
+    const cellsOn = readEfficaciteCellTexts();
+    // Restore default state for downstream verifier blocks.
+    surfInput.checked = false;
+    surfInput.dispatchEvent(new window.Event('change', { bubbles: true }));
+
+    if (cellsOff.length === 0) {
+      offenders.push('foliar gap-grid has no data rows — Efficacité column unreachable');
+    } else if (cellsOff.length !== cellsOn.length) {
+      offenders.push(`row count changed on toggle: off=${cellsOff.length} on=${cellsOn.length}`);
+    } else {
+      // (a) ≥1 cell text changes across the toggle.
+      const anyChange = cellsOff.some((text, index) => text !== cellsOn[index]);
+      if (!anyChange) {
+        offenders.push(
+          `Efficacité column unchanged on surfactant toggle — `
+          + `off=[${cellsOff.join(' | ')}] on=[${cellsOn.join(' | ')}]`
+        );
+      } else {
+        // (b) For every cell that renders an integer %, with-surfactant
+        // must be ≥ without; at least one must be strictly greater.
+        const PERCENT_RE = /^\s*(\d+)\s*%\s*$/;
+        let anyStrictlyHigher = false;
+        for (let index = 0; index < cellsOff.length; index++) {
+          const offMatch = (cellsOff[index] || '').match(PERCENT_RE);
+          const onMatch = (cellsOn[index] || '').match(PERCENT_RE);
+          if (!offMatch || !onMatch) continue;
+          const offValue = parseInt(offMatch[1], 10);
+          const onValue = parseInt(onMatch[1], 10);
+          if (onValue < offValue) {
+            offenders.push(`row ${index + 1}: surfactant on (${onValue}%) < off (${offValue}%) — efficiency must not regress`);
+          }
+          if (onValue > offValue) anyStrictlyHigher = true;
+        }
+        if (!anyStrictlyHigher && offenders.length === 0) {
+          offenders.push(
+            `no Efficacité cell increased on surfactant=true — `
+            + `off=[${cellsOff.join(' | ')}] on=[${cellsOn.join(' | ')}]`
+          );
+        }
+      }
+    }
+  }
+  if (offenders.length === 0) {
+    pass('Foliaire Efficacité column updates on surfactant toggle; at least one cell strictly higher with surfactant on');
+  } else {
+    fail('REQ-163 — Foliar Efficacité reactivity', offenders.slice(0, 4).join(' · '));
+  }
 }
 
 // ─── Final ─────────────────────────────────────────────────────────────

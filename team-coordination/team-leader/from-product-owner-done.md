@@ -11,6 +11,16 @@ Most recent at the top.
 
 ## Entries
 
+## 2026-05-16 — nutrition/tomato/app
+
+**Change type:** added
+**REQs affected:** REQ-163 (added)
+**Summary:** Foliar Efficacité column becomes surfactant-aware. Toggling the surfactant lever in Block 5 re-renders the Efficacité column with new values; with surfactant on, foliar efficiency for routed elements is higher than without. Sibling to REQ-114 (Block 5 reactivity to spray count + surfactant). Note: the model side — making the foliar channel's `efficiency` capability map respond to a surfactant flag — is a specialist change, filed in parallel on `plant-nutrition-specialist/from-product-owner.md`.
+**Suggested waves:** test-writer (REQ-163 matcher: assert that the foliar channel's exposed efficiency map differs between `surfactant: true` and `surfactant: false` for at least one routed element; reactive-render test that toggling the lever triggers a re-render of the Efficacité column) · coder (Block 5 surfactant-toggle handler must re-trigger foliar block render; foliar consumer must pass the current surfactant state when reading the channel's efficiency map — waits on specialist exposing a surfactant-aware efficiency surface) · pruner (no work this entry — the change is additive on top of REQ-157's capability-view efficiency contract).
+
+### Team-leader outcome (2026-05-16)
+Sub-wave F.1. Wave 1 test-writer added 2 designed-to-fail jsdom tests in `nutrition/tomato/app/spec.test.mjs` (REQ-163(a) `supply.foliar.efficiency` passthrough between surfactant on/off; REQ-163(b) Block 5 reactive Efficacité re-render on toggle); REQ-163 verifier block in `scripts/check-recipes.mjs` flipped from pass-with-TODO to real designed-to-fail. Wave 2 coder swapped `app/index.html:4741` from static `window.FoliarRecipeTomato.efficiency` to `efficiencyFor(surfactant)`; threaded `#nutr-foliar-surfactant.checked` into the foliar branch — toggling now flips Mn/Zn/Cu/Fe from 27 % to 72 % on next render (Block 5 reactive path was already wired by REQ-114). Identifiers full-word per REQ-158. Pruner: no work (PO note correct — additive on REQ-157 capability-view). Specialist's parallel REQ-170 surfactant-aware efficiency surface (`efficiencyFor`) was already passing when sub-wave F.1 started. `npm test` 250/0 (was 248/2 with REQ-163 designed-to-fail); `npm run check` 161/0 (was 160/1). REQs wired 108/111.
+
 ## 2026-05-16 — nutrition (REQ-159/160/161 fully landed; REQ-162 pass-with-TODO)
 
 **Change type:** added

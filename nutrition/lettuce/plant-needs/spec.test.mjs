@@ -4,8 +4,9 @@
 //   REQ-165 — Public API namespace window.PlantNeedsLettuce.
 //   REQ-166 — Demand scales linearly with mass-gain and inversely with cycleDays.
 //   REQ-167 — Supply composition: total = soil + fert + frontload.
-//   REQ-168 — Demand certainty floor (macros cert 4 / micros cert 3) — surfaced
-//             via the source data tables; the integrator builds pourquoi modals.
+//   REQ-168 — Demand certainty floor (macros cert 4 / micros cert 3) — pinned
+//             via structural shape of LETTUCE_TISSUE_DW + demand output;
+//             per-element cert prose lives in derivation.md.
 //   REQ-169 — Canopy factor bounded [0.2, 0.7].
 //   INV-1   — Element coverage closed across demand + every supply channel.
 //
@@ -179,6 +180,47 @@ describe('REQ-167 — Supply composition: total = soil + fert + frontload', () =
       `fert.Mg should be 460.46, got ${supply.fert.Mg}`);
     assert.ok(Math.abs(supply.fert.Fe - 15.0) < 1e-6,
       `fert.Fe should be 15.0 unlocked, got ${supply.fert.Fe}`);
+  });
+});
+
+describe('REQ-168 — Demand certainty floor: 5 macros + 6 micros structurally present', () => {
+  // The spec ties per-element demand cert to LETTUCE_TISSUE_DW source quality
+  // (macros cert 4, micros cert 3). Per-element cert annotations live in
+  // derivation.md prose; the testable claim here is structural — every macro
+  // and every micro carries a positive numeric entry in the tissue table and
+  // a positive numeric entry in the demand output (cert floor cannot be
+  // satisfied if the element is missing or zero).
+  const MACROS = ['N', 'P', 'K', 'Ca', 'Mg'];
+  const MICROS = ['Fe', 'Mn', 'Zn', 'B', 'Cu', 'Mo'];
+
+  test('REQ-168 — LETTUCE_TISSUE_DW carries 5 macros, each numeric > 0', () => {
+    const tissue = namespace.LETTUCE_TISSUE_DW;
+    for (const element of MACROS) {
+      assert.equal(typeof tissue[element], 'number',
+        `macro ${element} must be numeric on LETTUCE_TISSUE_DW`);
+      assert.ok(tissue[element] > 0,
+        `macro ${element} must be > 0, got ${tissue[element]}`);
+    }
+  });
+
+  test('REQ-168 — LETTUCE_TISSUE_DW carries 6 micros, each numeric > 0', () => {
+    const tissue = namespace.LETTUCE_TISSUE_DW;
+    for (const element of MICROS) {
+      assert.equal(typeof tissue[element], 'number',
+        `micro ${element} must be numeric on LETTUCE_TISSUE_DW`);
+      assert.ok(tissue[element] > 0,
+        `micro ${element} must be > 0, got ${tissue[element]}`);
+    }
+  });
+
+  test('REQ-168 — demand output carries a positive entry for every macro + micro', () => {
+    const demand = namespace.calculateLettuceNutritionDemand(30, 100, 14, 43);
+    for (const element of [...MACROS, ...MICROS]) {
+      assert.equal(typeof demand[element], 'number',
+        `demand.${element} must be numeric`);
+      assert.ok(demand[element] > 0,
+        `demand.${element} must be > 0 for non-trivial cycle, got ${demand[element]}`);
+    }
   });
 });
 

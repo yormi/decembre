@@ -5,14 +5,13 @@
 //   calculateLettuceNutritionSupply — soil mass-flow + fertigation + front-load
 //
 // Both functions are pure: they accept every input explicitly and read no
-// globals, no `window`, no `Date.now()`. The supply function previously
-// reached for `weeklyMassFlowL()`, `SME_LETTUCE_PPM`, `LETTUCE`, `PRODUCT_PCT`,
-// and `SIDEDRESS_MINIMUM_EFFICIENCY` — those callers must now pass the values
-// in (see `nutrition/lettuce/app/logic.js` once it lands; today the
-// integrator wires the call from `app/index.html` and supplies the inputs).
+// globals, no `window`, no `Date.now()`. Callers (today: the Salanova subpage
+// builder in `nutrition/lettuce/app/logic.js`) resolve every dependency at
+// the integrator boundary and pass them through the `dependencies` bag.
 //
 // Formula provenance, certainty, and refinement triggers live in
 // `nutrition/lettuce/plant-needs/derivation.md`.
+// Pre-carve global-reading history lives in `learnings.md`.
 
 // Demand per element (mg/m²/wk) for a Salanova cycle gaining (targetG−transplantG)
 // over `cycleDays` at `density` plants/m².

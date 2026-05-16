@@ -1,15 +1,4 @@
-function buildNutriment() {
-  // Dispatch on crop sub-toggle. Salanova uses a continuous post-transplant
-  // model (mass-gain-driven); Semis uses a per-tray nursery model; tomato
-  // uses the existing stage-driven Bilan.
-  if (nutrCrop === 'lettuce') {
-    buildNutrimentLettuce();
-    return;
-  }
-  if (nutrCrop === 'nursery') {
-    buildNutrimentNursery();
-    return;
-  }
+function buildNutrimentTomato() {
   const PN = window.PlantNeedsTomato;
   const target  = parseFloat(document.getElementById('nutr-target').value)  || 1.5;
   const solarPerGram = parseFloat(document.getElementById('nutr-solar-per-gram').value) || 7;
