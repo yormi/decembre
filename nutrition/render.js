@@ -1,7 +1,7 @@
 // Cross-crop contribution-block recipe-table renderer (REQ-152).
 //
 // Emits a 3-column table `Produit | Composition (% m/m) | Quantité` that
-// sits between the block title and the 5-column gap-grid (REQ-137). Each
+// sits between the block title and the 6-column gap-grid (REQ-137). Each
 // row is one product in the live recipe; composition lists the product's
 // elemental % m/m in canonical element order (N · P · K · Ca · Mg · Fe ·
 // Mn · Zn · Cu · B · Mo), zero entries omitted, `·` separator.

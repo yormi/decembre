@@ -322,7 +322,10 @@ function buildNutriment() {
     }
     compostDetails[el] = { cert, cap };
   });
-  html3c += renderGapGrid(gapAfterSoil, compostMg, gapAfterCompost, 'compost', compostDetails, 'compost');
+  // REQ-157 — compost channel efficiency is specialist-scope (model-layer);
+  // pass {} for now so all cells render `—` until the specialist ships
+  // window.CompostContribution.efficiency.
+  html3c += renderGapGrid(gapAfterSoil, compostMg, gapAfterCompost, 'compost', compostDetails, 'compost', {});
   document.getElementById('nutr-compost').innerHTML = html3c;
 
   // ─── Block 4: Engrais sol granulaire (Actisol + farine de plumes) ───
@@ -406,7 +409,7 @@ function buildNutriment() {
     }
     sdDetails[el] = { cert: 3, cap };
   });
-  html3sd += renderGapGrid(gapAfterCompost, supply.sidedress, gapAfterSidedress, 'sidedress', sdDetails, 'sidedress');
+  html3sd += renderGapGrid(gapAfterCompost, supply.sidedress, gapAfterSidedress, 'sidedress', sdDetails, 'sidedress', supply.sidedress.efficiency || {});
   document.getElementById('nutr-sidedress').innerHTML = html3sd;
 
   // ─── Block 5: Fertigation (mass-balance — replaces what offtake removes
@@ -534,7 +537,7 @@ function buildNutriment() {
     }
     fertDetails[el] = { cert: 4, cap };
   });
-  html3 += renderGapGrid(gapAfterSidedress, supply.fert, gapAfterFert, 'fert', fertDetails, 'fert');
+  html3 += renderGapGrid(gapAfterSidedress, supply.fert, gapAfterFert, 'fert', fertDetails, 'fert', supply.fert.efficiency || {});
   document.getElementById('nutr-fert').innerHTML = html3;
 
   // ─── Block 6: Foliar (micros — bypass root lockout at pH 7,4) ───
@@ -639,7 +642,7 @@ function buildNutriment() {
     }
     foliarDetails[el] = { cert: 3, cap };
   });
-  html4 += renderGapGrid(gapAfterFert, supply.foliar, gapAfterFoliar, 'foliar', foliarDetails, 'foliar');
+  html4 += renderGapGrid(gapAfterFert, supply.foliar, gapAfterFoliar, 'foliar', foliarDetails, 'foliar', supply.foliar.efficiency || {});
   document.getElementById('nutr-foliar').innerHTML = html4;
 
   // ─── Block 7: Leviers (final residual + auto-derived per-element actions) ───

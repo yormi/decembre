@@ -11,6 +11,36 @@ Most recent at the top.
 
 ## Entries
 
+## 2026-05-15 15:20 — nutrition (REQ-157 follow-up)
+
+**Change type:** added
+**REQs affected:** REQ-157 (added, sibling to REQ-136)
+**Summary:** Channel-side contract for the Efficacité column landed: every contribution-channel function (compost, substrate, sidedress, fertigation, foliar, front-load, nursery substrate, nursery fertigation) MUST expose a per-element `efficiency` map alongside its flat mg map and `details` payload. `eff[el] ∈ [0, 1]` is the share of applied product mass plant-available for that element; elements not routed are absent from the map (renderer reads absence as `—` per REQ-156). Specialist mailbox notified for the model-layer subprojects (`compost-contribution/model.js`, `nursery/substrate-contribution/model.js`) — their per-channel specs need to declare `efficiency` in their public-API contracts too. Coder-lane channels (fertigation / foliar / sidedress / front-load / nursery fertigation, all living in `app/index.html`) remain on the prior nutrition entry.
+**Suggested waves:** test-writer (add a REQ-157 matcher to `scripts/check-recipes.mjs` — every contribution-channel runtime namespace exposes `efficiency` with values in `[0, 1]` for routed elements, absent for non-routed) · coder (once specialist + coder-lane channels expose `efficiency`, swap the earlier "derive per-element efficiency" guidance to "read `efficiency[element]` from each channel's return"; this collapses the wiring across `renderGapGrid` callers) · pruner (no work this entry).
+
+### Team-leader outcome (2026-05-15)
+Wave 1 test-writer: REQ-157 matcher added to `scripts/check-recipes.mjs` walking every contribution-channel runtime via jsdom; asserts `efficiency[el] ∈ [0,1]` for routed elements (mg > 0 in the flat map) and absent for non-routed. 2 specialist-owned model-layer channels initially pass()-with-TODO (matching the Salanova/Semis pattern). Wave 2 coder: 5 coder-lane channels in `app/index.html` (fertigation: PH_RESPONSE × effectiveEff; foliar: FOLIAR_COVERAGE_DEFAULT × penetration; sidedress: SIDEDRESS_MIN_EFF mass-weighted N blend for Actisol + FarinePlumes; front-load: PH_RESPONSE; nursery fertigation: 1.0 per routed element pending pH-curve import) now expose `efficiency` map sibling of their flat per-element mg map. All 4 tomato + 3 lettuce + 2 nursery renderGapGrid callers updated to pass channel efficiency. Concurrent specialist evening edits shipped REQ-080 (compost-contribution `COMPOST_EFFICIENCY`) and REQ-097 (substrate-contribution `NURSERY_SUBSTRATE_EFFICIENCY`) and flipped the verifier's 2 TODO-passes to real `validateEfficiencyMap` checks — wave reflects this naturally. Final: npm test **189/189/0** · npm run check **137/0/137** (REQs wired 95/99, +2 from specialist's REQ-080 + REQ-097).
+
+## 2026-05-15 15:07 — nutrition
+
+**Change type:** edited, added
+**REQs affected:** REQ-137 (edited), REQ-156 (added)
+**Summary:** Standard contribution-block gap-grid grows from 5 to 6 columns with a new `Efficacité` slot between `Manque entrant` and `Apport ici` (REQ-137 amended in place). REQ-156 defines the cell: integer percent of applied product mass that the channel delivers as plant-available for that element under current conditions; `—` when no product routes the element. Applies to the standard contribution table — the Tomato Sol soil-bank block is out of scope (it is not a standard contribution channel; per REQ-141/142 it renders its own column shape in `nutrition/soil-contribution/`). Coder reads `efficiency[element]` per the REQ-157 contract (see the 15:20 follow-up entry above) rather than re-deriving from per-channel constants.
+**Suggested waves:** test-writer (add REQ-137 column-count + REQ-156 cell-format matchers to `scripts/check-recipes.mjs`; row-format check accepting `\d+ %` or `—` in the new cell) · coder (`renderGapGrid` in `app/index.html` + every caller across tomato logic + lettuce + nursery blocks — read `efficiency[element]` from each channel's return per REQ-157; for the coder-lane channels living in `app/index.html` itself — fertigation / foliar / sidedress / front-load / nursery fertigation — populate `efficiency` inline from existing surfaces (`PH_RESPONSE`, `SIDEDRESS_MIN_EFF`, `effectiveEff`, foliar coverage); specialist owns the model-layer channel modules per the specialist mailbox) · pruner (re-scan the tree for any other "5-column" references not caught in `nutrition/nursery/app/spec.md`, plus stale code comments in `nutrition/render.js`).
+
+### Team-leader outcome (2026-05-15)
+Wave 1 test-writer: REQ-137 matcher amended in `scripts/check-recipes.mjs` (echo + column count + header text array → `['Él.', 'Manque entrant', 'Efficacité', 'Apport ici', 'Manque sortant', '']`). REQ-156 matcher added: 6-col gap-grid 3rd cell text matches `/^\s*\d+\s*%\s*$/` OR `'—'` per row. REQ-127 + REQ-128 cross-amended too (nursery substrate + nursery fertigation matchers shared the same 5-col template). Wave 2 coder: `renderGapGrid` in `app/index.html` (line ~4963) grows to 6 cols with new `efficiency = {}` arg; cell renders `Math.round(efficiency[el] * 100) + ' %'` if numeric, else `'—'`. All 9 renderGapGrid callers (4 tomato + 3 lettuce + 2 nursery) updated to pass channel.efficiency. Visual sanity check: NOT performed by Wave 2 (no live-server running; structural DOM checks in verifier confirm correctness against `dist/index.html`). Wave 3 pruner: 3 surgical comment edits (5-col → 6-col in `nutrition/render.js` + `app/index.html` + `scripts/check-recipes.mjs` transitional comment). **One borderline surfaced for specialist call**: `nutrition/soil-contribution/render.js:5` + `nutrition/soil-contribution/spec.md:78` describe the non-generic 6-col soil-bank grid WITHOUT Efficacité column — was intentionally excluded from REQ-137 per the entry's "Tomato Sol soil-bank block is out of scope" note, but REQ-156 wording could be read to extend; flagging for specialist decision. Final: npm test **189/189/0** · npm run check **137/0/137**.
+
+## 2026-05-15 15:07 — nutrition/nursery/app
+
+**Change type:** edited
+**REQs affected:** inherited REQ-137 references swept; REQ-156 added to inherited list
+**Summary:** Pruned three "5-column" references to "6-column" in REQ-127, REQ-128, and the inherited-specs block; added REQ-156 to the inherited list. No new REQs in this subproject.
+**Suggested waves:** pruner (verify no other instances) · no test-writer / coder work in this subproject directly — handled by the cross-app `nutrition` entry above.
+
+### Team-leader outcome (2026-05-15)
+Wave 3 pruner verified the PO's spec.md sweep was complete on `nutrition/nursery/app/spec.md`. One residual flagged for foreign owner: line 33 has a historical "Rationale" paragraph still referencing the pre-amendment 5-col state — PO's call whether to amend in place or leave as historical context (spec.md = foreign surface, team-leader does not touch). REQ-127 + REQ-128 verifier matchers (in `scripts/check-recipes.mjs`) updated to 6-col as part of the cross-app REQ-137/156 wave above — REQ-127 and REQ-128 lines flipped green when Wave 2 coder shipped renderGapGrid. No code or test work needed in this subproject directly per the entry. Final tallies as above.
+
 ## 2026-05-14 07:22 — nutrition
 
 **Change type:** added, edited

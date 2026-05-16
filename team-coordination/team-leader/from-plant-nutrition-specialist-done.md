@@ -11,6 +11,26 @@ Most recent at the top.
 
 ## Entries
 
+## 2026-05-15 (evening) — nutrition/compost-contribution
+
+**Change type:** edited
+**REQs affected:** REQ-080 (namespace table extended)
+**Summary:** Per PO-157 (REQ-157), `window.CompostContribution` now exposes `efficiency` alongside `releasePerWeek` — per-element fraction of applied compost mass plant-available within year 1 (= `COMPOST_MINERALIZATION_YEAR1`, with pH-lockout already baked into P at 0.05). New `COMPOST_EFFICIENCY` constant in `data.js`; REQ-080 namespace table gains the `efficiency` row; new "Efficiency map (REQ-157)" section in `derivation.md` documents the definition + per-element cert (N/P/K cert 2; Ca cert 3; **Mg cert 1** propagated from LABEL_PCT.Mg gap). Verifier in `scripts/check-recipes.mjs` flipped the REQ-157 TODO-pass stub to an actual check via `validateEfficiencyMap`. `npm run check` REQ-157 compost line passes.
+**Suggested waves:** test-writer (no `spec.test.mjs` exists for compost-contribution yet — if Wave 1 wants to fill the gap, REQ-079 / REQ-080 / new efficiency-map assertions would be the canvas). Coder: no work in this subproject (model-layer only). Pruner: no work.
+
+### Team-leader outcome (2026-05-15)
+Folded into the sub-wave A REQ-157 wave above. Wave 1 test-writer's REQ-157 verifier walker landed with compost-contribution as a pass()-with-TODO; the specialist's concurrent evening edit flipped that TODO to an actual `validateEfficiencyMap` check against `window.CompostContribution.efficiency` and shipped the constant + data.js + model.js + derivation.md updates. Verifier reflects this naturally — REQ-157 compost line transitioned from TODO-pass to real-pass without team-leader intervention. **Spec.test.mjs gap deferred** (suggested wave): no compost-contribution `spec.test.mjs` exists yet; out of this wave's scope (Wave 1 was scoped to verifier matchers, not new test-file scaffolding). Picked up in a future test-writer wave when sibling subprojects get spec.test.mjs scaffolding. Final tallies as in sub-wave A: npm test 189/189/0 · npm run check 137/0/137 (REQs wired 95/99, +1 from REQ-080).
+
+## 2026-05-15 (evening) — nutrition/nursery/substrate-contribution
+
+**Change type:** edited
+**REQs affected:** REQ-097 (namespace table extended; Output contract extended)
+**Summary:** Per PO-157 (REQ-157), `window.SubstrateContributionNursery` now exposes `efficiency` at the namespace level AND `cycleAverageReleasePerTray()` return shape grows from `{perTray_mg, details}` → `{perTray_mg, details, efficiency}`. Both handles point to the same object (`NURSERY_SUBSTRATE_EFFICIENCY` in `data.js`). **Definitional choice** documented in `derivation.md` "Efficiency map (REQ-157)" section: cycle-mean release × mineralization. Values: N 0.75 (feather-meal mineralization × cycle-curve sum, simplification ignoring small OM2-N contribution); P/K/Ca/Mg 1.0 (OM2-only elements, release curve sums to 1.0 across 5 weeks). Per-element cert: N cert 3 (feather-meal Sonneveld textbook); P/K cert 2 (OM2 datasheet pending); Ca/Mg cert 3 (limestone-buffered peat). Verifier flipped TODO-pass to actual check; asserts namespace handle and return handle reference the same object. `npm run check` REQ-157 substrate line passes.
+**Suggested waves:** test-writer (`spec.test.mjs` doesn't yet exist for this subproject; if added, the new REQ-157 + `efficiency` keys would naturally fit alongside the existing REQ-094 / REQ-095 / REQ-096 / REQ-097 tests). Coder: no work in this subproject (model-layer only). Pruner: no work.
+
+### Team-leader outcome (2026-05-15)
+Same pattern as compost-contribution above: Wave 1 test-writer's REQ-157 verifier walker landed with nursery substrate-contribution as a pass()-with-TODO; specialist's concurrent evening edit flipped that TODO to an actual `validateEfficiencyMap` check against `window.SubstrateContributionNursery.efficiency` AND the parallel `cycleAverageReleasePerTray().efficiency` (assertion: both handles reference the same object). Constant + data.js + calc.js + model.js + derivation.md updates all shipped by specialist. Verifier picks up naturally — REQ-157 substrate line transitioned from TODO-pass to real-pass. **Spec.test.mjs gap deferred** (suggested wave): same as compost — no substrate-contribution `spec.test.mjs` exists; out of scope this wave. Final tallies as in sub-wave A: npm test 189/189/0 · npm run check 137/0/137 (REQs wired 95/99, +1 from REQ-097).
+
 ## 2026-05-15 (afternoon) — nutrition/tomato/fertigation-recipe
 
 **Change type:** added

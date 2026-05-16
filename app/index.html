@@ -3119,6 +3119,11 @@ function calcLettuceNutrSupply(currentG, targetG, density, phLocked, frontload_g
   const fmWeeks = LETTUCE_FRONTLOAD_DEFAULTS.mineralizationWeeks;
   frontload.N = (frontload_g_per_m2 || 0) * PRODUCT_PCT.FarinePlumes_N
               * SIDEDRESS_MIN_EFF.FarinePlumes_N * 1000 / fmWeeks;
+  // REQ-157 — per-element efficiency for front-load channel. Farine de plumes
+  // is N-only (13-0-0); efficiency = mineralization rate distributed over
+  // the release window (SIDEDRESS_MIN_EFF.FarinePlumes_N).
+  frontload.efficiency = {};
+  if (frontload.N > 0) frontload.efficiency.N = SIDEDRESS_MIN_EFF.FarinePlumes_N;
 
   const total = {};
   Object.keys(LETTUCE_TISSUE_DW).forEach(el => {
@@ -4823,12 +4828,45 @@ function calcNutrSupply(stage, phLocked, transpFactor, targetYield, recipeMode) 
     P: sd.actisol_g * PRODUCT_PCT.Actisol_P * phLockoutFactor_P * sdAreaFactor,
     K: sd.actisol_g * PRODUCT_PCT.Actisol_K * SIDEDRESS_MIN_EFF.Actisol_K * sdAreaFactor,
   };
+  // REQ-157 — per-element efficiency map for sidedress channel. For routed
+  // elements only (mg > 0). N blends Actisol + farine de plumes mineralization
+  // efficiencies weighted by their N contribution; P is Actisol-only with
+  // pH-lockout factor; K is Actisol-only.
+  sidedress.efficiency = {};
+  if (sidedress.N > 0) {
+    const nActisolMass = sd.actisol_g * PRODUCT_PCT.Actisol_N;
+    const nFarineMass  = sd.farine_g  * PRODUCT_PCT.FarinePlumes_N;
+    const nTotal       = nActisolMass + nFarineMass;
+    sidedress.efficiency.N = nTotal > 0
+      ? (nActisolMass * SIDEDRESS_MIN_EFF.Actisol_N + nFarineMass * SIDEDRESS_MIN_EFF.FarinePlumes_N) / nTotal
+      : SIDEDRESS_MIN_EFF.Actisol_N;
+  }
+  if (sidedress.P > 0) sidedress.efficiency.P = SIDEDRESS_MIN_EFF.Actisol_P * phLockoutFactor_P;
+  if (sidedress.K > 0) sidedress.efficiency.K = SIDEDRESS_MIN_EFF.Actisol_K;
 
   // Fertigation contributions — barrel-loaded mass per m²/sem, full
   // delivery (no mixing-factor discount; concept retired 2026-05-10).
   // B only present in FP mode (Solubore added 2026-05-08, single-channel for B).
   const fert = { K: fertK, Mg: fertMg };
   if (fertB > 0) fert.B = fertB;
+  // REQ-157 — per-element efficiency for fertigation channel. Soil-pH-driven
+  // (REQ-017): soluble-cation salts (K₂SO₄, MgSO₄) follow PH_RESPONSE
+  // ['soluble-cation']; Solubore (boric acid) is non-ionic in soil, 100%.
+  const fertSoilPh = phLocked ? 7.4 : 6.4;
+  fert.efficiency = {};
+  if (fert.K > 0)  fert.efficiency.K  = PH_RESPONSE['soluble-cation'](fertSoilPh);
+  if (fert.Mg > 0) fert.efficiency.Mg = PH_RESPONSE['soluble-cation'](fertSoilPh);
+  if (fert.B  > 0) fert.efficiency.B  = PH_RESPONSE['borate'](fertSoilPh);
+
+  // REQ-157 — per-element efficiency for foliar channel. Foliar bypasses
+  // soil pH; uses foliarPhResponse(sprayPh) × coverage (FOLIAR_COVERAGE_DEFAULT
+  // = 0.30, no-yucca regime per 2026-05-05 decision).
+  const foliarSprayPh = 5.0;
+  const foliarBaseEff = foliarPhResponse(foliarSprayPh) * 0.30;
+  foliar.efficiency = {};
+  ['Mn','Zn','B','Cu','Mo','Fe'].forEach(el => {
+    if ((foliar[el] || 0) > 0) foliar.efficiency[el] = foliarBaseEff;
+  });
 
   // Total effective supply per element.
   // NOTE: sidedress is NOT summed here — past sidedress mineralization is
@@ -4951,22 +4989,27 @@ function fmtVal(mg) {
 // The block populates that registry inside buildNutriment via
 // registerPourquoi(). If a key isn't registered, the row is still rendered
 // but the click is a no-op.
-// renderGapGrid — 5-col gap-chain grid. Cross-app contribution-block layout
-// per REQ-137 (nutrition/spec.md). Optional `details` (REQ-136) carries
-// per-element {cert, cap}; when present, the Apport ici cell becomes
-// clickable (REQ-138) and renders cap emojis (🔥 damage / 💧 precipitation /
-// ❗ other). `blockId` keys the per-cell + per-emoji modals so Block 2's K
-// cell opens a different modal than Block 3's K cell.
+// renderGapGrid — 6-col gap-chain grid. Cross-app contribution-block layout
+// per REQ-137 (nutrition/spec.md, amended 2026-05-15 to add Efficacité).
+// Optional `details` (REQ-136) carries per-element {cert, cap}; when
+// present, the Apport ici cell becomes clickable (REQ-138) and renders
+// cap emojis (🔥 damage / 💧 precipitation / ❗ other). `blockId` keys the
+// per-cell + per-emoji modals so Block 2's K cell opens a different modal
+// than Block 3's K cell. `efficiency` (REQ-157) is a per-element map
+// [0, 1]; rendered as integer % in column 3 (REQ-156), em-dash when absent.
 //
-// Backwards compat: details + blockId optional. When omitted, falls back to
-// the legacy row-level pq-row click behavior.
-function renderGapGrid(gapsIn, contrib, gapsOut, pqKeyPrefix, details, blockId) {
+// Backwards compat: details + blockId + efficiency optional. When details
+// omitted, falls back to the legacy row-level pq-row click behavior.
+function renderGapGrid(gapsIn, contrib, gapsOut, pqKeyPrefix, details, blockId, efficiency) {
   const order = ['N','P','K','Ca','Mg','Fe','Mn','Zn','B','Cu','Mo'];
   const CAP_EMOJI = { damage: '🔥', precipitation: '💧', other: '❗' };
+  const efficiencyMap = efficiency || {};
+  const GRID_COLUMNS = '0.6fr 1fr 0.7fr 1fr 1fr 0.4fr';
   let html = `<div style="font-size:11.5px; margin-top:8px;">
-    <div style="display:grid; grid-template-columns:0.6fr 1fr 1fr 1fr 0.4fr; gap:4px 8px;">
+    <div style="display:grid; grid-template-columns:${GRID_COLUMNS}; gap:4px 8px;">
       <div style="font-weight:700; color:var(--text-muted); font-size:10px; text-transform:uppercase; letter-spacing:1px;">Él.</div>
       <div style="font-weight:700; color:var(--text-muted); font-size:10px; text-transform:uppercase; letter-spacing:1px;">Manque entrant</div>
+      <div style="font-weight:700; color:var(--text-muted); font-size:10px; text-transform:uppercase; letter-spacing:1px;">Efficacité</div>
       <div style="font-weight:700; color:var(--text-muted); font-size:10px; text-transform:uppercase; letter-spacing:1px;">Apport ici</div>
       <div style="font-weight:700; color:var(--text-muted); font-size:10px; text-transform:uppercase; letter-spacing:1px;">Manque sortant</div>
       <div></div>
@@ -5033,9 +5076,14 @@ function renderGapGrid(gapsIn, contrib, gapsOut, pqKeyPrefix, details, blockId) 
     }
     const cValueStr = c > 0 ? '−' + fmtVal(c) : '—';
     const cellInner = `<span style="${cellCursor}font-family:'DM Mono',monospace; color:${c>0?'var(--text)':'var(--text-muted)'};">${cValueStr}</span>${capEmoji}`;
-    html += `<div ${rowClickable} style="display:grid; grid-template-columns:0.6fr 1fr 1fr 1fr 0.4fr; gap:4px 8px; padding:2px 4px; border-radius:3px;">
+    const efficiencyValue = efficiencyMap[el];
+    const efficiencyCellText = (typeof efficiencyValue === 'number' && isFinite(efficiencyValue))
+      ? Math.round(efficiencyValue * 100) + ' %'
+      : '—';
+    html += `<div ${rowClickable} style="display:grid; grid-template-columns:${GRID_COLUMNS}; gap:4px 8px; padding:2px 4px; border-radius:3px;">
       <div style="font-weight:600;">${el}</div>
       <div style="font-family:'DM Mono',monospace; color:var(--text-muted);">${fmtVal(gIn)}</div>
+      <div style="font-family:'DM Mono',monospace; color:var(--text-muted);">${efficiencyCellText}</div>
       <div ${cellOnclick} data-cell-key="${blockId || ''}.cell.${el}" style="${cellCursor}">${cellInner}</div>
       <div style="font-family:'DM Mono',monospace; font-weight:600; color:${gOut<=0?'#1e6b2d':(gOut<gIn*0.3?'#5a6b1e':'var(--text)')};">${gOut <= 0 ? '0 (couvert)' : fmtVal(gOut)}</div>
       <div style="text-align:center;">${icon}</div>
@@ -5259,7 +5307,7 @@ function buildNutrimentLettuce() {
     });
   });
   compostHtml += `<div style="font-size:11.5px; color:var(--text-muted); margin-bottom:4px;">Besoin hebdo → manque restant après libération du compost :</div>`;
-  compostHtml += renderGapGrid(gapAfterDemand, compostMg, gapAfterCompost, 'lettuce-compost');
+  compostHtml += renderGapGrid(gapAfterDemand, compostMg, gapAfterCompost, 'lettuce-compost', undefined, undefined, {});
   document.getElementById('nutr-l-compost').innerHTML = compostHtml;
 
   // ─── Block 3: Front-load farine de plumes (slow-release N) ───
@@ -5292,7 +5340,7 @@ function buildNutrimentLettuce() {
   });
   let flHtml = `<div style="font-size:12.5px; line-height:1.5; color:var(--text-muted); margin-bottom:10px;">Farine de plumes 13-0-0 appliquée avant transplant à <strong style="color:var(--text);">${frontloadG.toFixed(0)} g/m²</strong> (~${totalKg.toFixed(1)} kg total sur ${planches} planches × ${planchAreaM2} m²). Minéralisation 75 % distribuée sur ~${fmWeeks} sem (cert 3). N seul — aucun P, aucun Ca (les deux déjà saturés au sol).</div>`;
   flHtml += `<div style="font-size:11.5px; color:var(--text-muted); margin-bottom:4px;">Manque entrant (après compost) → manque restant après front-load :</div>`;
-  flHtml += renderGapGrid(gapAfterCompost, frontloadMg, gapAfterFront, 'lettuce-frontload');
+  flHtml += renderGapGrid(gapAfterCompost, frontloadMg, gapAfterFront, 'lettuce-frontload', undefined, undefined, (supply.frontload && supply.frontload.efficiency) || {});
   document.getElementById('nutr-l-frontload-block').innerHTML = flHtml;
 
   // ─── Block 4: Fertigation actuelle (LETTUCE constant) ───
@@ -5346,7 +5394,7 @@ function buildNutrimentLettuce() {
     });
   });
   fertHtml += `<div style="font-size:11.5px; color:var(--text-muted); margin-bottom:4px;">Manque entrant (après front-load) → manque restant après fertigation :</div>`;
-  fertHtml += renderGapGrid(gapAfterFront, supply.fert, gapAfterFert, 'lettuce-fert');
+  fertHtml += renderGapGrid(gapAfterFront, supply.fert, gapAfterFert, 'lettuce-fert', undefined, undefined, {});
   document.getElementById('nutr-l-fert').innerHTML = fertHtml;
 
   // ─── Block 5: Leviers (auto-derived from gap chain residual) ───
@@ -5627,7 +5675,7 @@ function buildNutrimentNursery() {
     + `<span style="color:var(--text-muted); font-size:10.5px;">(cert 2 placeholder, fiche Berger pendante)</span>.`
     + ` Apport moyen sur ${SCN.OM2_RELEASE_CURVE_BY_WEEK.length} sem du cycle.`
     + `</div>`;
-  subHtml += renderGapGrid(demandFlat, subContrib, gapAfterSubstrate, 'nursery-substrate', subDetails, 'nursery-substrate');
+  subHtml += renderGapGrid(demandFlat, subContrib, gapAfterSubstrate, 'nursery-substrate', subDetails, 'nursery-substrate', (subResult && subResult.efficiency) || {});
   document.getElementById('nutr-n-substrate').innerHTML = subHtml;
 
   // ─── Block 3: Fertigation (REQ-128) — recipe header + gap-grid table ───
@@ -5694,7 +5742,7 @@ function buildNutrimentNursery() {
     <div style="font-family:'DM Mono',monospace; color:${phColor};">${tankPh.toFixed(2)}</div>
     <div style="color:var(--text-muted); font-size:11px;">[${phLo}-${phHi}]</div>
   </div>`;
-  fertHtml += renderGapGrid(gapAfterSubstrate, fertContrib, gapAfterFert, 'nursery-fert', fertDetails, 'nursery-fert');
+  fertHtml += renderGapGrid(gapAfterSubstrate, fertContrib, gapAfterFert, 'nursery-fert', fertDetails, 'nursery-fert', supply.efficiency || {});
   document.getElementById('nutr-n-fertigation').innerHTML = fertHtml;
 
   // ─── Block 4: Leviers (REQ-129 — reads gapAfterFert as residual) ───
@@ -5839,7 +5887,7 @@ function buildBanqueSol() {
     return { net, arrow, color };
   }
   if (hasFp) {
-    // 5-column side-by-side comparison: stored vs first-principles
+    // 6-column side-by-side comparison: stored vs first-principles
     html += `<div style="display:grid; grid-template-columns:0.35fr 0.9fr 0.9fr 0.9fr 1fr 1fr; gap:4px 8px; font-size:11.5px; align-items:center;">
       <div style="font-weight:700; color:var(--text-muted); font-size:10px; text-transform:uppercase; letter-spacing:1px;">Él.</div>
       <div style="font-weight:700; color:var(--text-muted); font-size:10px; text-transform:uppercase; letter-spacing:1px;">Plante tire du sol</div>

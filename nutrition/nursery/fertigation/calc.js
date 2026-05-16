@@ -48,7 +48,8 @@
     const PRODUCTS = getProducts();
     const perTray_mg = {};
     const details = {};
-    if (!recipe || typeof recipe !== 'object') return { perTray_mg, details };
+    const efficiency = {};
+    if (!recipe || typeof recipe !== 'object') return { perTray_mg, details, efficiency };
     // Per-element cert: min(product cert) across contributing products.
     const elCertContrib = {};
     for (const name of Object.keys(recipe)) {
@@ -122,7 +123,16 @@
         };
       }
     }
-    return { perTray_mg, details };
+    // REQ-157 — per-element efficiency for nursery fertigation. Dissolved
+    // delivery at tank pH 5-6 (REQ-099 envelope); products bypass soil-pH
+    // chemistry. Amino-N from fish hydrolysate is already in plant-available
+    // form (no mineralization step). Routed elements (mg > 0) get 1.0;
+    // non-routed elements stay absent.
+    for (const el of allEls) {
+      const supplied = perTray_mg[el] || 0;
+      if (supplied > 0) efficiency[el] = 1.0;
+    }
+    return { perTray_mg, details, efficiency };
   }
 
   // Smallest integer N ∈ [1, 7] such that N × per-fertigation supply covers

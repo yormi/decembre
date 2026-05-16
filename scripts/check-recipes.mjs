@@ -3618,7 +3618,28 @@ header('REQ-130 — Block 1 (Besoins): 3-col table (Él / Par plant / Cert)');
   }
 }
 
-header('REQ-127 — Block 2 (substrate) layout: recipe header + gap-grid');
+// Helper: assert a contribution-block container has a 6-col gap-grid
+// header strip whose column text matches REQ137_HEADER_ORDER (defined in
+// the REQ-137 block below — declared as a top-level const there). When the
+// helper is invoked here BEFORE the const declaration runs, it shadow-
+// references the const; since both are at module scope and execute in
+// order with `header()`/`pass()`/`fail()` doing IO immediately, the
+// REQ-127/128 blocks run BEFORE REQ-137 — so we duplicate the constant
+// inline here to keep the block self-contained. (The two declarations
+// must stay in sync; both reflect REQ-137 amended 2026-05-15.)
+const REQ127_128_HEADER_ORDER = ['Él.', 'Manque entrant', 'Efficacité', 'Apport ici', 'Manque sortant', ''];
+function assertSixColGapGrid(blockEl) {
+  const headerStrip = findGapGridHeaderStrip(blockEl);
+  if (!headerStrip) return { ok: false, why: 'gap-grid header strip not found' };
+  const cols = Array.from(headerStrip.children);
+  if (cols.length !== 6) return { ok: false, why: `header has ${cols.length} columns, expected 6` };
+  const headerTexts = cols.map(d => (d.textContent || '').trim());
+  const matches = REQ127_128_HEADER_ORDER.every((expected, idx) => headerTexts[idx] === expected);
+  if (!matches) return { ok: false, why: `header text [${headerTexts.join(' | ')}] != [${REQ127_128_HEADER_ORDER.join(' | ')}]` };
+  return { ok: true };
+}
+
+header('REQ-127 — Block 2 (substrate) layout: recipe header + 6-col gap-grid');
 {
   const subEl = window.document.getElementById('nutr-n-substrate');
   if (!subEl) {
@@ -3626,21 +3647,21 @@ header('REQ-127 — Block 2 (substrate) layout: recipe header + gap-grid');
   } else {
     const html = subEl.innerHTML || '';
     const hasRecipeHeader = /Farine de plumes\s+\d/.test(html);
-    const has5ColGrid = /grid-template-columns:\s*0\.6fr 1fr 1fr 1fr 0\.4fr/.test(html);
+    const gridCheck = assertSixColGapGrid(subEl);
     const pqRows = subEl.querySelectorAll('.pq-row');
     if (!hasRecipeHeader) {
       fail('REQ-127 — recipe header', '"Farine de plumes Xg/plateau" not found in Block 2');
-    } else if (!has5ColGrid) {
-      fail('REQ-127 — 5-column gap-grid', 'renderGapGrid signature grid not present');
+    } else if (!gridCheck.ok) {
+      fail('REQ-127 — 6-column gap-grid', gridCheck.why);
     } else if (pqRows.length === 0) {
       fail('REQ-127 — gap-grid rows', 'no .pq-row found (gap-grid empty)');
     } else {
-      pass(`Block 2: recipe header + 5-col gap-grid (${pqRows.length} rows)`);
+      pass(`Block 2: recipe header + 6-col gap-grid (${pqRows.length} rows)`);
     }
   }
 }
 
-header('REQ-128 — Block 3 (fertigation) layout: recipe header + CE/pH + gap-grid');
+header('REQ-128 — Block 3 (fertigation) layout: recipe header + CE/pH + 6-col gap-grid');
 {
   const fEl = window.document.getElementById('nutr-n-fertigation');
   if (!fEl) {
@@ -3650,16 +3671,16 @@ header('REQ-128 — Block 3 (fertigation) layout: recipe header + CE/pH + gap-gr
     const hasRecipeHeader = /Recette par plateau/.test(html) && /×\d+\/sem/.test(html);
     const hasCE = /CE pr[ée]dite/.test(html) && /mS\/cm/.test(html);
     const hasPh = /pH pr[ée]dit/.test(html);
-    const has5ColGrid = /grid-template-columns:\s*0\.6fr 1fr 1fr 1fr 0\.4fr/.test(html);
+    const gridCheck = assertSixColGapGrid(fEl);
     const pqRows = fEl.querySelectorAll('.pq-row');
     const offs = [];
     if (!hasRecipeHeader) offs.push('recipe header (×N/sem)');
     if (!hasCE) offs.push('CE readout');
     if (!hasPh) offs.push('pH readout');
-    if (!has5ColGrid) offs.push('5-col gap-grid');
+    if (!gridCheck.ok) offs.push(`6-col gap-grid (${gridCheck.why})`);
     if (pqRows.length === 0) offs.push('.pq-row entries');
     if (offs.length === 0) {
-      pass(`Block 3: recipe header + CE/pH + 5-col gap-grid (${pqRows.length} rows)`);
+      pass(`Block 3: recipe header + CE/pH + 6-col gap-grid (${pqRows.length} rows)`);
     } else {
       fail('REQ-128 — Block 3 layout', `missing: ${offs.join(', ')}`);
     }
@@ -3810,17 +3831,25 @@ if (typeof window.setNutrCrop === 'function') {
 // Shared helper for REQ-137 + REQ-152: locate the gap-grid wrapper in a
 // contribution-block container. The renderer (renderGapGrid in
 // app/index.html) emits `<div style="font-size:11.5px; margin-top:8px;"><div
-// style="display:grid; grid-template-columns:0.6fr 1fr 1fr 1fr 0.4fr; ...">
-// ...`. We find the outer wrapper by walking the inner-grid element up to
+// style="display:grid; grid-template-columns:0.6fr ...; ...">...`.
+// We find the outer wrapper by walking the inner-grid element up to
 // its parent — that parent is the node whose previousElementSibling must be
 // the recipe `<table>` per REQ-152.
+//
+// Selector matches on the leading `0.6fr` column only — the renderer's
+// internal column count evolves (REQ-137 amended 2026-05-15: 5→6 columns,
+// inserting Efficacité between Manque entrant and Apport ici). Both the
+// pre-amendment 5-col `0.6fr 1fr 1fr 1fr 0.4fr` and the post-amendment
+// 6-col template share the leading `0.6fr` Él. column, so this selector
+// keeps finding the wrapper across the rollout. The downstream column-count
+// assertion lives in the REQ-137 matcher itself.
 function findGapGridWrapper(blockEl) {
   if (!blockEl) return null;
   // jsdom serializes inline style with no space after the colon
   // ("grid-template-columns:0.6fr ..."). The CSS attribute selector matches
   // on the serialized string, so omit the space.
   const inner = blockEl.querySelector(
-    'div[style*="grid-template-columns:0.6fr 1fr 1fr 1fr 0.4fr"]'
+    'div[style*="grid-template-columns:0.6fr"]'
   );
   if (!inner) return null;
   // The innermost grid div is the FIRST .pq-row OR the header strip. The
@@ -3834,12 +3863,36 @@ function findGapGridWrapper(blockEl) {
   return inner.parentElement;
 }
 
-header('REQ-137 — Tomato Bilan blocks: 5-col gap-grid + cell-keying + gap-grid is recipe-table\'s next sibling');
+// Shared helper for REQ-137 / REQ-156: from a contribution-block container,
+// return the gap-grid header-strip element (the first child div under the
+// wrapper). Used to count columns + read header text.
+function findGapGridHeaderStrip(blockEl) {
+  const wrapper = findGapGridWrapper(blockEl);
+  if (!wrapper) return null;
+  // Wrapper's first child is the header strip (a display:grid div). Its
+  // direct children are one <div> per column.
+  return wrapper.firstElementChild || null;
+}
+
+// Shared helper for REQ-137 / REQ-156: return all data rows (.pq-row) of
+// the gap-grid in a contribution-block container.
+function findGapGridDataRows(blockEl) {
+  const wrapper = findGapGridWrapper(blockEl);
+  if (!wrapper) return [];
+  return Array.from(wrapper.querySelectorAll('.pq-row'));
+}
+
+// Canonical 6-col header order per REQ-137 (amended 2026-05-15) +
+// REQ-156. The Efficacité column lives between Manque entrant and Apport
+// ici. The trailing slot is the emoji column (no header text).
+const REQ137_HEADER_ORDER = ['Él.', 'Manque entrant', 'Efficacité', 'Apport ici', 'Manque sortant', ''];
+
+header('REQ-137 — Tomato Bilan blocks: 6-col gap-grid + cell-keying + gap-grid is recipe-table\'s next sibling');
 {
   // Tomato page — 4 contribution blocks asserted today.
   // - Cell-keying (existing, preserved).
-  // - 5-col grid signature + .pq-row entries (new — bring the tomato side up
-  //   to the REQ-127/128 nursery shape).
+  // - 6-col grid signature: count children of header strip + match header
+  //   text against REQ137_HEADER_ORDER.
   // - Gap-grid wrapper's previousElementSibling is a <table> — the REQ-152
   //   amendment to REQ-137. Cross-ref: full table-shape assertions live in
   //   the REQ-152 verifier block below; here we only check sibling adjacency
@@ -3854,8 +3907,24 @@ header('REQ-137 — Tomato Bilan blocks: 5-col gap-grid + cell-keying + gap-grid
     const html = el.innerHTML || '';
     const hasCellKeys = new RegExp(`data-cell-key="${blockKeys[i]}\\.cell\\.\\w+"`).test(html);
     if (!hasCellKeys) offs.push(`${blockIds[i]} cells missing data-cell-key`);
-    const has5ColGrid = /grid-template-columns:\s*0\.6fr 1fr 1fr 1fr 0\.4fr/.test(html);
-    if (!has5ColGrid) offs.push(`${blockIds[i]} missing 5-col gap-grid signature`);
+    // 6-column gap-grid: count children under the header strip + verify
+    // header text matches REQ137_HEADER_ORDER (Efficacité between Manque
+    // entrant and Apport ici per REQ-137 amendment 2026-05-15).
+    const headerStrip = findGapGridHeaderStrip(el);
+    if (!headerStrip) {
+      offs.push(`${blockIds[i]} gap-grid header strip not found`);
+    } else {
+      const cols = Array.from(headerStrip.children);
+      if (cols.length !== 6) {
+        offs.push(`${blockIds[i]} header has ${cols.length} columns, expected 6`);
+      } else {
+        const headerTexts = cols.map(d => (d.textContent || '').trim());
+        const ok = REQ137_HEADER_ORDER.every((expected, idx) => headerTexts[idx] === expected);
+        if (!ok) {
+          offs.push(`${blockIds[i]} header text [${headerTexts.join(' | ')}] != [${REQ137_HEADER_ORDER.join(' | ')}]`);
+        }
+      }
+    }
     const pqRows = el.querySelectorAll('.pq-row');
     if (pqRows.length === 0) offs.push(`${blockIds[i]} has no .pq-row entries`);
     // Gap-grid wrapper's previousElementSibling must be a <table> (REQ-152
@@ -3875,7 +3944,7 @@ header('REQ-137 — Tomato Bilan blocks: 5-col gap-grid + cell-keying + gap-grid
   // is 0 → no cap fires → no emoji. That's consistent with REQ-138 semantics
   // (cap fires only when there's a value to cap). Synthetic-cap test deferred.
   if (offs.length === 0) {
-    pass('Tomato compost/sidedress/fert/foliar blocks: 5-col grid · cell-keyed · gap-grid is <table>\'s next sibling');
+    pass('Tomato compost/sidedress/fert/foliar blocks: 6-col grid · cell-keyed · gap-grid is <table>\'s next sibling');
   } else {
     fail('REQ-137 — Tomato block wiring', offs.slice(0, 5).join(' · '));
   }
@@ -3884,20 +3953,318 @@ header('REQ-137 — Tomato Bilan blocks: 5-col gap-grid + cell-keying + gap-grid
   // sweep deferred until the F1 lettuce carve lands. Emit explicit pass
   // entries so the 9-block landscape is visible in the verifier output.
   // TODO: wire after F1 lettuce carve
-  pass('REQ-137 — Salanova Sol block (recipe table + 5-col gap-grid) — TODO: wire after F1 lettuce carve');
+  pass('REQ-137 — Salanova Sol block (recipe table + 6-col gap-grid) — TODO: wire after F1 lettuce carve');
   // TODO: wire after F1 lettuce carve
-  pass('REQ-137 — Salanova Fertigation block (recipe table + 5-col gap-grid) — TODO: wire after F1 lettuce carve');
+  pass('REQ-137 — Salanova Fertigation block (recipe table + 6-col gap-grid) — TODO: wire after F1 lettuce carve');
   // TODO: wire after F1 lettuce carve
-  pass('REQ-137 — Salanova Front-load block (recipe table + 5-col gap-grid) — TODO: wire after F1 lettuce carve');
+  pass('REQ-137 — Salanova Front-load block (recipe table + 6-col gap-grid) — TODO: wire after F1 lettuce carve');
 
   // Semis laitue (Réserve substrat, Fertigation) — already asserted as
-  // 5-col gap-grid by REQ-127 / REQ-128 above; the REQ-137 adjacency clause
+  // 6-col gap-grid by REQ-127 / REQ-128 above; the REQ-137 adjacency clause
   // (gap-grid is the recipe-table's next sibling) is deferred until the F1
   // lettuce carve refactors the nursery render to emit a <table>.
   // TODO: wire after F1 lettuce carve
   pass('REQ-137 — Semis Réserve-substrat block (recipe-table adjacency) — TODO: wire after F1 lettuce carve');
   // TODO: wire after F1 lettuce carve
   pass('REQ-137 — Semis Fertigation block (recipe-table adjacency) — TODO: wire after F1 lettuce carve');
+}
+
+// ─── REQ-156 — Efficacité column cell semantics ────────────────────────
+//
+// Spec: nutrition/spec.md → REQ-156. In every contribution-block gap-grid
+// (REQ-137), the Efficacité cell of each element row displays an integer
+// percent (`\d+ %`), or `—` when the channel routes no product carrying
+// that element. The column lives at index 2 (zero-indexed: Él. | Manque
+// entrant | Efficacité | Apport ici | Manque sortant | emoji), matching
+// REQ137_HEADER_ORDER.
+//
+// Scope today: tomato page (4 blocks). Salanova + Semis branches emit
+// pass()-with-TODO matching the REQ-137 / REQ-152 pattern above.
+
+header('REQ-156 — Efficacité cell renders integer % or `—` per data row (Tomato page)');
+{
+  const blocks = [
+    { id: 'nutr-compost',   label: 'Compost' },
+    { id: 'nutr-sidedress', label: 'Sidedress' },
+    { id: 'nutr-fert',      label: 'Fertigation' },
+    { id: 'nutr-foliar',    label: 'Foliaire' },
+  ];
+  // Index of the Efficacité column in each data row, matching the header
+  // order (Él. | Manque entrant | Efficacité | Apport ici | Manque sortant | emoji).
+  const EFFICACITE_COL_INDEX = 2;
+  // Accept "12 %" / "12%" / "0%" — integer only, no decimals.
+  const PERCENT_RE = /^\s*\d+\s*%\s*$/;
+  // Em-dash placeholder when the channel routes nothing for this element.
+  const ABSENT = '—';
+  const offenders = [];
+  for (const block of blocks) {
+    const el = window.document.getElementById(block.id);
+    if (!el) { offenders.push(`#${block.id} (${block.label}): container missing`); continue; }
+    const dataRows = findGapGridDataRows(el);
+    if (dataRows.length === 0) {
+      // Block has no rendered rows (all elements at gIn=0 + c=0 are hidden
+      // by the renderer). Pass with a note so the structural absence is
+      // visible in the verifier output.
+      pass(`${block.label}: no data rows rendered (all elements covered or empty) — Efficacité cell format vacuously satisfied`);
+      continue;
+    }
+    for (let rowIndex = 0; rowIndex < dataRows.length; rowIndex++) {
+      const row = dataRows[rowIndex];
+      const cells = Array.from(row.children);
+      if (cells.length !== 6) {
+        offenders.push(`${block.label} row ${rowIndex + 1}: ${cells.length} cells, expected 6`);
+        continue;
+      }
+      const efficaciteCell = cells[EFFICACITE_COL_INDEX];
+      const text = (efficaciteCell.textContent || '').trim();
+      if (text === ABSENT) continue;
+      if (!PERCENT_RE.test(text)) {
+        offenders.push(`${block.label} row ${rowIndex + 1}: Efficacité cell = "${text}" (expected integer % or ${ABSENT})`);
+      }
+    }
+  }
+  if (offenders.length === 0) {
+    pass('Tomato compost/sidedress/fert/foliar: every Efficacité cell is integer % or em-dash');
+  } else {
+    fail('REQ-156 — Efficacité cell format', offenders.slice(0, 5).join(' · '));
+  }
+
+  // Salanova + Semis: structural sweep deferred (mirrors REQ-137).
+  // TODO: wire after F1 lettuce carve
+  pass('REQ-156 — Salanova Sol Efficacité cell — TODO: wire after F1 lettuce carve');
+  // TODO: wire after F1 lettuce carve
+  pass('REQ-156 — Salanova Fertigation Efficacité cell — TODO: wire after F1 lettuce carve');
+  // TODO: wire after F1 lettuce carve
+  pass('REQ-156 — Salanova Front-load Efficacité cell — TODO: wire after F1 lettuce carve');
+  // TODO: wire after F1 lettuce carve
+  pass('REQ-156 — Semis Réserve-substrat Efficacité cell — TODO: wire after F1 lettuce carve');
+  // TODO: wire after F1 lettuce carve
+  pass('REQ-156 — Semis Fertigation Efficacité cell — TODO: wire after F1 lettuce carve');
+}
+
+// ─── REQ-157 — Per-element channel efficiency exposure ─────────────────
+//
+// Spec: nutrition/spec.md → REQ-157. Every contribution-channel function
+// (compost release, substrate release, sidedress supply, fertigation
+// supply, foliar supply, front-load supply, nursery substrate, nursery
+// fertigation) MUST expose a per-element `efficiency` map alongside its
+// flat mg map and `details` payload. For each element the channel routes,
+// `efficiency[el] ∈ [0, 1]`. Elements not routed are absent.
+//
+// In-scope (verified directly by walking runtime returns):
+//   - calcNutrSupply(stage, ...) — fertigation channel (window.calcNutrSupply
+//     returns {fert, foliar, sidedress, soil, total}; efficiency lives on
+//     the `fert` child, which is the fertigation channel's namespace).
+//   - calcNutrSupply foliar branch — `supply.foliar.efficiency`.
+//   - calcNutrSupply sidedress branch — `supply.sidedress.efficiency`.
+//   - calcLettuceNutrSupply(...) — front-load channel (window.calcLettuceNutrSupply
+//     returns {soil, fert, frontload, total}; efficiency lives on `frontload`).
+//   - window.FertigationNursery.nurseryRecipeSupply — nursery fertigation;
+//     returns {perTray_mg, details, efficiency}.
+//
+// Out-of-scope (specialist-owned model.js subprojects — pass with TODO,
+// matching the REQ-137 Salanova/Semis pattern):
+//   - window.CompostContribution release map (compost-contribution/model.js).
+//   - window.SubstrateContributionNursery cycleAverageReleasePerTray
+//     (nursery/substrate-contribution/model.js).
+//
+// Designed-to-fail-until-Wave-2: every in-scope channel currently returns
+// without an `efficiency` map. The Wave 2 coder lands the additions as
+// part of the REQ-156/137 wiring per the PO entry 2026-05-15 15:20.
+
+header('REQ-157 — Contribution-channel efficiency map exposed on runtime returns');
+{
+  const offenders = [];
+
+  // Validate that an `efficiency` map is well-formed against a routed-mg
+  // map. Returns an array of offender strings (empty when OK).
+  function validateEfficiencyMap(label, routedMg, efficiency) {
+    const out = [];
+    if (!efficiency || typeof efficiency !== 'object') {
+      out.push(`${label}: efficiency map missing or not an object (got ${typeof efficiency})`);
+      return out;
+    }
+    // Routed elements: those with a non-zero mg in the channel's flat map.
+    const routedElements = Object.keys(routedMg || {}).filter(el => Number(routedMg[el]) > 0);
+    for (const el of routedElements) {
+      const value = efficiency[el];
+      if (typeof value !== 'number' || !isFinite(value)) {
+        out.push(`${label}: efficiency.${el} = ${value} (expected number for routed element)`);
+      } else if (value < 0 || value > 1) {
+        out.push(`${label}: efficiency.${el} = ${value} (expected [0, 1])`);
+      }
+    }
+    // Non-routed elements: absent from the efficiency map. We check the
+    // canonical 11-element set; mg=0 elements MUST NOT appear.
+    const ALL_ELEMENTS = ['N','P','K','Ca','Mg','Fe','Mn','Zn','B','Cu','Mo'];
+    for (const el of ALL_ELEMENTS) {
+      const mg = Number((routedMg || {})[el]) || 0;
+      if (mg <= 0 && Object.prototype.hasOwnProperty.call(efficiency, el)) {
+        out.push(`${label}: efficiency.${el} present (=${efficiency[el]}) for non-routed element (mg=0)`);
+      }
+    }
+    return out;
+  }
+
+  // ─── Tomato channels via calcNutrSupply ─────────────────────────────
+  // calcNutrSupply returns {total, fert, foliar, soil, sidedress, raw}.
+  // Per REQ-157, each contribution channel exposes its own efficiency
+  // map as a sibling. The fertigation/foliar/sidedress branches are
+  // separate channels and each gets verified independently.
+  if (typeof window.calcNutrSupply !== 'function') {
+    offenders.push('window.calcNutrSupply not exposed — cannot verify tomato channels');
+  } else {
+    let supply = null;
+    try {
+      // Match the canonical FP call shape used by the REQ-116 verifier
+      // above: T5, phLocked=true, transpFactor=1.0, target=1.5.
+      supply = window.calcNutrSupply('T5', true, 1.0, 1.5, 'fp');
+    } catch (e) {
+      offenders.push(`calcNutrSupply threw: ${e && e.message ? e.message : e}`);
+    }
+    if (supply) {
+      // Fertigation channel: supply.fert is { K, Mg, [B] } today (per the
+      // implementation around line 4830 of app/index.html). efficiency
+      // sibling MUST live next to it.
+      offenders.push(...validateEfficiencyMap(
+        'fertigation channel (supply.fert.efficiency)',
+        supply.fert,
+        supply.fert && supply.fert.efficiency
+      ));
+      // Foliar channel: supply.foliar is the per-element flat map from
+      // computeFoliarSupply. efficiency sibling required.
+      offenders.push(...validateEfficiencyMap(
+        'foliar channel (supply.foliar.efficiency)',
+        supply.foliar,
+        supply.foliar && supply.foliar.efficiency
+      ));
+      // Sidedress channel: supply.sidedress is { N, P, K }. efficiency
+      // sibling required.
+      offenders.push(...validateEfficiencyMap(
+        'sidedress channel (supply.sidedress.efficiency)',
+        supply.sidedress,
+        supply.sidedress && supply.sidedress.efficiency
+      ));
+    }
+  }
+
+  // ─── Lettuce front-load channel via calcLettuceNutrSupply ──────────
+  // calcLettuceNutrSupply returns {soil, fert, frontload, total,
+  // canopyFactor}. The front-load channel's efficiency map is a sibling
+  // of `frontload` — lives at supply.frontload.efficiency.
+  if (typeof window.calcLettuceNutrSupply !== 'function') {
+    offenders.push('window.calcLettuceNutrSupply not exposed — cannot verify lettuce front-load channel');
+  } else {
+    let lettuceSupply = null;
+    try {
+      // Representative call: 30 g transplant → 100 g target, 43 plants/m²,
+      // phLocked=true, 50 g/m² front-load (matches Salanova page defaults).
+      lettuceSupply = window.calcLettuceNutrSupply(30, 100, 43, true, 50);
+    } catch (e) {
+      offenders.push(`calcLettuceNutrSupply threw: ${e && e.message ? e.message : e}`);
+    }
+    if (lettuceSupply) {
+      offenders.push(...validateEfficiencyMap(
+        'front-load channel (supply.frontload.efficiency)',
+        lettuceSupply.frontload,
+        lettuceSupply.frontload && lettuceSupply.frontload.efficiency
+      ));
+    }
+  }
+
+  // ─── Nursery fertigation: window.FertigationNursery.nurseryRecipeSupply ──
+  // Returns {perTray_mg, details, [efficiency]}. efficiency sibling required.
+  const FN = window.FertigationNursery;
+  if (!FN || typeof FN.nurseryRecipeSupply !== 'function') {
+    offenders.push('window.FertigationNursery.nurseryRecipeSupply not exposed');
+  } else {
+    let nurseryReturn = null;
+    try {
+      const trayL = (FN.NURSERY_FERTIGATION_DEFAULTS && FN.NURSERY_FERTIGATION_DEFAULTS.trayVolumeL) || 1.25;
+      nurseryReturn = FN.nurseryRecipeSupply(FN.NURSERY_RECIPE_DEFAULT, trayL, 1);
+    } catch (e) {
+      offenders.push(`FertigationNursery.nurseryRecipeSupply threw: ${e && e.message ? e.message : e}`);
+    }
+    if (nurseryReturn) {
+      offenders.push(...validateEfficiencyMap(
+        'nursery fertigation (FertigationNursery.nurseryRecipeSupply.efficiency)',
+        nurseryReturn.perTray_mg,
+        nurseryReturn.efficiency
+      ));
+    }
+  }
+
+  if (offenders.length === 0) {
+    pass('Fertigation / foliar / sidedress / front-load / nursery-fert all expose efficiency ∈ [0,1] for routed elements');
+  } else {
+    fail('REQ-157 — channel efficiency exposure', offenders.slice(0, 6).join(' · '));
+  }
+
+  // Specialist-owned model-layer channels — landed 2026-05-15 (PO-157).
+  // window.CompostContribution.efficiency (sibling to releasePerWeek).
+  {
+    const CC = window.CompostContribution;
+    const compostOffenders = [];
+    if (!CC || !CC.releasePerWeek || !CC.efficiency) {
+      compostOffenders.push('window.CompostContribution.{releasePerWeek, efficiency} not exposed');
+    } else {
+      // Compost routes the 5 macros (releasePerWeek values are g/m²/wk).
+      // validateEfficiencyMap expects mg-scale routedMg, but since we're
+      // checking presence and range not absolute magnitude, scale doesn't
+      // matter — what matters is non-zero for routed elements.
+      compostOffenders.push(...validateEfficiencyMap(
+        'compost-contribution (window.CompostContribution.efficiency)',
+        CC.releasePerWeek,
+        CC.efficiency
+      ));
+    }
+    if (compostOffenders.length === 0) {
+      pass('REQ-157 — compost-contribution efficiency map (window.CompostContribution.efficiency)');
+    } else {
+      fail('REQ-157 — compost-contribution efficiency map', compostOffenders.slice(0, 4).join(' · '));
+    }
+  }
+
+  // window.SubstrateContributionNursery.efficiency (namespace-level sibling)
+  // and cycleAverageReleasePerTray(default).efficiency (return-level sibling).
+  {
+    const SCN = window.SubstrateContributionNursery;
+    const substrateOffenders = [];
+    if (!SCN || !SCN.efficiency || typeof SCN.cycleAverageReleasePerTray !== 'function') {
+      substrateOffenders.push('window.SubstrateContributionNursery.{efficiency, cycleAverageReleasePerTray} not exposed');
+    } else {
+      let substrateReturn = null;
+      try {
+        substrateReturn = SCN.cycleAverageReleasePerTray(
+          (SCN.NURSERY_FEATHER_MEAL_DEFAULT_G_PER_TRAY || 9)
+        );
+      } catch (e) {
+        substrateOffenders.push(`cycleAverageReleasePerTray threw: ${e && e.message ? e.message : e}`);
+      }
+      if (substrateReturn) {
+        substrateOffenders.push(...validateEfficiencyMap(
+          'substrate-contribution namespace (window.SubstrateContributionNursery.efficiency)',
+          substrateReturn.perTray_mg,
+          SCN.efficiency
+        ));
+        substrateOffenders.push(...validateEfficiencyMap(
+          'substrate-contribution return (cycleAverageReleasePerTray().efficiency)',
+          substrateReturn.perTray_mg,
+          substrateReturn.efficiency
+        ));
+        // Namespace handle and return-shape handle must be the same object —
+        // single canonical source per the spec.
+        if (SCN.efficiency !== substrateReturn.efficiency) {
+          substrateOffenders.push('substrate-contribution: namespace .efficiency and cycleAverageReleasePerTray().efficiency must be the same object reference');
+        }
+      }
+    }
+    if (substrateOffenders.length === 0) {
+      pass('REQ-157 — substrate-contribution efficiency map (window.SubstrateContributionNursery.efficiency + return sibling)');
+    } else {
+      fail('REQ-157 — substrate-contribution efficiency map', substrateOffenders.slice(0, 4).join(' · '));
+    }
+  }
 }
 
 // ─── REQ-152 — Contribution-block recipe table ─────────────────────────

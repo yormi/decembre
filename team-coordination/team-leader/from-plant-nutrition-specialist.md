@@ -23,4 +23,4 @@ A single turn that touches multiple subprojects writes one entry per subproject.
 
 ## Entries
 
-_(empty — both 2026-05-15 entries archived to `from-plant-nutrition-specialist-done.md`)_
+_(empty — both 2026-05-15 evening entries archived to `from-plant-nutrition-specialist-done.md` as part of the team-leader's sub-wave A REQ-157 close-out)_
