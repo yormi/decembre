@@ -56,7 +56,7 @@ function computeFoliarSupply(stage, opts, recipe) {
 
   const mnSO4_g = findG('MnSO₄');
   const znSO4_g = findG('ZnSO₄');
-  const sb_g    = findG('Solubore');     // boric acid; non-ionic
+  const sb_g    = findG('Solubore');     // disodium octaborate tetrahydrate (Na₂B₈O₁₃·4H₂O); non-ionic in solution
   const cuSO4_g = findG('CuSO₄');
   const feSO4_g = findG('FeSO₄');         // FeSO₄·7H₂O
   // Mo retired from foliar 2026-05-16 (REQ-061 Mo carve-out — molybdate is
@@ -81,7 +81,7 @@ function computeFoliarSupply(stage, opts, recipe) {
     Fe: deliver(feSO4_g, PRODUCT_PCT.FeSO4_Fe),         // FeSO₄·7H₂O at 20 % Fe
     Mn: deliver(mnSO4_g, PRODUCT_PCT.MnSO4_Mn),         // 31.5 % Mn
     Zn: deliver(znSO4_g, PRODUCT_PCT.ZnSO4_Zn),         // 35.5 % Zn
-    B:  deliver(sb_g,    PRODUCT_PCT.Solubore_B),       // 20.5 % B (boric acid)
+    B:  deliver(sb_g,    PRODUCT_PCT.Solubore_B),       // 20.5 % B (disodium octaborate tetrahydrate)
     Cu: deliver(cuSO4_g, PRODUCT_PCT.CuSO4_Cu),         // 25 % Cu
     Mo: 0,                                              // Mo retired from foliar (REQ-061 carve-out 2026-05-16) — routes via fertigation
   };
@@ -117,26 +117,49 @@ function computeFoliarRecipeForGap(gap, opts) {
     { element: 'Fe', key: 'FeSO4_g',    pct: PRODUCT_PCT.FeSO4_Fe },
     { element: 'B',  key: 'Solubore_g', pct: PRODUCT_PCT.Solubore_B },
   ];
-  const MIN_DOSE_G = 0.5;
   const ceilToHalfGram = function(x) { return Math.ceil(x * 2) / 2; };
 
-  // Step 1: per-element ideal_g → min-dose floor → burn cap.
+  // Step 1: per-element ideal_g → per-element min-dose floor → burn cap.
+  // Per-element floors live in MIN_DOSE_G_PER_ELEMENT (data.js); Cu's 0.2 g
+  // is the load-bearing case (narrow toxicity makes a 0.5 g uniform floor
+  // a guaranteed luxury-cap violation when ideal_g lands in 0.2-0.5 g).
+  // Luxury-cap guard: if floor-clamped delivery > 1.3× the gap, drop to 0
+  // — catches the edge case where even the per-element floor is too coarse
+  // (e.g. Cu gap so small that 0.2 g still over-feeds).
   const recipe = { MnSO4_g: 0, ZnSO4_g: 0, CuSO4_g: 0, FeSO4_g: 0, NaMoO4_g: 0, Solubore_g: 0 };
   for (var i = 0; i < PRODUCTS.length; i++) {
     var p = PRODUCTS[i];
     var g = (gap && gap[p.element]) || 0;
     if (g <= 0 || !p.pct || !area) { recipe[p.key] = 0; continue; }
     var idealG = (g * area) / (p.pct * 1000 * coverage * sprayCount);
-    if (idealG < MIN_DOSE_G) { recipe[p.key] = 0; continue; }
+    var minDoseG = (MIN_DOSE_G_PER_ELEMENT[p.element] != null)
+                 ? MIN_DOSE_G_PER_ELEMENT[p.element]
+                 : 0.5;
+    if (idealG < minDoseG) {
+      recipe[p.key] = 0;
+      continue;
+    }
     var capG = burnCapG(p.element);
     var doseG = Math.min(idealG, capG);
-    recipe[p.key] = ceilToHalfGram(doseG);
+    var roundedDoseG = ceilToHalfGram(doseG);
+    // Luxury-cap guard: floor-rounded doses can over-shoot the gap by more
+    // than 1.3× for tiny-demand elements (Cu the load-bearing case).
+    // Convert rounded dose back to delivered mg/m²/wk and compare to gap.
+    var deliveredFromDose = (roundedDoseG * p.pct * 1000 / area) * coverage * sprayCount;
+    if (deliveredFromDose > 1.3 * g) {
+      recipe[p.key] = 0;
+      continue;
+    }
+    recipe[p.key] = roundedDoseG;
   }
 
-  // Step 2: CE-cap-and-scale loop. Compute predictedCE for the recipe
-  // shaped as STORED_RECIPE.tomato.foliaire.A would be (label-string
-  // array), then if over-cap, scale all non-zero doses proportionally,
-  // re-round, retry. Bound at 4 iterations.
+  // Step 2: drop-highest-CE-contributor-first loop. Per-iteration: if
+  // predicted CE > target, identify the recipe element whose alone-in-tank
+  // CE contribution is largest, halve its dose (or drop to 0 if halving
+  // would put it below its per-element min-dose floor). Preserves
+  // pH-locked micros (Mn / Cu / B) when Fe (mass-dominant) drives CE
+  // excess — proportional scaling would have stripped the small elements
+  // first via their min-dose floors. Bound at 4 iterations.
   function recipeAsLabelArray(r) {
     return [
       { name: 'MnSO₄ (31,5 % Mn)',     master: r.MnSO4_g + ' g' },
@@ -147,17 +170,46 @@ function computeFoliarRecipeForGap(gap, opts) {
       { name: 'Solubore (20,5 % B)',   master: r.Solubore_g + ' g' },
     ];
   }
+  // Per-element CE contribution: re-run predictedCE with only that element
+  // non-zero, returns the per-element CE share.
+  function ceContributionForKey(r, key) {
+    if (typeof predictedCE !== 'function') return 0;
+    var solo = { MnSO4_g: 0, ZnSO4_g: 0, CuSO4_g: 0, FeSO4_g: 0, NaMoO4_g: 0, Solubore_g: 0 };
+    solo[key] = r[key];
+    var ceValue = predictedCE(recipeAsLabelArray(solo), 1.0);
+    return isFinite(ceValue) ? ceValue : 0;
+  }
+  // Map recipe-key → element so we can read the per-element floor when
+  // halving. NaMoO4_g maps to Mo even though Mo is zeroed out by REQ-061
+  // carve-out — keeps the lookup uniform if Mo returns.
+  var KEY_TO_ELEMENT = {
+    MnSO4_g: 'Mn', ZnSO4_g: 'Zn', CuSO4_g: 'Cu',
+    FeSO4_g: 'Fe', NaMoO4_g: 'Mo', Solubore_g: 'B',
+  };
   var BURN_CE_CAP = 10.0;            // REQ-025 tomato leaf burn cap
   var TARGET_CE = BURN_CE_CAP * 0.95; // 5 % safety margin
   for (var iter = 0; iter < 4; iter++) {
     if (typeof predictedCE !== 'function') break;
     var ce = predictedCE(recipeAsLabelArray(recipe), 1.0);
     if (!isFinite(ce) || ce <= TARGET_CE) break;
-    var scale = TARGET_CE / ce;
+    // Find highest-CE-contributor among non-zero doses.
+    var topKey = null;
+    var topCe = -Infinity;
     for (var k in recipe) {
       if (recipe[k] > 0) {
-        recipe[k] = ceilToHalfGram(recipe[k] * scale);
+        var c = ceContributionForKey(recipe, k);
+        if (c > topCe) { topCe = c; topKey = k; }
       }
+    }
+    if (!topKey) break;  // nothing to reduce
+    // Halve the top contributor; if halving would put it below its
+    // per-element min-dose floor, drop to 0.
+    var halvedG = ceilToHalfGram(recipe[topKey] / 2);
+    var floorG = MIN_DOSE_G_PER_ELEMENT[KEY_TO_ELEMENT[topKey]] || 0.5;
+    if (halvedG < floorG) {
+      recipe[topKey] = 0;
+    } else {
+      recipe[topKey] = halvedG;
     }
   }
 

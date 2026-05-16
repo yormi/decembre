@@ -8,10 +8,12 @@
 // constants/functions above — internals can then be reshaped (per-bed
 // scaling, depth-resolved bank, seasonal decay) without breaking call sites.
 window.SoilContribution = {
-  BANK_MG_M2:           SOIL_BANK_MG_M2,
-  CONTRIBUTING:         SOIL_CONTRIBUTING,
-  WEEKS_PER_MONTH:      WEEKS_PER_MONTH,
-  weeklyContribution:   soilWeeklyContribution,
-  monthsToDepletion:    soilMonthsToDepletion,
-  renderGrid:           soilRenderGrid,
+  BANK_MG_M2:                          SOIL_BANK_MG_M2,
+  CONTRIBUTING:                        SOIL_CONTRIBUTING,
+  WEEKS_PER_MONTH:                     WEEKS_PER_MONTH,
+  SME_SOIL_SOLUTION_PPM:               SME_SOIL_SOLUTION_PPM,
+  TRANSPIRATION_L_PER_M2_PER_WEEK:     TRANSPIRATION_L_PER_M2_PER_WEEK,
+  weeklyContribution:                  soilWeeklyContribution,
+  monthsToDepletion:                   soilMonthsToDepletion,
+  renderGrid:                          soilRenderGrid,
 };

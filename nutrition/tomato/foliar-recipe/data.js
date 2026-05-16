@@ -25,28 +25,44 @@
 // 1000 / area × FOLIAR_COVERAGE_DEFAULT.
 const FOLIAR_COVERAGE_DEFAULT = 0.30;
 
-// With-yucca coverage; cert 4 — surfactant-assisted droplet spread +
-// cuticle wetting jumps real uptake to 70-85 % (literature). Currently
-// not consumed by computeFoliarSupply (yucca dropped 2026-05-05, not on
-// order); exposed for future toggle code if/when yucca returns. The
-// spec's biggest single refinement trigger.
+// With-yucca coverage. Cert 3 — surfactant-assisted droplet spread +
+// cuticle wetting put literature uptake at 70-85 % for sulfate micros;
+// pinned at 0.80 as working assumption, not measured at Décembre. Same
+// three-axis caveat as FOLIAR_COVERAGE_DEFAULT: no direct Décembre
+// measurement at this regime, axil-pool image (when yucca was on
+// program) was pool concentration not coverage; Sentís et al. 2017
+// surfactant-assisted cuticle Mn penetration ~20 % is absorption, not
+// retention — 0.80 blends both axes. Currently not consumed by
+// computeFoliarSupply (yucca dropped 2026-05-05, not on order); exposed
+// for future toggle code if/when yucca returns. Bump to cert 4 when
+// tissue panel correlates predicted vs measured under a surfactant-on
+// regime.
 const FOLIAR_COVERAGE_WITH_YUCCA = 0.80;
 
-// Per-element efficiency for the Efficacité column (REQ-157) — share of
-// applied foliar-recipe mass that becomes plant-available per applied
-// gram, at current conditions (no-yucca regime, default spray tank pH).
+// Per-element efficiency for the Efficacité column (REQ-157, REQ-170) —
+// share of applied foliar-recipe mass that becomes plant-available per
+// applied gram. Surfactant-aware per REQ-170: toggling the surfactant
+// lever in Block 5 (REQ-163 page-side) flips the efficiency between the
+// no-surfactant and with-surfactant regimes.
 //
-// Formula: efficiency = FOLIAR_COVERAGE_DEFAULT × foliarPhResponse(sprayPh)
-//   = 0.30 × foliarPhResponse(5.0)
-//   = 0.30 × 0.9 (sulfate-dominant tank lands near pH 5.0, cuticle-uptake
-//                  peak is pH 5.5-6.0; spray pH 5.0 is ~0.9 of peak)
-//   = 0.27
+// Formula:   efficiency(surfactant) = coverage × foliarPhResponse(sprayPh)
+//   surfactant=false:  0.30 × foliarPhResponse(5.0) = 0.30 × 0.9 = 0.27
+//   surfactant=true:   0.80 × foliarPhResponse(5.0) = 0.80 × 0.9 = 0.72
 //
-// Uniform across the 4 cation-micro oligos (Mn / Zn / Cu / Fe) — the
-// cuticle-uptake mechanism doesn't differentiate by sulfate cation at
-// this resolution.
+// Sulfate-dominant tank lands near pH 5.0; cuticle-uptake peak is pH
+// 5.5-6.0, spray pH 5.0 sits at ~0.9 of peak. The cuticle-uptake
+// mechanism doesn't differentiate by sulfate cation at this resolution
+// — uniform across the 4 cation-micro oligos (Mn / Zn / Cu / Fe).
 //
-// Elements absent from this map:
+// Multiplier check: 0.72 / 0.27 = 2.67×, inside the 1.3-2× cuticle-
+// penetration-with-surfactant band for non-systemic micros — the upper
+// edge reflects yucca acting on coverage (retention × spread), not just
+// penetration. Sentís et al. 2017 surfactant-assisted Mn cuticle
+// penetration ratio 20 / 3 = 6.7× is the absorption axis only; our
+// figure blends absorption + retention so 2.67× is conservative against
+// the absorption-only ratio.
+//
+// Elements absent from the map:
 //   B  — single-channel via fertigation (REQ-061; Solubore in the barrel).
 //   Mo — retired from foliar 2026-05-16 (REQ-061 Mo carve-out). Molybdate
 //        is anionic and fully available at our soil pH 7.4, so the foliar-
@@ -54,17 +70,24 @@ const FOLIAR_COVERAGE_WITH_YUCCA = 0.80;
 //        moved to fertigation; the foliar spray no longer carries sodium
 //        molybdate.
 //
-// Cert 3 — `FOLIAR_COVERAGE_DEFAULT` is cert 3 (B2 downgrade, no Décembre
-// tissue correlation yet); `foliarPhResponse` curve is cert 4. Effective
-// cert min = 3. Refinement triggers in derivation.md: tissue panel
-// ±20 % correlation bumps cert 3 → 4; yucca return flips coverage
-// 0.30 → 0.80 and updates this map in lockstep.
-const FOLIAR_EFFICIENCY_AT_CURRENT_CONDITIONS = {
-  Mn: 0.27,
-  Zn: 0.27,
-  Cu: 0.27,
-  Fe: 0.27,
-};
+// Cert 3 — coverage constants (FOLIAR_COVERAGE_DEFAULT,
+// FOLIAR_COVERAGE_WITH_YUCCA) are both cert 3; foliarPhResponse curve is
+// cert 4. Effective cert min = 3. Refinement triggers in derivation.md:
+// tissue panel ±20 % correlation bumps cert 3 → 4; surfactant-on regime
+// needs its own tissue correlation since 0.80 isn't measured at Décembre.
+function foliarEfficiency(surfactant) {
+  const coverage = surfactant ? FOLIAR_COVERAGE_WITH_YUCCA : FOLIAR_COVERAGE_DEFAULT;
+  // foliarPhResponse(5.0) ≈ 0.9 at the default spray tank pH; the
+  // multiplier is the same regardless of surfactant.
+  const sprayPhFactor = 0.9;
+  const value = coverage * sprayPhFactor;
+  return { Mn: value, Zn: value, Cu: value, Fe: value };
+}
+// Backwards-compatible default-regime alias used by callers that don't
+// pass through the lever. Equivalent to foliarEfficiency(false). Kept
+// to avoid breaking out-of-tree consumers; the lever-aware caller path
+// goes through the function form.
+const FOLIAR_EFFICIENCY_AT_CURRENT_CONDITIONS = foliarEfficiency(false);
 
 // Tomato bed area in m². Derived from TOMATO_NUMBER_BEDS × TOMATO_BED_AREA
 // (7 × 54.7 = 382.9 m²) — both declared earlier in app/index.html. We
@@ -77,23 +100,57 @@ const FOLIAR_EFFICIENCY_AT_CURRENT_CONDITIONS = {
 // key, which exposes the live value via the model.js wrapper.)
 
 // REQ-115 — per-element burn cap (g per 15 L master tank).
-// Conservative mid-band foliar guidance (Sonneveld 2009, Yara crop nutrition
-// foliar tables, university extension publications: Cornell, U. Delaware,
-// U. Missouri). Cert 3 — refinable when Décembre tissue + lesion log lands.
-// TODO when tissue + lesion data lands: revisit per-element values with
-// observed Décembre headroom (Cu narrow, Fe wide). Surfactant has no
-// published effect on the burn-cap axis — yucca acts on coverage, not on
-// max safe tank concentration; see learnings.md.
+// Per-element certainty (refinable when Décembre tissue + lesion log lands):
+//   Mn / Zn / Fe / Mo / B — cert 3. Defensible mid-band of Sonneveld 2009,
+//   Yara crop-nutrition foliar tables, university extension publications
+//   (Cornell, U. Delaware, U. Missouri).
+//   Cu — cert 2. The 2 g value came from a Décembre-internal observation
+//   on 2026-05-06 (Cu local-pool-toxicity image triggered the halving from
+//   PA Taillon's original 4 g), not from extension mid-band. Extension
+//   publications support 0.05-0.1 % Cu solutions = 7.5-15 g CuSO₄/15 L,
+//   several × Décembre's 2 g. The lower value is defensible by local
+//   observation (cert 3 within Décembre) but not transferable (cert 2 in
+//   general — narrow Cu toxicity threshold, Cu²⁺ enzyme damage). Bump Cu
+//   back to cert 3 when tissue + lesion data across multiple seasons
+//   stabilizes the cap as a Décembre-empirical transferable value for
+//   similar Ca-saturated soil ops.
+// Surfactant has no published effect on the burn-cap axis — yucca acts on
+// coverage, not on max safe tank concentration; see learnings.md.
 const BURN_CAP_BASE_G = {
-  Mn: 18,   // MnSO₄ — conservative organic-greenhouse mid-band
-  Zn: 16,   // ZnSO₄
-  Cu: 2,    // CuSO₄ — narrow toxicity threshold (Cu²⁺ enzyme damage)
-  Fe: 80,   // FeSO₄·7H₂O — high-mass dose, well below tank-CE bound
-  Mo: 2,    // NaMoO₄ — wide tolerance (Sonneveld 50-200 mg/L band); seldom binding
-  B:  9,    // Solubore (boric acid) — non-ionic
+  Mn: 18,   // MnSO₄ — extension mid-band, cert 3
+  Zn: 16,   // ZnSO₄ — extension mid-band, cert 3
+  Cu: 2,    // CuSO₄ — Décembre-internal observation, cert 2 (narrow toxicity, non-transferable)
+  Fe: 80,   // FeSO₄·7H₂O — high-mass dose, well below tank-CE bound, cert 3
+  Mo: 2,    // NaMoO₄ — wide tolerance (Sonneveld 50-200 mg/L band), cert 3
+  B:  9,    // Solubore (Na₂B₈O₁₃·4H₂O, 20.5 % B) — non-ionic, cert 3
 };
 
 // REQ-115 — burn cap by element. Public via window.FoliarRecipeTomato.burnCapG.
 function burnCapG(element) {
   return BURN_CAP_BASE_G[element] || 0;
 }
+
+// REQ-115 — per-element minimum dose floor (g per 15 L master tank).
+// Sub-floor doses aren't reliably weighable on an organic-farm scale, so
+// computeFoliarRecipeForGap clamps any ideal_g below the floor to 0
+// rather than risk a 2-4× luxury feed for tiny-demand elements (Cu narrow
+// toxicity is the load-bearing case — 0.2 g floor instead of 0.5 g keeps
+// the algorithm from forcing 2.5× demand when ideal lands at 0.2 g). All
+// values are cert 3 — operator weigh-scale resolution × per-element
+// luxury-cap risk.
+//
+//   Mn / Zn / Fe / B — 0.5 g. Burn cap is the binding constraint, not
+//     luxury (extension mid-band burn cap several × demand at floor).
+//   Cu — 0.2 g. Narrow Cu²⁺ toxicity threshold; cert 2 burn-cap also
+//     argues against forcing higher dose.
+//   Mo — 0.1 g. Wide Sonneveld tolerance band (50-200 mg/L); tiny demand.
+//     Retired from foliar 2026-05-16 (REQ-061 carve-out) but kept for
+//     completeness in case Mo returns to foliar.
+const MIN_DOSE_G_PER_ELEMENT = {
+  Mn: 0.5,
+  Zn: 0.5,
+  Cu: 0.2,
+  Fe: 0.5,
+  Mo: 0.1,
+  B:  0.5,
+};

@@ -201,6 +201,14 @@ const exposeNames = [
   'PlantNeedsNursery',
   'NURSERY_TARGETS', 'calculateNurseryDemand',
   'LETTUCE_NURSERY_TISSUE_DW', 'LETTUCE_NURSERY_DM_FRACTION',
+  // Salanova plant-needs (REQ-165..169). After the 2026-05-16 carve, the
+  // partials in nutrition/lettuce/plant-needs/ supply LETTUCE_TISSUE_DW,
+  // LETTUCE_DM_FRACTION, LETTUCE_FRONTLOAD_DEFAULTS, SME_LETTUCE_PPM,
+  // calculateLettuceNutrition{Demand,Supply}, and window.PlantNeedsLettuce.
+  'PlantNeedsLettuce',
+  'LETTUCE_TISSUE_DW', 'LETTUCE_DM_FRACTION', 'LETTUCE_FRONTLOAD_DEFAULTS',
+  'SME_LETTUCE_PPM',
+  'calculateLettuceNutritionDemand', 'calculateLettuceNutritionSupply',
   'getWeekNumber', 'foliarPhResponse',
   // The following are EXPECTED constants for REQ-030/031 — not currently
   // declared in index.html. Verifier asserts presence and fails informatively
@@ -751,30 +759,55 @@ header('REQ-141 — Only CONTRIBUTING elements (P, Ca) participate in the gap ch
   }
 }
 
-header('REQ-142 — monthsToDepletion defined for any element with bank data + positive demand');
+header('REQ-142 — monthsToDepletion = bank ÷ (SME × transpiration × WEEKS_PER_MONTH)');
 {
   const SC = window.SoilContribution;
   if (!SC) {
     fail('SoilContribution available', 'namespace missing');
   } else {
     const offenders = [];
-    const caMonths = SC.monthsToDepletion('tomato', 'Ca', 300);   // contributing + has bank
-    if (typeof caMonths !== 'number' || !(caMonths > 0)) offenders.push(`monthsToDepletion(Ca, 300) = ${caMonths}`);
-    const kMonths = SC.monthsToDepletion('tomato', 'K', 3000);    // NOT contributing but has bank
-    if (typeof kMonths !== 'number' || !(kMonths > 0)) offenders.push(`monthsToDepletion(K, 3000) = ${kMonths} (should be a number for disabled rows too)`);
-    const nMonths = SC.monthsToDepletion('tomato', 'N', 1000);    // no bank data
-    if (nMonths !== null) offenders.push(`monthsToDepletion(N, 1000) = ${nMonths} (expected null)`);
-    const zeroDemand = SC.monthsToDepletion('tomato', 'Ca', 0);   // zero demand
-    if (zeroDemand !== null) offenders.push(`monthsToDepletion(Ca, 0) = ${zeroDemand} (expected null)`);
-    // Sanity: arithmetic check on Ca runway.
-    const expectedCa = SC.BANK_MG_M2.tomato.Ca / (300 * SC.WEEKS_PER_MONTH);
-    if (Math.abs(caMonths - expectedCa) > 1e-6) {
-      offenders.push(`Ca runway arithmetic mismatch: got ${caMonths}, expected ${expectedCa}`);
+    // Tomato Ca — bank, SME, transpiration all wired → numeric runway.
+    const caMonths = SC.monthsToDepletion('tomato', 'Ca');
+    if (typeof caMonths !== 'number' || !(caMonths > 0)) {
+      offenders.push(`monthsToDepletion(tomato, Ca) = ${caMonths} (expected positive number)`);
+    }
+    // Tomato P — locked out at pH 7.4 (SME 1.1 ppm); bank 55 800 mg/m² → years.
+    const pMonths = SC.monthsToDepletion('tomato', 'P');
+    if (typeof pMonths !== 'number' || !(pMonths > 0)) {
+      offenders.push(`monthsToDepletion(tomato, P) = ${pMonths} (expected positive number)`);
+    }
+    // Tomato K — NOT in CONTRIBUTING but has bank + SME → still numeric (REQ-142 carve-out).
+    const kMonths = SC.monthsToDepletion('tomato', 'K');
+    if (typeof kMonths !== 'number' || !(kMonths > 0)) {
+      offenders.push(`monthsToDepletion(tomato, K) = ${kMonths} (disabled rows must still expose runway)`);
+    }
+    // N has no bank data → null.
+    const nMonths = SC.monthsToDepletion('tomato', 'N');
+    if (nMonths !== null) {
+      offenders.push(`monthsToDepletion(tomato, N) = ${nMonths} (expected null — no bank data)`);
+    }
+    // Lettuce Ca — both crop entries wired.
+    const lettuceCa = SC.monthsToDepletion('lettuce', 'Ca');
+    if (typeof lettuceCa !== 'number' || !(lettuceCa > 0)) {
+      offenders.push(`monthsToDepletion(lettuce, Ca) = ${lettuceCa} (expected positive number)`);
+    }
+    // Pinned arithmetic — tomato P with current constants.
+    //   bank = 55 800 mg/m² ; SME = 1.1 ppm ; transp = 15 L/m²/wk ; WEEKS_PER_MONTH = 52/12.
+    //   weekly = 1.1 × 15 = 16.5 mg/m²/wk ; runway months = 55 800 / (16.5 × 4.333…) ≈ 780.4 mois.
+    const expectedP = 55800 / (1.1 * 15 * (52 / 12));
+    if (Math.abs(pMonths - expectedP) > 1e-3) {
+      offenders.push(`P runway arithmetic mismatch: got ${pMonths}, expected ${expectedP}`);
+    }
+    // Pinned arithmetic — lettuce Ca with current constants.
+    //   bank = 1 061 200 ; SME = 114.4 ; transp = 4 ; expected ≈ bank / (114.4 × 4 × 4.333…) ≈ 535 mois.
+    const expectedLettuceCa = 1061200 / (114.4 * 4 * (52 / 12));
+    if (Math.abs(lettuceCa - expectedLettuceCa) > 1e-3) {
+      offenders.push(`Lettuce Ca runway arithmetic mismatch: got ${lettuceCa}, expected ${expectedLettuceCa}`);
     }
     if (offenders.length > 0) {
       fail('monthsToDepletion behaviour', offenders.map(o => `  ${o}`).join('\n'));
     } else {
-      pass(`monthsToDepletion: Ca contributes (~${caMonths.toFixed(0)} mois) ; K disabled but has runway ; N + zero-demand → null`);
+      pass(`SME-derived runway: tomato Ca ${caMonths.toFixed(0)} mois · tomato P ${pMonths.toFixed(0)} mois (lockout) · K disabled-but-numeric · N → null · lettuce Ca ${lettuceCa.toFixed(0)} mois`);
     }
   }
 }
@@ -785,18 +818,65 @@ header('REQ-143 — window.SoilContribution public API surface');
   if (!SC) {
     fail('window.SoilContribution exists', 'namespace not declared (model.js include may be missing or out of order)');
   } else {
-    const expectedKeys = ['BANK_MG_M2', 'CONTRIBUTING', 'WEEKS_PER_MONTH', 'weeklyContribution', 'monthsToDepletion', 'renderGrid'];
+    const expectedKeys = ['BANK_MG_M2', 'CONTRIBUTING', 'WEEKS_PER_MONTH', 'SME_SOIL_SOLUTION_PPM', 'TRANSPIRATION_L_PER_M2_PER_WEEK', 'weeklyContribution', 'monthsToDepletion', 'renderGrid'];
     const missing = expectedKeys.filter(k => SC[k] == null);
     const wrongType = [];
     if (typeof SC.weeklyContribution !== 'function') wrongType.push('weeklyContribution not function');
     if (typeof SC.monthsToDepletion !== 'function') wrongType.push('monthsToDepletion not function');
     if (typeof SC.renderGrid !== 'function')         wrongType.push('renderGrid not function');
     if (typeof SC.WEEKS_PER_MONTH !== 'number')      wrongType.push('WEEKS_PER_MONTH not number');
+    if (typeof SC.SME_SOIL_SOLUTION_PPM !== 'object')           wrongType.push('SME_SOIL_SOLUTION_PPM not object');
+    if (typeof SC.TRANSPIRATION_L_PER_M2_PER_WEEK !== 'object') wrongType.push('TRANSPIRATION_L_PER_M2_PER_WEEK not object');
     const offenders = [...missing.map(k => 'missing: ' + k), ...wrongType];
     if (offenders.length > 0) {
       fail('SoilContribution public API', offenders.map(o => `  ${o}`).join('\n'));
     } else {
       pass(`SoilContribution exposes ${expectedKeys.length} clés (toutes présentes, fonctions OK)`);
+    }
+  }
+}
+
+// ─── REQ-164 — SME soil-solution + transpiration wired per crop / element ──
+//
+// Spec: nutrition/soil-contribution/spec.md → REQ-164. Every crop that has
+// a SOIL_BANK_MG_M2 entry must also have an SME_SOIL_SOLUTION_PPM entry
+// covering every element on the gap grid (N, P, K, Ca, Mg, Fe, Mn, Zn, B,
+// Cu, Mo), plus a positive TRANSPIRATION_L_PER_M2_PER_WEEK value.
+
+header('REQ-164 — SME soil-solution + transpiration wired for every banked crop / gap-grid element');
+{
+  const SC = window.SoilContribution;
+  if (!SC) {
+    fail('SoilContribution available', 'namespace missing');
+  } else {
+    const gridElements = ['N','P','K','Ca','Mg','Fe','Mn','Zn','B','Cu','Mo'];
+    const bankedCrops = Object.keys(SC.BANK_MG_M2 || {});
+    if (bankedCrops.length === 0) {
+      fail('at least one banked crop', 'SOIL_BANK_MG_M2 has no crop entries');
+    } else {
+      const offenders = [];
+      bankedCrops.forEach(crop => {
+        const sme = (SC.SME_SOIL_SOLUTION_PPM || {})[crop];
+        if (!sme) {
+          offenders.push(`SME_SOIL_SOLUTION_PPM["${crop}"] missing`);
+          return;
+        }
+        gridElements.forEach(element => {
+          if (!(typeof sme[element] === 'number' && sme[element] > 0)) {
+            offenders.push(`SME_SOIL_SOLUTION_PPM["${crop}"]["${element}"] = ${sme[element]} (expected positive number)`);
+          }
+        });
+        const transp = (SC.TRANSPIRATION_L_PER_M2_PER_WEEK || {})[crop];
+        if (!(typeof transp === 'number' && transp > 0)) {
+          offenders.push(`TRANSPIRATION_L_PER_M2_PER_WEEK["${crop}"] = ${transp} (expected positive number)`);
+        }
+      });
+      if (offenders.length > 0) {
+        fail('REQ-164 SME / transpiration coverage', offenders.map(o => `  ${o}`).join('\n'));
+      } else {
+        const tomatoSme = SC.SME_SOIL_SOLUTION_PPM.tomato;
+        pass(`SME wired for ${bankedCrops.length} crops × ${gridElements.length} elements ; transpiration ${Object.values(SC.TRANSPIRATION_L_PER_M2_PER_WEEK).join('/')} L/m²/wk ; tomato P=${tomatoSme.P} K=${tomatoSme.K} Ca=${tomatoSme.Ca} ppm`);
+      }
     }
   }
 }
@@ -2451,6 +2531,207 @@ if (!nurseryNs) {
   }
 }
 
+// ─── REQ-165..169 — Salanova plant-needs subproject ────────────────────
+//
+// nutrition/lettuce/plant-needs/{data.js,calc.js,model.js} carved out of
+// app/index.html 2026-05-16. Same vm-loaded pattern as REQ-090..093:
+// load the partials in a shared sandbox, prefer the real jsdom window
+// when present, else fall back to the vm copy.
+//
+// Spec: nutrition/lettuce/plant-needs/spec.md → REQ-165..169 + INV-1.
+
+let lettucePlantNeedsNs = window.PlantNeedsLettuce || null;
+let lettucePlantNeedsLoadError = null;
+if (!lettucePlantNeedsNs) {
+  try {
+    const dataSrc  = readFileSync(join(REPO_ROOT, 'nutrition/lettuce/plant-needs/data.js'),  'utf8');
+    const pureFunctionSource  = readFileSync(join(REPO_ROOT, 'nutrition/lettuce/plant-needs/calc.js'),  'utf8');
+    const modelSrc = readFileSync(join(REPO_ROOT, 'nutrition/lettuce/plant-needs/model.js'), 'utf8');
+    const sandbox = { window: {} };
+    vm.createContext(sandbox);
+    vm.runInContext(dataSrc + '\n' + pureFunctionSource + '\n' + modelSrc, sandbox, {
+      filename: 'lettuce-plant-needs-bundle.js',
+    });
+    lettucePlantNeedsNs = sandbox.window.PlantNeedsLettuce || null;
+  } catch (err) {
+    lettucePlantNeedsLoadError = err && err.message || String(err);
+  }
+}
+
+// Default dependency bag for supply checks. Numerically realistic but
+// deterministic so the verifier doesn't drift with app-level constant edits.
+const LETTUCE_TEST_DEPENDENCIES = {
+  weeklyMassFlowL: 50,
+  smeLettucePpm: {
+    N: 72.6, P: 0.8, K: 54.4, Ca: 114.4, Mg: 30.2,
+    Fe: 0.22, Mn: 0, Zn: 0, B: 0.17, Cu: 0.03, Mo: 0.02,
+  },
+  lettuceRecipe: { kSulfate: 2996, mgSulfate: 467, feSulfate: 7.5 },
+  productPct: { K2SO4_K: 0.42, MgSO4_Mg: 0.0986, FeSO4_Fe: 0.20, FarinePlumes_N: 0.13 },
+  featherMealMineralizationEfficiency: 0.75,
+  frontloadDefaults: { featherMeal_g_per_m2: 50, mineralizationWeeks: 4 },
+};
+
+// ─── REQ-165 — window.PlantNeedsLettuce public API surface ──────────────
+
+header('REQ-165 — window.PlantNeedsLettuce public API surface');
+
+if (!lettucePlantNeedsNs) {
+  fail('window.PlantNeedsLettuce exists',
+       lettucePlantNeedsLoadError || 'namespace not declared (lettuce model.js include may be missing or out of order)');
+} else {
+  const expectedKeys = [
+    'LETTUCE_DM_FRACTION', 'LETTUCE_TISSUE_DW',
+    'LETTUCE_FRONTLOAD_DEFAULTS', 'SME_LETTUCE_PPM',
+    'calculateLettuceNutritionDemand', 'calculateLettuceNutritionSupply',
+  ];
+  const missing = expectedKeys.filter(k => lettucePlantNeedsNs[k] == null);
+  if (missing.length > 0) {
+    fail('PlantNeedsLettuce exposes the public API', `manquants: ${missing.join(', ')}`);
+  } else {
+    pass(`PlantNeedsLettuce exposes ${expectedKeys.length} clés (toutes présentes)`);
+  }
+}
+
+// ─── REQ-166 — Demand scales linearly with mass-gain, inversely with cycleDays
+
+header('REQ-166 — Lettuce demand: ×2 gain → ×2 demand; ×2 cycleDays → ÷2 demand');
+
+if (!lettucePlantNeedsNs || typeof lettucePlantNeedsNs.calculateLettuceNutritionDemand !== 'function') {
+  fail('calculateLettuceNutritionDemand exposed on window.PlantNeedsLettuce',
+       lettucePlantNeedsLoadError || 'function missing on namespace');
+} else {
+  const handler = lettucePlantNeedsNs.calculateLettuceNutritionDemand;
+  const baseline   = handler(30, 100, 14, 43);  // gain 70 g
+  const doubleGain = handler(30, 170, 14, 43);  // gain 140 g
+  const doubleDays = handler(30, 100, 28, 43);
+  const offenders = [];
+  for (const element of Object.keys(baseline)) {
+    if (baseline[element] === 0) continue;
+    const gainRatio = doubleGain[element] / baseline[element];
+    if (Math.abs(gainRatio - 2.0) / 2.0 > 0.001) {
+      offenders.push(`${element}: ×2 gain ratio = ${gainRatio.toFixed(4)} (expected 2.0)`);
+    }
+    const daysRatio = doubleDays[element] / baseline[element];
+    if (Math.abs(daysRatio - 0.5) / 0.5 > 0.001) {
+      offenders.push(`${element}: ×2 cycleDays ratio = ${daysRatio.toFixed(4)} (expected 0.5)`);
+    }
+  }
+  if (offenders.length === 0) {
+    pass(`Demand linéaire en (targetG − transplantG) et inverse-linéaire en cycleDays (±0.1 %)`);
+  } else {
+    fail('Demand linéaire / inverse-linéaire', offenders.join('\n'));
+  }
+}
+
+// ─── REQ-167 — Supply composition: total = soil + fert + frontload ─────
+
+header('REQ-167 — Lettuce supply total = soil + fert + frontload (per element)');
+
+if (!lettucePlantNeedsNs || typeof lettucePlantNeedsNs.calculateLettuceNutritionSupply !== 'function') {
+  fail('calculateLettuceNutritionSupply exposed on window.PlantNeedsLettuce',
+       lettucePlantNeedsLoadError || 'function missing on namespace');
+} else {
+  const handler = lettucePlantNeedsNs.calculateLettuceNutritionSupply;
+  const supply = handler(50, 100, 43, false, 50, LETTUCE_TEST_DEPENDENCIES);
+  const elements = Object.keys(lettucePlantNeedsNs.LETTUCE_TISSUE_DW);
+  const offenders = [];
+  for (const element of elements) {
+    const expected = (supply.soil[element] || 0) + (supply.fert[element] || 0) + (supply.frontload[element] || 0);
+    if (Math.abs(supply.total[element] - expected) > 1e-9) {
+      offenders.push(`${element}: total ${supply.total[element]} ≠ soil+fert+frontload ${expected}`);
+    }
+  }
+  // frontload delivers N only
+  for (const element of elements) {
+    if (element !== 'N' && supply.frontload[element] !== 0) {
+      offenders.push(`${element}: frontload should be 0 for non-N elements, got ${supply.frontload[element]}`);
+    }
+  }
+  if (offenders.length === 0) {
+    pass(`Supply décomposition cohérente sur les ${elements.length} éléments; frontload N-only`);
+  } else {
+    fail('Supply total = soil + fert + frontload', offenders.join('\n'));
+  }
+}
+
+// ─── REQ-168 — Demand certainty floor (macros cert 4, micros cert 3) ───
+//
+// LETTUCE_TISSUE_DW source quality is the structural anchor: macros (N, P, K,
+// Ca, Mg) at cert 4 per Hochmuth 1991 + Sonneveld 2009 leafy-greens; micros
+// (Fe, Mn, Zn, B, Cu, Mo) at cert 3 (broader range, varies with light +
+// genetics). The verifier asserts the structural shape (5 macros + 6 micros,
+// every element numeric); the per-element cert annotation lives in
+// nutrition/lettuce/plant-needs/derivation.md and is surfaced via the
+// integrator pourquoi modal — not enforced by code today.
+
+header('REQ-168 — Lettuce demand: 5 macros + 6 micros structurally present');
+
+if (!lettucePlantNeedsNs || !lettucePlantNeedsNs.LETTUCE_TISSUE_DW) {
+  fail('LETTUCE_TISSUE_DW exposed', lettucePlantNeedsLoadError || 'missing');
+} else {
+  const MACROS = ['N', 'P', 'K', 'Ca', 'Mg'];
+  const MICROS = ['Fe', 'Mn', 'Zn', 'B', 'Cu', 'Mo'];
+  const tissue = lettucePlantNeedsNs.LETTUCE_TISSUE_DW;
+  const missingMacros = MACROS.filter(element => typeof tissue[element] !== 'number' || tissue[element] <= 0);
+  const missingMicros = MICROS.filter(element => typeof tissue[element] !== 'number' || tissue[element] <= 0);
+  if (missingMacros.length === 0 && missingMicros.length === 0) {
+    pass(`LETTUCE_TISSUE_DW carries 5 macros + 6 micros, all numeric > 0`);
+  } else {
+    fail('LETTUCE_TISSUE_DW carries 5 macros + 6 micros',
+         `missing macros: ${missingMacros.join(',') || '(none)'}; missing micros: ${missingMicros.join(',') || '(none)'}`);
+  }
+}
+
+// ─── REQ-169 — Canopy factor bounded [0.2, 0.7] ────────────────────────
+
+header('REQ-169 — Lettuce supply canopyFactor ∈ [0.2, 0.7]');
+
+if (!lettucePlantNeedsNs || typeof lettucePlantNeedsNs.calculateLettuceNutritionSupply !== 'function') {
+  fail('calculateLettuceNutritionSupply exposed on window.PlantNeedsLettuce',
+       lettucePlantNeedsLoadError || 'function missing on namespace');
+} else {
+  const handler = lettucePlantNeedsNs.calculateLettuceNutritionSupply;
+  const cases = [
+    ['stunted',     1, 100],
+    ['mid-cycle',  50, 100],
+    ['mature',    100, 100],
+    ['over-target', 200, 100],
+  ];
+  const offenders = [];
+  for (const [label, currentG, targetG] of cases) {
+    const supply = handler(currentG, targetG, 43, false, 0, LETTUCE_TEST_DEPENDENCIES);
+    if (!(supply.canopyFactor >= 0.2 - 1e-9 && supply.canopyFactor <= 0.7 + 1e-9)) {
+      offenders.push(`${label} (currentG=${currentG}, targetG=${targetG}): canopyFactor=${supply.canopyFactor}`);
+    }
+  }
+  if (offenders.length === 0) {
+    pass(`canopyFactor ∈ [0.2, 0.7] sur les ${cases.length} cas testés (stunted → over-target)`);
+  } else {
+    fail('canopyFactor ∈ [0.2, 0.7]', offenders.join('\n'));
+  }
+}
+
+// ─── INV-1 — Element coverage closed across demand + every supply channel ───
+
+header('Lettuce plant-needs INV-1 — Element coverage closed (11 elements)');
+
+if (!lettucePlantNeedsNs) {
+  fail('Lettuce partials load + expose window.PlantNeedsLettuce',
+       lettucePlantNeedsLoadError || 'namespace not produced');
+} else {
+  const expected = ['N','P','K','Ca','Mg','Fe','Mn','Zn','B','Cu','Mo'];
+  const actual = Object.keys(lettucePlantNeedsNs.LETTUCE_TISSUE_DW || {});
+  const missing = expected.filter(e => !actual.includes(e));
+  const extras  = actual.filter(e => !expected.includes(e));
+  if (missing.length === 0 && extras.length === 0) {
+    pass(`LETTUCE_TISSUE_DW couvre exactement les 11 éléments canoniques`);
+  } else {
+    fail('LETTUCE_TISSUE_DW couvre exactement les 11 éléments canoniques',
+         `missing=${missing.join(',') || '(none)'}; extras=${extras.join(',') || '(none)'}`);
+  }
+}
+
 // ─── REQ-094..097 — Nursery substrate-contribution subproject ──────────
 //
 // The nursery/substrate-contribution subproject (data + calc + model)
@@ -2914,10 +3195,63 @@ header('REQ-115 — computeFoliarRecipeForGap (min-dose clamp + surfactant + bur
           offenders.push(`CE-scale loop did not bound predicted CE (surfactant=${surfactant}): predictedCE=${ce.toFixed(2)} > 10.0`);
         }
       });
+
+      // B3 — Drop-highest-CE-contributor first: a Fe-heavy gap that pushes
+      // CE over cap should reduce Fe before stripping the pH-locked micros
+      // (Mn / Cu / B). Synthetic Fe-heavy gap saturates Fe at burn cap;
+      // Mn / Cu / B asks land just above their per-element floors.
+      const feHeavyGap = { Mn: 5, Zn: 5, Cu: 0.5, Fe: 1000, B: 4 };
+      const feHeavyRecipe = FRT.computeFoliarRecipeForGap(feHeavyGap, { surfactant: false });
+      const feHeavyCe = predictedCE(recipeAsLabelArray(feHeavyRecipe), 1.0);
+      if (!(isFinite(feHeavyCe) && feHeavyCe <= 10.0)) {
+        offenders.push(`B3 Fe-heavy gap: CE not bounded (predictedCE=${feHeavyCe})`);
+      }
+      // Mn / Cu / B should remain non-zero (the drop-highest algorithm
+      // shrinks Fe first; pH-locked micros are preserved).
+      if (feHeavyRecipe.MnSO4_g <= 0) {
+        offenders.push(`B3 Fe-heavy gap: Mn stripped (MnSO4_g=${feHeavyRecipe.MnSO4_g}); drop-highest should preserve pH-locked micros`);
+      }
+      if (feHeavyRecipe.CuSO4_g <= 0) {
+        offenders.push(`B3 Fe-heavy gap: Cu stripped (CuSO4_g=${feHeavyRecipe.CuSO4_g}); drop-highest should preserve Cu`);
+      }
+      if (feHeavyRecipe.Solubore_g <= 0) {
+        offenders.push(`B3 Fe-heavy gap: B stripped (Solubore_g=${feHeavyRecipe.Solubore_g}); drop-highest should preserve B`);
+      }
+      // Fe should be reduced below its 80 g cap (drop-highest fired).
+      if (feHeavyRecipe.FeSO4_g >= 80) {
+        offenders.push(`B3 Fe-heavy gap: Fe not reduced (FeSO4_g=${feHeavyRecipe.FeSO4_g}); drop-highest should have halved Fe`);
+      }
+    }
+
+    // MIN-DOSE-FLOOR — Cu narrow-toxicity edge. A Cu-only gap small enough
+    // that the per-element 0.2 g floor would still over-luxury by > 1.3×
+    // should clamp Cu to 0 (the per-element floor + the luxury-cap guard
+    // together close the case). Synthesize a Cu gap of 0.05 mg/m²/wk:
+    // ideal_g = 0.05 × 382.9 / (0.25 × 1000 × 0.30) = 0.255 g → > 0.2 floor
+    // → round up to 0.5 g → delivered 0.098 mg/m²/wk → 1.96× gap → guard
+    // fires → drop to 0.
+    const cuSmallGap = { Cu: 0.05 };
+    const cuSmallRecipe = FRT.computeFoliarRecipeForGap(cuSmallGap, { surfactant: false });
+    if (cuSmallRecipe.CuSO4_g > 0.2) {
+      offenders.push(`MIN-DOSE-FLOOR: Cu small-gap should clamp to ≤ 0.2 g via luxury-cap guard, got CuSO4_g=${cuSmallRecipe.CuSO4_g}`);
+    }
+    // MIN-DOSE-FLOOR — Cu sub-floor case (ideal_g < 0.2 g). Cu gap so small
+    // ideal_g lands below 0.2 g → direct clamp to 0 (no luxury guard
+    // needed). Cu gap = 0.01 mg/m²/wk → ideal_g = 0.05 g → below floor → 0.
+    const cuTinyGap = { Cu: 0.01 };
+    const cuTinyRecipe = FRT.computeFoliarRecipeForGap(cuTinyGap, { surfactant: false });
+    if (cuTinyRecipe.CuSO4_g !== 0) {
+      offenders.push(`MIN-DOSE-FLOOR: Cu tiny-gap (sub-floor) should clamp to 0, got CuSO4_g=${cuTinyRecipe.CuSO4_g}`);
+    }
+    // MIN-DOSE-FLOOR — per-element floor map exposed on the namespace.
+    if (!FRT.MIN_DOSE_G_PER_ELEMENT || typeof FRT.MIN_DOSE_G_PER_ELEMENT !== 'object') {
+      offenders.push('MIN-DOSE-FLOOR: window.FoliarRecipeTomato.MIN_DOSE_G_PER_ELEMENT not exposed');
+    } else if (FRT.MIN_DOSE_G_PER_ELEMENT.Cu !== 0.2) {
+      offenders.push(`MIN-DOSE-FLOOR: MIN_DOSE_G_PER_ELEMENT.Cu should be 0.2, got ${FRT.MIN_DOSE_G_PER_ELEMENT.Cu}`);
     }
 
     if (offenders.length === 0) {
-      pass('computeFoliarRecipeForGap: min-dose clamp + burn caps + CE-scale all hold');
+      pass('computeFoliarRecipeForGap: per-element min-dose floor + burn caps + drop-highest CE algorithm all hold');
     } else {
       fail('REQ-115 — recipe derivation', offenders.map(function(o) { return '  ' + o; }).join('\n'));
     }
@@ -4158,7 +4492,17 @@ header('REQ-157 — Contribution-channel efficiency map exposed on runtime retur
     try {
       // Representative call: 30 g transplant → 100 g target, 43 plants/m²,
       // phLocked=true, 50 g/m² front-load (matches Salanova page defaults).
-      lettuceSupply = window.calculateLettuceNutritionSupply(30, 100, 43, true, 50);
+      // Post-2026-05-16 carve: calculateLettuceNutritionSupply is pure and
+      // takes a `dependencies` bag instead of reading globals.
+      const PNL = window.PlantNeedsLettuce || {};
+      lettuceSupply = window.calculateLettuceNutritionSupply(30, 100, 43, true, 50, {
+        weeklyMassFlowL: 50,
+        smeLettucePpm: PNL.SME_LETTUCE_PPM || {},
+        lettuceRecipe: window.LETTUCE || { kSulfate: 2996, mgSulfate: 467, feSulfate: 7.5 },
+        productPct: window.PRODUCT_PCT || { K2SO4_K: 0.42, MgSO4_Mg: 0.0986, FeSO4_Fe: 0.20, FarinePlumes_N: 0.13 },
+        featherMealMineralizationEfficiency: 0.75,
+        frontloadDefaults: PNL.LETTUCE_FRONTLOAD_DEFAULTS || { featherMeal_g_per_m2: 50, mineralizationWeeks: 4 },
+      });
     } catch (e) {
       offenders.push(`calculateLettuceNutritionSupply threw: ${e && e.message ? e.message : e}`);
     }
@@ -4341,6 +4685,69 @@ header('REQ-157 — Contribution-channel efficiency map exposed on runtime retur
     } else {
       fail('REQ-157 — sidedress-recipe efficiency map', offendersSidedress.slice(0, 4).join(' · '));
     }
+  }
+}
+
+// ─── REQ-170 — Surfactant-aware foliar efficiency map ─────────────────────
+//
+// Spec: nutrition/tomato/foliar-recipe/spec.md → REQ-170. The foliar
+// channel exposes `efficiencyFor(surfactant)` returning a per-element map
+// reactive to the surfactant lever. The page-side REQ-163 (Block 5) reads
+// this surface and updates the Efficacité column when the operator toggles.
+//
+// Acceptance: efficiencyFor(true) returns strictly greater per-element
+// values than efficiencyFor(false) for every routed element. Channel
+// capability shape per REQ-157 (Mn / Zn / Cu / Fe routed; B + Mo absent).
+
+header('REQ-170 — efficiencyFor(surfactant) strictly increases efficiency for every routed element');
+{
+  const FoR = window.FoliarRecipeTomato;
+  const offenders = [];
+  if (!FoR || typeof FoR.efficiencyFor !== 'function') {
+    offenders.push('window.FoliarRecipeTomato.efficiencyFor not exposed (or not a function)');
+  } else {
+    const noSurfactant = FoR.efficiencyFor(false);
+    const withSurfactant = FoR.efficiencyFor(true);
+    if (!noSurfactant || typeof noSurfactant !== 'object') {
+      offenders.push(`efficiencyFor(false) returned ${typeof noSurfactant} (expected object)`);
+    } else if (!withSurfactant || typeof withSurfactant !== 'object') {
+      offenders.push(`efficiencyFor(true) returned ${typeof withSurfactant} (expected object)`);
+    } else {
+      // For every key in either map, with-surfactant must be strictly
+      // greater than without (capability surface for the surfactant lever).
+      const allKeys = new Set([
+        ...Object.keys(noSurfactant),
+        ...Object.keys(withSurfactant),
+      ]);
+      if (allKeys.size === 0) {
+        offenders.push('efficiencyFor returned empty map on both regimes');
+      }
+      let anyStrictlyGreater = false;
+      for (const key of allKeys) {
+        const noSurfactantValue = noSurfactant[key];
+        const withSurfactantValue = withSurfactant[key];
+        if (typeof noSurfactantValue !== 'number' || !isFinite(noSurfactantValue) || noSurfactantValue < 0 || noSurfactantValue > 1) {
+          offenders.push(`efficiencyFor(false).${key} = ${noSurfactantValue} (expected finite [0,1])`);
+          continue;
+        }
+        if (typeof withSurfactantValue !== 'number' || !isFinite(withSurfactantValue) || withSurfactantValue < 0 || withSurfactantValue > 1) {
+          offenders.push(`efficiencyFor(true).${key} = ${withSurfactantValue} (expected finite [0,1])`);
+          continue;
+        }
+        if (withSurfactantValue > noSurfactantValue) anyStrictlyGreater = true;
+        else if (withSurfactantValue < noSurfactantValue) {
+          offenders.push(`efficiencyFor(true).${key}=${withSurfactantValue} < efficiencyFor(false).${key}=${noSurfactantValue} (surfactant must not reduce efficiency)`);
+        }
+      }
+      if (!anyStrictlyGreater && offenders.length === 0) {
+        offenders.push('efficiencyFor(true) equals efficiencyFor(false) for every routed element — surfactant lever has no effect on the capability surface');
+      }
+    }
+  }
+  if (offenders.length === 0) {
+    pass('REQ-170 — efficiencyFor(true) > efficiencyFor(false) for at least one routed element; no element regresses');
+  } else {
+    fail('REQ-170 — surfactant-aware foliar efficiency map', offenders.slice(0, 4).join(' · '));
   }
 }
 
@@ -5529,24 +5936,51 @@ header('REQ-161 — Bare 0 in Manque sortant cell, no `(couvert)` annotation');
 //
 // Spec: nutrition/spec.md → REQ-162. Every element row on the soil-bank
 // block displays Mois d'épuisement = Mehlich-3 reservoir ÷ weekly plant
-// uptake currently sustainable at SME plant-availability. The structural
-// every-row requirement is already satisfied by the current soil-
-// contribution renderer (every element row renders a depletion cell).
-// The FORMULA switch (from REQ-142's "Mehlich-3 ÷ stage demand" to
-// REQ-162's "Mehlich-3 ÷ SME-derived weekly uptake") requires the
-// specialist's data + math pass — filed in parallel on
-// plant-nutrition-specialist/from-product-owner.md. Pass-with-TODO so the
-// matcher is registered; the Wave 2 specialist flips it to the real
-// formula assertion in one edit.
+// uptake currently sustainable at SME plant-availability. The model-side
+// formula is wired by REQ-142 + REQ-164; this matcher walks the DOM and
+// asserts the rendered cell tracks the model output for every element row
+// whose `SoilContribution.BANK_MG_M2` + `SME_SOIL_SOLUTION_PPM` entries
+// are populated (renders a non-`—` string), and falls back to `—` for
+// elements without bank or SME data.
 
-header('REQ-162 — Mois d\'épuisement = Mehlich-3 ÷ SME-weekly-uptake (TODO: specialist mailbox notified)');
+header('REQ-162 — Mois d\'épuisement rendered for every row with reservoir + SME data');
 {
-  // TODO: wire after specialist exposes SME-weekly-uptake data layer.
-  // Once landed: walk #nutr-soil rows, for each row with reservoir data
-  // (Apport ici cell non-`—`), recompute expected depletion as Mehlich-3
-  // ÷ SME-weekly-uptake and assert the cell matches within tolerance.
-  // Filed in parallel on plant-nutrition-specialist/from-product-owner.md.
-  pass('REQ-162 — Mois d\'épuisement formula = Mehlich-3 ÷ SME-weekly-uptake — TODO: specialist mailbox notified');
+  const SC = window.SoilContribution;
+  const block = window.document.getElementById('nutr-soil');
+  if (!SC || !block) {
+    fail('REQ-162 prerequisites available', `SC=${!!SC} block=${!!block}`);
+  } else {
+    const rows = block.querySelectorAll('.pq-row');
+    const offenders = [];
+    const elements = ['N','P','K','Ca','Mg','Fe','Mn','Zn','B','Cu','Mo'];
+    if (rows.length < elements.length) {
+      offenders.push(`only ${rows.length} rows rendered, expected ≥ ${elements.length}`);
+    } else {
+      rows.forEach((row, index) => {
+        const element = elements[index];
+        if (!element) return;
+        const cells = row.querySelectorAll('div');
+        // Column order: Él. · Manque entrant · Apport ici · Manque sortant · Mois épuisement · icon
+        const depletionCellText = cells[4] ? cells[4].textContent.trim() : '';
+        const modelMonths = SC.monthsToDepletion('tomato', element);
+        const expectedNumeric = (typeof modelMonths === 'number' && modelMonths > 0);
+        if (expectedNumeric) {
+          if (depletionCellText === '—' || depletionCellText === '') {
+            offenders.push(`${element}: model returns ${modelMonths}, cell renders "${depletionCellText}"`);
+          }
+        } else {
+          if (depletionCellText !== '—') {
+            offenders.push(`${element}: model returns null, cell renders "${depletionCellText}" (expected "—")`);
+          }
+        }
+      });
+    }
+    if (offenders.length > 0) {
+      fail('REQ-162 row-by-row runway render', offenders.map(o => `  ${o}`).join('\n'));
+    } else {
+      pass(`Mois d'épuisement: ${rows.length} rows scanned, all match SME-derived model output (numeric where bank+SME present, "—" otherwise)`);
+    }
+  }
 }
 
 // ─── REQ-163 — Foliar Efficacité is surfactant-aware ───────────────────

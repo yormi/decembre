@@ -96,7 +96,7 @@ function buildNutriment() {
   order.forEach(element => {
     const dem = demand[element] || 0;
     soilMg[element] = SC.weeklyContribution('tomato', element, dem);
-    monthsToDepletion[element] = SC.monthsToDepletion('tomato', element, dem);
+    monthsToDepletion[element] = SC.monthsToDepletion('tomato', element);
   });
 
   const gapAfterDemand    = {};   // = demand (nothing covered yet)
