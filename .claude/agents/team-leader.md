@@ -62,9 +62,14 @@ These are the paths the team-leader and its subagents write. Phase −2 auto-com
 - `**/model.js`
 - `**/data.js`
 - `**/app/logic.js`
+- `app/index.html` — the build-root partial host (renderGapGrid + 5 coder-lane channels live here)
+- `nutrition/render.js` — cross-cutting renderer module
+- `scripts/check-recipes.mjs` — Node verifier (REQ matchers + jsdom checks)
 - `package.json` — **only the `test` script entry**, not the rest
 
-Everything else (`*/spec.md`, `*/derivation.md`, `*/learnings.md`, `requirements.md`, `team-coordination/**`, `working files/**`, `app/index.html`, partials, `dist/`) is owned by another persona or by Guillaume. The leader never commits or modifies those at Phase −2.
+Everything else (`*/spec.md`, `*/derivation.md`, `*/learnings.md`, `requirements.md`, `team-coordination/**`, `working files/**`, partials under `*/app/page.html`, `dist/`, `scripts/check-requirements.sh` — bash verifier still cross-app foreign) is owned by another persona or by Guillaume. The leader never commits or modifies those at Phase −2.
+
+**Owned-surface expansion history:** the original cut excluded `app/index.html`, `nutrition/render.js`, and `scripts/check-recipes.mjs`. They were folded in on 2026-05-15 (Guillaume's direct ruling — see principle P-10) so the team-leader could action PO mailbox entries whose suggested waves all landed in those three files. Future expansions follow the same pattern: when a mailbox entry's natural surface lands outside the current owned globs, surface the partition to Guillaume rather than punt; he may reroute OR expand the surface in place.
 
 ## Phase −2 — Auto-commit owned surface
 
@@ -201,7 +206,7 @@ When done, return: list of test files added, list of REQ-NNN now covered, list o
 You are spawned by the team-leader persona. Read /home/guillaume/Documents/Random_Projects/decembre/.claude/agents/coder.md
 and adopt that role. Your subproject is: <ABSOLUTE_PATH_TO_SUBPROJECT_DIR>.
 Failing tests for this subproject (from baseline run): <PASTE_FILTERED_NPM_TEST_OUTPUT>.
-Never touch: any *.test.mjs file, STORED_RECIPE.tomato.*, RECIPE_HISTORY, dist/, scripts/check-*, package.json.
+Never touch: any *.test.mjs file, STORED_RECIPE.tomato.*, RECIPE_HISTORY, dist/, scripts/check-requirements.sh (bash verifier still foreign), package.json. (scripts/check-recipes.mjs is owned by team-leader as of 2026-05-15 — coder may add REQ matchers there.)
 When done, return: list of files modified, list of REQs now passing, list of failures you could not fix and why.
 ```
 
@@ -217,7 +222,7 @@ Autonomous mode (overrides spec-pruner's per-item confirmation):
   - REMOVE candidates where you can prove (via grep across the WHOLE repo, not just the subproject) zero callers AND zero test imports → delete now.
   - KEEP at cert ≤ 3 (cascade-risk is real; conservative bias intact).
   - Anything borderline → leave in place, list in the return report for Guillaume's review.
-Never touch: STORED_RECIPE.tomato.*, RECIPE_HISTORY, dist/, *.test.mjs, scripts/check-*, the requirements.md and spec.md files themselves.
+Never touch: STORED_RECIPE.tomato.*, RECIPE_HISTORY, dist/, *.test.mjs, scripts/check-requirements.sh (bash verifier still foreign), the requirements.md and spec.md files themselves. (scripts/check-recipes.mjs is owned by team-leader as of 2026-05-15 — pruner may delete dead REQ matcher blocks.)
 After deletions, run `npm test` and `npm run check`. If either breaks, revert your deletions in this subproject and report which one caused it.
 When done, return: list of deletions applied, list of borderline items surfaced, npm test + npm run check status.
 ```
@@ -248,7 +253,7 @@ Pass this list in every subagent prompt:
 - `STORED_RECIPE.tomato.fertigation`, `STORED_RECIPE.tomato.sidedress`, `STORED_RECIPE.tomato.foliaire` — recipe constants. Edits go through `/retire-recipe`.
 - `RECIPE_HISTORY` — audit trail. Sacred.
 - `dist/` — build artifact. Generated.
-- `scripts/check-*` — verifier. Owned cross-app.
+- `scripts/check-requirements.sh` — bash verifier. Still cross-app foreign (only the Node verifier `scripts/check-recipes.mjs` was folded into team-leader on 2026-05-15).
 - `*.test.mjs` — coder may not edit; pruner may not delete.
 - Cross-app infrastructure implementing `requirements.md` REQs (REQ-005 page registry, `CROP_PAGES`, `setPage`, `syncHash`).
 
