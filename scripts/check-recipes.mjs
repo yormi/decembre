@@ -781,10 +781,15 @@ header('REQ-142 — monthsToDepletion = bank ÷ (SME × transpiration × WEEKS_P
     if (typeof kMonths !== 'number' || !(kMonths > 0)) {
       offenders.push(`monthsToDepletion(tomato, K) = ${kMonths} (disabled rows must still expose runway)`);
     }
-    // N has no bank data → null.
+    // N now has bank data (Mehlich-3 NO3 + NH4) → numeric runway expected.
     const nMonths = SC.monthsToDepletion('tomato', 'N');
-    if (nMonths !== null) {
-      offenders.push(`monthsToDepletion(tomato, N) = ${nMonths} (expected null — no bank data)`);
+    if (typeof nMonths !== 'number' || !(nMonths > 0)) {
+      offenders.push(`monthsToDepletion(tomato, N) = ${nMonths} (expected positive number — 2026-05-16 extension wired N)`);
+    }
+    // Mo has no Mehlich-3 measurement → null.
+    const moMonths = SC.monthsToDepletion('tomato', 'Mo');
+    if (moMonths !== null) {
+      offenders.push(`monthsToDepletion(tomato, Mo) = ${moMonths} (expected null — Mo not on Mehlich-3 panel)`);
     }
     // Lettuce Ca — both crop entries wired.
     const lettuceCa = SC.monthsToDepletion('lettuce', 'Ca');
@@ -792,15 +797,15 @@ header('REQ-142 — monthsToDepletion = bank ÷ (SME × transpiration × WEEKS_P
       offenders.push(`monthsToDepletion(lettuce, Ca) = ${lettuceCa} (expected positive number)`);
     }
     // Pinned arithmetic — tomato P with current constants.
-    //   bank = 55 800 mg/m² ; SME = 1.1 ppm ; transp = 15 L/m²/wk ; WEEKS_PER_MONTH = 52/12.
-    //   weekly = 1.1 × 15 = 16.5 mg/m²/wk ; runway months = 55 800 / (16.5 × 4.333…) ≈ 780.4 mois.
-    const expectedP = 55800 / (1.1 * 15 * (52 / 12));
+    //   bank = 55 770 mg/m² (sample 596615 exact) ; SME = 1.1 ppm ; transp = 15 L/m²/wk ; WEEKS_PER_MONTH = 52/12.
+    //   weekly = 1.1 × 15 = 16.5 mg/m²/wk ; runway months = 55 770 / (16.5 × 4.333…) ≈ 780 mois.
+    const expectedP = 55770 / (1.1 * 15 * (52 / 12));
     if (Math.abs(pMonths - expectedP) > 1e-3) {
       offenders.push(`P runway arithmetic mismatch: got ${pMonths}, expected ${expectedP}`);
     }
     // Pinned arithmetic — lettuce Ca with current constants.
-    //   bank = 1 061 200 ; SME = 114.4 ; transp = 4 ; expected ≈ bank / (114.4 × 4 × 4.333…) ≈ 535 mois.
-    const expectedLettuceCa = 1061200 / (114.4 * 4 * (52 / 12));
+    //   bank = 1 061 240 (sample 596617 exact) ; SME = 114.4 ; transp = 4 ; expected ≈ bank / (114.4 × 4 × 4.333…) ≈ 535 mois.
+    const expectedLettuceCa = 1061240 / (114.4 * 4 * (52 / 12));
     if (Math.abs(lettuceCa - expectedLettuceCa) > 1e-3) {
       offenders.push(`Lettuce Ca runway arithmetic mismatch: got ${lettuceCa}, expected ${expectedLettuceCa}`);
     }

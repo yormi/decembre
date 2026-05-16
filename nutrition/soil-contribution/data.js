@@ -2,28 +2,59 @@
 //
 // Spec: nutrition/soil-contribution/spec.md
 //
-// Mehlich-3 soil bank from Berger Labs Report 39088 (April 2026). Values
-// converted from kg/ha to mg/m² by × 100 (since 1 ha = 10 000 m²) so the
-// consumer arithmetic (min(demand_mg, bank_mg)) operates in the same unit
-// as the rest of the weekly gap chain.
+// Mehlich-3 soil bank from Berger Labs Report 39088 (April 2026), samples
+// 596615 (tomate 2 9 avril 2026) and 596617 (laitue 2 9 avril 2026). Values
+// converted to mg/m² so consumer arithmetic operates in the same unit as
+// the rest of the weekly gap chain.
 //
-// Tomato bed wired (sample 596614). Lettuce bed (sample 596616) also wired
-// from the same April 2026 reading: P 678 / K 645 / Ca 10 612 / Mg 934 kg/ha
-// (Salanova bed planches).
+// Two reporting conventions in the lab report:
+//   - kg/ha for P, K, Ca, Mg, Na: convert × 100 (1 ha = 10 000 m²).
+//   - ppm for B, Cu, Fe, Mn, Zn, Al, N-NO3, N-NH4: convert × 200.
+// The ppm convention assumes a 20 cm sample depth × 1.0 g/cm³ effective
+// bulk density (Berger's kg/ha = ppm × 2 convention scaled to mg/m²).
+// Cert 4 on the conversion factor (Berger lab convention).
+//
+// Element coverage: 10 of the 11 gap-grid elements. Mo is unmeasured on
+// the Mehlich-3 panel — consistent with the Mo carve-out (REQ-061: Mo
+// routes via fertigation as an anion, not via the soil bank). Na and Al
+// are reported but not on the gap-grid; excluded from this map.
+//
+// Below-detection-limit handling (P-04):
+//   - Lettuce B `< 0.1` ppm → recorded as ceiling 20 mg/m², cert 2.
+//   - Tomato N-NH4 `< 0.06` ppm → recorded as ceiling 12 mg/m², cert 2
+//     (combined with NO3 36.3 ppm = 7272 mg/m² total N at the ceiling).
+//
+// Refinement trigger: next Berger reading. When pH drops below 6.5 expect
+// the cation-micro side to climb out of lockout; re-source from new report.
+
+const SOIL_REPORT_PPM_TO_MG_PER_M2 = 200;  // Berger 20 cm × 1.0 g/cm³ convention; cert 4
 
 const SOIL_BANK_MG_M2 = {
   tomato: {
-    P:  55800,    // 558 kg/ha    — vault, locked at pH 7,4 (SME 1,1 ppm)
-    K:  211800,   // 2 118 kg/ha  — in spec, SME 292 ppm
-    Ca: 1098900,  // 10 989 kg/ha — Ca-saturated, root cause crise pH
-    Mg: 164600,   // 1 646 kg/ha  — in spec, SME 79 ppm
-    // N and micros (Fe/Mn/Zn/B/Cu/Mo) are not measured on the Berger test.
+    N:   7272,     // NO3-N 36.3 ppm + NH4-N <0.06 ppm (DL ceiling); cert 2
+    P:   55770,    // 557.7 kg/ha — vault, locked at pH 7.28 (SME 1.1 ppm)
+    K:   211840,   // 2118.4 kg/ha — in spec, SME 292 ppm
+    Ca:  1098910,  // 10989.1 kg/ha — Ca-saturated, root cause crise pH
+    Mg:  164630,   // 1646.3 kg/ha — in spec, SME 79 ppm
+    Fe:  62180,    // 310.9 ppm; cert 4
+    Mn:  10140,    // 50.7 ppm; cert 4
+    Zn:  2300,     // 11.5 ppm; cert 4
+    B:   60,       // 0.3 ppm; cert 4
+    Cu:  920,      // 4.6 ppm; cert 4
+    // Mo not measured on Mehlich-3 panel; routes via fertigation per REQ-061 carve-out.
   },
   lettuce: {
-    P:  67800,    // 678 kg/ha    — vault, locked at pH 7,5 (SME 0,8 ppm)
-    K:  64500,    // 645 kg/ha    — within spec window
-    Ca: 1061200,  // 10 612 kg/ha — Ca-saturated (same root cause)
-    Mg: 93400,    // 934 kg/ha    — within spec window
+    N:   14340,    // NO3-N 69.4 ppm + NH4-N 2.3 ppm; cert 4
+    P:   67840,    // 678.4 kg/ha — vault, locked at pH 7.48 (SME 0.8 ppm)
+    K:   64490,    // 644.9 kg/ha — within spec window
+    Ca:  1061240,  // 10612.4 kg/ha — Ca-saturated (same root cause)
+    Mg:  93400,    // 934.0 kg/ha — within spec window
+    Fe:  64340,    // 321.7 ppm; cert 4
+    Mn:  12740,    // 63.7 ppm; cert 4
+    Zn:  2160,     // 10.8 ppm; cert 4
+    B:   20,       // <0.1 ppm (DL ceiling); cert 2
+    Cu:  1220,     // 6.1 ppm; cert 4
+    // Mo not measured on Mehlich-3 panel.
   },
 };
 

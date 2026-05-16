@@ -52,6 +52,23 @@ describe('REQ-140 — SOIL_BANK_MG_M2 per-crop / per-element in mg/m²', () => {
     }
   });
 
+  test('REQ-140 — extended coverage: tomato + lettuce both expose 10 of 11 gap-grid elements (Mo absent — not on Mehlich-3 panel)', () => {
+    const expected = ['N', 'P', 'K', 'Ca', 'Mg', 'Fe', 'Mn', 'Zn', 'B', 'Cu'];
+    const moAbsent = 'Mo';
+    for (const crop of ['tomato', 'lettuce']) {
+      const bank = namespace.BANK_MG_M2[crop];
+      assert.ok(bank, `${crop} bank entry missing`);
+      for (const element of expected) {
+        assert.equal(typeof bank[element], 'number',
+          `${crop}.${element} not numeric (REQ-140 follow-up 2026-05-16 extends to 10 elements)`);
+        assert.ok(bank[element] > 0,
+          `${crop}.${element}=${bank[element]} must be positive (DL ceilings allowed via P-04)`);
+      }
+      assert.equal(bank[moAbsent], undefined,
+        `${crop}.Mo should be absent (Mo unmeasured on Mehlich-3, routes via fertigation per REQ-061)`);
+    }
+  });
+
   test('REQ-140 — lettuce bed wired with P, K, Ca, Mg ≥ 1000 mg/m²', () => {
     const lettuce = namespace.BANK_MG_M2.lettuce;
     assert.ok(lettuce, 'lettuce bank entry missing');

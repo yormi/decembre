@@ -33,10 +33,14 @@
 // demand. Foliaire B = 0 (fertigation owns B). Ecocert validated 2026-05-08.
 // Cert 3 dose, cert 1-2 demand.
 //
-// PA Taillon's April 2026 anchor (K 5167 / Mg 1379) is retired legacy —
-// see `learnings.md` for the calibration history. Live values at boot are
-// K ≈ 5537 / Mg ≈ 3320 (computeStageRecipe('T5'), no compost subtraction
-// per REQ-098 amended 2026-05-12).
+// PA Taillon's April 2026 anchor (K 5167 / Mg 1379) is the agronomist
+// recommendation for the FP target (NOT for STORED — STORED.T5.kSulfate
+// has been Haifa-heritage 3489 g since the 2026-05-09 commit and has
+// never carried PA Taillon values). Live FP values at boot are
+// K ≈ 5568 / Mg ≈ 1963 / Solubore 11 / NaMolybdate 0.5
+// (computeStageRecipe('T5'), post-REQ-098 restoration + REQ-155 uptake
+// factor + REQ-061 Mo carve-out). See `learnings.md` for the full
+// calibration history including the 2026-05-12 amendment cycle.
 //
 // REQ-154 pins the invariant: this constant's K2SO4 / MgSO4-7H2O values
 // equal computeStageRecipe('T5') output by construction at boot.
