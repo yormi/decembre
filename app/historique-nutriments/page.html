@@ -1,0 +1,16 @@
+  <!-- ═══════════════ HISTORIQUE NUTRIMENTS PAGE (admin) ═══════════════ -->
+  <!-- Audit trail for retired recipes. Reads RECIPE_HISTORY (manually
+       maintained — append the OLD snapshot before editing a live recipe
+       constant). Visible to the team and serves the organic-cert audit
+       trail (what was applied, when, why). -->
+  <div id="page-historique-nutriments-content" style="display:none;">
+    <div class="card">
+      <div class="card-title">📜 Historique des recettes retirées</div>
+      <div style="font-size:12px; color:var(--text-muted); line-height:1.5; margin-bottom:14px;">
+        Une ligne par retrait : date + résumé du changement. Cliquer pour déplier le snapshot complet — recette appliquée (fertigation + sidedress + foliaire) au moment du retrait. Les trois canaux sont des constantes stockées à la main sous <code>STORED_RECIPE.tomato</code> ; la fertigation reflète la recette pesée à son état actuel (héritage Haifa aux clés <code>kSulfate</code> / <code>mgSulfate</code>) et ne change qu'au cours d'une révision délibérée. La recommandation de PA Taillon (Climax Conseils, avril 2026) sert d'ancrage à la cible FP, pas à la recette stockée. Sert d'audit trail pour la certification biologique. Les entrées plus anciennes (avant 2026-05-07) ne capturent que la recette retirée et apparaissent comme « Snapshot partiel ».
+      </div>
+      <div id="historique-nutriments-list">
+        <!-- populated by buildHistoriqueNutriments() -->
+      </div>
+    </div>
+  </div>

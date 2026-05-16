@@ -1,0 +1,274 @@
+    <div id="sol-tomato-content">
+
+      <!-- Soufre (pH program) — tomato dose -->
+      <div class="card">
+        <div class="card-title">Programme soufre — baisse du pH</div>
+        <div style="background:var(--accent-active-light); border:1.5px solid var(--accent-active-border); border-radius:var(--radius-sm); padding:12px 14px; margin-bottom:12px;">
+          <div style="font-size:11px; text-transform:uppercase; letter-spacing:1.5px; color:var(--text-muted); font-weight:600; margin-bottom:6px;">Cible</div>
+          <div style="font-size:14px; font-weight:600; color:var(--text); line-height:1.4;">Descendre le pH du sol de 7,3 à 6,5 en 6-12 mois pour débloquer P / Mn / Zn / Fe.</div>
+        </div>
+        <div style="font-size:12.5px; color:var(--text-muted); line-height:1.6;">
+          <div style="padding:4px 0;"><strong style="color:var(--text);">Dose :</strong> 1,1 kg de soufre élémentaire par planche, une fois par mois pendant 3-4 mois.</div>
+          <div style="padding:6px 0; padding-left:12px; border-left:3px solid var(--border); margin-top:8px; font-size:12px;">
+            <strong style="color:var(--text);">Pourquoi :</strong> le soufre élémentaire est oxydé par les microbes du sol en sulfate, qui acidifie. Lent (semaines à mois). Tant que le pH reste ≥ 7, P / Mn / Zn / Fe sont bloqués au niveau racinaire — d'où le programme foliaire actuel comme contournement.
+          </div>
+        </div>
+        <div style="font-size:12px; color:var(--text-muted); line-height:1.6; margin-top:14px; padding-top:12px; border-top:1px solid var(--border);">
+          <strong style="color:var(--text);">Test pH</strong> à refaire fin août 2026 (3 mois après le démarrage). Décisions à ce moment :
+          <ul style="margin:6px 0 0 16px; padding:0;">
+            <li>pH &lt; 7,0 → démarrer un pilote de sulfates oligos en fertigation en parallèle du foliaire</li>
+            <li>pH &lt; 6,8 → arrêter Spray A, passer en fertigation oligos (recette PA Taillon)</li>
+            <li>pH stagne ≥ 7,1 → consulter Climax avant d'augmenter la dose</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- Side-dressing schedule — tomato, weekly per planche.
+           Recipe sized to deliver ~70-100% of N demand at peak T5 yield via the
+           side-dress channel; soil organic-matter mineralization buffers the
+           remainder. Demand reference: Koller 2016 (annexe OAQ) — N 2,7 ·
+           P 0,44 · K 4,0 · Mg 0,57 g/kg fruits (REQ-033 Tier B).
+           Application: épandre la dose hebdo PAR PLANCHE chaque semaine pendant
+           que le plant est dans le stade indiqué. Stade détecté automatiquement
+           par autoStage() en fonction de la semaine ISO.
+           Cumulative N delivered (cycle, 7 planches): Actisol 5,7 kg N + farine
+           22 kg N = ~28 kg N total = ~73 g N/m². Demand at 1,5 kg/m²/wk fruit
+           target = ~112 g N/m². Side-dress covers ~65% of target demand; soil
+           reservoir covers the rest. (Drench manuel removed 2026-05-02.) -->
+      <div class="card">
+        <div class="card-title">Engrais sol tomate — hebdomadaire par stade</div>
+        <div style="font-size:11.5px; color:var(--text-muted); line-height:1.5; margin-bottom:14px;">
+          Granulaire épandu sur le sol entre les rangs, à la main ou au petit épandeur, <strong style="color:var(--text);">chaque semaine</strong> pendant le stade actuel. Recette dimensionnée pour ~70-100% de la demande en N au pic T5 via le côté granulaire ; le sol comble le reste par minéralisation de la matière organique. Demande de prélèvement (Koller 2016, annexe OAQ): N 2,7 · P 0,44 · K 4,0 · Mg 0,57 g/kg de fruits (REQ-033 Tier B). <strong style="color:var(--text);">Surface : 7 planches × 54,7 m² = 382,9 m².</strong>
+        </div>
+        <ol class="steps-list" style="padding-left:28px;">
+
+          <li class="step-item">
+            <span class="step-number">T1</span>
+            <div class="step-title">Stade T1 — début du cycle (sem 51-2 · 4 semaines)</div>
+            <div style="font-size:11.5px; color:var(--text-muted); margin-top:4px; margin-bottom:8px;">Dose hebdomadaire par planche :</div>
+            <div style="font-size:13px; color:var(--text-muted); line-height:1.7;">
+              <div>• <strong style="color:var(--text);">Actisol 5-3-2</strong> : <span style="font-family:'DM Mono',monospace; font-weight:700; color:var(--text);">57 g</span> / planche / semaine</div>
+              <div>• <strong style="color:var(--text);">Farine de plumes 13-0-0</strong> : <span style="font-family:'DM Mono',monospace; font-weight:700; color:var(--text);">84 g</span> / planche / semaine</div>
+            </div>
+            <div style="font-size:11px; color:var(--text-muted); margin-top:8px; padding-top:6px; border-top:1px dashed var(--border);">
+              Total stade (4 sem × 7 planches) : Actisol ~1,6 kg · Farine ~2,4 kg
+            </div>
+            <div style="font-size:11.5px; color:var(--text-muted); margin-top:8px; line-height:1.4;">
+              Pourquoi : poser dès la transplantation pour que la minéralisation soit en place quand la demande commence à monter. Petite dose — la plante est jeune.
+            </div>
+          </li>
+
+          <li class="step-item">
+            <span class="step-number">T2</span>
+            <div class="step-title">Stade T2 — installation (sem 3-6 · 4 semaines)</div>
+            <div style="font-size:11.5px; color:var(--text-muted); margin-top:4px; margin-bottom:8px;">Dose hebdomadaire par planche :</div>
+            <div style="font-size:13px; color:var(--text-muted); line-height:1.7;">
+              <div>• <strong style="color:var(--text);">Actisol 5-3-2</strong> : <span style="font-family:'DM Mono',monospace; font-weight:700; color:var(--text);">180 g</span> / planche / semaine</div>
+              <div>• <strong style="color:var(--text);">Farine de plumes 13-0-0</strong> : <span style="font-family:'DM Mono',monospace; font-weight:700; color:var(--text);">267 g</span> / planche / semaine</div>
+            </div>
+            <div style="font-size:11px; color:var(--text-muted); margin-top:8px; padding-top:6px; border-top:1px dashed var(--border);">
+              Total stade (4 sem × 7 planches) : Actisol ~5,0 kg · Farine ~7,5 kg
+            </div>
+            <div style="font-size:11.5px; color:var(--text-muted); margin-top:8px; line-height:1.4;">
+              Pourquoi : la dose triple parce que la plante a maintenant des racines actives et de la canopée. La demande commence à monter.
+            </div>
+          </li>
+
+          <li class="step-item">
+            <span class="step-number">T3</span>
+            <div class="step-title">Stade T3 — floraison précoce (sem 7-9 · 3 semaines)</div>
+            <div style="font-size:11.5px; color:var(--text-muted); margin-top:4px; margin-bottom:8px;">Dose hebdomadaire par planche :</div>
+            <div style="font-size:13px; color:var(--text-muted); line-height:1.7;">
+              <div>• <strong style="color:var(--text);">Actisol 5-3-2</strong> : <span style="font-family:'DM Mono',monospace; font-weight:700; color:var(--text);">467 g</span> / planche / semaine</div>
+              <div>• <strong style="color:var(--text);">Farine de plumes 13-0-0</strong> : <span style="font-family:'DM Mono',monospace; font-weight:700; color:var(--text);">695 g</span> / planche / semaine</div>
+            </div>
+            <div style="font-size:11px; color:var(--text-muted); margin-top:8px; padding-top:6px; border-top:1px dashed var(--border);">
+              Total stade (3 sem × 7 planches) : Actisol ~9,8 kg · Farine ~14,6 kg
+            </div>
+            <div style="font-size:11.5px; color:var(--text-muted); margin-top:8px; line-height:1.4;">
+              Pourquoi : floraison + premiers fruits = saut de demande pour P (Actisol) et N (farine). Anticiper le pic.
+            </div>
+          </li>
+
+          <li class="step-item">
+            <span class="step-number">T4</span>
+            <div class="step-title">Stade T4 — fructification (sem 10-18 · 9 semaines)</div>
+            <div style="font-size:11.5px; color:var(--text-muted); margin-top:4px; margin-bottom:8px;">Dose hebdomadaire par planche :</div>
+            <div style="font-size:13px; color:var(--text-muted); line-height:1.7;">
+              <div>• <strong style="color:var(--text);">Actisol 5-3-2</strong> : <span style="font-family:'DM Mono',monospace; font-weight:700; color:var(--text);">755 g</span> / planche / semaine</div>
+              <div>• <strong style="color:var(--text);">Farine de plumes 13-0-0</strong> : <span style="font-family:'DM Mono',monospace; font-weight:700; color:var(--text);">1 125 g</span> / planche / semaine</div>
+            </div>
+            <div style="font-size:11px; color:var(--text-muted); margin-top:8px; padding-top:6px; border-top:1px dashed var(--border);">
+              Total stade (9 sem × 7 planches) : Actisol ~47,6 kg · Farine ~70,9 kg
+            </div>
+            <div style="font-size:11.5px; color:var(--text-muted); margin-top:8px; line-height:1.4;">
+              Pourquoi : la plante porte du fruit en remplissage. Demande maximum pour N. La dose granulaire saute pour suivre la demande.
+            </div>
+          </li>
+
+          <li class="step-item">
+            <span class="step-number">T5</span>
+            <div class="step-title">Stade T5 — pleine production (sem 19+ jusqu'à crop-out)</div>
+            <div style="font-size:11.5px; color:var(--text-muted); margin-top:4px; margin-bottom:8px;">Dose hebdomadaire par planche :</div>
+            <div style="font-size:13px; color:var(--text-muted); line-height:1.7;">
+              <div>• <strong style="color:var(--text);">Actisol 5-3-2</strong> : <span style="font-family:'DM Mono',monospace; font-weight:700; color:var(--text);">900 g</span> / planche / semaine</div>
+              <div>• <strong style="color:var(--text);">Farine de plumes 13-0-0</strong> : <span style="font-family:'DM Mono',monospace; font-weight:700; color:var(--text);">1 341 g</span> / planche / semaine</div>
+            </div>
+            <div style="font-size:11px; color:var(--text-muted); margin-top:8px; padding-top:6px; border-top:1px dashed var(--border);">
+              Total stade (~8-10 sem × 7 planches, selon date crop-out) : Actisol 50-63 kg · Farine 75-94 kg
+            </div>
+            <div style="font-size:11.5px; color:var(--text-muted); margin-top:8px; line-height:1.4;">
+              Pourquoi : pic absolu de la demande, maintenu jusqu'à la fin du cycle. Le sol et la fertigation comblent le reste.
+            </div>
+          </li>
+
+        </ol>
+        <div style="font-size:12px; color:var(--text); line-height:1.6; margin-top:14px; padding-top:12px; border-top:1px solid var(--border); background:var(--accent-active-light); padding:12px 14px; border-radius:var(--radius-sm); border:1.5px solid var(--accent-active-border);">
+          <strong>Total cycle (7 planches, ~28-30 sem selon crop-out) :</strong>
+          <div style="margin-top:6px; font-family:'DM Mono',monospace; font-size:13px;">
+            Actisol 5-3-2 ≈ <strong>114-127 kg</strong> · Farine de plumes 13-0-0 ≈ <strong>170-189 kg</strong>
+          </div>
+          <div style="font-size:11.5px; color:var(--text-muted); margin-top:6px; line-height:1.5;">
+            Apport N total ≈ 28-31 kg N selon longueur de cycle / ~73-83 g N/m² / ~80-90 % de la demande à 1,5 kg/m²/sem ; le sol comble le reste.
+          </div>
+        </div>
+      </div>
+
+      <!-- Drench manuel removed 2026-05-02 — out of scope for current cycle.
+           If reintroduced: 5 mL/m² weekly EZ-GRO Ocean 15-1-1 during T5 peak,
+           applied to soil between rows (NOT in fertigation lines — biofilm).
+           See git history for full card markup. -->
+
+      <!-- PROPOSITION (mai 2026, PA Climax + raffinements) — luzerne + frass.
+           Goal: réduire Ca et P entrants vs Actisol, ajouter chitine (défense
+           systémique des plants).
+           Math (cert 3-4):
+             Equal-mass swap: Actisol → luzerne T1-T2, luzerne+frass 50/50 T3-T5.
+             Composition:
+               Actisol  ~3% Ca, 1.31% P, 1.66% K, 5% N
+               Luzerne  ~1.2% Ca, 0.25% P, 2.0% K, 3% N
+               Frass    ~0.5-2% Ca (varies!), ~1% P, ~2.5% K, 3% N
+             Per cycle, per planche:
+               Actisol N delivered: 5% × 16 344 g = 817 g
+               New blend N: 491 g → deficit 326 g
+               Closed by farine +10% across all stages.
+             Resulting deltas vs Actisol baseline:
+               Ca −~50%  P −~50%  K +~5%  N ≈équivalent (avec farine +10%)
+             Per-stage doses (g/planche/semaine):
+               T1: luzerne 57,  farine 92
+               T2: luzerne 180, farine 294
+               T3: luzerne 235 + frass 235, farine 765
+               T4: luzerne 380 + frass 380, farine 1238
+               T5: luzerne 450 + frass 450, farine 1475
+             Cycle total (7 planches): luzerne ~61 kg, frass ~54 kg, farine ~188 kg
+           Pilot avant déploiement complet : 2 planches × cycle T2→T3 (~7 sem),
+           tissue test à mi-pilote, comparer aux 5 planches Actisol contrôle. -->
+      <div class="card" style="border-style:dashed;">
+        <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px; flex-wrap:wrap;">
+          <span style="background:var(--text-muted); color:white; font-size:9px; letter-spacing:1.5px; padding:3px 8px; border-radius:3px; text-transform:uppercase;">Proposition</span>
+          <div class="card-title" style="margin-bottom:0;">Recette alternative — luzerne + frass</div>
+        </div>
+        <div style="font-size:11.5px; color:var(--text-muted); line-height:1.5; margin-bottom:14px;">
+          Proposition de Climax PA (mai 2026) pour <strong>réduire les apports de Ca et P</strong> vs Actisol. Le frass apporte aussi de la chitine, qui active la défense systémique des plants (Pythium, Fusarium). <strong style="color:var(--text);">Pas encore en application — à valider sur un pilote de 2 planches d'abord.</strong>
+        </div>
+
+        <div class="warning-box" style="margin-top:0; margin-bottom:14px;">
+          <strong>⚠ Vérification avant commande de frass</strong><br>
+          Le taux de Ca du frass varie beaucoup (0,5 % à 5 %) selon ce que les larves ont mangé. <strong>Demander la fiche d'analyse au fournisseur</strong> (Entosystem ou autre) avant de commander. <strong style="color:var(--text);">Cible : Ca &lt; 2 %, P &lt; 1,5 %.</strong> Sans la fiche, ne pas commander — risque de réintroduire le problème de Ca qu'on essaie justement de régler.
+        </div>
+
+        <ol class="steps-list" style="padding-left:28px;">
+
+          <li class="step-item">
+            <span class="step-number">T1</span>
+            <div class="step-title">Stade T1 — début du cycle (sem 51-2 · 4 sem)</div>
+            <div style="font-size:11.5px; color:var(--text-muted); margin-top:4px; margin-bottom:8px;">Dose hebdomadaire par planche :</div>
+            <div style="font-size:13px; color:var(--text-muted); line-height:1.7;">
+              <div>• <strong style="color:var(--text);">Luzerne moulue 3-1-2</strong> : <span style="font-family:'DM Mono',monospace; font-weight:700; color:var(--text);">57 g</span> / planche / semaine</div>
+              <div>• <strong style="color:var(--text);">Farine de plumes 13-0-0</strong> : <span style="font-family:'DM Mono',monospace; font-weight:700; color:var(--text);">92 g</span> / planche / semaine</div>
+            </div>
+            <div style="font-size:11.5px; color:var(--text-muted); margin-top:8px; line-height:1.4;">
+              Pourquoi : la demande est faible — la luzerne seule suffit. Le frass arrive plus tard (T3) quand la pression fongique commence à compter.
+            </div>
+          </li>
+
+          <li class="step-item">
+            <span class="step-number">T2</span>
+            <div class="step-title">Stade T2 — installation (sem 3-6 · 4 sem)</div>
+            <div style="font-size:11.5px; color:var(--text-muted); margin-top:4px; margin-bottom:8px;">Dose hebdomadaire par planche :</div>
+            <div style="font-size:13px; color:var(--text-muted); line-height:1.7;">
+              <div>• <strong style="color:var(--text);">Luzerne moulue 3-1-2</strong> : <span style="font-family:'DM Mono',monospace; font-weight:700; color:var(--text);">180 g</span> / planche / semaine</div>
+              <div>• <strong style="color:var(--text);">Farine de plumes 13-0-0</strong> : <span style="font-family:'DM Mono',monospace; font-weight:700; color:var(--text);">294 g</span> / planche / semaine</div>
+            </div>
+            <div style="font-size:11.5px; color:var(--text-muted); margin-top:8px; line-height:1.4;">
+              Pourquoi : la dose triple — racines et canopée actives, demande qui monte. Toujours luzerne seule, pas encore besoin du frass.
+            </div>
+          </li>
+
+          <li class="step-item">
+            <span class="step-number">T3</span>
+            <div class="step-title">Stade T3 — floraison précoce (sem 7-9 · 3 sem)</div>
+            <div style="font-size:11.5px; color:var(--text-muted); margin-top:4px; margin-bottom:8px;">Dose hebdomadaire par planche :</div>
+            <div style="font-size:13px; color:var(--text-muted); line-height:1.7;">
+              <div>• <strong style="color:var(--text);">Luzerne moulue 3-1-2</strong> : <span style="font-family:'DM Mono',monospace; font-weight:700; color:var(--text);">235 g</span> / planche / semaine</div>
+              <div>• <strong style="color:var(--text);">Frass d'insectes 3-2-3</strong> : <span style="font-family:'DM Mono',monospace; font-weight:700; color:var(--text);">235 g</span> / planche / semaine</div>
+              <div>• <strong style="color:var(--text);">Farine de plumes 13-0-0</strong> : <span style="font-family:'DM Mono',monospace; font-weight:700; color:var(--text);">765 g</span> / planche / semaine</div>
+            </div>
+            <div style="font-size:11.5px; color:var(--text-muted); margin-top:8px; line-height:1.4;">
+              Pourquoi : entrée du frass au moment où la canopée se ferme et où l'humidité au sol monte. La chitine prépare la défense contre la pression fongique avant qu'elle apparaisse.
+            </div>
+          </li>
+
+          <li class="step-item">
+            <span class="step-number">T4</span>
+            <div class="step-title">Stade T4 — fructification (sem 10-18 · 9 sem)</div>
+            <div style="font-size:11.5px; color:var(--text-muted); margin-top:4px; margin-bottom:8px;">Dose hebdomadaire par planche :</div>
+            <div style="font-size:13px; color:var(--text-muted); line-height:1.7;">
+              <div>• <strong style="color:var(--text);">Luzerne moulue 3-1-2</strong> : <span style="font-family:'DM Mono',monospace; font-weight:700; color:var(--text);">380 g</span> / planche / semaine</div>
+              <div>• <strong style="color:var(--text);">Frass d'insectes 3-2-3</strong> : <span style="font-family:'DM Mono',monospace; font-weight:700; color:var(--text);">380 g</span> / planche / semaine</div>
+              <div>• <strong style="color:var(--text);">Farine de plumes 13-0-0</strong> : <span style="font-family:'DM Mono',monospace; font-weight:700; color:var(--text);">1 238 g</span> / planche / semaine</div>
+            </div>
+            <div style="font-size:11.5px; color:var(--text-muted); margin-top:8px; line-height:1.4;">
+              Pourquoi : pic de demande N. La farine prend le relais comme moteur N principal (la luzerne et le frass apportent surtout K, biologie et chitine).
+            </div>
+          </li>
+
+          <li class="step-item">
+            <span class="step-number">T5</span>
+            <div class="step-title">Stade T5 — pleine production (sem 19+ jusqu'à crop-out)</div>
+            <div style="font-size:11.5px; color:var(--text-muted); margin-top:4px; margin-bottom:8px;">Dose hebdomadaire par planche :</div>
+            <div style="font-size:13px; color:var(--text-muted); line-height:1.7;">
+              <div>• <strong style="color:var(--text);">Luzerne moulue 3-1-2</strong> : <span style="font-family:'DM Mono',monospace; font-weight:700; color:var(--text);">450 g</span> / planche / semaine</div>
+              <div>• <strong style="color:var(--text);">Frass d'insectes 3-2-3</strong> : <span style="font-family:'DM Mono',monospace; font-weight:700; color:var(--text);">450 g</span> / planche / semaine</div>
+              <div>• <strong style="color:var(--text);">Farine de plumes 13-0-0</strong> : <span style="font-family:'DM Mono',monospace; font-weight:700; color:var(--text);">1 475 g</span> / planche / semaine</div>
+            </div>
+            <div style="font-size:11.5px; color:var(--text-muted); margin-top:8px; line-height:1.4;">
+              Pourquoi : pic absolu maintenu jusqu'à la fin de cycle — soutenir la chitine pour fin de cycle (Pythium grimpe avec la chaleur et les arrosages plus longs).
+            </div>
+          </li>
+
+        </ol>
+
+        <div style="font-size:12px; color:var(--text); line-height:1.6; margin-top:14px; padding:12px 14px; border-radius:var(--radius-sm); background:var(--input-bg); border:1px dashed var(--border);">
+          <strong>Total cycle (7 planches, 28 semaines) :</strong>
+          <div style="margin-top:6px; font-family:'DM Mono',monospace; font-size:13px;">
+            Luzerne ≈ <strong>61 kg</strong> · Frass ≈ <strong>54 kg</strong> · Farine de plumes ≈ <strong>188 kg</strong>
+          </div>
+          <div style="font-size:11.5px; color:var(--text-muted); margin-top:8px; line-height:1.5;">
+            Réductions vs recette Actisol actuelle : <strong style="color:var(--text);">Ca −~50 %</strong>, <strong style="color:var(--text);">P −~50 %</strong>, K ≈ équivalent, N ≈ équivalent (farine ajustée +10 %). Bonus : chitine du frass (~5-10 %) → défense systémique des plants.
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Statut Ecocert (CAN/CGSB-32.311)</div>
+        <div style="font-size:12px; color:var(--text-muted); line-height:1.6;">
+          <div style="padding:3px 0;">✅ <strong style="color:var(--text);">Soufre élémentaire</strong> — autorisé sans restriction</div>
+          <div style="padding:3px 0;">✅ <strong style="color:var(--text);">Actisol 5-3-2</strong> — autorisé (à vérifier la liste Ecocert à jour)</div>
+          <div style="padding:3px 0;">✅ <strong style="color:var(--text);">Farine de plumes 13-0-0</strong> — autorisé (sous-produit aviaire)</div>
+          <div style="padding:3px 0;">✅ <strong style="color:var(--text);">Luzerne moulue 3-1-2</strong> — autorisé (matière végétale pure, vérifier non-OGM)</div>
+          <div style="padding:3px 0;">⚠ <strong style="color:var(--text);">Frass d'insectes</strong> — autorisé si producteur certifié Ecocert (Entosystem QC l'est ; vérifier le lot)</div>
+        </div>
+      </div>
+
+    </div><!-- end sol-tomato-content -->

@@ -1,0 +1,114 @@
+// ─── RECIPE_HISTORY — retired recipe snapshots, audit trail ─────────────
+//
+// Append-only log of retired recipes. When a stored recipe constant is
+// replaced (a sidedress dose changed, a foliar product swapped, fertigation
+// values re-locked at a new agronomist recommendation, etc.), capture the
+// OLD version here BEFORE editing the live const.
+//
+// Entry shape (current):
+//   {
+//     retired:      'YYYY-MM-DD',
+//     recipe:       'name of retired recipe / change',
+//     summary:      'one-line FR description (~60 chars) — used as table label',
+//     reason:       'brief why',
+//     replacedBy:   'pointer to new (optional)',
+//     fullSnapshot: {
+//       fertigation: { T1: {...}, ..., T5: {...} },             // mirror STORED_RECIPE.tomato.fertigation verbatim — hand-stored current values (Haifa-heritage; PA Taillon recommendation is the FP target, not STORED)
+//       sidedress:   { T1: {...}, ..., T5: {...} },             // mirror STORED_RECIPE.tomato.sidedress verbatim
+//       foliaire:    { masterVol, backpacks, area, A: [...] },  // mirror STORED_RECIPE.tomato.foliaire verbatim
+//     },
+//     snapshot:     { ... }   // legacy partial — kept for retro-compat only
+//   }
+//
+// TRIGGER (when to add an entry): edits to any of the three STORED recipe
+// channels — STORED_RECIPE.tomato.fertigation, STORED_RECIPE.tomato.sidedress,
+// or STORED_RECIPE.tomato.foliaire. Plant-need / model inputs (RECIPE_INPUTS,
+// TOMATO_FRUIT_EXPORT, BIOMASS_DEMAND, lettuce-side constants) are NOT
+// triggers — edit them freely without retiring.
+//
+// SNAPSHOT (what to capture): the COMPLETE applied recipe across all 3
+// channels — fertigation, sidedress, foliaire. Fertigation is a hand-stored
+// CONSTANT (STORED_RECIPE.tomato.fertigation) holding the team's current
+// weighed values (Haifa-heritage at kSulfate / mgSulfate; PA Taillon's
+// recommendation anchors the FP target, not STORED), so the snapshot reads
+// it directly via structuredClone rather than re-running a computation. The
+// OUTPUT (the actual K₂SO₄ / MgSO₄ / oligos doses Jordane weighs) is what
+// was applied at that date and must be reproducible from the audit trail.
+//
+// FUTURE MAINTAINERS: before editing STORED_RECIPE.tomato.{fertigation,
+// sidedress, foliaire}, capture the live state into `fullSnapshot`. Use
+// `captureCurrentSnapshot()` from the browser console:
+//   copy(JSON.stringify(captureCurrentSnapshot(), null, 2))
+// The audit trail must reproduce what was applied at that date.
+//
+// Legacy entries (the four below from 2026-05-06/07) lack `fullSnapshot` —
+// only the retired recipe was captured at the time. The page renders these
+// with a "Snapshot partiel" label. Do not backfill — those moments have passed.
+//
+// This feeds the Historique des nutriments admin page (page slug 'historique-nutriments').
+// It also serves as the team-visible audit trail for organic certification.
+const RECIPE_HISTORY = [
+  {
+    retired: '2026-05-08',
+    recipe: 'TOMATO_STAGES const (memoized snapshot of computeStageRecipe)',
+    summary: 'Indirection vestigiale supprimée — computeStageRecipe() appelée directement',
+    snapshot: {
+      structure: 'const TOMATO_STAGES = { T1: computeStageRecipe(T1), ..., T5: computeStageRecipe(T5) }',
+    },
+    reason: 'Vestigial indirection from mass-balance refactor — redundant with computeStageRecipe(). Made REQ-016 (stored vs FP drift) meaningless because stored = computed by construction. Path A cleanup: drop the const, call the function directly, retire REQ-016.',
+    replacedBy: 'Direct calls to computeStageRecipe(stage) at every reader site.',
+  },
+  {
+    retired: '2026-05-07',
+    recipe: 'TOMATO_STAGES.T6 + TOMATO_SIDEDRESS.T6 (fin de saison stage, weeks 24-28)',
+    summary: 'Stage T6 (fin de saison, sem 24-28) supprimé — T5 étendu',
+    snapshot: {
+      TOMATO_STAGES_T6: { mgSulfate: 700, kSulfate: 1745 },  // pre-mass-balance values
+      TOMATO_SIDEDRESS_T6: { actisol_g: 0, farine_g: 0 },
+      stageYield_T6: 0.7,
+      rationale: 'Implemented OAQ §4.3.2 end-of-season fertilizer reduction (~50% cut)',
+    },
+    reason: 'Mass-balance refactor superseded the heuristic. Plants still remove K via fruit at end-of-season — arbitrary 50% fertigation cut has no first-principles basis. T5 now runs to crop-out at sem 28.',
+    replacedBy: 'T5 extended to cover weeks 19-28; mass-balance recipe applies uniformly through end of cycle.',
+  },
+  {
+    retired: '2026-05-07',
+    recipe: 'TOMATO_STAGES (hand-set Haifa-anchored values × multipliers)',
+    summary: 'TOMATO_STAGES valeurs dérivées (mass-balance) au lieu de hand-set',
+    snapshot: {
+      T1: { mgSulfate: 276, kSulfate: 410 },
+      T2: { mgSulfate: 873, kSulfate: 1297 },
+      T3: { mgSulfate: 723, kSulfate: 1689 },
+      T4: { mgSulfate: 1171, kSulfate: 2929 },
+      T5: { mgSulfate: 1396, kSulfate: 3489 },
+      T6: { mgSulfate: 700,  kSulfate: 1745 },
+    },
+    reason: 'Replaced by computeStageRecipe() — pure mass-balance derivation from offtake (fruit + biomass) − sidedress − compost. Hand-set values had no first-principles justification.',
+    replacedBy: 'computeStageRecipe(stage) using RECIPE_INPUTS + mass-balance formula',
+  },
+  {
+    retired: '2026-05-07',
+    recipe: 'getMultK / getMultMg fertigation multipliers',
+    summary: 'Multiplicateurs K (1.2×) / Mg (2.0×) ramenés à 1.0×',
+    snapshot: { K: 1.2, Mg: 2.0 },
+    reason: 'Reverted from policy bumps (1.2× K, 2× Mg) back to 1.0× as part of mass-balance refactor. Multipliers themselves now obsolete since TOMATO_STAGES is computed.',
+    replacedBy: 'TOMATO_STAGES values now derived directly; multipliers held at 1.0 as no-ops pending removal.',
+  },
+  {
+    retired: '2026-05-06',
+    recipe: 'FOLIAR.tomato.B (CaCl₂ anti-BER spray)',
+    summary: 'Spray B (CaCl₂ anti-BER) retiré',
+    snapshot: { product: 'CaCl₂·2H₂O 100 g per 15 L spray, even-week alternation' },
+    reason: 'Teris industrial-grade Ecocert listing not verified (audit Finding 9, REQ-002). BER prevention now via ventilation + humidity management.',
+    replacedBy: 'Climate control protocol on Climat page',
+  },
+  {
+    retired: '2026-05-06',
+    recipe: 'FOLIAR.tomato.A Cu dose',
+    summary: 'Dose Cu réduite 4 g → 2 g par 15 L',
+    snapshot: { CuSO4: '4 g per 15 L spray' },
+    reason: 'Cu toxicity observed in image diagnostic; no surfactant in current Spray A so leaf burn risk higher than budget. Cut to 2 g.',
+    replacedBy: 'CuSO₄ 2 g per 15 L (current STORED_RECIPE.tomato.foliaire.A)',
+  },
+  // Add new entries above this line as recipes are retired.
+];
