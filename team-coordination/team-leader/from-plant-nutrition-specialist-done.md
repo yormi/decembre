@@ -11,6 +11,30 @@ Most recent at the top.
 
 ## Entries
 
+## 2026-05-16 — STORED-vs-anchor audit-trail repair (coder-lane sites only)
+
+**Change type:** doc / prose correction; specialist scope closed (spec.md preamble + data.js comment + learnings.md anchor entry amended); these sites remain.
+**REQs affected:** none (audit-trail prose only)
+**Summary:** Four operator-display / skill-description sites still claim that `STORED_RECIPE.tomato.fertigation` is locked at PA Taillon's April 2026 recommendation. Reality: STORED.T5.kSulfate has been Haifa-heritage 3 489 g since the 2026-05-09 commit (`11cccfc`) and has never carried PA Taillon's 5 167 g. The PA Taillon anchor applies to the FP target only.
+**Coder-lane sites still to amend:** app/index.html:1363 (operator-facing FR prose) · app/index.html:3096 + :3111 + :3199 (code comments) · nutrition/tomato/app/logic.js:433 + :442 (pourquoi-modal strings, K and Mg) · .claude/skills/retire-recipe/SKILL.md:10 (skill description).
+
+### Team-leader outcome (2026-05-16)
+Sub-wave H.1 coder. All 7 brief sites rewritten to drop the "locked at PA Taillon" framing — STORED is now described as "the team's hand-stored weighed recipe at its current values (Haifa-heritage at kSulfate/mgSulfate); PA Taillon recommendation anchors the FP target, not STORED." Coder found and fixed 2 additional in-lane stragglers outside the brief: `nutrition/tomato/app/logic.js:407-410` (Block 5 fertigation code comment) + `app/index.html:4134-4136` (Block 7 drift-gauge code comment). Final grep for "locked PA Taillon" / "verrouillé PA Taillon" / "hand-locked PA Taillon" returns no operator-display / code / spec / skill hits — only the inbox brief itself + audit-trail records in team-coordination/ + learnings.md correction entries (history, not propagation). FR strings at the pourquoi-modal sites simplified to "Valeur stockée (recette pesée — héritage Haifa)" pattern. `npm test` 255/0; `npm run check` 161/0.
+
+## 2026-05-16 — nutrition/soil-contribution (REQ-162 follow-up: 10-element coverage)
+
+**Change type:** added (constant + spec amend); follow-up on REQ-162.
+**REQs affected:** REQ-140 (statement amend in place — `SOIL_BANK_MG_M2` now covers all 10 measured Mehlich-3 elements per crop, both kg/ha- and ppm-reported); REQ-164 (no spec edit; SOIL_BANK side gains parity with SME side already at 11-element coverage).
+**Summary:** Per PO follow-up entry on `from-product-owner.md`, extended `SOIL_BANK_MG_M2.tomato` and `.lettuce` from 4 elements (P/K/Ca/Mg) to 10 (adding Fe/Mn/Zn/B/Cu/N-NO3+NH4) using Berger Mehlich-3 Report 39088 (April 2026), samples 596615 (tomato) and 596617 (lettuce). New constant `SOIL_REPORT_PPM_TO_MG_PER_M2 = 200` codifies the conversion (20 cm sample depth × 1.0 g/cm³ effective bulk density per Berger's kg/ha ↔ ppm × 2 convention). Below-detection-limit values (lettuce B `<0.1` ppm; tomato N-NH4 `<0.06` ppm) recorded as DL ceilings per P-04 with cert 2. Mo unmeasured by Mehlich-3 → row remains `—` (consistent with the Mo carve-out routing Mo through fertigation, not soil bank). Verifier extended to assert per-crop 10-element coverage; spec.test.mjs extended likewise.
+**Suggested waves:** test-writer · sanity-check 6 new elements pass through monthsToDepletion. Pruner · sweep "soil bank covers P/K/Ca/Mg only" prose.
+
+### Team-leader outcome (2026-05-16)
+Sub-wave H.2 combined test-writer + pruner. Test side: refactored 4 pre-existing REQ-142 tests to source `expected` from namespace constants instead of hard-coded numbers (data refinement had moved 55800 → 55770 / 1098900 → 1098910 / 1061200 → 1061240 — tests had silently lagged; +4 failures fixed). Added 1 sanity iterating test (tomato + lettuce × 10 banked elements through `monthsToDepletion`, all finite or null cleanly) + 1 Mo-null pin (both crops). Coverage map: all 10 banked elements return finite; Mo returns null per Mehlich-3 unmeasurability. Pruner side: 2 cert-5 in-place updates (spec.md:43 namespace return-shape comment 4→10 elements; nutrition/tomato/app/logic.js:210 pourquoi-modal equation `bank / (demand × WEEKS_PER_MONTH)` → `bank / (SME × transp × WEEKS_PER_MONTH)` per REQ-142 SME formula). 3 borderline KEEPS (load-bearing prose still factually correct post-extension).
+
+**Spec drift surfaced (NOT fixed — flagged for PO/specialist):** `nutrition/tomato/app/logic.js:200-207` REQ-145 pourquoi-modal interpretation-key selector picks the wrong branch for N now that N has bank data — hits `else if (bankMg > 0)` then defaults to `'Mg-fert-routed'` rendering, so N renders Mg's prose. The `'N-not-mehlich'` interpretation key declared in `nutrition/soil-contribution/spec.md` REQ-145 is now dead code. Broader: Fe/Mn/Zn/B/Cu now have bank data but are not in CONTRIBUTING → fall into the same Mg-fert-routed string (wrong for all five). Two possible fixes (PO/specialist call): (a) widen the branch to dispatch on element symbol with explicit cases before the Mg fallback, OR (b) retire `'N-not-mehlich'` + add new per-element render keys reflecting routing reality (banked stock + fertigation/foliar route per element).
+
+`npm test` 255/0; `npm run check` 161/0; REQs wired 108/111.
+
 ## 2026-05-16 21:30 — nutrition/tomato/foliar-recipe
 
 **Change type:** added, edited

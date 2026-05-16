@@ -1360,7 +1360,7 @@
     <div class="card">
       <div class="card-title">📜 Historique des recettes retirées</div>
       <div style="font-size:12px; color:var(--text-muted); line-height:1.5; margin-bottom:14px;">
-        Une ligne par retrait : date + résumé du changement. Cliquer pour déplier le snapshot complet — recette appliquée (fertigation + sidedress + foliaire) au moment du retrait. Les trois canaux sont des constantes verrouillées sous <code>STORED_RECIPE.tomato</code> ; la fertigation est ancrée sur la recommandation de PA Taillon (Climax Conseils, avril 2026) et ne change qu'au cours d'une révision délibérée. Sert d'audit trail pour la certification biologique. Les entrées plus anciennes (avant 2026-05-07) ne capturent que la recette retirée et apparaissent comme « Snapshot partiel ».
+        Une ligne par retrait : date + résumé du changement. Cliquer pour déplier le snapshot complet — recette appliquée (fertigation + sidedress + foliaire) au moment du retrait. Les trois canaux sont des constantes stockées à la main sous <code>STORED_RECIPE.tomato</code> ; la fertigation reflète la recette pesée à son état actuel (héritage Haifa aux clés <code>kSulfate</code> / <code>mgSulfate</code>) et ne change qu'au cours d'une révision délibérée. La recommandation de PA Taillon (Climax Conseils, avril 2026) sert d'ancrage à la cible FP, pas à la recette stockée. Sert d'audit trail pour la certification biologique. Les entrées plus anciennes (avant 2026-05-07) ne capturent que la recette retirée et apparaissent comme « Snapshot partiel ».
       </div>
       <div id="historique-nutriments-list">
         <!-- populated by buildHistoriqueNutriments() -->
@@ -3093,7 +3093,7 @@ const ACCEPTED_EXCESSES = [
 //     reason:       'brief why',
 //     replacedBy:   'pointer to new (optional)',
 //     fullSnapshot: {
-//       fertigation: { T1: {...}, ..., T5: {...} },             // mirror STORED_RECIPE.tomato.fertigation verbatim — locked PA Taillon values
+//       fertigation: { T1: {...}, ..., T5: {...} },             // mirror STORED_RECIPE.tomato.fertigation verbatim — hand-stored current values (Haifa-heritage; PA Taillon recommendation is the FP target, not STORED)
 //       sidedress:   { T1: {...}, ..., T5: {...} },             // mirror STORED_RECIPE.tomato.sidedress verbatim
 //       foliaire:    { masterVol, backpacks, area, A: [...] },  // mirror STORED_RECIPE.tomato.foliaire verbatim
 //     },
@@ -3107,12 +3107,13 @@ const ACCEPTED_EXCESSES = [
 // triggers — edit them freely without retiring.
 //
 // SNAPSHOT (what to capture): the COMPLETE applied recipe across all 3
-// channels — fertigation, sidedress, foliaire. Fertigation is now a LOCKED
-// CONSTANT (STORED_RECIPE.tomato.fertigation) anchored on PA Taillon's April
-// 2026 recommendation, so the snapshot reads it directly via structuredClone
-// rather than re-running a computation. The OUTPUT (the actual K₂SO₄ /
-// MgSO₄ / oligos doses Jordane weighs) is what was applied at that date and
-// must be reproducible from the audit trail.
+// channels — fertigation, sidedress, foliaire. Fertigation is a hand-stored
+// CONSTANT (STORED_RECIPE.tomato.fertigation) holding the team's current
+// weighed values (Haifa-heritage at kSulfate / mgSulfate; PA Taillon's
+// recommendation anchors the FP target, not STORED), so the snapshot reads
+// it directly via structuredClone rather than re-running a computation. The
+// OUTPUT (the actual K₂SO₄ / MgSO₄ / oligos doses Jordane weighs) is what
+// was applied at that date and must be reproducible from the audit trail.
 //
 // FUTURE MAINTAINERS: before editing STORED_RECIPE.tomato.{fertigation,
 // sidedress, foliaire}, capture the live state into `fullSnapshot`. Use
@@ -3196,7 +3197,7 @@ const RECIPE_HISTORY = [
 //   copy(JSON.stringify(captureCurrentSnapshot(), null, 2))
 // Captures the live applied recipe across all 3 channels — all three are now
 // hand-stored constants under STORED_RECIPE.tomato:
-//   - fertigation: STORED_RECIPE.tomato.fertigation (locked PA Taillon values)
+//   - fertigation: STORED_RECIPE.tomato.fertigation (hand-stored current values; PA Taillon = FP target, not STORED)
 //   - sidedress:   STORED_RECIPE.tomato.sidedress
 //   - foliaire:    STORED_RECIPE.tomato.foliaire
 // Returns a deep clone via structuredClone so subsequent edits to the live
@@ -4131,8 +4132,9 @@ function computeRecipe(crop, stage, channel) {
 // FP_RECIPE_T5 + computeStageRecipe (mass-balance derivation). Color-codes
 // 5% / 30% / >30%. T5 only — other stages render a placeholder pointing at
 // Recette proposée. The drift is genuine: STORED_RECIPE.tomato.fertigation is
-// hand-locked at PA Taillon's April 2026 values, while computeStageRecipe is
-// derived from RECIPE_INPUTS via mass-balance.
+// hand-stored at its current weighed values (Haifa-heritage at kSulfate /
+// mgSulfate; PA Taillon recommendation anchors the FP target, not STORED),
+// while computeStageRecipe is derived from RECIPE_INPUTS via mass-balance.
 function renderPhase1Comparison() {
   const stage = nutrStage;
   // Stored recipes summarized as { productName: gramsPerWeekTotal }

@@ -147,7 +147,12 @@ describe('REQ-142 — monthsToDepletion formula = bank ÷ (SME × transp × WEEK
   });
 
   test('REQ-142 — tomato P → ~780 months (~65 years, locked-out vault)', () => {
-    const expected = 55800 / (1.1 * 15 * WEEKS_PER_MONTH);
+    // Source `expected` from namespace constants so the test stays in sync
+    // with data.js refinements (post REQ-140 10-element extension).
+    const bank = namespace.BANK_MG_M2.tomato.P;
+    const sme = namespace.SME_SOIL_SOLUTION_PPM.tomato.P;
+    const transp = namespace.TRANSPIRATION_L_PER_M2_PER_WEEK.tomato;
+    const expected = bank / (sme * transp * WEEKS_PER_MONTH);
     const got = namespace.monthsToDepletion('tomato', 'P');
     assert.ok(Math.abs(got - expected) < 1e-6,
       `got ${got}, expected ${expected}`);
@@ -157,7 +162,10 @@ describe('REQ-142 — monthsToDepletion formula = bank ÷ (SME × transp × WEEK
   });
 
   test('REQ-142 — tomato Ca → ~71 months (~5.9 years)', () => {
-    const expected = 1098900 / (238.8 * 15 * WEEKS_PER_MONTH);
+    const bank = namespace.BANK_MG_M2.tomato.Ca;
+    const sme = namespace.SME_SOIL_SOLUTION_PPM.tomato.Ca;
+    const transp = namespace.TRANSPIRATION_L_PER_M2_PER_WEEK.tomato;
+    const expected = bank / (sme * transp * WEEKS_PER_MONTH);
     const got = namespace.monthsToDepletion('tomato', 'Ca');
     assert.ok(Math.abs(got - expected) < 1e-6,
       `got ${got}, expected ${expected}`);
@@ -167,7 +175,10 @@ describe('REQ-142 — monthsToDepletion formula = bank ÷ (SME × transp × WEEK
   });
 
   test('REQ-142 — lettuce Ca → numeric runway with new constants', () => {
-    const expected = 1061200 / (114.4 * 4 * WEEKS_PER_MONTH);
+    const bank = namespace.BANK_MG_M2.lettuce.Ca;
+    const sme = namespace.SME_SOIL_SOLUTION_PPM.lettuce.Ca;
+    const transp = namespace.TRANSPIRATION_L_PER_M2_PER_WEEK.lettuce;
+    const expected = bank / (sme * transp * WEEKS_PER_MONTH);
     const got = namespace.monthsToDepletion('lettuce', 'Ca');
     assert.ok(Math.abs(got - expected) < 1e-6,
       `got ${got}, expected ${expected}`);
@@ -185,15 +196,33 @@ describe('REQ-142 — monthsToDepletion formula = bank ÷ (SME × transp × WEEK
     assert.ok(mgMonths > 0, `tomato Mg runway = ${mgMonths}`);
   });
 
-  test('REQ-142 — elements without bank data return null', () => {
-    // N has no Mehlich-3 measurement on either crop.
-    assert.equal(namespace.monthsToDepletion('tomato', 'N'), null);
-    assert.equal(namespace.monthsToDepletion('lettuce', 'N'), null);
-    // Micros have SME readings but no bank measurement.
-    for (const element of ['Fe', 'Mn', 'Zn', 'B', 'Cu', 'Mo']) {
-      assert.equal(namespace.monthsToDepletion('tomato', element), null,
-        `tomato ${element} expected null (no bank data)`);
+  test('REQ-142 — Mo returns null (unmeasured on Mehlich-3 panel)', () => {
+    // Mo is the only gap-grid element absent from the 10-element bank
+    // (REQ-140 follow-up 2026-05-16). Routes via fertigation per REQ-061.
+    for (const crop of ['tomato', 'lettuce']) {
+      assert.equal(namespace.monthsToDepletion(crop, 'Mo'), null,
+        `${crop} Mo expected null (unmeasured on Mehlich-3, routes via fertigation per REQ-061)`);
     }
+  });
+
+  test('REQ-140 (10-element extension) — all 10 banked elements yield finite monthsToDepletion across tomato + lettuce', () => {
+    // REQ-162 follow-up sanity check (2026-05-16): SOIL_BANK_MG_M2 extended
+    // from 4 elements (P/K/Ca/Mg) to 10 per crop. Every banked element on
+    // both wired crops must now feed cleanly through monthsToDepletion —
+    // finite positive number for runway, regardless of CONTRIBUTING (K/Mg
+    // disabled but still surface their runway per REQ-142). Mo absent →
+    // null, covered by the sibling test above.
+    const banked10 = ['N', 'P', 'K', 'Ca', 'Mg', 'Fe', 'Mn', 'Zn', 'B', 'Cu'];
+    const offenders = [];
+    for (const crop of ['tomato', 'lettuce']) {
+      for (const element of banked10) {
+        const months = namespace.monthsToDepletion(crop, element);
+        if (typeof months !== 'number' || !Number.isFinite(months) || !(months > 0)) {
+          offenders.push(`${crop}.${element} = ${months} (expected finite positive number)`);
+        }
+      }
+    }
+    assert.deepEqual(offenders, [], offenders.join('; '));
   });
 
   test('REQ-142 — unknown crop returns null', () => {
@@ -204,7 +233,10 @@ describe('REQ-142 — monthsToDepletion formula = bank ÷ (SME × transp × WEEK
     // The previous formula was bank / (demand × WEEKS_PER_MONTH). A regression
     // would either accept demand and use it, or silently zero out without it.
     // Pin: passing extra args is ignored and the SME-derived result holds.
-    const expected = 1098900 / (238.8 * 15 * WEEKS_PER_MONTH);
+    const bank = namespace.BANK_MG_M2.tomato.Ca;
+    const sme = namespace.SME_SOIL_SOLUTION_PPM.tomato.Ca;
+    const transp = namespace.TRANSPIRATION_L_PER_M2_PER_WEEK.tomato;
+    const expected = bank / (sme * transp * WEEKS_PER_MONTH);
     const withExtra = namespace.monthsToDepletion('tomato', 'Ca', 12345, 'noise');
     assert.ok(Math.abs(withExtra - expected) < 1e-6,
       `extra args should not change output: got ${withExtra}, expected ${expected}`);

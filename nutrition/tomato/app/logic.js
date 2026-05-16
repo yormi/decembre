@@ -207,7 +207,7 @@ function buildNutrimentTomato() {
     }
     const interpretation = { requirementId: 'REQ-145', key: interpretationKey, interp: { element } };
     const eq = contributing
-      ? `soil[${element}] = min(demand, bank) ; mois_épuisement = bank / (demand × ${SC.WEEKS_PER_MONTH.toFixed(2)})`
+      ? `soil[${element}] = min(demand, bank) ; mois_épuisement = bank / (SME × transp × ${SC.WEEKS_PER_MONTH.toFixed(2)})`
       : `soil[${element}] = 0 (élément non-contributif — banque informationnelle seulement)`;
     const monthsString = months != null
       ? (months >= 12 ? (months / 12).toFixed(1) + ' ans (' + months.toFixed(0) + ' mois)' : months.toFixed(1) + ' mois')
@@ -405,9 +405,11 @@ function buildNutrimentTomato() {
   // supply.fert.* values are the barrel-loaded mass per m²/sem — full
   // delivery, what the team weighs out. Mixing factor retired 2026-05-10.
   // Fertigation doses come from STORED_RECIPE.tomato.fertigation[stage]
-  // (locked PA Taillon values, audit-trail captured in RECIPE_HISTORY).
-  // The Block 8 drift gauge compares stored vs computeStageRecipe (FP target,
-  // mass-balance from RECIPE_INPUTS).
+  // (hand-stored current values, Haifa-heritage at kSulfate / mgSulfate;
+  // PA Taillon recommendation anchors the FP target, not STORED;
+  // audit-trail captured in RECIPE_HISTORY). The Block 8 drift gauge
+  // compares stored vs computeStageRecipe (FP target, mass-balance from
+  // RECIPE_INPUTS).
   const fertRows = [
     { productId: 'K2SO4', doseLabel: `${fmtGrams(r.k_g_total)} / sem` },
     { productId: 'MgSO4', doseLabel: `${fmtGrams(r.mg_g_total)} / sem` },
@@ -430,7 +432,7 @@ function buildNutrimentTomato() {
     plugged: `${k_g.toFixed(0)} g × ${PRODUCT_PCT.K2SO4_K} × 1000 / ${r.area.toFixed(0)} m² = <strong>${supply.fert.K.toFixed(0)} mg K/m²/sem</strong>`,
     interpretation: isFpMode
       ? `Recette FP_RECIPE_T5.fertigation['K2SO4'] = ${k_g.toFixed(0)} g (mass-balance T5). Masse barrel complète au m²/sem. Cert 3.`
-      : `Recette STORED_RECIPE.tomato.fertigation[${nutrStage}].kSulfate × multiplicateur K (${getMultK()}). Valeur stockée verrouillée (PA Taillon avril 2026, audit-trail RECIPE_HISTORY). Masse barrel complète au m²/sem.`
+      : `Recette STORED_RECIPE.tomato.fertigation[${nutrStage}].kSulfate × multiplicateur K (${getMultK()}). Valeur stockée (recette pesée à la main — héritage Haifa ; la recommandation PA Taillon avril 2026 ancre la cible FP, pas STORED). Masse barrel complète au m²/sem.`
   });
   registerPourquoi('fert.Mg', {
     title: 'Mg — apport fertigation (MgSO₄·7H₂O)',
@@ -439,7 +441,7 @@ function buildNutrimentTomato() {
     plugged: `${mg_g.toFixed(0)} g × ${PRODUCT_PCT.MgSO4_Mg.toFixed(4)} × 1000 / ${r.area.toFixed(0)} m² = <strong>${supply.fert.Mg.toFixed(0)} mg Mg/m²/sem</strong>`,
     interpretation: isFpMode
       ? `Recette FP_RECIPE_T5.fertigation['MgSO4-7H2O'] = ${mg_g.toFixed(0)} g (mass-balance T5). Masse barrel complète au m²/sem.`
-      : `Recette STORED_RECIPE.tomato.fertigation[${nutrStage}].mgSulfate × multiplicateur Mg (${getMultMg()}). Valeur stockée verrouillée (PA Taillon avril 2026). Le compost résiduel + la fertigation bouclent la sortie hebdo.`
+      : `Recette STORED_RECIPE.tomato.fertigation[${nutrStage}].mgSulfate × multiplicateur Mg (${getMultMg()}). Valeur stockée (recette pesée à la main — héritage Haifa ; la recommandation PA Taillon avril 2026 ancre la cible FP, pas STORED). Le compost résiduel + la fertigation bouclent la sortie hebdo.`
   });
   // FP-mode Solubore in fertigation: register a real B entry; otherwise the
   // generic "not in fert" reason below applies.

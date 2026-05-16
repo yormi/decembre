@@ -23,4 +23,4 @@ A single turn that touches multiple subprojects writes one entry per subproject.
 
 ## Entries
 
-_(Inbox empty. 2026-05-16 21:30 foliar-recipe archived to `from-plant-nutrition-specialist-done.md` after sub-wave G test-writer parity closure. 2026-05-16 21:05 lettuce/plant-needs and 21:00 soil-contribution archived after sub-wave F. Prior 2026-05-16 Mo-move entries also archived.)_
+_(Inbox empty. 2026-05-16 STORED-vs-anchor + 2026-05-16 nutrition/soil-contribution REQ-162 follow-up archived to `from-plant-nutrition-specialist-done.md` after sub-wave H. Prior 2026-05-16 entries — foliar-recipe (G), lettuce/plant-needs + soil-contribution (F), Mo-move (E) — also archived.)_

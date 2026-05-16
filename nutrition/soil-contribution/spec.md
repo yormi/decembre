@@ -40,7 +40,7 @@ Constants (declared in `data.js`):
 
 ```
 {
-  BANK_MG_M2,                       // { crop: { P, K, Ca, Mg } }       — mg/m²
+  BANK_MG_M2,                       // { crop: { N, P, K, Ca, Mg, Fe, Mn, Zn, B, Cu } } — mg/m²
   CONTRIBUTING,                     // { P: true, Ca: true }            — gap-chain participants
   WEEKS_PER_MONTH,                  // 4.33
   SME_SOIL_SOLUTION_PPM,            // { crop: { N, P, K, Ca, Mg, Fe, … } } — mg/L
@@ -91,12 +91,18 @@ Same single-cert transferability scale as `nutrition/tomato/plant-needs/spec.md`
 ## REQ-140 — Bank is a per-crop Mehlich-3 reservoir in mg/m²
 
 **Statement:** `SOIL_BANK_MG_M2` is a two-level object keyed by crop slug
-(`tomato`, `lettuce`, …) then by element symbol. Values are in mg/m²
-(Mehlich-3 kg/ha × 100). At least one crop entry must be populated (tomato
-bed today, sample 596614, Berger Labs Report 39088, April 2026).
+(`tomato`, `lettuce`, …) then by element symbol. Values are in mg/m²,
+converted from the Berger lab report via two conventions: kg/ha-reported
+elements (P, K, Ca, Mg) by × 100 (1 ha = 10 000 m²); ppm-reported elements
+(Fe, Mn, Zn, B, Cu, N-NO3, N-NH4) by × `SOIL_REPORT_PPM_TO_MG_PER_M2`
+(= 200, Berger 20 cm × 1.0 g/cm³ effective bulk density). Both crops
+populated from Berger Labs Report 39088 (April 2026), samples 596615
+(tomate) and 596617 (laitue). Mo absent — not measured on the Mehlich-3
+panel; routes via fertigation per REQ-061. Below-detection-limit values
+recorded as DL ceilings with cert 2 per P-04 (lettuce B; tomato N-NH4).
 
-**Cert:** 4 (source = Berger Labs accredited, single-sample-per-bed);
-conversion arithmetic = 5.
+**Cert:** 4 (Berger Labs accredited, single-sample-per-bed); conversion
+arithmetic = 5; DL-ceiling values cert 2.
 
 ---
 

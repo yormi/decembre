@@ -7,7 +7,7 @@ description: Use BEFORE editing any of the three live STORED recipe channels in 
 
 Every edit to `STORED_RECIPE.tomato.{fertigation, sidedress, foliaire}` must capture the OLD state into `RECIPE_HISTORY` before the live constant is edited. Rendered by the Historique des nutriments admin page (`#admin/historique-nutriments`).
 
-**Out of scope:** `RECIPE_INPUTS`, `TOMATO_FRUIT_EXPORT`, `BIOMASS_DEMAND`, lettuce-side constants. Edits to those shift the FP-target output of `computeStageRecipe(stage)` (Block 7 drift gauge) but do NOT change `STORED_RECIPE.tomato.fertigation` — hand-locked at PA Taillon's April 2026 values.
+**Out of scope:** `RECIPE_INPUTS`, `TOMATO_FRUIT_EXPORT`, `BIOMASS_DEMAND`, lettuce-side constants. Edits to those shift the FP-target output of `computeStageRecipe(stage)` (Block 7 drift gauge) but do NOT change `STORED_RECIPE.tomato.fertigation` outside this skill — hand-stored audit-trail channel (current values are Haifa-heritage; PA Taillon recommendation is the FP target, not STORED).
 
 ## Pre-flight
 
