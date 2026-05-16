@@ -3029,108 +3029,17 @@ const FP_RECIPE_T5 = {
 <!-- @include nutrition/tomato/sidedress-recipe/data.js -->
 
 // ═══════════════ SALANOVA — POST-TRANSPLANT NUTRITION MODEL ═══════════════
-// Lettuce post-transplant = continuous growth phase (no T1/T5 stages —
-// no flowering/fruit transitions). Demand follows directly from mass gain ×
-// DM% × tissue concentration over the cycle window.
-
-// Dry-matter fraction for fresh Salanova heads. Cert 4 — butterhead literature
-// (typical 4-6% DW; greenhouse-grown ≈ 5%).
-const LETTUCE_DM_FRACTION = 0.05;
-
-// Tissue concentration on DW basis (mass fraction; micros expressed via 1e-6).
-// Sources: Hochmuth et al. 1991 lettuce tissue norms; Sonneveld & Voogt 2009
-// Ch. 6 leafy greens. Cert 4 macros / cert 3 micros.
-const LETTUCE_TISSUE_DW = {
-  N:  0.045,   // 4.5% (range 4.0-5.0)
-  P:  0.005,   // 0.5%
-  K:  0.07,    // 7% (range 6-8)
-  Ca: 0.015,   // 1.5%
-  Mg: 0.004,   // 0.4%
-  Fe: 200e-6,  // 200 ppm
-  Mn:  50e-6,  // 50 ppm
-  Zn:  40e-6,  // 40 ppm
-  B:   30e-6,  // 30 ppm
-  Cu:   8e-6,  // 8 ppm
-  Mo: 0.5e-6,  // 0.5 ppm
-};
-
-// Front-load (feather meal pre-transplant) defaults.
-//   featherMeal_g_per_m2: rate applied to each planche before transplant.
-//   mineralizationWeeks: window over which the front-load releases plant-
-//     available N (cert 3 — 4-6 weeks in cool greenhouse soil; assume 4 to
-//     stay conservative on weekly supply).
-// 50 g/m² × 13% N × 75% mineralization / 4 wk = ~1 219 mg N/m²/wk effective.
-const LETTUCE_FRONTLOAD_DEFAULTS = {
-  featherMeal_g_per_m2: 50,
-  mineralizationWeeks:  4,
-};
-
-// Demand per element (mg/m²/wk) for a Salanova cycle gaining (targetG−transplantG)
-// over `cycleDays` at `density` plants/m².
-//   mass_gain_kg_m2_total = (target_g − transplant_g) × density / 1000
-//   dw_gain_g_m2_per_wk   = mass_gain × DM × 1000 × (7 / cycleDays)
-//   demand_mg_m2_per_wk[element] = dw_gain × LETTUCE_TISSUE_DW[element] × 1000
-function calculateLettuceNutritionDemand(transplantG, targetG, cycleDays, density) {
-  const massGain_kg_m2 = Math.max(0, (targetG - transplantG)) * density / 1000;
-  const days = Math.max(1, cycleDays);
-  const dwPerWk_g_m2 = massGain_kg_m2 * LETTUCE_DM_FRACTION * 1000 * (7 / days);
-  const out = {};
-  Object.keys(LETTUCE_TISSUE_DW).forEach(element => {
-    out[element] = dwPerWk_g_m2 * LETTUCE_TISSUE_DW[element] * 1000;  // mg/m²/wk
-  });
-  return out;
-}
-
-// Supply per element (mg/m²/wk):
-//   soil: SME_LETTUCE_PPM × weeklyMassFlowL × canopy factor; lockout-gated
-//   fert: LETTUCE constant (K₂SO₄, MgSO₄, FeSO₄) per 100 m² → per m²
-//   frontload: feather meal N spread over mineralizationWeeks
-// Canopy factor: lettuce transpires less per m² than tomato (smaller plants,
-// shorter cycle). Scale with current/target mass ratio × 0.7 cap; floor 0.2
-// for stunted plants. Cert 3 — refine on tissue or bed-level transpiration data.
-function calculateLettuceNutritionSupply(currentG, targetG, density, phLocked, frontload_g_per_m2) {
-  const flowL = weeklyMassFlowL();
-  const canopyFactor = Math.max(0.2, Math.min(0.7,
-    (currentG / Math.max(1, targetG)) * 0.7));
-
-  const soil = {};
-  Object.keys(LETTUCE_TISSUE_DW).forEach(element => {
-    const ppm = SME_LETTUCE_PPM[element] || 0;
-    let mass = ppm * flowL * canopyFactor;
-    if (phLocked && (element === 'P' || element === 'Mn' || element === 'Zn')) {
-      mass = Math.min(mass, 100);     // REQ-020 lockout gate
-    }
-    if (phLocked && element === 'Fe') {
-      mass *= 0.15;                    // pH 7.4 root reductase suppressed (cert 3)
-    }
-    soil[element] = mass;
-  });
-
-  const area100 = 100;  // LETTUCE constant is per 100 m²/wk
-  const fert = {};
-  Object.keys(LETTUCE_TISSUE_DW).forEach(element => { fert[element] = 0; });
-  fert.K  = (LETTUCE.kSulfate  * PRODUCT_PCT.K2SO4_K  * 1000) / area100;
-  fert.Mg = (LETTUCE.mgSulfate * PRODUCT_PCT.MgSO4_Mg * 1000) / area100;
-  const feLabelMg = (LETTUCE.feSulfate * PRODUCT_PCT.FeSO4_Fe * 1000) / area100;
-  fert.Fe = phLocked ? feLabelMg * 0.15 : feLabelMg;
-
-  const frontload = {};
-  Object.keys(LETTUCE_TISSUE_DW).forEach(element => { frontload[element] = 0; });
-  const fmWeeks = LETTUCE_FRONTLOAD_DEFAULTS.mineralizationWeeks;
-  frontload.N = (frontload_g_per_m2 || 0) * PRODUCT_PCT.FarinePlumes_N
-              * SIDEDRESS_MINIMUM_EFFICIENCY.FarinePlumes_N * 1000 / fmWeeks;
-  // REQ-157 — per-element efficiency for front-load channel. Farine de plumes
-  // is N-only (13-0-0); efficiency = mineralization rate distributed over
-  // the release window (SIDEDRESS_MINIMUM_EFFICIENCY.FarinePlumes_N).
-  frontload.efficiency = {};
-  if (frontload.N > 0) frontload.efficiency.N = SIDEDRESS_MINIMUM_EFFICIENCY.FarinePlumes_N;
-
-  const total = {};
-  Object.keys(LETTUCE_TISSUE_DW).forEach(element => {
-    total[element] = (soil[element] || 0) + (fert[element] || 0) + (frontload[element] || 0);
-  });
-  return { soil, fert, frontload, total, canopyFactor };
-}
+// Carved out 2026-05-16 into nutrition/lettuce/plant-needs/.
+// Public API at runtime:
+//   window.PlantNeedsLettuce — LETTUCE_DM_FRACTION, LETTUCE_TISSUE_DW,
+//                              LETTUCE_FRONTLOAD_DEFAULTS, SME_LETTUCE_PPM,
+//                              calculateLettuceNutritionDemand,
+//                              calculateLettuceNutritionSupply (pure;
+//                              caller passes a dependency bag).
+// Spec: nutrition/lettuce/plant-needs/spec.md → REQ-165..169, INV-1.
+<!-- @include nutrition/lettuce/plant-needs/data.js -->
+<!-- @include nutrition/lettuce/plant-needs/calc.js -->
+<!-- @include nutrition/lettuce/plant-needs/model.js -->
 
 // ═══════════════ SEMIS LAITUE — NURSERY NUTRITION MODEL ═══════════════
 // 50-cell trays in Berger OM2 + feather meal substrate. Seed → target weight
@@ -3487,21 +3396,10 @@ const SME_TOMATO_PPM = {
 // Soil bank (Mehlich-3) — source-of-truth lives in nutrition/soil-contribution/.
 // Read via window.SoilContribution.BANK_MG_M2[crop][element] (REQ-143).
 
-// SME lettuce bed (Berger sample 596616, laitue 1, 2026-04-10).
-// Source: farm info/SME - 2026-04-10.pdf
-const SME_LETTUCE_PPM = {
-  N:  72.6,    // NO₃ 68.8 + NH₄ 3.8 (in spec range 35-180 / 0-20)
-  P:   0.8,    // ↓ below norm 5-50 (lockout confirmed — same Ca-driven mechanism as tomato bed)
-  K:  54.4,    // in spec 35-300, low end
-  Ca: 114.4,   // in spec 40-200 — note: still Ca-saturated on Mehlich-3 (10 612 kg/ha) but SME OK
-  Mg:  30.2,   // in spec 20-100, low end
-  B:   0.17,   // in spec 0.05-0.5
-  Cu:  0.03,   // in spec 0.01-0.5
-  Fe:  0.22,   // ↓ below norm 0.30-3 (locked)
-  Mn:  0,      // < 0.03 below detection — locked
-  Mo:  0.02,   // in spec 0.01-0.05
-  Zn:  0,      // < 0.03 below detection — locked
-};
+// SME lettuce bed (Berger sample 596616, laitue 1, 2026-04-10) — moved
+// 2026-05-16 into nutrition/lettuce/plant-needs/data.js. Top-level const
+// SME_LETTUCE_PPM declared by the lettuce data.js partial above remains
+// in scope for downstream callsites (SME tab, etc.) without a re-alias.
 
 // Weekly water flow through the root zone, per m².
 // SAME FORMULA as the fertigation page's irrigation calculation (see line ~280
@@ -5159,7 +5057,16 @@ function buildNutrimentLettuce() {
   const phLocked    = document.getElementById('nutr-l-phlocked').checked;
 
   const demand = calculateLettuceNutritionDemand(transplantG, targetG, cycleDays, density);
-  const supply = calculateLettuceNutritionSupply(transplantG, targetG, density, phLocked, frontloadG);
+  // Pure-function dependency bag — resolved at the integrator boundary so
+  // the calc layer reads no globals. Spec: nutrition/lettuce/plant-needs/spec.md.
+  const supply = calculateLettuceNutritionSupply(transplantG, targetG, density, phLocked, frontloadG, {
+    weeklyMassFlowL: weeklyMassFlowL(),
+    smeLettucePpm: SME_LETTUCE_PPM,
+    lettuceRecipe: LETTUCE,
+    productPct: PRODUCT_PCT,
+    featherMealMineralizationEfficiency: SIDEDRESS_MINIMUM_EFFICIENCY.FarinePlumes_N,
+    frontloadDefaults: LETTUCE_FRONTLOAD_DEFAULTS,
+  });
   const order = ['N','P','K','Ca','Mg','Fe','Mn','Zn','B','Cu','Mo'];
   const LETTUCE_AREA = LETTUCE_NUMBER_BEDS * LETTUCE_BED_AREA;
 

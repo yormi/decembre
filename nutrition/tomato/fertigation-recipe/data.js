@@ -3,10 +3,11 @@
 // Spec:        nutrition/tomato/fertigation-recipe/spec.md
 // Derivation:  nutrition/tomato/fertigation-recipe/derivation.md
 //
-// Fertigation is the liquid replenishment of K, Mg, and B (boric acid) at
-// the dripper per tomato stage. computeStageRecipe(stage) returns
-// { kSulfate, mgSulfate, solubore } in grams of product per total tomato
-// area (TOMATO_NUMBER_BEDS × TOMATO_BED_AREA = 7 × 54.7 = 382.9 m²) per week.
+// Fertigation is the liquid replenishment of K, Mg, and B (Solubor /
+// disodium octaborate tetrahydrate, 20.5 % B) at the dripper per tomato
+// stage. computeStageRecipe(stage) returns { kSulfate, mgSulfate, solubore }
+// in grams of product per total tomato area
+// (TOMATO_NUMBER_BEDS × TOMATO_BED_AREA = 7 × 54.7 = 382.9 m²) per week.
 
 // ─── MIXING_FACTOR retired 2026-05-10 ───────────────────────────────────
 // Previously this file declared MIXING_FACTOR_FERT_STORED = 0.5 and
@@ -76,7 +77,7 @@ const PH_UPTAKE_FACTOR_AT_CURRENT_SOIL = {
 // soil pH 7.28-7.4 (Berger April 2026):
 //   K  (K2SO4 → 'soluble-cation' class): 1.0 − 0.15 × (7.4 − 7.0) = 0.94
 //   Mg (MgSO4-7H2O → 'soluble-cation' class):                       0.94
-//   B  (Solubore / boric acid → 'borate' class, non-ionic):         1.00
+//   B  (Solubor disodium octaborate → 'borate' class, non-ionic):   1.00
 //   Mo (sodium molybdate → 'molybdate' class, anion):               1.00
 //      (REQ-061 carve-out 2026-05-16: Mo is anion, fully available at
 //       pH ≥ 7.0; routed via fertigation rather than foliar because the
