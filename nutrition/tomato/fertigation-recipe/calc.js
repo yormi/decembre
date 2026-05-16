@@ -6,57 +6,77 @@
 // REQ-098: returned values match the mass-balance derivation.
 // REQ-099: namespace exposed via window.FertigationRecipeTomato (model.js).
 
-// ─── computeStageRecipe — MASS-BALANCE replenishment of K and Mg ────────
+// ─── computeStageRecipe — MASS-BALANCE replenishment of K, Mg, B ────────
 //
 // FP target generator (mass-balance from RECIPE_INPUTS). NOT the team-facing
-// stored fertigation — that's STORED_RECIPE.tomato.fertigation, hand-locked
-// at PA Taillon's April 2026 values. computeStageRecipe is read by:
+// stored fertigation — that's STORED_RECIPE.tomato.fertigation, the live
+// weighed-out recipe (audit trail via /retire-recipe). computeStageRecipe
+// is read by:
+//   - FIRST_PRINCIPLES_T5_FERTIGATION boot-pin via wireFpFertigation()
+//     (REQ-154 invariant) → FP_RECIPE_T5.fertigation
 //   - Block 7 stored-vs-FP drift gauge (renderPhase1Comparison)
 //   - calcNutrSupply when nutrRecipeMode === 'fp'
 //   - computeStageSidedress (sidedress mass-balance variant — N-only)
 //
 // Formula (per element, total tomato area = 382.9 m²):
-//   offtake_mg/m²/wk     = TOMATO_FRUIT_EXPORT × stage_yield × 1000 + BIOMASS_DEMAND[stage]
+//   demand_mg/m²/wk      = TOMATO_FRUIT_EXPORT × stage_yield × 1000 + BIOMASS_DEMAND[stage]
+//   demand_to_bed        = demand / PH_UPTAKE_FACTOR_AT_CURRENT_SOIL[el]   // REQ-155
 //   sidedress_mg/m²/wk   = STORED_RECIPE.tomato.sidedress[stage].actisol_g
 //                            × element_pct × min_eff × 1000 / SIDEDRESS_AREA_PER_PLANCHE
-//   compost_mg/m²/wk     = NOT subtracted (decision 2026-05-07; see derivation.md)
-//   needed_mg/m²/wk      = max(0, offtake − sidedress)
+//   compost_mg/m²/wk     = CompostContribution.releasePerWeek[el] × 1000
+//   needed_mg/m²/wk      = max(0, demand_to_bed − sidedress − compost)
 //   product_g_total      = round(needed / 1000 / element_pct × total_area)
 //
-// "offtake" = full plant uptake (fruit export + biomass build-out). Biomass
+// "demand" = full plant uptake (fruit export + biomass build-out). Biomass
 // nutrients leave the system at end of cycle (plants pulled, biomass removed
-// off-site), so they count as offtake too.
+// off-site), so they count as demand too.
 //
-// COMPOST IS NOT SUBTRACTED (decision 2026-05-07): compost release is
-// uncertain (especially Mg, cert 1-2 with no label data) and finite (declines
-// over 18-24 months). Treating it as a deduction would silently under-feed
-// when it runs out. Mass-balance principle: fertigation must replenish ALL
-// plant consumption regardless of compost contribution. Compost becomes a
-// margin of safety that grows the bank rather than a credit against
-// fertigation. The Compost block on the Nutrition page still shows compost
-// release for awareness but no longer enters the cascade math.
+// COMPOST IS SUBTRACTED (REQ-098 restored 2026-05-15 per B1-REV): compost
+// release is *current-week* supply to the bed, not a long-term bank. Soil
+// bank credit applies only to {P, Ca} — neither is in the fertigation flow.
 //
-// Returns { kSulfate, mgSulfate } in grams (rounded). Total weekly dose for
-// the 7-bed × 54.7 m² tomato area.
+// UPTAKE FACTOR (REQ-155 added 2026-05-15 per B2-REV): bed → plant transfer
+// efficiency is < 100 % at Décembre soil (pH 7.28, Ca 10 989 kg/ha) due to
+// Ca-K / Ca-Mg cation competition and soil B adsorption. The factor applies
+// uniformly to all bed sources (compost, sidedress, fertigation), so it
+// pulls out as a division on demand alone. See data.js and derivation.md.
+//
+// Returns { kSulfate, mgSulfate, solubore } in grams (rounded). Total
+// weekly dose for the 7-bed × 54.7 m² tomato area.
 function computeStageRecipe(stage) {
   const y = RECIPE_INPUTS.stageYield[stage] || 0;
   const totalArea = TOMATO_NUM_BEDS * TOMATO_BED_AREA;
   const sd = STORED_RECIPE.tomato.sidedress[stage] || { actisol_g: 0, farine_g: 0 };
   const biomass = BIOMASS_DEMAND[stage] || {};
+  const compost = (typeof window !== 'undefined' && window.CompostContribution && window.CompostContribution.releasePerWeek) || {};
+  const uptake = PH_UPTAKE_FACTOR_AT_CURRENT_SOIL;
 
   // ── K ──
-  const k_offtake_mg = (TOMATO_FRUIT_EXPORT.K.g * 1000 * y) + (biomass.K || 0);
+  const k_demand_mg = (TOMATO_FRUIT_EXPORT.K.g * 1000 * y) + (biomass.K || 0);
+  const k_demand_to_bed = k_demand_mg / (uptake.K || 1);
   const k_sd_mg = (sd.actisol_g * PRODUCT_PCT.Actisol_K * (SIDEDRESS_MIN_EFF.K || 0.85) * 1000) / SIDEDRESS_AREA_PER_PLANCHE;
-  const k_fert_mg_per_m2 = Math.max(0, k_offtake_mg - k_sd_mg);
+  const k_compost_mg = (compost.K || 0) * 1000;
+  const k_fert_mg_per_m2 = Math.max(0, k_demand_to_bed - k_sd_mg - k_compost_mg);
   const kSulfate = Math.round((k_fert_mg_per_m2 / 1000 / PRODUCT_PCT.K2SO4_K) * totalArea);
 
   // ── Mg ──
-  const mg_offtake_mg = (TOMATO_FRUIT_EXPORT.Mg.g * 1000 * y) + (biomass.Mg || 0);
-  // Side-dress products carry no Mg.
-  const mg_fert_mg_per_m2 = Math.max(0, mg_offtake_mg);
+  const mg_demand_mg = (TOMATO_FRUIT_EXPORT.Mg.g * 1000 * y) + (biomass.Mg || 0);
+  const mg_demand_to_bed = mg_demand_mg / (uptake.Mg || 1);
+  // Side-dress products carry no Mg; compost release subtracted.
+  const mg_compost_mg = (compost.Mg || 0) * 1000;
+  const mg_fert_mg_per_m2 = Math.max(0, mg_demand_to_bed - mg_compost_mg);
   const mgSulfate = Math.round((mg_fert_mg_per_m2 / 1000 / PRODUCT_PCT.MgSO4_Mg) * totalArea);
 
-  return { mgSulfate, kSulfate };
+  // ── B (Solubore) — single-channel B at T5+ (REQ-061) ──
+  // TOMATO_FRUIT_EXPORT[el].g uses uniform-field convention (×1000 → mg)
+  // for both macros and micros — see plant-needs/calc.js calcNutrDemand.
+  const b_demand_mg = (TOMATO_FRUIT_EXPORT.B.g * 1000 * y) + (biomass.B || 0);
+  const b_demand_to_bed = b_demand_mg / (uptake.B || 1);
+  const b_compost_mg = (compost.B || 0) * 1000;
+  const b_fert_mg_per_m2 = Math.max(0, b_demand_to_bed - b_compost_mg);
+  const solubore = Math.round((b_fert_mg_per_m2 / 1000 / PRODUCT_PCT.Solubore_B) * totalArea);
+
+  return { mgSulfate, kSulfate, solubore };
 }
 
 // computeFertigationSupply(stage, opts, recipe) — per-element delivered
@@ -104,21 +124,21 @@ function computeFertigationSupply(stage, opts, recipe) {
 
 // Wire the FP recipe table at script load. FIRST_PRINCIPLES_T5_FERTIGATION
 // in data.js declares the canonical product-keyed shape but is filled HERE
-// with the live `computeStageRecipe('T5')` output (K2SO4, MgSO4-7H2O) plus
-// the hand-coded Solubore dose (B is single-channel by REQ-061, not in the
-// computeStageRecipe surface). Then FP_RECIPE_T5.fertigation in
-// app/index.html is propagated from the same constant.
+// with the live `computeStageRecipe('T5')` output for K2SO4, MgSO4-7H2O,
+// and Solubore. Then FP_RECIPE_T5.fertigation in app/index.html is
+// propagated from the same constant.
 //
 // Invariant (REQ-154): FIRST_PRINCIPLES_T5_FERTIGATION values match the
 // computeStageRecipe('T5') reshape by construction — they cannot drift
-// because they are written from one function call at boot.
+// because they are written from one function call at boot. REQ-155 adds
+// the per-element uptake-factor inflation inside computeStageRecipe; the
+// pin invariant is unchanged in shape.
 //
-// PA Taillon's April 2026 anchor (K 5167 / Mg 1379) is retired legacy —
-// preserved in learnings.md for audit. The model output (K ≈ 5537 / Mg
-// ≈ 3320 at T5) supersedes it because the model's reference frame shifted
-// when compost-subtraction was dropped (REQ-098 amended 2026-05-12) —
-// fertigation now replenishes plant offtake directly; compost is a soil-
-// bank input, not a fertigation-channel credit.
+// Compost+sidedress subtraction restored 2026-05-15 per B1-REV; per-
+// element uptake factor added same day per B2-REV. PA Taillon's April
+// 2026 Mg anchor (1 379 g) recovered by physics under the with-compost
+// formula; B2-REV uptake factor inflates it further to ~1 962 g.
+// Learnings.md carries the full history.
 //
 // Editing the live STORED_RECIPE.tomato.fertigation requires `/retire-
 // recipe` audit cycle; the FP target shifting here surfaces as drift in
@@ -127,7 +147,7 @@ function computeFertigationSupply(stage, opts, recipe) {
   const t5 = computeStageRecipe('T5') || {};
   FIRST_PRINCIPLES_T5_FERTIGATION['K2SO4']      = t5.kSulfate  || 0;
   FIRST_PRINCIPLES_T5_FERTIGATION['MgSO4-7H2O'] = t5.mgSulfate || 0;
-  // Solubore stays at its declared value in data.js — single-channel B at T5.
+  FIRST_PRINCIPLES_T5_FERTIGATION['Solubore']   = t5.solubore  || 0;
   if (typeof FP_RECIPE_T5 !== 'undefined' && FP_RECIPE_T5) {
     FP_RECIPE_T5.fertigation = {
       'K2SO4':       FIRST_PRINCIPLES_T5_FERTIGATION['K2SO4'],

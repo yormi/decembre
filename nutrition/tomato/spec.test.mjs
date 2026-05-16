@@ -198,11 +198,14 @@ describe('REQ-013 — Σ(channel_supply) ≥ 0.9 × demand (under-fert guard)', 
   });
 
   test('REQ-013 — computeStageRecipe(T5) recomputed from upstream constants (load-bearing anti-stub)', () => {
-    // Recompute the mass-balance formula from upstream constants per the
-    // amended fertigation-recipe REQ-098 (no compost subtraction). The
-    // domain test pins computeStageRecipe('T5') to this recomputation, so
-    // the anti-stub guard auto-tracks future formula changes without a
-    // numeric pin to maintain.
+    // Recompute the mass-balance formula from upstream constants per
+    // fertigation-recipe REQ-098 (compost AND sidedress subtracted from K;
+    // compost subtracted from Mg; sidedress carries no Mg). The B1-REV
+    // reversal on 2026-05-15 restored the compost-subtraction term — see
+    // fertigation-recipe/learnings.md for the full amendment-then-reversal
+    // cycle. The domain test pins computeStageRecipe('T5') to this
+    // recomputation so the anti-stub guard auto-tracks future formula
+    // changes without a numeric pin to maintain.
     const t5 = G.computeStageRecipe('T5');
     assert.ok(t5 && typeof t5 === 'object', 'computeStageRecipe(T5) did not return an object');
     assert.equal(typeof t5.kSulfate, 'number', 'computeStageRecipe(T5).kSulfate not numeric');
@@ -210,18 +213,23 @@ describe('REQ-013 — Σ(channel_supply) ≥ 0.9 × demand (under-fert guard)', 
 
     const stageYield = G.RECIPE_INPUTS.stageYield.T5;
     const totalArea  = G.TOMATO_NUM_BEDS * G.TOMATO_BED_AREA;
+    const compostK_g_per_m2  = (G.COMPOST_RELEASE_PER_WEEK && G.COMPOST_RELEASE_PER_WEEK.K)  || 0;
+    const compostMg_g_per_m2 = (G.COMPOST_RELEASE_PER_WEEK && G.COMPOST_RELEASE_PER_WEEK.Mg) || 0;
 
-    // K offtake − sidedress (compost NOT subtracted per REQ-098).
+    // K offtake − sidedress − compost (per REQ-098 with compost subtraction restored).
     const kOfftakeMg   = G.TOMATO_FRUIT_EXPORT.K.g * stageYield * 1000 + G.BIOMASS_DEMAND.T5.K;
     const kSidedressMg = G.STORED_RECIPE.tomato.sidedress.T5.actisol_g
                           * G.PRODUCT_PCT.Actisol_K * G.SIDEDRESS_MIN_EFF.Actisol_K * 1000
                           / G.SIDEDRESS_AREA_PER_PLANCHE;
-    const kNeededMg    = Math.max(0, kOfftakeMg - kSidedressMg);
+    const kCompostMg   = compostK_g_per_m2 * 1000;
+    const kNeededMg    = Math.max(0, kOfftakeMg - kSidedressMg - kCompostMg);
     const kExpected    = Math.round(kNeededMg / 1000 / G.PRODUCT_PCT.K2SO4_K * totalArea);
 
-    // Mg offtake (neither sidedress nor compost subtracted per REQ-098).
+    // Mg offtake − compost (sidedress products carry no Mg per REQ-098).
     const mgOfftakeMg  = G.TOMATO_FRUIT_EXPORT.Mg.g * stageYield * 1000 + G.BIOMASS_DEMAND.T5.Mg;
-    const mgExpected   = Math.round(Math.max(0, mgOfftakeMg) / 1000 / G.PRODUCT_PCT.MgSO4_Mg * totalArea);
+    const mgCompostMg  = compostMg_g_per_m2 * 1000;
+    const mgNeededMg   = Math.max(0, mgOfftakeMg - mgCompostMg);
+    const mgExpected   = Math.round(mgNeededMg / 1000 / G.PRODUCT_PCT.MgSO4_Mg * totalArea);
 
     assert.ok(Math.abs(t5.kSulfate  - kExpected)  <= 5, `kSulfate ${t5.kSulfate} vs expected ${kExpected} (±5g)`);
     assert.ok(Math.abs(t5.mgSulfate - mgExpected) <= 5, `mgSulfate ${t5.mgSulfate} vs expected ${mgExpected} (±5g)`);

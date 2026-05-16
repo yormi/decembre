@@ -5,9 +5,10 @@
 //             returns numeric, finite, non-negative kSulfate / mgSulfate.
 //   REQ-098 — Mass-balance derivation matches the formula (per stage,
 //             ±5 g rounding tolerance for kSulfate and mgSulfate).
-//             NEW (2026-05-12): compost release is NOT subtracted from
-//             either K or Mg offtake. Sidedress is still subtracted from
-//             K only (Mg sidedress = 0 by product chemistry).
+//             RESTORED (2026-05-15, B1-REV): compost release IS subtracted
+//             from both K and Mg offtake (compost release is current-week
+//             supply to the bed, not a long-term bank). Sidedress is
+//             subtracted from K only (Mg sidedress = 0 by product chemistry).
 //   REQ-099 — Public API namespace window.FertigationRecipeTomato shape
 //             (FIRST_PRINCIPLES_T5 + computeStageRecipe).
 //   REQ-151 — computeFertigationSupply(stage, opts, recipe) delivers
@@ -59,25 +60,33 @@ describe('INV-1 — Stage coverage is closed', () => {
   });
 });
 
-describe('REQ-098 — computeStageRecipe matches mass-balance formula (no compost subtraction)', () => {
+describe('REQ-098 — computeStageRecipe matches mass-balance formula (with compost subtraction)', () => {
   // Recompute mass-balance from upstream constants and compare against
-  // computeStageRecipe(stage). NEW formula per spec (2026-05-12):
+  // computeStageRecipe(stage). Formula per spec (B1-REV reversal,
+  // 2026-05-15):
   //
   //   k_offtake_mg/m²/wk   = TOMATO_FRUIT_EXPORT.K × stageYield × 1000
   //                          + BIOMASS_DEMAND[stage].K
   //   k_sidedress_mg/m²/wk = STORED_RECIPE.tomato.sidedress[stage].actisol_g
   //                           × PRODUCT_PCT.Actisol_K × SIDEDRESS_MIN_EFF.K × 1000
   //                           / SIDEDRESS_AREA_PER_PLANCHE
-  //   k_needed_mg/m²/wk    = max(0, k_offtake − k_sidedress)
+  //   k_compost_mg/m²/wk   = CompostContribution.releasePerWeek.K × 1000
+  //   k_needed_mg/m²/wk    = max(0, k_offtake − k_sidedress − k_compost)
   //   kSulfate_g_total     = round(k_needed / 1000 / PRODUCT_PCT.K2SO4_K × total_area)
   //
   //   mg_offtake_mg/m²/wk  = TOMATO_FRUIT_EXPORT.Mg × stageYield × 1000
   //                          + BIOMASS_DEMAND[stage].Mg
-  //   mg_needed_mg/m²/wk   = max(0, mg_offtake)            // sidedress + compost both excluded
+  //   mg_compost_mg/m²/wk  = CompostContribution.releasePerWeek.Mg × 1000
+  //   mg_needed_mg/m²/wk   = max(0, mg_offtake − mg_compost)   // sidedress carries no Mg
   //   mgSulfate_g_total    = round(mg_needed / 1000 / PRODUCT_PCT.MgSO4_Mg × total_area)
   //
   // Tolerance ±5 g matches the verifier's rounding margin.
   const TOLERANCE_G = 5;
+
+  // CompostContribution.releasePerWeek is exposed on window (model.js
+  // assigns window.CompostContribution at script load).
+  const compostReleasePerWeek = (window.CompostContribution
+    && window.CompostContribution.releasePerWeek) || {};
 
   test('REQ-098 — required upstream globals are exposed', () => {
     assert.equal(typeof ph1.computeStageRecipe, 'function',
@@ -102,11 +111,20 @@ describe('REQ-098 — computeStageRecipe matches mass-balance formula (no compos
       'TOMATO_NUM_BEDS must be exposed');
     assert.equal(typeof ph1.TOMATO_BED_AREA, 'number',
       'TOMATO_BED_AREA must be exposed');
+    assert.equal(typeof window.CompostContribution, 'object',
+      'window.CompostContribution must be exposed');
+    assert.equal(typeof window.CompostContribution.releasePerWeek, 'object',
+      'window.CompostContribution.releasePerWeek must be an object');
+    assert.equal(typeof window.CompostContribution.releasePerWeek.K, 'number',
+      'CompostContribution.releasePerWeek.K must be numeric');
+    assert.equal(typeof window.CompostContribution.releasePerWeek.Mg, 'number',
+      'CompostContribution.releasePerWeek.Mg must be numeric');
   });
 
-  test('REQ-098 — kSulfate matches offtake − sidedress for every stage (NO compost subtraction)', () => {
+  test('REQ-098 — kSulfate matches offtake − sidedress − compost for every stage', () => {
     const stages = Object.keys(ph1.RECIPE_INPUTS.stageYield);
     const totalArea = ph1.TOMATO_NUM_BEDS * ph1.TOMATO_BED_AREA;
+    const kCompostMg = (compostReleasePerWeek.K || 0) * 1000;
     const offenders = [];
     for (const stage of stages) {
       const stageYield = ph1.RECIPE_INPUTS.stageYield[stage] || 0;
@@ -118,8 +136,7 @@ describe('REQ-098 — computeStageRecipe matches mass-balance formula (no compos
       const kSidedressMg = (sidedress.actisol_g * ph1.PRODUCT_PCT.Actisol_K
         * (ph1.SIDEDRESS_MIN_EFF.K || 0.85) * 1000)
         / ph1.SIDEDRESS_AREA_PER_PLANCHE;
-      // NEW: no compost subtraction.
-      const kNeededMg = Math.max(0, kOfftakeMg - kSidedressMg);
+      const kNeededMg = Math.max(0, kOfftakeMg - kSidedressMg - kCompostMg);
       const expectedKsulfate = Math.round(
         (kNeededMg / 1000 / ph1.PRODUCT_PCT.K2SO4_K) * totalArea
       );
@@ -130,21 +147,22 @@ describe('REQ-098 — computeStageRecipe matches mass-balance formula (no compos
       }
     }
     assert.equal(offenders.length, 0,
-      `kSulfate drift from mass-balance formula (no compost subtraction):\n  ${offenders.join('\n  ')}`);
+      `kSulfate drift from mass-balance formula (with compost subtraction):\n  ${offenders.join('\n  ')}`);
   });
 
-  test('REQ-098 — mgSulfate matches offtake for every stage (NO sidedress, NO compost subtraction)', () => {
+  test('REQ-098 — mgSulfate matches offtake − compost for every stage (sidedress carries no Mg)', () => {
     const stages = Object.keys(ph1.RECIPE_INPUTS.stageYield);
     const totalArea = ph1.TOMATO_NUM_BEDS * ph1.TOMATO_BED_AREA;
+    const mgCompostMg = (compostReleasePerWeek.Mg || 0) * 1000;
     const offenders = [];
     for (const stage of stages) {
       const stageYield = ph1.RECIPE_INPUTS.stageYield[stage] || 0;
       const biomass = ph1.BIOMASS_DEMAND[stage] || {};
-      // Sidedress carries no Mg by product chemistry (spec).
-      // NEW: no compost subtraction either.
+      // Sidedress carries no Mg by product chemistry (spec); compost is
+      // subtracted (B1-REV reversal 2026-05-15).
       const mgOfftakeMg = (ph1.TOMATO_FRUIT_EXPORT.Mg.g * 1000 * stageYield)
         + (biomass.Mg || 0);
-      const mgNeededMg = Math.max(0, mgOfftakeMg);
+      const mgNeededMg = Math.max(0, mgOfftakeMg - mgCompostMg);
       const expectedMgSulfate = Math.round(
         (mgNeededMg / 1000 / ph1.PRODUCT_PCT.MgSO4_Mg) * totalArea
       );
@@ -155,7 +173,40 @@ describe('REQ-098 — computeStageRecipe matches mass-balance formula (no compos
       }
     }
     assert.equal(offenders.length, 0,
-      `mgSulfate drift from mass-balance formula (no compost, no sidedress subtraction):\n  ${offenders.join('\n  ')}`);
+      `mgSulfate drift from mass-balance formula (with compost subtraction):\n  ${offenders.join('\n  ')}`);
+  });
+
+  // Per-stage numeric pins reported by the team-leader after B1-REV reversal:
+  //   T5 K₂SO₄  = 4953 g  (within ±5 g)
+  //   T5 MgSO₄·7H₂O = 1378 g (matches PA Taillon's 1379 within rounding)
+  //   T1-T3 Mg = 0 g (compost releases more than the small T1-T3 Mg offtake)
+  // These are derived numbers — the formula tests above are the load-bearing
+  // assertions; these pins guard against silent shifts that match the
+  // formula but contradict the agreed live values.
+  test('REQ-098 — T5 kSulfate pins at 4953 g (±5 g)', () => {
+    const t5 = ph1.computeStageRecipe('T5') || {};
+    assert.ok(typeof t5.kSulfate === 'number'
+      && Math.abs(t5.kSulfate - 4953) <= TOLERANCE_G,
+      `T5 kSulfate: got ${t5.kSulfate}, expected 4953 (±5)`);
+  });
+
+  test('REQ-098 — T5 mgSulfate pins at 1378 g (±5 g)', () => {
+    const t5 = ph1.computeStageRecipe('T5') || {};
+    assert.ok(typeof t5.mgSulfate === 'number'
+      && Math.abs(t5.mgSulfate - 1378) <= TOLERANCE_G,
+      `T5 mgSulfate: got ${t5.mgSulfate}, expected 1378 (±5)`);
+  });
+
+  test('REQ-098 — T1, T2, T3 mgSulfate clamp at 0 (compost > Mg offtake)', () => {
+    const offenders = [];
+    for (const stage of ['T1', 'T2', 'T3']) {
+      const recipe = ph1.computeStageRecipe(stage) || {};
+      if (recipe.mgSulfate !== 0) {
+        offenders.push(`${stage}: got mgSulfate=${recipe.mgSulfate}, expected 0`);
+      }
+    }
+    assert.equal(offenders.length, 0,
+      `Early-stage Mg should clamp to 0 (compost release exceeds offtake):\n  ${offenders.join('\n  ')}`);
   });
 });
 

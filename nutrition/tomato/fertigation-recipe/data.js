@@ -42,5 +42,24 @@
 const FIRST_PRINCIPLES_T5_FERTIGATION = {
   'K2SO4':       0,   // populated at boot from computeStageRecipe('T5').kSulfate
   'MgSO4-7H2O':  0,   // populated at boot from computeStageRecipe('T5').mgSulfate
-  'Solubore':    9,   // hand-coded — single-channel B at T5 (REQ-061)
+  'Solubore':    0,   // populated at boot from computeStageRecipe('T5').solubore
+};
+
+// ─── PH_UPTAKE_FACTOR_AT_CURRENT_SOIL — bed → plant transfer efficiency ──
+//
+// Per-element fraction of bed-released ions that the plant actually takes up,
+// at current Décembre soil chemistry (pH 7.28, Ca 10 989 kg/ha). Models the
+// gap between "released to bed" and "taken up by plant" due to root-zone
+// effects independent of channel of delivery — applies uniformly to compost,
+// sidedress, and fertigation bed sources. Multiplies plant demand in
+// computeStageRecipe to inflate the bed-side target: deliver enough that
+// uptake = demand after the bed→plant discount.
+//
+// REQ-155. See derivation.md for per-element reasoning; learnings.md for
+// the literature basis. Refinement trigger lands in derivation.md: tissue
+// petiole correlation ±20 % bumps cert 2 → 3; ±10 % bumps to 4.
+const PH_UPTAKE_FACTOR_AT_CURRENT_SOIL = {
+  K:  0.90,   // cert 2 — Ca-K cation competition on Ca-saturated CEC; 5-15 % literature discount, mid-band 10 %
+  Mg: 0.85,   // cert 2 — Ca-Mg competition (Mg²⁺ loses to Ca²⁺ at root membrane) + dripper-bed equilibration; 10-25 % range, mid 15 %
+  B:  0.80,   // cert 2 — soil B adsorption in Ca-rich beds at pH > 7 (Fe/Al oxides + Ca-borate complexes); 15-25 % range, mid 20 %
 };
