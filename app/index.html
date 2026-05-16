@@ -208,12 +208,6 @@
     <button id="page-nutriment" onclick="setPage('nutriment')" style="display:none; background:none; border:none; padding:6px 10px; font-family:inherit; font-size:12px; font-weight:500; cursor:pointer; color:var(--text-muted); transition:color 0.2s;">
       📊 Nutrition
     </button>
-    <button id="page-banque" onclick="setPage('banque')" style="display:none; background:none; border:none; padding:6px 10px; font-family:inherit; font-size:12px; font-weight:500; cursor:pointer; color:var(--text-muted); transition:color 0.2s;">
-      🪨 Banque sol
-    </button>
-    <button id="page-ec" onclick="setPage('ec')" style="display:none; background:none; border:none; padding:6px 10px; font-family:inherit; font-size:12px; font-weight:500; cursor:pointer; color:var(--text-muted); transition:color 0.2s;">
-      ⚡ CE
-    </button>
     <button id="page-historique-nutriments" onclick="setPage('historique-nutriments')" style="display:none; background:none; border:none; padding:6px 10px; font-family:inherit; font-size:12px; font-weight:500; cursor:pointer; color:var(--text-muted); transition:color 0.2s;">
       📜 Historique nutriments
     </button>
@@ -1357,31 +1351,6 @@
 
   </div>
 
-  <!-- ═══════════════ BANQUE SOL PAGE (admin) ═══════════════ -->
-  <!-- Bank-trajectory view for the soil pool: weekly granular addition (Actisol +
-       farine de plumes) vs what the plant pulls from the soil pool each week.
-       Independent from the Bilan's weekly supply math (which is SME × transpiration);
-       this view tracks whether the soil bank is filling, holding, or depleting
-       over time. Extracted from the Bilan's former Block 3 on 2026-05-05 — the
-       per-week supply chain (soil → fertigation → foliar) doesn't include
-       sidedress (would double-count past mineralization already in the SME), so
-       the bank-trajectory math fits a separate page. -->
-  <div id="page-banque-content" style="display:none;">
-
-    <div class="card">
-      <div style="font-size:12.5px; color:var(--text-muted); line-height:1.6;">
-        Trajectoire de la banque du sol — apport granulaire vs ce que la plante tire chaque semaine. Si net positif, la SME monte; si négatif, la SME descend. Indépendant du calcul de fourniture hebdomadaire (déjà couvert par SME × transpiration dans la page Nutrition).
-        <div style="margin-top:6px;">Le drawdown reflète l'absorption réelle de la plante (plafonnée à demande × marge de luxe), pas le potentiel mass-flow brut.</div>
-      </div>
-    </div>
-
-    <div class="card">
-      <div class="card-title">Banque sol — N · P · K</div>
-      <div id="banque-content"></div>
-    </div>
-
-  </div>
-
   <!-- ═══════════════ HISTORIQUE NUTRIMENTS PAGE (admin) ═══════════════ -->
   <!-- Audit trail for retired recipes. Reads RECIPE_HISTORY (manually
        maintained — append the OLD snapshot before editing a live recipe
@@ -1404,122 +1373,6 @@
        yield-range/app/page.html; wired via setPage('rendement') →
        buildYieldRange() in yield-range/app/logic.js. -->
   <!-- @include yield-range/app/page.html -->
-
-  <!-- ═══════════════ EC PAGE (admin) ═══════════════ -->
-  <!-- Reference EC tolerance ceilings + per-stage targets, all in pour-through.
-       Static reference page — no calculations, no inputs. Use as quick lookup
-       before adjusting fertigation or diagnosing salt-stress symptoms.
-       All values converted from substrate/solution EC by ×1.3-1.4 (cert: 3 — actual
-       ratio varies with watering volume, leaching, and uptake). -->
-  <div id="page-ec-content" style="display:none;">
-
-    <div class="card">
-      <div class="card-title">Méthode pour-through</div>
-      <div style="font-size:12.5px; color:var(--text-muted); line-height:1.6;">
-        Toutes les valeurs sur cette page sont des <strong style="color:var(--text);">CE pour-through (lessivat)</strong>, mesurées avec le Bluelab.
-        <ol style="margin:8px 0 0 18px; padding:0;">
-          <li style="margin:4px 0;">Arroser le plateau ou la planche normalement avec la solution de fertigation</li>
-          <li style="margin:4px 0;">Attendre <strong style="color:var(--text);">30-60 min</strong> pour équilibration</li>
-          <li style="margin:4px 0;">Verser ~50 mL d'eau distillée sur le dessus de la cellule/zone représentative</li>
-          <li style="margin:4px 0;">Récolter les <strong style="color:var(--text);">premiers 50 mL de lessivat</strong> qui sortent (la première fraction concentre la solution)</li>
-          <li style="margin:4px 0;">Mesurer la CE, faire la moyenne sur 3-5 cellules</li>
-        </ol>
-      </div>
-    </div>
-
-    <!-- Salanova card: target + ceiling per stage merged into single rows -->
-    <div class="card">
-      <div style="display:flex; align-items:baseline; gap:8px; margin-bottom:8px;">
-        <span style="font-size:18px;">🥬</span>
-        <span class="card-title" style="margin:0; padding:0; letter-spacing:1.5px;">Laitue / Salanova</span>
-        <span class="diag-cert diag-cert-4">cert 4</span>
-      </div>
-      <div style="font-size:12.5px; color:var(--text-muted); line-height:1.5; margin-bottom:14px;">
-        Plafond de tolérance général : <strong style="color:var(--text);">2,7 mS/cm</strong>. Au-delà = tipburn / brûlure des bords accélérés.
-      </div>
-
-      <div style="display:flex; flex-direction:column; gap:6px;">
-
-        <div style="display:flex; justify-content:space-between; align-items:center; padding:10px 12px; background:var(--accent-lettuce-light); border:1px solid var(--accent-lettuce-border); border-radius:var(--radius-sm);">
-          <div style="flex:1;">
-            <div style="font-size:13px; font-weight:600; color:var(--text);">Germination (sem 1-2)</div>
-            <div style="font-size:11px; color:var(--text-muted); margin-top:2px;">Doux — encourager l'extension racinaire</div>
-          </div>
-          <div style="font-family:'DM Mono',monospace; font-size:14px; font-weight:700; color:var(--text);">1,1 – 2,0</div>
-        </div>
-
-        <div style="display:flex; justify-content:space-between; align-items:center; padding:10px 12px; background:var(--accent-lettuce-light); border:1px solid var(--accent-lettuce-border); border-radius:var(--radius-sm);">
-          <div style="flex:1;">
-            <div style="font-size:13px; font-weight:600; color:var(--text);">Croissance active (sem 3-4)</div>
-            <div style="font-size:11px; color:var(--text-muted); margin-top:2px;">Pousse de biomasse — viser plutôt 2,0–2,7 pour rester sous plafond</div>
-          </div>
-          <div style="font-family:'DM Mono',monospace; font-size:14px; font-weight:700; color:var(--text);">2,0 – 3,5</div>
-        </div>
-
-        <div style="display:flex; justify-content:space-between; align-items:center; padding:10px 12px; background:var(--accent-lettuce-light); border:1px solid var(--accent-lettuce-border); border-radius:var(--radius-sm);">
-          <div style="flex:1;">
-            <div style="font-size:13px; font-weight:600; color:var(--text);">Endurcissement pré-repiquage (sem 5)</div>
-            <div style="font-size:11px; color:var(--text-muted); margin-top:2px;">CE plus basse — épaissir parois cellulaires</div>
-          </div>
-          <div style="font-family:'DM Mono',monospace; font-size:14px; font-weight:700; color:var(--text);">1,7 – 2,5</div>
-        </div>
-
-        <!-- 150g push: deliberately exceeds the 2,7 ceiling — visually flagged -->
-        <div style="display:flex; justify-content:space-between; align-items:center; padding:10px 12px; background:var(--warning-bg); border:2px solid #f0c899; border-radius:var(--radius-sm);">
-          <div style="flex:1;">
-            <div style="font-size:13px; font-weight:600; color:var(--text);">⚠ Cible 150 g/plant (sem 5 push)</div>
-            <div style="font-size:11px; color:#8a5a1e; margin-top:2px;"><strong>Dépasse le plafond 2,7</strong> volontairement — pousser N en sem 4-5; durcir par stress hydrique, pas par baisse de CE. Surveiller tipburn.</div>
-          </div>
-          <div style="font-family:'DM Mono',monospace; font-size:14px; font-weight:700; color:var(--text);">2,8 – 3,4</div>
-        </div>
-
-      </div>
-    </div>
-
-    <!-- Tomato card: each stage has its own ceiling — shown inline per row -->
-    <div class="card">
-      <div style="display:flex; align-items:baseline; gap:8px; margin-bottom:8px;">
-        <span style="font-size:18px;">🍅</span>
-        <span class="card-title" style="margin:0; padding:0; letter-spacing:1.5px;">Tomate</span>
-        <span class="diag-cert diag-cert-4">cert 4</span>
-      </div>
-      <div style="font-size:12.5px; color:var(--text-muted); line-height:1.5; margin-bottom:14px;">
-        Plafond varie selon le stade. CE plus haute en fructification améliore la qualité gustative (sucres concentrés, moins de dilution).
-      </div>
-
-      <div style="display:flex; flex-direction:column; gap:6px;">
-
-        <div style="display:flex; justify-content:space-between; align-items:center; padding:10px 12px; background:var(--accent-tomato-light); border:1px solid var(--accent-tomato-border); border-radius:var(--radius-sm);">
-          <div style="flex:1;">
-            <div style="font-size:13px; font-weight:600; color:var(--text);">Végétatif (avant nouaison)</div>
-            <div style="font-size:11px; color:var(--text-muted); margin-top:2px;">Pousse foliaire, racines actives · plafond <strong style="color:var(--text);">4,5</strong></div>
-          </div>
-          <div style="font-family:'DM Mono',monospace; font-size:14px; font-weight:700; color:var(--text);">2,8 – 4,2</div>
-        </div>
-
-        <div style="display:flex; justify-content:space-between; align-items:center; padding:10px 12px; background:var(--accent-tomato-light); border:1px solid var(--accent-tomato-border); border-radius:var(--radius-sm);">
-          <div style="flex:1;">
-            <div style="font-size:13px; font-weight:600; color:var(--text);">Fructification</div>
-            <div style="font-size:11px; color:var(--text-muted); margin-top:2px;">CE haute volontairement — sucres concentrés · plafond <strong style="color:var(--text);">6,5</strong></div>
-          </div>
-          <div style="font-family:'DM Mono',monospace; font-size:14px; font-weight:700; color:var(--text);">3,5 – 5,5</div>
-        </div>
-
-      </div>
-    </div>
-
-    <div class="card">
-      <div class="card-title">Mémo de diagnostic</div>
-      <div style="font-size:12.5px; color:var(--text-muted); line-height:1.6;">
-        <div style="padding:4px 0;"><strong style="color:var(--text);">Plant flétrit avec sol humide</strong> → stress salin (CE trop haute), pas manque d'eau. Ne pas arroser plus, rincer.</div>
-        <div style="padding:4px 0;"><strong style="color:var(--text);">Halo blanc sur substrat / bord du pot</strong> → sels accumulés en surface. Faire un rinçage à l'eau pure.</div>
-        <div style="padding:4px 0;"><strong style="color:var(--text);">Brûlure marginale des feuilles</strong> → CE trop haute OU déséquilibre ionique (souvent K ou Cl).</div>
-        <div style="padding:4px 0;"><strong style="color:var(--text);">CE qui monte semaine après semaine</strong> → accumulation. Augmenter le volume d'irrigation pour lessiver, ou faire un rinçage.</div>
-        <div style="padding:4px 0;"><strong style="color:var(--text);">CE stable mais plant pâle</strong> → CE pas assez haute, ou déséquilibre nutritif (vérifier symptômes spécifiques).</div>
-      </div>
-    </div>
-
-  </div>
 
   <div class="footer">
     <span id="last-update"></span>Ferme Décembre · Système d'opération 2026 · <a href="historique.html" style="color:inherit;text-decoration:underline;">Historique</a>
@@ -1830,20 +1683,12 @@ function setPage(page) {
   document.getElementById('page-foliar-content').style.display = page === 'foliar' ? 'block' : 'none';
   document.getElementById('page-diagnostic-content').style.display = page === 'diagnostic' ? 'block' : 'none';
   document.getElementById('page-nutriment-content').style.display = page === 'nutriment' ? 'block' : 'none';
-  document.getElementById('page-banque-content').style.display = page === 'banque' ? 'block' : 'none';
-  document.getElementById('page-ec-content').style.display = page === 'ec' ? 'block' : 'none';
   document.getElementById('page-historique-nutriments-content').style.display = page === 'historique-nutriments' ? 'block' : 'none';
   document.getElementById('page-rendement-content').style.display = page === 'rendement' ? 'block' : 'none';
   // Highlight the active admin tool button
   const nutrBtn = document.getElementById('page-nutriment');
   nutrBtn.style.color = page === 'nutriment' ? 'var(--text)' : 'var(--text-muted)';
   nutrBtn.style.fontWeight = page === 'nutriment' ? '600' : '500';
-  const banqueBtn = document.getElementById('page-banque');
-  banqueBtn.style.color = page === 'banque' ? 'var(--text)' : 'var(--text-muted)';
-  banqueBtn.style.fontWeight = page === 'banque' ? '600' : '500';
-  const ecBtn = document.getElementById('page-ec');
-  ecBtn.style.color = page === 'ec' ? 'var(--text)' : 'var(--text-muted)';
-  ecBtn.style.fontWeight = page === 'ec' ? '600' : '500';
   const histBtn = document.getElementById('page-historique-nutriments');
   histBtn.style.color = page === 'historique-nutriments' ? 'var(--text)' : 'var(--text-muted)';
   histBtn.style.fontWeight = page === 'historique-nutriments' ? '600' : '500';
@@ -1855,11 +1700,10 @@ function setPage(page) {
   // Hide the main 3-page toggle on tool/admin pages. The ℹ icon (admin-only,
   // top-left of the header) is the back-nav primitive that returns to the
   // operational pages from any admin/tool view.
-  document.getElementById('page-toggle').style.display = (page === 'week' || page === 'diagnostic' || page === 'nutriment' || page === 'banque' || page === 'ec' || page === 'historique-nutriments' || page === 'rendement') ? 'none' : 'flex';
+  document.getElementById('page-toggle').style.display = (page === 'week' || page === 'diagnostic' || page === 'nutriment' || page === 'historique-nutriments' || page === 'rendement') ? 'none' : 'flex';
   if (page === 'foliar') buildFoliar();
   if (page === 'week') buildWeek();
   if (page === 'nutriment') buildNutriment();
-  if (page === 'banque') buildBanqueSol();
   if (page === 'historique-nutriments') buildHistoriqueNutriments();
   if (page === 'rendement') buildYieldRange();
   if (page === 'diagnostic') {
@@ -3376,9 +3220,6 @@ function captureCurrentSnapshot() {
 // the chemistry that limits availability (lockout already shows up as low SME).
 //
 // Source: farm info/SME - 2026-04-10.pdf
-// Date of this SME test — update both when re-testing. Surfaced in
-// buildBanqueSol() so staleness is visible while reading the bank trajectory.
-const SME_TEST_DATE = '2026-04-10';
 const SME_TOMATO_PPM = {
   N:  45.4,    // NO₃ 45.0 + NH₄ 0.4 (in spec range 35-180 / 0-20)
   P:   1.1,    // ↓ below norm 5-50 (lockout confirmed)
@@ -5330,153 +5171,6 @@ function nurseryLeverFor(element) {
   return '';
 }
 
-// ═══════════════ BANQUE SOL (admin) ═══════════════
-// Bank-trajectory view extracted from the Bilan's former Block 3 (2026-05-05).
-// Compares weekly granular addition (Actisol + farine de plumes) to what the
-// plant pulls from the soil pool each week, so the team can see whether the
-// soil bank is filling, holding, or depleting. This view is independent from
-// the Bilan's per-week supply chain (soil → fertigation → foliar) — sidedress
-// is not summed there to avoid double-counting past mineralization that's
-// already captured in the SME. See `calculateNutritionSupply` for the model rationale.
-
-function buildBanqueSol() {
-  const phLocked = document.getElementById('nutr-phlocked').checked;
-  const stage = nutrStage;
-  const target  = parseFloat(document.getElementById('nutr-target').value)  || 1.5;
-  const current = parseFloat(document.getElementById('nutr-current').value) || 1.3;
-  const transpFactor = transpirationFactor(current, target);
-  // calculateNutritionSupply reads STORED_RECIPE.tomato.sidedress[stage] (REQ-004
-  // source-of-truth) and produces supply.sidedress (per-element granular
-  // addition) and supply.soil (per-element weekly drawdown via SME ×
-  // transpiration, capped at demand × LUXURY_FACTOR — see calculateNutritionSupply
-  // for the cap rationale).
-  const supply = calculateNutritionSupply(stage, phLocked, transpFactor, target);
-  const r = supply.raw;
-
-  // Inline helper: compute per-element granular addition (mg/m²/wk) given a
-  // sidedress recipe { actisol_g, farine_g } and the current pH lockout state.
-  // Mirrors exactly the `sidedress` block in calculateNutritionSupply so the stored
-  // recipe column matches what the Bilan / supply chain would have shown.
-  const planche = SIDEDRESS_AREA_PER_PLANCHE;
-  const phLockoutFactor_P = phLocked ? 0.10 : 0.50;
-  const sdAreaFactor = 1000 / planche;
-  function additionFor(recipe) {
-    if (!recipe) return null;
-    return {
-      N: (recipe.actisol_g * PRODUCT_PCT.Actisol_N    * SIDEDRESS_MINIMUM_EFFICIENCY.Actisol_N
-        + recipe.farine_g  * PRODUCT_PCT.FarinePlumes_N * SIDEDRESS_MINIMUM_EFFICIENCY.FarinePlumes_N
-         ) * sdAreaFactor,
-      P: recipe.actisol_g * PRODUCT_PCT.Actisol_P * phLockoutFactor_P * sdAreaFactor,
-      K: recipe.actisol_g * PRODUCT_PCT.Actisol_K * SIDEDRESS_MINIMUM_EFFICIENCY.Actisol_K * sdAreaFactor,
-    };
-  }
-  const storedRecipe = STORED_RECIPE.tomato.sidedress[stage];
-  const fpRecipe     = FIRST_PRINCIPLES_SIDEDRESS[stage] || null;
-  const storedAdd    = additionFor(storedRecipe);
-  const fpAdd        = additionFor(fpRecipe);
-  const hasFp        = fpAdd !== null;
-
-  let html = `<div style="font-size:12px; color:var(--text-muted); line-height:1.6; padding:10px 12px; background:var(--input-bg); border-radius:var(--radius-sm); margin-bottom:10px;">`;
-  html += `<div><strong style="color:var(--text);">Recette stockée</strong> — Actisol ${storedRecipe.actisol_g} g · Farine ${storedRecipe.farine_g} g /planche/sem</div>`;
-  if (hasFp) {
-    // stable — Actisol-abandonment rationale (P lockout chemistry, K vs drawdown
-    // logic, Ca anti-helpful in Ca-saturated soil) is invariant domain context.
-    html += `<div style="margin-top:4px;"><strong style="color:var(--text);">Premiers principes</strong> — Actisol ${fpRecipe.actisol_g} g · Farine ${fpRecipe.farine_g} g /planche/sem (Actisol abandonné : P décoratif à pH 7,4 · K trivial vs drawdown · Ca anti-utile)</div>`;
-  }
-  html += `<div style="margin-top:6px; font-size:11.5px;">Stade actuel : <strong style="color:var(--text);">${stage}</strong> · pH ${phLocked ? '≥ 7 (verrouillé)' : 'ajusté'}</div>`;
-  html += `</div>`;
-  html += `<div style="font-size:11.5px; color:var(--text-muted); line-height:1.5; margin-bottom:8px;"><strong style="color:var(--text);">Trajectoire de la banque du sol</strong> — apport granulaire vs ce que la plante tire chaque semaine, sous la recette stockée actuelle ET sous la recette dérivée premiers principes. Si net positif, la SME monte ; si négatif, la SME descend. Le drawdown reflète l'absorption réelle de la plante (plafonnée à demande × marge de luxe), pas le potentiel mass-flow brut.</div>`;
-  // Bank-trajectory table for N, P, K
-  const bankElems = ['N', 'P', 'K'];
-  // Holding tolerance: ±15% of addition (or ±10 mg/m²/wk floor for tiny additions)
-  // — same threshold as before, but now applied per recipe column.
-  function trajectoryFor(addition, drawdown) {
-    const net = addition - drawdown;
-    const tol = Math.max(addition * 0.15, 10);
-    let arrow, color;
-    if (net > tol)       { arrow = '↑'; color = '#1e6b2d'; }      // filling
-    else if (net < -tol) { arrow = '↓'; color = '#9a3220'; }      // depleting
-    else                 { arrow = '→'; color = '#5a6b1e'; }      // holding
-    return { net, arrow, color };
-  }
-  if (hasFp) {
-    // 6-column side-by-side comparison: stored vs first-principles
-    html += `<div style="display:grid; grid-template-columns:0.35fr 0.9fr 0.9fr 0.9fr 1fr 1fr; gap:4px 8px; font-size:11.5px; align-items:center;">
-      <div style="font-weight:700; color:var(--text-muted); font-size:10px; text-transform:uppercase; letter-spacing:1px;">Él.</div>
-      <div style="font-weight:700; color:var(--text-muted); font-size:10px; text-transform:uppercase; letter-spacing:1px;">Plante tire du sol</div>
-      <div style="font-weight:700; color:var(--text-muted); font-size:10px; text-transform:uppercase; letter-spacing:1px;">Stockée — ajout</div>
-      <div style="font-weight:700; color:var(--text-muted); font-size:10px; text-transform:uppercase; letter-spacing:1px;">FP — ajout</div>
-      <div style="font-weight:700; color:var(--text-muted); font-size:10px; text-transform:uppercase; letter-spacing:1px;">Stockée — net</div>
-      <div style="font-weight:700; color:var(--text-muted); font-size:10px; text-transform:uppercase; letter-spacing:1px;">FP — net</div>`;
-    bankElems.forEach(element => {
-      const drawdown = supply.soil[element] || 0;
-      const sAdd     = storedAdd[element] || 0;
-      const fAdd     = fpAdd[element] || 0;
-      const sT = trajectoryFor(sAdd, drawdown);
-      const fT = trajectoryFor(fAdd, drawdown);
-      const sSign = sT.net >= 0 ? '+' : '−';
-      const fSign = fT.net >= 0 ? '+' : '−';
-      html += `<div style="font-weight:600;">${element}</div>
-        <div style="font-family:'DM Mono',monospace; color:var(--text-muted);">${formatValue(drawdown)}</div>
-        <div style="font-family:'DM Mono',monospace; color:var(--text);">+ ${formatValue(sAdd)}</div>
-        <div style="font-family:'DM Mono',monospace; color:var(--text);">+ ${formatValue(fAdd)}</div>
-        <div style="font-family:'DM Mono',monospace; font-weight:600; color:${sT.color};">${sSign} ${formatValue(Math.abs(sT.net))} <span style="font-weight:700;">${sT.arrow}</span></div>
-        <div style="font-family:'DM Mono',monospace; font-weight:600; color:${fT.color};">${fSign} ${formatValue(Math.abs(fT.net))} <span style="font-weight:700;">${fT.arrow}</span></div>`;
-    });
-    html += `</div>`;
-  } else {
-    // Fallback 3-column view for stages without a first-principles entry yet.
-    html += `<div style="display:grid; grid-template-columns:0.4fr 1fr 1fr 1fr 0.4fr; gap:4px 8px; font-size:11.5px;">
-      <div style="font-weight:700; color:var(--text-muted); font-size:10px; text-transform:uppercase; letter-spacing:1px;">Él.</div>
-      <div style="font-weight:700; color:var(--text-muted); font-size:10px; text-transform:uppercase; letter-spacing:1px;">Plante tire du sol</div>
-      <div style="font-weight:700; color:var(--text-muted); font-size:10px; text-transform:uppercase; letter-spacing:1px;">Granulaire ajoute</div>
-      <div style="font-weight:700; color:var(--text-muted); font-size:10px; text-transform:uppercase; letter-spacing:1px;">Net banque</div>
-      <div></div>`;
-    bankElems.forEach(element => {
-      const drawdown = supply.soil[element] || 0;
-      const addition = storedAdd[element] || 0;
-      const t = trajectoryFor(addition, drawdown);
-      const sign = t.net >= 0 ? '+' : '−';
-      html += `<div style="font-weight:600;">${element}</div>
-        <div style="font-family:'DM Mono',monospace; color:var(--text-muted);">${formatValue(drawdown)}</div>
-        <div style="font-family:'DM Mono',monospace; color:var(--text);">+ ${formatValue(addition)}</div>
-        <div style="font-family:'DM Mono',monospace; font-weight:600; color:${t.color};">${sign} ${formatValue(Math.abs(t.net))}</div>
-        <div style="text-align:center; color:${t.color}; font-weight:700;">${t.arrow}</div>`;
-    });
-    html += `</div>`;
-  }
-  // Pourquoi expanders for the sidedress addition equation. Show N (Actisol +
-  // Farine) and P (with pH lockout) as the two distinct equation shapes.
-  // (planche, phLockoutFactor_P, sdAreaFactor declared above for additionFor.)
-  const sdN_actisol_mg = r.sd_actisol_g * PRODUCT_PCT.Actisol_N    * SIDEDRESS_MINIMUM_EFFICIENCY.Actisol_N    * 1000 / planche;
-  const sdN_farine_mg  = r.sd_farine_g  * PRODUCT_PCT.FarinePlumes_N * SIDEDRESS_MINIMUM_EFFICIENCY.FarinePlumes_N * 1000 / planche;
-  html += pourquoiExpander(
-    'sidedress[N] = (actisol_g × Actisol_N × Actisol_min_eff + farine_g × Farine_N × Farine_min_eff) × 1000 / planche_area',
-    `(${r.sd_actisol_g} × ${PRODUCT_PCT.Actisol_N} × ${SIDEDRESS_MINIMUM_EFFICIENCY.Actisol_N} + ${r.sd_farine_g} × ${PRODUCT_PCT.FarinePlumes_N} × ${SIDEDRESS_MINIMUM_EFFICIENCY.FarinePlumes_N}) × 1000 / ${planche} m² = ${sdN_actisol_mg.toFixed(0)} + ${sdN_farine_mg.toFixed(0)} = ${(supply.sidedress.N||0).toFixed(0)} mg N/m²/sem`,
-    `Apport hebdomadaire à la réserve. Régime stade-établi : tout le matériel des semaines passées minéralise simultanément, donc l'apport hebdo ≈ minéralisation hebdo (efficacité cert 3, serre tempérée).`
-  );
-  html += pourquoiExpander(
-    'sidedress[P] = actisol_g × Actisol_P × pH_lockout_P × 1000 / planche_area',
-    `${r.sd_actisol_g} × ${PRODUCT_PCT.Actisol_P.toFixed(4)} × ${phLockoutFactor_P} × 1000 / ${planche} m² = ${(supply.sidedress.P||0).toFixed(1)} mg P/m²/sem`,
-    `Pourquoi le facteur ${phLockoutFactor_P} : ${phLocked ? 'à pH ≥ 7, le P fraîchement minéralisé rencontre Ca²⁺ en solution et précipite en Ca-phosphate avant absorption. Cadre = 5-15% efficace (point milieu 10%).' : 'pH ajusté : minéralisation organique standard, ~50%.'} L'addition à la banque reste faible tant que le pH reste haut.`
-  );
-  html += pourquoiExpander(
-    'sidedress[K] = actisol_g × Actisol_K × Actisol_K_min_eff × 1000 / planche_area',
-    `${r.sd_actisol_g} × ${PRODUCT_PCT.Actisol_K.toFixed(4)} × ${SIDEDRESS_MINIMUM_EFFICIENCY.Actisol_K} × 1000 / ${planche} m² = ${(supply.sidedress.K||0).toFixed(0)} mg K/m²/sem`,
-    `K libéré rapidement (85%) parce que dans les granules il est mostly water-soluble — pas dépendant de la minéralisation microbienne comme N/P.`
-  );
-  // Footer reads efficiency numbers live from SIDEDRESS_MINIMUM_EFFICIENCY + the pH-lockout
-  // factor declared above so editing the constants flows here automatically.
-  // stable — mineralization regime explanation (steady-state, warm greenhouse) is
-  // domain context; the values themselves are the source-of-truth read from code.
-  const pctN_act = Math.round(SIDEDRESS_MINIMUM_EFFICIENCY.Actisol_N * 100);
-  const pctK_act = Math.round(SIDEDRESS_MINIMUM_EFFICIENCY.Actisol_K * 100);
-  const pctN_far = Math.round(SIDEDRESS_MINIMUM_EFFICIENCY.FarinePlumes_N * 100);
-  const pctP_efficiency = Math.round(phLockoutFactor_P * 100);
-  html += `<div style="margin-top:10px; padding-top:8px; border-top:1px dashed var(--border); font-size:11px; color:var(--text-muted); line-height:1.5;">Efficacité minéralisation (régime stade établi, serre tempérée) : Actisol N ${pctN_act}% · Actisol K ${pctK_act}% · Farine N ${pctN_far}%. <strong>P</strong> à pH ${phLocked ? '≥ 7' : 'ajusté'} : ${pctP_efficiency}% ${phLocked ? '(précipitation Ca-P)' : ''} — le P n'est plus une livraison crédible tant que le pH reste haut, l'addition à la banque reste faible.</div>`;
-  document.getElementById('banque-content').innerHTML = html;
-}
-
 // ═══════════════ HISTORIQUE NUTRIMENTS (admin) ═══════════════
 // Renders RECIPE_HISTORY (retired recipe snapshots) sorted most-recent-first
 // as a date-keyed table. Each row expands to reveal a full snapshot of the
@@ -5615,14 +5309,14 @@ function buildHistoriqueNutriments() {
 // Default page (fertigation) + default crop (tomato) collapse to `/` (no hash).
 // Why: lets hot-reload / bookmarks land on the same page+crop, and keeps
 // `admin` orthogonal to navigation rather than buried in a comma list.
-const PAGES = ['fertigation','sol','foliar','irrigation','week','diagnostic','nutriment','banque','ec','historique-nutriments','rendement'];
+const PAGES = ['fertigation','sol','foliar','irrigation','week','diagnostic','nutriment','historique-nutriments','rendement'];
 const DEFAULT_PAGE = 'fertigation';
 const DEFAULT_CROP = 'tomato';
-const ADMIN_PAGES = ['diagnostic','nutriment','banque','ec','historique-nutriments','rendement'];
+const ADMIN_PAGES = ['diagnostic','nutriment','historique-nutriments','rendement'];
 // Pages whose crop is part of the URL. foliar omitted (only tomato is valid;
 // the page auto-redirects lettuce/nursery to tomato). Crop comes from
 // `currentCrop`, except diagnostic which has its own page-local crop state
-// (diagCrop). banque is tomato-only (uses STORED_RECIPE.tomato.sidedress), no crop segment.
+// (diagCrop).
 const CROP_PAGES = {
   fertigation: ['tomato','lettuce','nursery'],
   irrigation:  ['tomato','lettuce','nursery'],
@@ -5699,8 +5393,6 @@ function applyAdminMode() {
   document.getElementById('page-info').style.display = admin ? 'inline-block' : 'none';
   document.getElementById('page-diagnostic').style.display = admin ? 'inline-block' : 'none';
   document.getElementById('page-nutriment').style.display = admin ? 'inline-block' : 'none';
-  document.getElementById('page-banque').style.display = admin ? 'inline-block' : 'none';
-  document.getElementById('page-ec').style.display = admin ? 'inline-block' : 'none';
   document.getElementById('page-historique-nutriments').style.display = admin ? 'inline-block' : 'none';
   const rendNavBtn = document.getElementById('page-rendement');
   if (rendNavBtn) rendNavBtn.style.display = admin ? 'inline-block' : 'none';

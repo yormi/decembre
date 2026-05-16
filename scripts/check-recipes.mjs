@@ -406,8 +406,8 @@ header("REQ-006 — 'Algue' au lieu de 'Kelp' (DOM walk)");
 // ─── REQ-007 — Jargon scan, scoped to non-admin pages ──────────────────
 //
 // Ch6 = A scoped to non-admin: admin pages are jargon-tolerant (Bilan
-// nutriment, banque, ec, diagnostic). Walk text nodes that are NOT inside
-// any element whose id matches `page-<slug>-content` for slug in ADMIN_PAGES.
+// nutriment, diagnostic). Walk text nodes that are NOT inside any element
+// whose id matches `page-<slug>-content` for slug in ADMIN_PAGES.
 
 header("REQ-007 — Aucun jargon anglais (texte non-admin)");
 

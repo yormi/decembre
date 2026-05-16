@@ -148,6 +148,5 @@ Net: ~3 h/wk spray labor recovered.
 - Foliar recipe (live): `nutrition/tomato/foliar-recipe/`
 - Side-dressing: `nutrition/tomato/sidedress-recipe/`
 - Compost contribution: `nutrition/compost-contribution/`
-- Soil bank trajectory: Banque sol page (`#admin/banque`)
 - Symptom-driven diagnosis: `working files/symptomes-carences.md`
 - Soil tests: `nutrition/doc/`, water `farm info/`

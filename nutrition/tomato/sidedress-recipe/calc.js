@@ -24,8 +24,7 @@
 // where `chosen` is the product key, `g_per_planche` is the dose for the
 // chosen product, and the per-product fields hold 0 for unselected products.
 // Flat fields preserve backwards-compat with callers reading
-// `recipe.actisol_g` / `recipe.farine_g` (buildBanqueSol's additionFor in
-// app/index.html). `chosen` is what REQ-089 verifier reads.
+// `recipe.actisol_g` / `recipe.farine_g`. `chosen` is what REQ-089 verifier reads.
 function computeStageSidedress(stage, product) {
   const chosen = product || 'FarinePlumes';
   const empty  = { actisol_g: 0, farine_g: 0, alfalfa_g: 0, chosen, g_per_planche: 0 };

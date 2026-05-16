@@ -62,9 +62,8 @@ function buildNutrimentTomato() {
   // the soil bank first (Ca + P only, both reservoir-dominant), then is
   // replenished by four channels in order: compost → sidedress → fertigation
   // → foliar. After each station, the per-element "remaining gap" feeds the
-  // next as input. The SME × transpiration mass-flow model still lives on
-  // the 🪨 Banque sol admin page (drawdown vs sidedress addition); here Block
-  // 2 is a static reservoir read — bank size + depletion runway.
+  // next as input. Block 2 here is a static reservoir read — bank size +
+  // depletion runway.
   //
   // Compost release per element (g/m²/wk) → mg/m²/wk for the gap chain.
   const CC = window.CompostContribution;

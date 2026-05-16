@@ -44,8 +44,8 @@ const SIDEDRESS_PRODUCTS = {
 };
 
 // Backwards-compat derived view. `app/index.html` consumers (calculateNutritionSupply,
-// computeStageRecipe, buildBanqueSol's additionFor, buildNutriment's footer)
-// still read `SIDEDRESS_MINIMUM_EFFICIENCY.{Actisol_N, Actisol_P, Actisol_K, FarinePlumes_N}`
+// computeStageRecipe, buildNutriment's footer) still read
+// `SIDEDRESS_MINIMUM_EFFICIENCY.{Actisol_N, Actisol_P, Actisol_K, FarinePlumes_N}`
 // directly. Migrating those to read from SIDEDRESS_PRODUCTS would touch a
 // dozen call sites and isn't necessary for the gate generalization. Fold
 // when those sites get refactored.
@@ -76,13 +76,11 @@ const SIDEDRESS_EFFICIENCY_AT_CURRENT_PRODUCTS = {
 };
 
 // FIRST_PRINCIPLES_SIDEDRESS — adapter that surfaces FP_RECIPE_T5.sidedress
-// in the {actisol_g, farine_g, alfalfa_g, chosen} schema expected by
-// buildBanqueSol(). T1-T5 entries are populated by `wireFpSidedress` IIFE
-// in calc.js at script load. Single source of truth = computeStageSidedress.
-//
-// Read by buildBanqueSol() to render the bank-trajectory comparison side-by-
-// side with the stored recipe; not consumed by calculateNutritionSupply (stored recipe
-// remains REQ-004 source-of-truth for the Bilan supply numbers).
+// in the {actisol_g, farine_g, alfalfa_g, chosen} schema. T1-T5 entries are
+// populated by `wireFpSidedress` IIFE in calc.js at script load. Single
+// source of truth = computeStageSidedress. Not consumed by
+// calculateNutritionSupply (stored recipe remains REQ-004 source-of-truth
+// for the Bilan supply numbers).
 const FIRST_PRINCIPLES_SIDEDRESS = {
   // T1, T2, T3, T4, T5 filled in by wireFpSidedress(); see calc.js.
 };

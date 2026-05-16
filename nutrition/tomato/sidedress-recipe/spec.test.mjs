@@ -195,7 +195,7 @@ describe('REQ-088 — window.SidedressRecipeTomato public API', () => {
   });
 
   test('REQ-088 — MINIMUM_EFFICIENCY retains backwards-compat keys for legacy consumers', () => {
-    // Legacy consumers (calculateNutritionSupply, computeStageRecipe, buildBanqueSol,
+    // Legacy consumers (calculateNutritionSupply, computeStageRecipe,
     // buildNutriment) still read these specific keys. Spec REQ-088 calls
     // out MINIMUM_EFFICIENCY explicitly as the derived backwards-compat view.
     const minimumEfficiency = window.SidedressRecipeTomato.MINIMUM_EFFICIENCY;

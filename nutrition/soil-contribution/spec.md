@@ -7,11 +7,11 @@ tomato bed wired; lettuce bed measured but not wired).
 Answers: **"how much of element X does the plant tap from the soil bank
 this week, and how many months until depletion if the bank were the sole
 supply?"** Does NOT answer bank refill (see `nutrition/compost-contribution/`,
-`nutrition/tomato/sidedress-recipe/`), bank trajectory (🪨 Banque sol admin
-page, `buildBanqueSol`), or root-surface availability (`calcNutrSupply` →
-`supply.soil`). Source values, kg/ha → mg/m² conversion, and refinement
-triggers live in `data.js` comments (or `derivation.md` if they grow).
-Crop-keyed structure so lettuce can wire with one entry.
+`nutrition/tomato/sidedress-recipe/`) or root-surface availability
+(`calculateNutritionSupply` → `supply.soil`). Source values, kg/ha → mg/m²
+conversion, and refinement triggers live in `data.js` comments (or
+`derivation.md` if they grow). Crop-keyed structure so lettuce can wire with
+one entry.
 
 ---
 
@@ -19,14 +19,20 @@ Crop-keyed structure so lettuce can wire with one entry.
 
 ### Inputs
 
-Per call: `crop` (string), `element` (string), `demand_mg_per_m2_per_week`
-(number).
+Per call: `crop` (string), `element` (string), and — for
+`weeklyContribution` only — `demand_mg_per_m2_per_week` (number).
+`monthsToDepletion(crop, element)` takes no demand argument; the runway is
+SME-derived (REQ-164).
 
 Constants (declared in `data.js`):
 - `SOIL_BANK_MG_M2[crop][el]` — Mehlich-3 reservoir in mg/m² (kg/ha × 100).
 - `SOIL_CONTRIBUTING[el]` — boolean map; `true` for elements whose bank
   participates in the gap chain.
 - `WEEKS_PER_MONTH` — 4.33 (= 52/12).
+- `SME_SOIL_SOLUTION_PPM[crop][el]` — Saturated Media Extract concentration
+  in ppm (= mg/L soil solution). Berger Labs Report 39087 (April 2026).
+- `TRANSPIRATION_L_PER_M2_PER_WEEK[crop]` — weekly water uptake at the
+  root surface (cycle-weighted, L/m²/wk).
 
 ### Output
 
@@ -34,12 +40,14 @@ Constants (declared in `data.js`):
 
 ```
 {
-  BANK_MG_M2,           // { tomato: { P, K, Ca, Mg } }   — mg/m²
-  CONTRIBUTING,         // { P: true, Ca: true }           — gap-chain participants
-  WEEKS_PER_MONTH,      // 4.33
-  weeklyContribution,   // (crop, el, demand_mg) → number  — mg/m²/wk drawn from bank this week
-  monthsToDepletion,    // (crop, el, demand_mg) → number | null
-  renderGrid,           // (gapsIn, soilMg, gapsOut, monthsToDepletion) → HTML string
+  BANK_MG_M2,                       // { crop: { P, K, Ca, Mg } }       — mg/m²
+  CONTRIBUTING,                     // { P: true, Ca: true }            — gap-chain participants
+  WEEKS_PER_MONTH,                  // 4.33
+  SME_SOIL_SOLUTION_PPM,            // { crop: { N, P, K, Ca, Mg, Fe, … } } — mg/L
+  TRANSPIRATION_L_PER_M2_PER_WEEK,  // { crop: number }                 — L/m²/wk
+  weeklyContribution,               // (crop, el, demand_mg) → number   — mg/m²/wk drawn from bank this week
+  monthsToDepletion,                // (crop, el) → number | null       — SME-derived runway
+  renderGrid,                       // (gapsIn, soilMg, gapsOut, monthsToDepletion) → HTML string
 }
 ```
 
@@ -48,11 +56,16 @@ Constants (declared in `data.js`):
   bank data exists, else `0`. `min` clamp prevents over-delivery when
   weekly demand exceeds the reservoir.
 
-`monthsToDepletion(crop, el, demand_mg)`:
-- Returns `BANK_MG_M2[crop][el] / (demand_mg × WEEKS_PER_MONTH)` when both
+`monthsToDepletion(crop, el)`:
+- Returns `BANK_MG_M2[crop][el] / (SME_SOIL_SOLUTION_PPM[crop][el] ×
+  TRANSPIRATION_L_PER_M2_PER_WEEK[crop] × WEEKS_PER_MONTH)` when all three
   operands are positive, `null` otherwise (caller renders "—").
-- Defined for any element with bank data **regardless** of `CONTRIBUTING` —
-  disabled rows surface runway for context (K/Mg today).
+- Denominator is weekly plant uptake at measured soil-solution availability:
+  SME ppm × transpiration L/m²/wk = mg/m²/wk. Low-availability elements
+  (P / Mn / Zn at our pH 7.4) surface as long, throttled-draw runways
+  distinct from demand-driven runways.
+- Defined for any element with bank + SME data **regardless** of
+  `CONTRIBUTING` — disabled rows surface runway for context (K/Mg today).
 
 `renderGrid(gapsIn, soilMg, gapsOut, monthsToDepletion)`:
 - 6-column grid (Él. / Manque entrant / Apport ici / Manque sortant /
@@ -106,23 +119,31 @@ might exit CONTRIBUTING if active channels can carry it).
 
 ---
 
-## REQ-142 — Months-to-depletion surfaces runway for any element with bank data
+## REQ-142 — Months-to-depletion is the SME-derived runway, not demand-derived
 
-**Statement:** `monthsToDepletion(crop, el, demand_mg)` returns
-`BANK_MG_M2[crop][el] / (demand_mg × WEEKS_PER_MONTH)` when both operands
-are positive, `null` otherwise. Defined for any element with bank data
-**regardless of `CONTRIBUTING`** — disabled rows surface reservoir runway
-for context ("K bank lasts ~16 months at T5 drawdown, but routed via
-fertigation").
+**Statement:** `monthsToDepletion(crop, el)` returns
+`BANK_MG_M2[crop][el] / (SME_SOIL_SOLUTION_PPM[crop][el] ×
+TRANSPIRATION_L_PER_M2_PER_WEEK[crop] × WEEKS_PER_MONTH)` when all three
+operands are positive, `null` otherwise. The runway answers "how many
+months until the reservoir is empty if zero replenishment occurs and weekly
+draw stays throttled by current soil-solution availability" — not "until
+empty at current weekly demand". Defined for any element with bank + SME
+data **regardless of `CONTRIBUTING`** — disabled rows surface reservoir
+runway for context. Demand is intentionally not in the denominator: a
+locked-out element (P at pH 7.4) draws far less than demand because the
+SME pool throttles uptake, and that's what the runway must reflect.
 
-**Cert:** 5 (structural — arithmetic over declared constants).
+**Cert:** 5 structural; runway values inherit the source cert of
+`SME_SOIL_SOLUTION_PPM` (cert 4 for direct measurements, cert 2 for
+<DL ceilings) × `TRANSPIRATION_L_PER_M2_PER_WEEK` (cert 2 cycle-mid).
 
 ---
 
 ## REQ-143 — Public API on `window.SoilContribution`
 
 **Statement:** `window.SoilContribution` exists at runtime and exposes
-`BANK_MG_M2`, `CONTRIBUTING`, `WEEKS_PER_MONTH`, `weeklyContribution`,
+`BANK_MG_M2`, `CONTRIBUTING`, `WEEKS_PER_MONTH`, `SME_SOIL_SOLUTION_PPM`,
+`TRANSPIRATION_L_PER_M2_PER_WEEK`, `weeklyContribution`,
 `monthsToDepletion`, `renderGrid`. Consumers MUST reach for the namespace,
 not bare module-scope constants/functions, so internals can be reshaped
 (per-bed scaling, seasonal factor, depth-resolved bank) without breaking
@@ -130,6 +151,24 @@ call sites. Same discipline as REQ-080 / REQ-097 / REQ-103; REQ-139 enforces
 no-inline-reimplementation at verifier level.
 
 **Cert:** 5 (structural).
+
+---
+
+## REQ-164 — SME soil-solution data wired per crop, per element on the gap grid
+
+**Statement:** `SME_SOIL_SOLUTION_PPM[crop][el]` is a two-level object
+keyed by crop slug then by element symbol. Values are direct ppm readings
+from Berger Labs SME analyses (Report 39087, April 2026 for the current
+season). Every element row on the soil-bank gap grid (`N, P, K, Ca, Mg,
+Fe, Mn, Zn, B, Cu, Mo`) MUST have an SME entry for every crop wired in
+`SOIL_BANK_MG_M2` — including detection-limit ceilings recorded at the
+DL value (cert 2) when the lab reports `<DL`. `TRANSPIRATION_L_PER_M2_PER_WEEK`
+is a one-level object keyed by crop slug, populated for every wired crop.
+Tomato and lettuce both wired today.
+
+**Cert:** 4 for direct SME measurements; cert 2 for detection-limit
+ceilings (Mn, Zn on both crops; revisit when soil pH drops below 6.5 and
+those elements climb back into measurable range).
 
 ---
 
@@ -156,7 +195,7 @@ Banque P "coffre" ; même au taux de drawdown actuel, la réserve tient des ann�
 ```
 
 ```render K-fert-routed
-K banque mesurée, SME en spec. Pas routé par ce bloc — le K circule via la fertigation (K₂SO₄) qui assure la livraison à la demande, et la banque suit via la trajectoire SME (page 🪨 Banque sol).
+K banque mesurée, SME en spec. Pas routé par ce bloc — le K circule via la fertigation (K₂SO₄) qui assure la livraison à la demande, et la banque suit via la trajectoire SME.
 ```
 
 ```render Mg-fert-routed

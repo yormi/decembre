@@ -380,6 +380,62 @@ describe('REQ-115 — computeFoliarRecipeForGap (min-dose clamp + burn cap + CE 
       }
     }
   });
+
+  test('REQ-115 — MIN_DOSE_G_PER_ELEMENT.Cu === 0.2 (narrow toxicity floor)', () => {
+    // Cu's narrow toxicity threshold gets a 0.2 g floor distinct from the
+    // 0.5 g default of Mn/Zn/Fe/B (Mo at 0.1 g). Pinned value assertion —
+    // changing the Cu floor changes the algorithm's behavior in the
+    // 0.2-0.5 g luxury-feed window.
+    const FRT = win.FoliarRecipeTomato;
+    assert.ok(FRT.MIN_DOSE_G_PER_ELEMENT && typeof FRT.MIN_DOSE_G_PER_ELEMENT === 'object',
+      'window.FoliarRecipeTomato.MIN_DOSE_G_PER_ELEMENT must be exposed');
+    assert.equal(FRT.MIN_DOSE_G_PER_ELEMENT.Cu, 0.2,
+      `MIN_DOSE_G_PER_ELEMENT.Cu must be 0.2 g (narrow toxicity floor), got ${FRT.MIN_DOSE_G_PER_ELEMENT.Cu}`);
+  });
+
+  test('REQ-115 — Fe-heavy gap drop-highest preserves pH-locked micros Mn/Cu/B', () => {
+    // Spec algorithm step 2: when predicted CE > target, drop the
+    // highest-CE contributor (Fe under FeSO₄·7H₂O mass dominance). Mn / Cu /
+    // B (pH-locked micros, REQ-061 cascade order) must remain at the doses
+    // they would receive without the Fe pressure, since dropping them
+    // strips the only live channel under pH ≥ 7. Parity with verifier
+    // scripts/check-recipes.mjs REQ-115 block (Mn/Cu/B non-zero invariant).
+    const FRT = win.FoliarRecipeTomato;
+    const feHeavyGap   = { Mn: 5, Zn: 5, Cu: 0.5, Fe: 1000, B: 4 };
+    const baselineGap  = { Mn: 5, Zn: 5, Cu: 0.5,           B: 4 };
+    const feHeavyRecipe  = FRT.computeFoliarRecipeForGap(feHeavyGap,  { surfactant: false });
+    const baselineRecipe = FRT.computeFoliarRecipeForGap(baselineGap, { surfactant: false });
+    for (const key of ['MnSO4_g', 'CuSO4_g', 'Solubore_g']) {
+      assert.ok(feHeavyRecipe[key] > 0,
+        `${key}: pH-locked micro stripped to 0 under Fe-heavy gap (got ${feHeavyRecipe[key]}) — drop-highest must not strip Mn/Cu/B`);
+      assert.equal(feHeavyRecipe[key], baselineRecipe[key],
+        `${key}: Fe-heavy gap=${feHeavyRecipe[key]} differs from no-Fe baseline=${baselineRecipe[key]} — drop-highest stripped a pH-locked micro instead of Fe`);
+    }
+  });
+});
+
+describe('REQ-170 — Surfactant-aware foliar efficiency map', () => {
+  test('REQ-170 — efficiencyFor(true) > efficiencyFor(false) strictly for every routed element', () => {
+    // Spec: efficiencyFor(true) is strictly greater than efficiencyFor(false)
+    // for every routed element (Mn / Zn / Cu / Fe — cuticle-uptake coverage
+    // axis 0.30 → 0.80). B and Mo absent per REQ-061 (single-channel via
+    // fertigation today).
+    const FRT = win.FoliarRecipeTomato;
+    assert.equal(typeof FRT.efficiencyFor, 'function',
+      'window.FoliarRecipeTomato.efficiencyFor must be a function (REQ-170)');
+    const noSurfactant   = FRT.efficiencyFor(false);
+    const withSurfactant = FRT.efficiencyFor(true);
+    for (const element of ['Mn', 'Zn', 'Cu', 'Fe']) {
+      const off = noSurfactant[element];
+      const on  = withSurfactant[element];
+      assert.equal(typeof off, 'number',
+        `efficiencyFor(false).${element}: expected number, got ${typeof off}`);
+      assert.equal(typeof on, 'number',
+        `efficiencyFor(true).${element}: expected number, got ${typeof on}`);
+      assert.ok(on > off,
+        `efficiencyFor(true).${element}=${on} must be strictly > efficiencyFor(false).${element}=${off}`);
+    }
+  });
 });
 
 describe('REQ-116 — FP foliar recipe live-derived from pre-foliar gap chain', () => {
