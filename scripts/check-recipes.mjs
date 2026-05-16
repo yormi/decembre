@@ -178,13 +178,16 @@ const exposeNames = [
   'COMPOST_AMENDMENT', 'COMPOST_LABEL_PCT', 'COMPOST_MINERALIZATION_YEAR1',
   'COMPOST_SEASONAL_FACTOR', 'COMPOST_RELEASE_PER_WEEK', 'theoreticalReleasePerWeek',
   'FIRST_PRINCIPLES_SIDEDRESS', 'computeStageSidedress',
-  // Fertigation-recipe (REQ-098..099, REQ-154). wireFpFertigation() in
-  // calc.js writes computeStageRecipe('T5') output into
+  // Fertigation-recipe (REQ-098..099, REQ-154, REQ-155). wireFpFertigation()
+  // in calc.js writes computeStageRecipe('T5') output into
   // FIRST_PRINCIPLES_T5_FERTIGATION at script load, then propagates to
-  // FP_RECIPE_T5.fertigation. PA Taillon legacy anchor preserved in
-  // learnings.md. REQ-100 (mode-aware mixing factor) retired 2026-05-10.
+  // FP_RECIPE_T5.fertigation. REQ-155 added per-element uptake factor
+  // (PH_UPTAKE_FACTOR_AT_CURRENT_SOIL) for K/Mg/B; computeStageRecipe
+  // divides demand by the factor before subtracting compost+sidedress.
+  // REQ-100 (mode-aware mixing factor) retired 2026-05-10.
   'FP_RECIPE_T5',
   'FIRST_PRINCIPLES_T5_FERTIGATION',
+  'PH_UPTAKE_FACTOR_AT_CURRENT_SOIL',
   // Foliar-recipe (REQ-101 / REQ-103). Cuticle-coverage delivery model;
   // the function reads from STORED_RECIPE.tomato.foliaire so the verifier
   // also pulls the constants directly via window.FoliarRecipeTomato.
@@ -990,44 +993,65 @@ if (!computeStageSidedress || !SIDEDRESS_PRODUCTS) {
 
 // ─── REQ-098 — Fertigation mass-balance derivation matches the formula ──
 //
-// computeStageRecipe(stage).{kSulfate, mgSulfate} must equal the mass-
-// balance derivation within ±5 g rounding tolerance (amended 2026-05-12 —
-// compost release NO LONGER subtracted; compost flows separately as a
-// soil-bank input, not a fertigation-channel offset):
-//   k_offtake  = TOMATO_FRUIT_EXPORT.K × stageYield × 1000 + BIOMASS_DEMAND[stage].K
-//   k_sd       = sd.actisol_g × Actisol_K × min_eff × 1000 / SIDEDRESS_AREA
-//   k_needed   = max(0, k_offtake − k_sd)
-//   kSulfate_g = round(k_needed / 1000 / K2SO4_K × total_area)
-//   (Mg analogous; sidedress carries no Mg.)
+// computeStageRecipe(stage).{kSulfate, mgSulfate, solubore} must equal the
+// mass-balance derivation within ±5 g rounding tolerance. Per element,
+// fertigation sizes to (demand / uptake_factor) − compost − sidedress, with
+// soil-bank credit applying only to {P, Ca} (neither in fertigation flow).
+// Function implements K + Mg + B (Solubore) branches. (REQ-098 with-compost
+// subtraction restored 2026-05-15 per B1-REV; uptake factor added per
+// REQ-155 B2-REV same day.):
+//   demand_to_bed = demand / PH_UPTAKE_FACTOR_AT_CURRENT_SOIL[el]
+//   k_offtake     = TOMATO_FRUIT_EXPORT.K × stageYield × 1000 + BIOMASS_DEMAND[stage].K
+//   k_demand_to_bed = k_offtake / uptake.K
+//   k_sd          = sd.actisol_g × Actisol_K × min_eff × 1000 / SIDEDRESS_AREA
+//   k_compost     = CompostContribution.releasePerWeek.K × 1000
+//   k_needed      = max(0, k_demand_to_bed − k_sd − k_compost)
+//   kSulfate_g    = round(k_needed / 1000 / K2SO4_K × total_area)
+//   (Mg analogous, no sidedress; B analogous, no sidedress, compost B = 0.)
 //
-// Spec: nutrition/tomato/fertigation-recipe/spec.md → REQ-098.
+// Spec: nutrition/tomato/fertigation-recipe/spec.md → REQ-098 + REQ-155.
 
 header('REQ-098 — computeStageRecipe matches mass-balance formula');
 
+const CC_release = window.CompostContribution && window.CompostContribution.releasePerWeek;
+const uptake_phase1 = ph1.PH_UPTAKE_FACTOR_AT_CURRENT_SOIL;
 if (!computeStageRecipe || !TOMATO_FRUIT_EXPORT || !BIOMASS_DEMAND
     || !PRODUCT_PCT || !SIDEDRESS_MIN_EFF || !SIDEDRESS_AREA_PER_PLANCHE
     || !TOMATO_NUM_BEDS || !TOMATO_BED_AREA || !STORED_RECIPE
-    || !ph1.RECIPE_INPUTS) {
-  fail('Fertigation + upstream constants exposed', 'one or more globals missing');
+    || !ph1.RECIPE_INPUTS || !CC_release || !uptake_phase1) {
+  fail('Fertigation + upstream constants exposed', 'one or more globals missing (incl. window.CompostContribution.releasePerWeek, PH_UPTAKE_FACTOR_AT_CURRENT_SOIL)');
 } else {
   const stages = Object.keys(ph1.RECIPE_INPUTS.stageYield);
   const totalArea = TOMATO_NUM_BEDS * TOMATO_BED_AREA;
+  const kCompostMg = (CC_release.K || 0) * 1000;
+  const mgCompostMg = (CC_release.Mg || 0) * 1000;
+  const bCompostMg = (CC_release.B || 0) * 1000;
+  const uK = uptake_phase1.K || 1;
+  const uMg = uptake_phase1.Mg || 1;
+  const uB = uptake_phase1.B || 1;
   const offenders = [];
   for (const s of stages) {
     const y = ph1.RECIPE_INPUTS.stageYield[s] || 0;
     const sd = (STORED_RECIPE.tomato.sidedress[s]) || { actisol_g: 0, farine_g: 0 };
     const biomass = BIOMASS_DEMAND[s] || {};
     // K
-    const kOfftake = (TOMATO_FRUIT_EXPORT.K.g * 1000 * y) + (biomass.K || 0);
+    const kDemand = (TOMATO_FRUIT_EXPORT.K.g * 1000 * y) + (biomass.K || 0);
+    const kDemandToBed = kDemand / uK;
     const kSd = (sd.actisol_g * PRODUCT_PCT.Actisol_K
                  * (SIDEDRESS_MIN_EFF.Actisol_K || 0.85) * 1000)
                  / SIDEDRESS_AREA_PER_PLANCHE;
-    const kNeeded = Math.max(0, kOfftake - kSd);
+    const kNeeded = Math.max(0, kDemandToBed - kSd - kCompostMg);
     const expectedKsulfate = Math.round((kNeeded / 1000 / PRODUCT_PCT.K2SO4_K) * totalArea);
     // Mg
-    const mgOfftake = (TOMATO_FRUIT_EXPORT.Mg.g * 1000 * y) + (biomass.Mg || 0);
-    const mgNeeded = Math.max(0, mgOfftake);
+    const mgDemand = (TOMATO_FRUIT_EXPORT.Mg.g * 1000 * y) + (biomass.Mg || 0);
+    const mgDemandToBed = mgDemand / uMg;
+    const mgNeeded = Math.max(0, mgDemandToBed - mgCompostMg);
     const expectedMgSulfate = Math.round((mgNeeded / 1000 / PRODUCT_PCT.MgSO4_Mg) * totalArea);
+    // B (Solubore)
+    const bDemand = (TOMATO_FRUIT_EXPORT.B.g * 1000 * y) + (biomass.B || 0);
+    const bDemandToBed = bDemand / uB;
+    const bNeeded = Math.max(0, bDemandToBed - bCompostMg);
+    const expectedSolubore = Math.round((bNeeded / 1000 / PRODUCT_PCT.Solubore_B) * totalArea);
     // Compare
     const r = computeStageRecipe(s) || {};
     if (typeof r.kSulfate !== 'number' || Math.abs(r.kSulfate - expectedKsulfate) > 5) {
@@ -1036,9 +1060,12 @@ if (!computeStageRecipe || !TOMATO_FRUIT_EXPORT || !BIOMASS_DEMAND
     if (typeof r.mgSulfate !== 'number' || Math.abs(r.mgSulfate - expectedMgSulfate) > 5) {
       offenders.push(`${s}: mgSulfate=${r.mgSulfate} vs expected ${expectedMgSulfate}`);
     }
+    if (typeof r.solubore !== 'number' || Math.abs(r.solubore - expectedSolubore) > 2) {
+      offenders.push(`${s}: solubore=${r.solubore} vs expected ${expectedSolubore}`);
+    }
   }
   if (offenders.length === 0) {
-    pass(`Tous les stades (${stages.length}) suivent la formule mass-balance fertigation (±5 g)`);
+    pass(`Tous les stades (${stages.length}) suivent la formule mass-balance fertigation (±5 g, compost+sidedress+uptake-factor)`);
   } else {
     fail('Fertigation mass-balance derivation', offenders.map(o => `  ${o}`).join('\n'));
   }
@@ -1100,8 +1127,8 @@ if (!FIRST_PRINCIPLES_T5_FERTIGATION || !computeStageRecipe || !FP_RECIPE_T5) {
   if (FIRST_PRINCIPLES_T5_FERTIGATION['MgSO4-7H2O'] !== t5.mgSulfate) {
     offenders.push(`FIRST_PRINCIPLES['MgSO4-7H2O']=${FIRST_PRINCIPLES_T5_FERTIGATION['MgSO4-7H2O']} vs computeStageRecipe('T5').mgSulfate=${t5.mgSulfate}`);
   }
-  if (typeof FIRST_PRINCIPLES_T5_FERTIGATION['Solubore'] !== 'number' || FIRST_PRINCIPLES_T5_FERTIGATION['Solubore'] <= 0) {
-    offenders.push(`FIRST_PRINCIPLES.Solubore must be a positive number (got ${FIRST_PRINCIPLES_T5_FERTIGATION['Solubore']})`);
+  if (FIRST_PRINCIPLES_T5_FERTIGATION['Solubore'] !== t5.solubore) {
+    offenders.push(`FIRST_PRINCIPLES.Solubore=${FIRST_PRINCIPLES_T5_FERTIGATION['Solubore']} vs computeStageRecipe('T5').solubore=${t5.solubore}`);
   }
   // Propagation: FP_RECIPE_T5.fertigation mirrors the same three values
   const fp = FP_RECIPE_T5.fertigation || {};
@@ -1111,9 +1138,40 @@ if (!FIRST_PRINCIPLES_T5_FERTIGATION || !computeStageRecipe || !FP_RECIPE_T5) {
     }
   }
   if (offenders.length === 0) {
-    pass(`K2SO4 ${t5.kSulfate} · MgSO4-7H2O ${t5.mgSulfate} · Solubore ${FIRST_PRINCIPLES_T5_FERTIGATION['Solubore']} — all three propagated FIRST_PRINCIPLES → FP_RECIPE_T5`);
+    pass(`K2SO4 ${t5.kSulfate} · MgSO4-7H2O ${t5.mgSulfate} · Solubore ${t5.solubore} — all three propagated FIRST_PRINCIPLES → FP_RECIPE_T5`);
   } else {
     fail('REQ-154 — FP target pinned to computeStageRecipe(T5)', offenders.map(o => `  ${o}`).join('\n'));
+  }
+}
+
+// ─── REQ-155 — PH_UPTAKE_FACTOR_AT_CURRENT_SOIL applied to fertigation sizing
+//
+// Spec: nutrition/tomato/fertigation-recipe/spec.md → REQ-155.
+// Asserts the constant exists with K/Mg/B keys at the expected cert-2
+// mid-band values (B2-REV defaults), each in (0, 1]. The function-output
+// correlation is covered by REQ-098 (which now applies the factor in the
+// expected-value calculation).
+
+header('REQ-155 — PH_UPTAKE_FACTOR_AT_CURRENT_SOIL: per-element bed→plant factor');
+
+const uf = ph1.PH_UPTAKE_FACTOR_AT_CURRENT_SOIL;
+if (!uf) {
+  fail('REQ-155 — PH_UPTAKE_FACTOR_AT_CURRENT_SOIL exposed', 'constant missing from data.js scope');
+} else {
+  const offenders = [];
+  const expected = { K: 0.90, Mg: 0.85, B: 0.80 };
+  for (const el of ['K', 'Mg', 'B']) {
+    const v = uf[el];
+    if (typeof v !== 'number' || v <= 0 || v > 1) {
+      offenders.push(`PH_UPTAKE_FACTOR_AT_CURRENT_SOIL.${el} must be a number in (0, 1], got ${v}`);
+    } else if (Math.abs(v - expected[el]) > 0.0001) {
+      offenders.push(`PH_UPTAKE_FACTOR_AT_CURRENT_SOIL.${el}=${v} vs expected B2-REV default ${expected[el]}`);
+    }
+  }
+  if (offenders.length === 0) {
+    pass(`K ${uf.K} · Mg ${uf.Mg} · B ${uf.B} — cert-2 B2-REV defaults present`);
+  } else {
+    fail('REQ-155 — PH_UPTAKE_FACTOR_AT_CURRENT_SOIL shape + values', offenders.map(o => `  ${o}`).join('\n'));
   }
 }
 
