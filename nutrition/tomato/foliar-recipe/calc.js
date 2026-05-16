@@ -37,7 +37,7 @@ function computeFoliarSupply(stage, opts, recipe) {
   const sprayCount = Math.max(1, Math.min(3, Math.round(Number(o.sprayCount) || 1)));
   const surfactant = !!o.surfactant;
 
-  const area = TOMATO_NUM_BEDS * TOMATO_BED_AREA;
+  const area = TOMATO_NUMBER_BEDS * TOMATO_BED_AREA;
   const cov = surfactant ? FOLIAR_COVERAGE_WITH_YUCCA : FOLIAR_COVERAGE_DEFAULT;
 
   // Read the recipe label-string array. Each entry has shape
@@ -86,14 +86,14 @@ function computeFoliarSupply(stage, opts, recipe) {
 }
 
 // REQ-115 — gap-maximizing recipe derivation. Inputs:
-//   gap[el] : per-element residual mg/m²/wk (after compost + sidedress
+//   gap[element] : per-element residual mg/m²/wk (after compost + sidedress
 //             + fertigation; only foliar elements matter).
 //   opts    : { sprayCount = 1, surfactant = false }.
 // Returns: { MnSO4_g, ZnSO4_g, CuSO4_g, FeSO4_g, NaMoO4_g, Solubore_g }
 //          per 15 L master tank.
 //
 // Algorithm: per-element ideal_g sized to close the gap; min-dose floor
-// (< 0.5 g → 0); cap at burnCapG(el); then CE-cap-and-scale
+// (< 0.5 g → 0); cap at burnCapG(element); then CE-cap-and-scale
 // loop (max 4 iterations) to keep predictedCE under REQ-025 burn cap.
 //
 // REQ-116 — consumers call this with the live gap chain, replacing the
@@ -103,16 +103,16 @@ function computeFoliarRecipeForGap(gap, opts) {
   const sprayCount = Math.max(1, Math.min(3, Math.round(Number(o.sprayCount) || 1)));
   const surfactant = !!o.surfactant;
   const coverage = surfactant ? FOLIAR_COVERAGE_WITH_YUCCA : FOLIAR_COVERAGE_DEFAULT;
-  const area = TOMATO_NUM_BEDS * TOMATO_BED_AREA;
+  const area = TOMATO_NUMBER_BEDS * TOMATO_BED_AREA;
 
   // Foliar elements + product / pct table.
   const PRODUCTS = [
-    { el: 'Mn', key: 'MnSO4_g',    pct: PRODUCT_PCT.MnSO4_Mn },
-    { el: 'Zn', key: 'ZnSO4_g',    pct: PRODUCT_PCT.ZnSO4_Zn },
-    { el: 'Cu', key: 'CuSO4_g',    pct: PRODUCT_PCT.CuSO4_Cu },
-    { el: 'Fe', key: 'FeSO4_g',    pct: PRODUCT_PCT.FeSO4_Fe },
-    { el: 'Mo', key: 'NaMoO4_g',   pct: PRODUCT_PCT.NaMoO4_Mo },
-    { el: 'B',  key: 'Solubore_g', pct: PRODUCT_PCT.Solubore_B },
+    { element: 'Mn', key: 'MnSO4_g',    pct: PRODUCT_PCT.MnSO4_Mn },
+    { element: 'Zn', key: 'ZnSO4_g',    pct: PRODUCT_PCT.ZnSO4_Zn },
+    { element: 'Cu', key: 'CuSO4_g',    pct: PRODUCT_PCT.CuSO4_Cu },
+    { element: 'Fe', key: 'FeSO4_g',    pct: PRODUCT_PCT.FeSO4_Fe },
+    { element: 'Mo', key: 'NaMoO4_g',   pct: PRODUCT_PCT.NaMoO4_Mo },
+    { element: 'B',  key: 'Solubore_g', pct: PRODUCT_PCT.Solubore_B },
   ];
   const MIN_DOSE_G = 0.5;
   const ceilToHalfGram = function(x) { return Math.ceil(x * 2) / 2; };
@@ -121,11 +121,11 @@ function computeFoliarRecipeForGap(gap, opts) {
   const recipe = { MnSO4_g: 0, ZnSO4_g: 0, CuSO4_g: 0, FeSO4_g: 0, NaMoO4_g: 0, Solubore_g: 0 };
   for (var i = 0; i < PRODUCTS.length; i++) {
     var p = PRODUCTS[i];
-    var g = (gap && gap[p.el]) || 0;
+    var g = (gap && gap[p.element]) || 0;
     if (g <= 0 || !p.pct || !area) { recipe[p.key] = 0; continue; }
     var idealG = (g * area) / (p.pct * 1000 * coverage * sprayCount);
     if (idealG < MIN_DOSE_G) { recipe[p.key] = 0; continue; }
-    var capG = burnCapG(p.el);
+    var capG = burnCapG(p.element);
     var doseG = Math.min(idealG, capG);
     recipe[p.key] = ceilToHalfGram(doseG);
   }

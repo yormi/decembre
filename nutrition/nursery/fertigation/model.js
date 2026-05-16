@@ -30,7 +30,7 @@
     nurseryRecipeSupply:            C.nurseryRecipeSupply,
     nurseryRecipeCE:                C.nurseryRecipeCE,
     nurseryRecipeTankPh:            C.nurseryRecipeTankPh,
-    minApplicationsPerWeek:         C.minApplicationsPerWeek,
+    minimumApplicationsPerWeek:         C.minimumApplicationsPerWeek,
     nurseryElementsBySource:        C.nurseryElementsBySource,
   };
 })();

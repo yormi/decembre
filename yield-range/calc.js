@@ -53,7 +53,7 @@ function dliBenchAvg(ledHours) {
 // REQ-112: ceiling = canopyCapG (density-driven), not root-volume cap.
 // REQ-116: per-plant DLI = bench DLI × spacing_factor(d).
 // REQ-117: daysToPotential = first integer d where W ≥ 0.95 × cap, else null.
-// REQ-118: trajectory length = TRAJECTORY_MAX_DAYS + 1 = 50 entries (day 0..49).
+// REQ-118: trajectory length = TRAJECTORY_MAXIMUM_DAYS + 1 = 50 entries (day 0..49).
 function predictNurseryYield({ plateauSize, ledHours }) {
   const cap = CANOPY_CAP_BY_PLATEAU[plateauSize];
   if (cap == null) {
@@ -63,12 +63,12 @@ function predictNurseryYield({ plateauSize, ledHours }) {
   let W = W_INIT_GERMINATED_G;
   const trajectory = [{ day: 0, weight_g: W }];
   let daysToPotential = null;
-  for (let d = 1; d <= TRAJECTORY_MAX_DAYS; d++) {
+  for (let d = 1; d <= TRAJECTORY_MAXIMUM_DAYS; d++) {
     const dpp = benchDli * spacing_factor(d);
     const fL = f_light(dpp);
     // Logistic increment. No decay branch (REQ-115) — when f_light → 0 or
     // W → cap, the increment goes to zero but W never decreases.
-    W = W * (1 + RGR_MAX_LETTUCE_NURSERY * (1 - W / cap) * fL);
+    W = W * (1 + RGR_MAXIMUM_LETTUCE_NURSERY * (1 - W / cap) * fL);
     trajectory.push({ day: d, weight_g: W });
     if (daysToPotential === null && W >= POTENTIAL_THRESHOLD * cap) {
       daysToPotential = d;

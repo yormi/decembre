@@ -42,7 +42,7 @@ const EXPOSE_NAMES = [
   // Plant-needs subproject
   'BIOMASS_DEMAND', 'TOMATO_FRUIT_EXPORT', 'TOMATO_REMOVAL',
   'TOMATO_DEMAND_CERT', 'TRANSP_COUPLED_BIOMASS',
-  'calcNutrDemand',
+  'calculateNutritionDemand',
   // Channel ownership + accepted gaps
   'CHANNEL_ROLE',
   'ACCEPTED_DEFICITS', 'ACCEPTED_EXCESSES',
@@ -53,15 +53,15 @@ const EXPOSE_NAMES = [
   'PH_UPTAKE_FACTOR_AT_CURRENT_SOIL',
   // Sidedress-recipe subproject
   'computeStageSidedress', 'FIRST_PRINCIPLES_SIDEDRESS',
-  'SIDEDRESS_AREA_PER_PLANCHE', 'SIDEDRESS_MIN_EFF', 'SIDEDRESS_PRODUCTS',
+  'SIDEDRESS_AREA_PER_PLANCHE', 'SIDEDRESS_MINIMUM_EFFICIENCY', 'SIDEDRESS_PRODUCTS',
   // Foliar-recipe subproject
   'computeFoliarSupply', 'computeFoliarRecipeForGap',
   'FOLIAR_COVERAGE_DEFAULT', 'FOLIAR_COVERAGE_WITH_YUCCA',
   'BURN_CAP_BASE_G', 'burnCapG',
   // Cross-cutting model layer used by the integration math
   'PRODUCT', 'PRODUCT_PCT', 'STORED_RECIPE',
-  'TOMATO_NUM_BEDS', 'TOMATO_BED_AREA',
-  'effectiveEff', 'predictedCE',
+  'TOMATO_NUMBER_BEDS', 'TOMATO_BED_AREA',
+  'effectiveEfficiency', 'predictedCE',
   // Compost release feeds the supply chain (REQ-013/014)
   'COMPOST_RELEASE_PER_WEEK',
 ];

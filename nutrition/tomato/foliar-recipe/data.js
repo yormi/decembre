@@ -32,7 +32,35 @@ const FOLIAR_COVERAGE_DEFAULT = 0.30;
 // spec's biggest single refinement trigger.
 const FOLIAR_COVERAGE_WITH_YUCCA = 0.80;
 
-// Tomato bed area in m². Derived from TOMATO_NUM_BEDS × TOMATO_BED_AREA
+// Per-element efficiency for the Efficacité column (REQ-157) — share of
+// applied foliar-recipe mass that becomes plant-available per applied
+// gram, at current conditions (no-yucca regime, default spray tank pH).
+//
+// Formula: efficiency = FOLIAR_COVERAGE_DEFAULT × foliarPhResponse(sprayPh)
+//   = 0.30 × foliarPhResponse(5.0)
+//   = 0.30 × 0.9 (sulfate-dominant tank lands near pH 5.0, cuticle-uptake
+//                  peak is pH 5.5-6.0; spray pH 5.0 is ~0.9 of peak)
+//   = 0.27
+//
+// Uniform across the 6 oligo elements (Mn / Zn / Cu / Fe / Mo) — the
+// cuticle-uptake mechanism doesn't differentiate by sulfate cation at
+// this resolution; B (Solubore) is single-channel via fertigation
+// (REQ-061), not in the foliar STORED recipe currently → absent here.
+//
+// Cert 3 — `FOLIAR_COVERAGE_DEFAULT` is cert 3 (B2 downgrade, no Décembre
+// tissue correlation yet); `foliarPhResponse` curve is cert 4. Effective
+// cert min = 3. Refinement triggers in derivation.md: tissue panel
+// ±20 % correlation bumps cert 3 → 4; yucca return flips coverage
+// 0.30 → 0.80 and updates this map in lockstep.
+const FOLIAR_EFFICIENCY_AT_CURRENT_CONDITIONS = {
+  Mn: 0.27,
+  Zn: 0.27,
+  Cu: 0.27,
+  Fe: 0.27,
+  Mo: 0.27,
+};
+
+// Tomato bed area in m². Derived from TOMATO_NUMBER_BEDS × TOMATO_BED_AREA
 // (7 × 54.7 = 382.9 m²) — both declared earlier in app/index.html. We
 // re-read those constants at consumer call time rather than freezing
 // here, so a future bed reconfiguration only needs the upstream constants

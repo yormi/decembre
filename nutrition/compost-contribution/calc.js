@@ -7,9 +7,9 @@
 // rate) → same output. No time-of-year axis yet (deferred — see spec
 // "Pending — decline curve").
 
-function theoreticalReleasePerWeek(el) {
-  const labelPct        = COMPOST_LABEL_PCT[el];
-  const year1Fraction   = COMPOST_MINERALIZATION_YEAR1[el];
+function theoreticalReleasePerWeek(element) {
+  const labelPct        = COMPOST_LABEL_PCT[element];
+  const year1Fraction   = COMPOST_MINERALIZATION_YEAR1[element];
   if (labelPct == null || year1Fraction == null) return 0;
   const applied_g_m2    = COMPOST_AMENDMENT.applicationRateKgPerM2 * 1000 * labelPct;
   const annual_g_m2     = applied_g_m2 * year1Fraction;

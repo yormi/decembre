@@ -6,7 +6,7 @@
 // Fertigation is the liquid replenishment of K, Mg, and B (boric acid) at
 // the dripper per tomato stage. computeStageRecipe(stage) returns
 // { kSulfate, mgSulfate, solubore } in grams of product per total tomato
-// area (TOMATO_NUM_BEDS × TOMATO_BED_AREA = 7 × 54.7 = 382.9 m²) per week.
+// area (TOMATO_NUMBER_BEDS × TOMATO_BED_AREA = 7 × 54.7 = 382.9 m²) per week.
 
 // ─── MIXING_FACTOR retired 2026-05-10 ───────────────────────────────────
 // Previously this file declared MIXING_FACTOR_FERT_STORED = 0.5 and
@@ -62,4 +62,31 @@ const PH_UPTAKE_FACTOR_AT_CURRENT_SOIL = {
   K:  0.90,   // cert 2 — Ca-K cation competition on Ca-saturated CEC; 5-15 % literature discount, mid-band 10 %
   Mg: 0.85,   // cert 2 — Ca-Mg competition (Mg²⁺ loses to Ca²⁺ at root membrane) + dripper-bed equilibration; 10-25 % range, mid 15 %
   B:  0.80,   // cert 2 — soil B adsorption in Ca-rich beds at pH > 7 (Fe/Al oxides + Ca-borate complexes); 15-25 % range, mid 20 %
+};
+
+// Per-element efficiency for the Efficacité column (REQ-157) — share of
+// applied fertigation-product mass that reaches the bed as plant-available
+// form per applied gram, under current soil pH 7.4 chemistry. This is the
+// channel → bed axis (dripper-line chemistry); the bed → plant uptake
+// inefficiency is a separate axis declared in PH_UPTAKE_FACTOR_AT_CURRENT_SOIL
+// above (REQ-155).
+//
+// Values reflect the PH_RESPONSE curves at current Décembre tomato-block
+// soil pH 7.28-7.4 (Berger April 2026):
+//   K  (K2SO4 → 'soluble-cation' class): 1.0 − 0.15 × (7.4 − 7.0) = 0.94
+//   Mg (MgSO4-7H2O → 'soluble-cation' class):                       0.94
+//   B  (Solubore / boric acid → 'borate' class, non-ionic):         1.00
+//
+// Cert 4 — pH curves are well-characterized (`soluble-cation` curve at
+// cert 4 in PH_RESPONSE source); current soil pH itself is cert 5 (Berger
+// April 2026 lab reading). Refinement triggers in derivation.md.
+//
+// Elements absent from the map (N / P / Ca / Fe / Mn / Zn / Cu / Mo) are
+// not routed by the fertigation channel under STORED at current pH —
+// REQ-061 cascade order locks the micros to foliar, N to sidedress, Ca
+// not fertigated, P drawn down via soil bank.
+const FERTIGATION_EFFICIENCY_AT_CURRENT_SOIL = {
+  K:  0.94,
+  Mg: 0.94,
+  B:  1.00,
 };

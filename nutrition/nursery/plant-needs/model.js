@@ -19,13 +19,13 @@ window.PlantNeedsNursery = {
 
   // Core demand function. REQ-090 asserts linearity in targetG; REQ-091
   // asserts inverse-linearity in cycleDays.
-  calcNurseryDemand,
+  calculateNurseryDemand,
 
   // Convenience: per-tray demand at default targets, single element.
   // Used by the Semis admin grid to skip the call-site boilerplate.
   // Returns mg per tray per week.
   demandPerTray(el) {
-    const d = calcNurseryDemand(
+    const d = calculateNurseryDemand(
       NURSERY_TARGETS.targetG_default,
       NURSERY_TARGETS.cycleDays_default,
       NURSERY_TARGETS.cellsPerTray_default

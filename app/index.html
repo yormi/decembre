@@ -169,7 +169,7 @@
   .pq-modal-title { font-size: 14px; font-weight: 700; color: var(--text); margin: 0 30px 10px 0; line-height: 1.3; }
   .pq-modal-eq { font-family: 'DM Mono', monospace; font-size: 11.5px; color: var(--text); background: var(--input-bg); padding: 8px 10px; border-radius: 4px; border-left: 2px solid var(--border); margin-bottom: 8px; word-break: break-word; }
   .pq-modal-plugged { font-family: 'DM Mono', monospace; font-size: 11.5px; color: var(--text-muted); padding: 8px 10px; margin-bottom: 10px; word-break: break-word; }
-  .pq-modal-interp { font-size: 12.5px; color: var(--text); line-height: 1.55; font-style: italic; }
+  .pq-modal-interpolation { font-size: 12.5px; color: var(--text); line-height: 1.55; font-style: italic; }
   /* Clickable Bilan rows — subtle hover affordance */
   .pq-row { cursor: pointer; transition: background 0.12s; }
   .pq-row:hover { background: var(--input-bg); }
@@ -1272,7 +1272,7 @@
           <div style="padding:2px 0;">• <strong>Front-load</strong> farine de plumes : 13% N × 75% minéralisation, distribué sur ~4 semaines de relâche. À 50 g/m² → ~1 220 mg N/m²/sem effectif (cert 3).</div>
           <div style="padding:2px 0;">• <strong>Fertigation actuelle</strong> (<code>LETTUCE</code>) : K₂SO₄ 2 996 g + MgSO₄·7H₂O 467 g + FeSO₄·7H₂O 7,5 g par 100 m²/sem. Fe × 0,15 si pH ≥ 7 (cuticule racinaire alcaline).</div>
           <div style="padding:2px 0;">• <strong>Surface</strong> Salanova : 4,5 × 30,4 m² = 136,8 m². Recette LETTUCE per 100 m²/sem.</div>
-          <div style="padding:2px 0;">• <strong>Pas de foliaire actuel</strong> — programme retiré 2026-04. Mn/Zn/B sans canal de livraison à pH 7,4 (gap réel, à revisiter quand pH baisse).</div>
+          <div style="padding:2px 0;">• <strong>Pas de foliaire actuel</strong> — programme retiré 2026-04. Mn/Zn/B sans canal de livraison à pH 7,4 (gap réelement, à revisiter quand pH baisse).</div>
         </div>
       </div>
 
@@ -1529,21 +1529,21 @@
 
 <!-- @spec-strings -->
 <script>
-// renderSpec(reqId, key, interp) — operator-facing strings whose bytes the
+// renderSpec(requirementId, key, interpolation) — operator-facing strings whose bytes the
 // spec owns. See requirements.md REQ-144 + the per-domain spec entries that
 // declare `Renders:` blocks. The build step parses those blocks across the
 // spec tree into window.SPEC_STRINGS; this helper resolves the lookup +
 // optional ${var} substitution.
-function renderSpec(reqId, key, interp) {
-  const bucket = (window.SPEC_STRINGS && window.SPEC_STRINGS[reqId]) || null;
-  if (!bucket) throw new Error(`renderSpec: ${reqId} has no Renders: block in any spec.md`);
+function renderSpec(requirementId, key, interpolation) {
+  const bucket = (window.SPEC_STRINGS && window.SPEC_STRINGS[requirementId]) || null;
+  if (!bucket) throw new Error(`renderSpec: ${requirementId} has no Renders: block in any spec.md`);
   if (!Object.prototype.hasOwnProperty.call(bucket, key)) {
-    throw new Error(`renderSpec: ${reqId} has no render key "${key}" (available: ${Object.keys(bucket).join(', ')})`);
+    throw new Error(`renderSpec: ${requirementId} has no render key "${key}" (available: ${Object.keys(bucket).join(', ')})`);
   }
   let text = bucket[key];
-  if (interp) {
+  if (interpolation) {
     text = text.replace(/\$\{(\w+)\}/g, (m, name) => {
-      if (Object.prototype.hasOwnProperty.call(interp, name)) return String(interp[name]);
+      if (Object.prototype.hasOwnProperty.call(interpolation, name)) return String(interpolation[name]);
       return m;
     });
   }
@@ -1552,13 +1552,13 @@ function renderSpec(reqId, key, interp) {
 </script>
 <script>
 const TOMATO_BED_AREA = 54.7;
-const TOMATO_NUM_BEDS = 7;
+const TOMATO_NUMBER_BEDS = 7;
 const LETTUCE_BED_AREA = 30.4;
-const LETTUCE_NUM_BEDS = 4.5;
+const LETTUCE_NUMBER_BEDS = 4.5;
 
 // computeStageRecipe(stage) is declared LATER in this file, after all its
 // dependencies (TOMATO_FRUIT_EXPORT, BIOMASS_DEMAND, STORED_RECIPE,
-// PRODUCT_PCT, SIDEDRESS_MIN_EFF, SIDEDRESS_AREA_PER_PLANCHE). It returns the
+// PRODUCT_PCT, SIDEDRESS_MINIMUM_EFFICIENCY, SIDEDRESS_AREA_PER_PLANCHE). It returns the
 // FP-target fertigation per stage (mass-balance from RECIPE_INPUTS), used by
 // the Block 7 stored-vs-FP drift gauge. The team-facing fertigation values are
 // the locked STORED_RECIPE.tomato.fertigation — what gets weighed at the
@@ -1638,14 +1638,14 @@ function getSunTimes() {
   const day = now.getDate();
 
   // Interpolate between current and next month for smoother transitions
-  const cur = SUN_TABLE[month];
+  const current = SUN_TABLE[month];
   const next = SUN_TABLE[(month + 1) % 12];
   const frac = day / 30; // approximate fraction through month
 
-  function interp(a, b, t) { return a + (b - a) * t; }
+  function interpolation(a, b, t) { return a + (b - a) * t; }
 
-  const sunriseH = interp(cur[0] + cur[1] / 60, next[0] + next[1] / 60, frac);
-  const sunsetH = interp(cur[2] + cur[3] / 60, next[2] + next[3] / 60, frac);
+  const sunriseH = interpolation(current[0] + current[1] / 60, next[0] + next[1] / 60, frac);
+  const sunsetH = interpolation(current[2] + current[3] / 60, next[2] + next[3] / 60, frac);
 
   function hToTime(h) {
     const hr = Math.floor(h);
@@ -1653,7 +1653,7 @@ function getSunTimes() {
     return `${String(hr).padStart(2, '0')}:${String(mn < 0 ? 0 : mn).padStart(2, '0')}`;
   }
 
-  return { sunrise: sunriseH, sunset: sunsetH, sunriseStr: hToTime(sunriseH), sunsetStr: hToTime(sunsetH) };
+  return { sunrise: sunriseH, sunset: sunsetH, sunriseString: hToTime(sunriseH), sunsetString: hToTime(sunsetH) };
 }
 
 function addHours(baseH, offset) {
@@ -1663,7 +1663,7 @@ function addHours(baseH, offset) {
   return `${String(hr).padStart(2, '0')}:${String(mn < 0 ? 0 : mn).padStart(2, '0')}`;
 }
 
-function getCurrentTimeStr() {
+function getCurrentTimeString() {
   const now = new Date();
   return `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
 }
@@ -1783,12 +1783,12 @@ function setCrop(crop) {
 
 // Helper: set active class on a crop button based on which crop it represents
 function setCropBtn(id, isActive, cropType) {
-  const el = document.getElementById(id);
-  if (!el) return;
+  const element = document.getElementById(id);
+  if (!element) return;
   if (isActive) {
-    el.className = 'crop-btn active-' + cropType;
+    element.className = 'crop-btn active-' + cropType;
   } else {
-    el.className = 'crop-btn';
+    element.className = 'crop-btn';
   }
 }
 
@@ -1880,9 +1880,9 @@ function getWeekSchedule() {
   const startH = sun.sunrise + 0.5;
   const endH = Math.min(sun.sunrise + 3, 10);
   const fmtH = (h) => {
-    const totalMin = Math.round(h * 60 / 10) * 10;
-    const hr = Math.floor(totalMin / 60);
-    const mn = totalMin % 60;
+    const totalMinutes = Math.round(h * 60 / 10) * 10;
+    const hr = Math.floor(totalMinutes / 60);
+    const mn = totalMinutes % 60;
     return `${hr}h${String(mn).padStart(2, '0')}`;
   };
   const sprayWindow = `${fmtH(startH)}–${fmtH(endH)}`;
@@ -1908,14 +1908,14 @@ function buildWeek() {
   const days = ['Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi'];
   const tasks = getWeekSchedule();
   // JS Date.getDay(): 0=Sunday..6=Saturday → convert to our 0=Monday..4=Friday
-  // Weekend days have no index in our 5-day view, so todayIdx is -1 on Sat/Sun
+  // Weekend days have no index in our 5-day view, so todayIndex is -1 on Sat/Sun
   const jsDay = new Date().getDay();
-  const todayIdx = (jsDay === 0 || jsDay === 6) ? -1 : jsDay - 1;
+  const todayIndex = (jsDay === 0 || jsDay === 6) ? -1 : jsDay - 1;
 
   let html = '';
   for (let i = 0; i < 5; i++) {
     const dayTasks = tasks.filter(t => t.day === i);
-    const isToday = i === todayIdx;
+    const isToday = i === todayIndex;
     html += `<div class="week-day ${isToday ? 'is-today' : ''}">
       <div class="week-day-label">${days[i].slice(0, 3)}${isToday ? ' •' : ''}</div>
       <div class="week-day-tasks">`;
@@ -1956,7 +1956,7 @@ function recalc() {
 function getRatio() { return 2; }
 function getMultK() { return 1.0; }
 function getMultMg() { return 1.0; }
-function getTotalArea() { return (currentCrop === 'tomato' ? TOMATO_NUM_BEDS * TOMATO_BED_AREA : LETTUCE_NUM_BEDS * LETTUCE_BED_AREA); }
+function getTotalArea() { return (currentCrop === 'tomato' ? TOMATO_NUMBER_BEDS * TOMATO_BED_AREA : LETTUCE_NUMBER_BEDS * LETTUCE_BED_AREA); }
 function getBedArea() { return currentCrop === 'tomato' ? TOMATO_BED_AREA : LETTUCE_BED_AREA; }
 
 // 20-year average solar radiation by ISO week — Quebec City greenhouse,
@@ -2033,8 +2033,8 @@ function getWeekNumber() {
   // on a Sunday (e.g. 2026 → returned 17 on Sat May 2 instead of 18).
   const d = new Date();
   d.setHours(0, 0, 0, 0);
-  const dayNum = d.getDay() || 7; // Sun=0 → treat as 7 so Mon..Sun maps to 1..7
-  d.setDate(d.getDate() + 4 - dayNum); // pivot to Thursday of current ISO week
+  const dayNumber = d.getDay() || 7; // Sun=0 → treat as 7 so Mon..Sun maps to 1..7
+  d.setDate(d.getDate() + 4 - dayNumber); // pivot to Thursday of current ISO week
   const yearStart = new Date(d.getFullYear(), 0, 1);
   return Math.ceil(((d - yearStart) / 86400000 + 1) / 7);
 }
@@ -2061,22 +2061,22 @@ function autoStage() {
 
 function buildTensio() {
   const crop = currentCrop === 'tomato' ? 'tomato' : 'lettuce';
-  const cfg = TENSIO_CONFIG[crop];
-  const v = cfg[currentVigor];
+  const config = TENSIO_CONFIG[crop];
+  const v = config[currentVigor];
   const sun = getSunTimes();
-  const now = getCurrentTimeStr();
+  const now = getCurrentTimeString();
 
-  const amStart = addHours(sun.sunrise, cfg.morningStart);
-  const pmStart = addHours(sun.sunrise, cfg.pmStart);
+  const amStart = addHours(sun.sunrise, config.morningStart);
+  const pmStart = addHours(sun.sunrise, config.pmStart);
   const lastShot = addHours(sun.sunset, -v.lastStop);
-  const eveningCheck = addHours(sun.sunset, -cfg.stopBeforeSunset);
+  const eveningCheck = addHours(sun.sunset, -config.stopBeforeSunset);
 
   let html = '';
   // Sun-times + current-time bar removed by user request (info available elsewhere).
 
   // Shot config — outside the table
   html += `<div style="font-size:12px; color:var(--text-muted); margin-bottom:14px;">
-    Shots de <strong style="color:var(--text);">${cfg.shotDuration}</strong> · pause <strong style="color:var(--text);">${cfg.shotPause}</strong> entre chaque
+    Shots de <strong style="color:var(--text);">${config.shotDuration}</strong> · pause <strong style="color:var(--text);">${config.shotPause}</strong> entre chaque
   </div>`;
 
   // 3 periods — midnight to midnight
@@ -2100,7 +2100,7 @@ function buildTensio() {
 
   // Why block
   html += `<div style="font-size:11px; color:var(--text-muted); line-height:1.6; margin:12px 0;">
-    <div style="margin-bottom:3px;">☀️ Début ${cfg.morningStart}h après le lever — laisser les racines s'activer.</div>
+    <div style="margin-bottom:3px;">☀️ Début ${config.morningStart}h après le lever — laisser les racines s'activer.</div>
     <div style="margin-bottom:3px;">🌤 Seuil plus sec — préparer l'assèchement.</div>
     <div style="margin-bottom:3px;">🌙 Dernier shot ${v.lastStop}h avant le coucher — le 1er cm doit être sec au coucher du soleil.</div>
   </div>`;
@@ -2200,22 +2200,22 @@ function buildSteps() {
   const volumeBadge = `${Math.round(stockVol)} L · ${bucketLabel} de 20 L`;
 
   const steps = [
-    { num: 1, title: 'Laver le matériel', desc: 'Rincer le baril, le tube + filtre d\'aspiration du Dosatron, et le filtre en aval du Dosatron.', why: 'Résidus de la semaine précédente = précipités, dépôts microbiens, et contamination. Un filtre obstrué fausse le ratio Dosatron.', acid: false },
-    { num: 2, title: 'Remplir la solution', desc: `Remplir le baril avec ${Math.round(stockVol)} L d'eau (${bucketLabel} de 20 L). C'est ⅓ du volume d'irrigation hebdomadaire — les nutriments sont concentrés dans les premiers shots de la semaine.`, amount: volumeBadge, acid: false },
-    { num: 3, title: 'Sulfate de potassium 0-0-50', desc: 'Dissoudre dans l\'eau chaude d\'abord — le K₂SO₄ se dissout lentement à froid. ⚠️ Ne pas dépasser 100 g/L dans la solution — au-delà, il précipite et bouche les goutteurs.', amount: fmt(n.kSulfate), acid: false },
-    { num: 4, title: 'Sulfate de magnésium', desc: 'Très soluble — mélanger directement. Le Mg est essentiel à la photosynthèse.', amount: fmt(n.mgSulfate), acid: false },
+    { number: 1, title: 'Laver le matériel', desc: 'Rincer le baril, le tube + filtre d\'aspiration du Dosatron, et le filtre en aval du Dosatron.', why: 'Résidus de la semaine précédente = précipités, dépôts microbiens, et contamination. Un filtre obstrué fausse le ratio Dosatron.', acid: false },
+    { number: 2, title: 'Remplir la solution', desc: `Remplir le baril avec ${Math.round(stockVol)} L d'eau (${bucketLabel} de 20 L). C'est ⅓ du volume d'irrigation hebdomadaire — les nutriments sont concentrés dans les premiers shots de la semaine.`, amount: volumeBadge, acid: false },
+    { number: 3, title: 'Sulfate de potassium 0-0-50', desc: 'Dissoudre dans l\'eau chaude d\'abord — le K₂SO₄ se dissout lentement à froid. ⚠️ Ne pas dépasser 100 g/L dans la solution — au-delà, il précipite et bouche les goutteurs.', amount: fmt(n.kSulfate), acid: false },
+    { number: 4, title: 'Sulfate de magnésium', desc: 'Très soluble — mélanger directement. Le Mg est essentiel à la photosynthèse.', amount: fmt(n.mgSulfate), acid: false },
   ];
 
   if (currentCrop === 'tomato') {
     steps.push(
-      { num: 5, title: 'Brasser', desc: 'Bien mélanger jusqu\'à dissolution complète. Vérifier qu\'il n\'y a pas de dépôt au fond.', acid: false },
-      { num: 6, title: 'Écrire sur #recherche-et-developpement (Slack)', desc: 'Après la préparation, poster sur <strong>#recherche-et-developpement</strong> : date, stade, quantités. Sert de registre pour la certification biologique (Ecocert) et de suivi d\'équipe.', acid: false },
+      { number: 5, title: 'Brasser', desc: 'Bien mélanger jusqu\'à dissolution complète. Vérifier qu\'il n\'y a pas de dépôt au fond.', acid: false },
+      { number: 6, title: 'Écrire sur #recherche-et-developpement (Slack)', desc: 'Après la préparation, poster sur <strong>#recherche-et-developpement</strong> : date, stade, quantités. Sert de registre pour la certification biologique (Ecocert) et de suivi d\'équipe.', acid: false },
     );
   } else {
     steps.push(
-      { num: 5, title: 'Sulfate de fer (FeSO₄·7H₂O)', desc: 'Ajouter <strong>en dernier</strong>, juste avant de fermer le baril. La solution prend une teinte vert pâle. Si elle devient brun-orange en cours de semaine = oxydation (utiliser quand même mais l\'efficacité diminue).', why: 'Recharge en fer pour les cycles laitue qui s\'étirent au-delà de 3 semaines (la pouponnière charge les plants pour ~3 semaines de production). Fe²⁺ s\'oxyde rapidement à l\'air et au pH du sol — d\'où "en dernier" + baril fermé.', amount: fmt(n.feSulfate), acid: false },
-      { num: 6, title: 'Brasser', desc: 'Bien mélanger. Vérifier qu\'il n\'y a pas de dépôt au fond.', acid: false },
-      { num: 7, title: 'Écrire sur #recherche-et-developpement (Slack)', desc: 'Après la préparation, poster sur <strong>#recherche-et-developpement</strong> : date, quantités. Sert de registre pour la certification biologique (Ecocert) et de suivi d\'équipe.', acid: false },
+      { number: 5, title: 'Sulfate de fer (FeSO₄·7H₂O)', desc: 'Ajouter <strong>en dernier</strong>, juste avant de fermer le baril. La solution prend une teinte vert pâle. Si elle devient brun-orange en cours de semaine = oxydation (utiliser quand même mais l\'efficacité diminue).', why: 'Recharge en fer pour les cycles laitue qui s\'étirent au-delà de 3 semaines (la pouponnière charge les plants pour ~3 semaines de production). Fe²⁺ s\'oxyde rapidement à l\'air et au pH du sol — d\'où "en dernier" + baril fermé.', amount: fmt(n.feSulfate), acid: false },
+      { number: 6, title: 'Brasser', desc: 'Bien mélanger. Vérifier qu\'il n\'y a pas de dépôt au fond.', acid: false },
+      { number: 7, title: 'Écrire sur #recherche-et-developpement (Slack)', desc: 'Après la préparation, poster sur <strong>#recherche-et-developpement</strong> : date, quantités. Sert de registre pour la certification biologique (Ecocert) et de suivi d\'équipe.', acid: false },
     );
   }
 
@@ -2230,7 +2230,7 @@ function buildSteps() {
       ).join('') + '</div>';
     }
     return `<li class="step-item ${s.acid ? 'step-acid' : ''}">
-      <span class="step-number">${s.num}</span>
+      <span class="step-number">${s.number}</span>
       <div class="step-title">${s.title}</div>
       <div class="step-desc">${s.desc}</div>
       ${s.why ? `<div style="font-size:11.5px; color:var(--text-muted); margin-top:5px; line-height:1.4;">Pourquoi : ${s.why}</div>` : ''}
@@ -2331,9 +2331,9 @@ function buildFoliar() {
   const startH = sun.sunrise + 0.5;
   const endH = Math.min(sun.sunrise + 3, 10);
   const fmtH = (h) => {
-    const totalMin = Math.round(h * 60 / 10) * 10; // round to nearest 10 min
-    const hr = Math.floor(totalMin / 60);
-    const mn = totalMin % 60;
+    const totalMinutes = Math.round(h * 60 / 10) * 10; // round to nearest 10 min
+    const hr = Math.floor(totalMinutes / 60);
+    const mn = totalMinutes % 60;
     return `${hr}h${String(mn).padStart(2, '0')}`;
   };
   document.getElementById('foliar-when').textContent = `Mercredi am · entre ${fmtH(startH)} et ${fmtH(endH)}`;
@@ -2406,9 +2406,9 @@ function buildFoliar() {
 //   bucket to pH ~5, so no separate acid step needed.
 //   EC contribution at 15 mg/L is negligible (~0.015 mS/cm) — EC targets unchanged.
 function recalcNursery() {
-  const el = document.getElementById('tray-count');
-  if (!el) return;
-  const trays = parseInt(el.value) || 1;
+  const element = document.getElementById('tray-count');
+  if (!element) return;
+  const trays = parseInt(element.value) || 1;
   const water = trays * 1.25;
   document.getElementById('out-water').textContent = water % 1 === 0 ? water : water.toFixed(1);
   document.getElementById('out-fish').textContent = Math.round(water * 13);
@@ -2738,8 +2738,8 @@ function selectDiagLocation(locId) {
   renderDiag();
   // Scroll the symptom card into view so the user sees the next step
   setTimeout(() => {
-    const el = document.getElementById('diag-symptom-card');
-    if (el && el.style.display !== 'none') el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    const element = document.getElementById('diag-symptom-card');
+    if (element && element.style.display !== 'none') element.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }, 50);
 }
 
@@ -2747,8 +2747,8 @@ function selectDiagSymptom(sympId) {
   diagSymptom = sympId;
   renderDiag();
   setTimeout(() => {
-    const el = document.getElementById('diag-result-card');
-    if (el && el.style.display !== 'none') el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    const element = document.getElementById('diag-result-card');
+    if (element && element.style.display !== 'none') element.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }, 50);
 }
 
@@ -2860,7 +2860,7 @@ function renderDiag() {
 //     amendments. Conservative weekly N flux from compost ≈ 1.5 g/m²/week
 //     during May (Berger ORGANIMIX 4-2-2 + warming soil). Cert 2 — refine
 //     when leaf tissue or KCl-extractable N data arrives.
-//   Surface tomate: 7 × 54.7 m² = 382.9 m² (TOMATO_NUM_BEDS × TOMATO_BED_AREA).
+//   Surface tomate: 7 × 54.7 m² = 382.9 m² (TOMATO_NUMBER_BEDS × TOMATO_BED_AREA).
 //
 // DESIGN CHOICE: All "supply" numbers are EFFECTIVE (post-coverage, post-lockout)
 // to make the bilan honest. Raw recipe doses are visible in Détail des apports
@@ -2919,7 +2919,7 @@ const PRODUCT_PCT = {
 // SIDEDRESS (tomato): granular N-source recipe (Actisol 5-3-2 + farine de
 //   plumes 13-0-0). Values deliver ~70-100% of N demand at peak T5 yield
 //   via the side-dress channel. Side-dress effective N at T5 ≈ 2.88 g N/m²/wk
-//   (Actisol 5%×60% eff + Farine 13%×75% eff) vs Tier B demand 4.05 g N/m²/wk
+//   (Actisol 5%×60% efficiency + Farine 13%×75% efficiency) vs Tier B demand 4.05 g N/m²/wk
 //   at 1.5 kg/m²/wk peak — soil organic-matter mineralization buffers the
 //   remainder. Page sol-content displays these same numbers; if edited here,
 //   update the soil page HTML accordingly.
@@ -3010,7 +3010,7 @@ const FP_RECIPE_T5 = {
   fertigation: {
     'K2SO4':          0,      // populated at boot from computeStageRecipe('T5').kSulfate (REQ-154)
     'MgSO4-7H2O':     0,      // populated at boot from computeStageRecipe('T5').mgSulfate (REQ-154)
-    'Solubore':       9,      // boric acid non-ionic, 100% eff at pH 7,4 — sole B channel
+    'Solubore':       9,      // boric acid non-ionic, 100% efficiency at pH 7,4 — sole B channel
   },
   sidedress: {
     'Actisol-5-3-2': 0,      // dropped — Ca-saturated soil
@@ -3069,14 +3069,14 @@ const LETTUCE_FRONTLOAD_DEFAULTS = {
 // over `cycleDays` at `density` plants/m².
 //   mass_gain_kg_m2_total = (target_g − transplant_g) × density / 1000
 //   dw_gain_g_m2_per_wk   = mass_gain × DM × 1000 × (7 / cycleDays)
-//   demand_mg_m2_per_wk[el] = dw_gain × LETTUCE_TISSUE_DW[el] × 1000
-function calcLettuceNutrDemand(transplantG, targetG, cycleDays, density) {
+//   demand_mg_m2_per_wk[element] = dw_gain × LETTUCE_TISSUE_DW[element] × 1000
+function calculateLettuceNutritionDemand(transplantG, targetG, cycleDays, density) {
   const massGain_kg_m2 = Math.max(0, (targetG - transplantG)) * density / 1000;
   const days = Math.max(1, cycleDays);
   const dwPerWk_g_m2 = massGain_kg_m2 * LETTUCE_DM_FRACTION * 1000 * (7 / days);
   const out = {};
-  Object.keys(LETTUCE_TISSUE_DW).forEach(el => {
-    out[el] = dwPerWk_g_m2 * LETTUCE_TISSUE_DW[el] * 1000;  // mg/m²/wk
+  Object.keys(LETTUCE_TISSUE_DW).forEach(element => {
+    out[element] = dwPerWk_g_m2 * LETTUCE_TISSUE_DW[element] * 1000;  // mg/m²/wk
   });
   return out;
 }
@@ -3088,46 +3088,46 @@ function calcLettuceNutrDemand(transplantG, targetG, cycleDays, density) {
 // Canopy factor: lettuce transpires less per m² than tomato (smaller plants,
 // shorter cycle). Scale with current/target mass ratio × 0.7 cap; floor 0.2
 // for stunted plants. Cert 3 — refine on tissue or bed-level transpiration data.
-function calcLettuceNutrSupply(currentG, targetG, density, phLocked, frontload_g_per_m2) {
+function calculateLettuceNutritionSupply(currentG, targetG, density, phLocked, frontload_g_per_m2) {
   const flowL = weeklyMassFlowL();
   const canopyFactor = Math.max(0.2, Math.min(0.7,
     (currentG / Math.max(1, targetG)) * 0.7));
 
   const soil = {};
-  Object.keys(LETTUCE_TISSUE_DW).forEach(el => {
-    const ppm = SME_LETTUCE_PPM[el] || 0;
+  Object.keys(LETTUCE_TISSUE_DW).forEach(element => {
+    const ppm = SME_LETTUCE_PPM[element] || 0;
     let mass = ppm * flowL * canopyFactor;
-    if (phLocked && (el === 'P' || el === 'Mn' || el === 'Zn')) {
+    if (phLocked && (element === 'P' || element === 'Mn' || element === 'Zn')) {
       mass = Math.min(mass, 100);     // REQ-020 lockout gate
     }
-    if (phLocked && el === 'Fe') {
+    if (phLocked && element === 'Fe') {
       mass *= 0.15;                    // pH 7.4 root reductase suppressed (cert 3)
     }
-    soil[el] = mass;
+    soil[element] = mass;
   });
 
   const area100 = 100;  // LETTUCE constant is per 100 m²/wk
   const fert = {};
-  Object.keys(LETTUCE_TISSUE_DW).forEach(el => { fert[el] = 0; });
+  Object.keys(LETTUCE_TISSUE_DW).forEach(element => { fert[element] = 0; });
   fert.K  = (LETTUCE.kSulfate  * PRODUCT_PCT.K2SO4_K  * 1000) / area100;
   fert.Mg = (LETTUCE.mgSulfate * PRODUCT_PCT.MgSO4_Mg * 1000) / area100;
   const feLabelMg = (LETTUCE.feSulfate * PRODUCT_PCT.FeSO4_Fe * 1000) / area100;
   fert.Fe = phLocked ? feLabelMg * 0.15 : feLabelMg;
 
   const frontload = {};
-  Object.keys(LETTUCE_TISSUE_DW).forEach(el => { frontload[el] = 0; });
+  Object.keys(LETTUCE_TISSUE_DW).forEach(element => { frontload[element] = 0; });
   const fmWeeks = LETTUCE_FRONTLOAD_DEFAULTS.mineralizationWeeks;
   frontload.N = (frontload_g_per_m2 || 0) * PRODUCT_PCT.FarinePlumes_N
-              * SIDEDRESS_MIN_EFF.FarinePlumes_N * 1000 / fmWeeks;
+              * SIDEDRESS_MINIMUM_EFFICIENCY.FarinePlumes_N * 1000 / fmWeeks;
   // REQ-157 — per-element efficiency for front-load channel. Farine de plumes
   // is N-only (13-0-0); efficiency = mineralization rate distributed over
-  // the release window (SIDEDRESS_MIN_EFF.FarinePlumes_N).
+  // the release window (SIDEDRESS_MINIMUM_EFFICIENCY.FarinePlumes_N).
   frontload.efficiency = {};
-  if (frontload.N > 0) frontload.efficiency.N = SIDEDRESS_MIN_EFF.FarinePlumes_N;
+  if (frontload.N > 0) frontload.efficiency.N = SIDEDRESS_MINIMUM_EFFICIENCY.FarinePlumes_N;
 
   const total = {};
-  Object.keys(LETTUCE_TISSUE_DW).forEach(el => {
-    total[el] = (soil[el] || 0) + (fert[el] || 0) + (frontload[el] || 0);
+  Object.keys(LETTUCE_TISSUE_DW).forEach(element => {
+    total[element] = (soil[element] || 0) + (fert[element] || 0) + (frontload[element] || 0);
   });
   return { soil, fert, frontload, total, canopyFactor };
 }
@@ -3148,7 +3148,7 @@ function calcLettuceNutrSupply(currentG, targetG, density, phLocked, frontload_g
 // Refactored 2026-05-09 into 3 subprojects under nutrition/nursery/.
 // Each owns its data.js + calc.js + model.js + spec.md + derivation.md.
 // Public APIs at runtime:
-//   window.PlantNeedsNursery            — demand model (calcNurseryDemand)
+//   window.PlantNeedsNursery            — demand model (calculateNurseryDemand)
 //   window.SubstrateContributionNursery — OM2 + feather meal release
 //   window.FertigationNursery           — Ocean + Acadie + kelp recipe + EC/pH
 
@@ -3296,7 +3296,7 @@ const ACCEPTED_EXCESSES = [
 // by construction). Spec: nutrition/tomato/fertigation-recipe/spec.md
 // (REQ-098 mass-balance, REQ-099 namespace, REQ-154 invariant). Includes
 // must come AFTER RECIPE_INPUTS, sidedress-recipe/data.js (provides
-// SIDEDRESS_AREA_PER_PLANCHE / SIDEDRESS_MIN_EFF), and the FP_RECIPE_T5
+// SIDEDRESS_AREA_PER_PLANCHE / SIDEDRESS_MINIMUM_EFFICIENCY), and the FP_RECIPE_T5
 // declaration above (the wireFpFertigation IIFE overwrites .fertigation).
 <!-- @include nutrition/tomato/fertigation-recipe/data.js -->
 <!-- @include nutrition/tomato/fertigation-recipe/calc.js -->
@@ -3315,7 +3315,7 @@ const ACCEPTED_EXCESSES = [
 // (REQ-101 coverage discount applied, REQ-103 namespace; REQ-025 inherited
 // from nutrition/spec.md for burn cap — not duplicated here). Includes must
 // come AFTER STORED_RECIPE (parses .tomato.foliaire.A label strings),
-// PRODUCT_PCT (reads MnSO4_Mn / FeSO4_Fe / etc.), and TOMATO_NUM_BEDS /
+// PRODUCT_PCT (reads MnSO4_Mn / FeSO4_Fe / etc.), and TOMATO_NUMBER_BEDS /
 // TOMATO_BED_AREA (area derivation).
 <!-- @include nutrition/tomato/foliar-recipe/data.js -->
 <!-- @include nutrition/tomato/foliar-recipe/calc.js -->
@@ -3485,7 +3485,7 @@ const SME_TOMATO_PPM = {
 };
 
 // Soil bank (Mehlich-3) — source-of-truth lives in nutrition/soil-contribution/.
-// Read via window.SoilContribution.BANK_MG_M2[crop][el] (REQ-143).
+// Read via window.SoilContribution.BANK_MG_M2[crop][element] (REQ-143).
 
 // SME lettuce bed (Berger sample 596616, laitue 1, 2026-04-10).
 // Source: farm info/SME - 2026-04-10.pdf
@@ -3603,14 +3603,14 @@ function soilWeeklyAvailable(elem, phLocked, transpFactor) {
   // transpirationFactor() comment. Applies to ALL elements because they all
   // arrive at roots via the same water flow.
   const massFlow_mg = sme_ppm * weeklyMassFlowL() * tf;
-  let eff = 1.0;
+  let efficiency = 1.0;
   // Fe lockout — 0,15 = midpoint of the Cadre framework page's 10-20% bypass
   // efficiency at pH 7,4. Aligned 2026-05-05; previously 0,30 was too generous
   // and contradicted both the Cadre page narrative AND field observation
   // (visible Fe chlorosis on apex despite SME Fe in spec). Cert 4.
-  if (elem === 'Fe' && phLocked) eff = 0.15;
-  else if (elem === 'N')         eff = 0.85 * nMineralizationFactor();
-  return massFlow_mg * eff;
+  if (elem === 'Fe' && phLocked) efficiency = 0.15;
+  else if (elem === 'N')         efficiency = 0.85 * nMineralizationFactor();
+  return massFlow_mg * efficiency;
 }
 
 // Note: an earlier model used COMPOST_N_MG_M2_WK = 1500 mg/m²/wk as a placeholder
@@ -3647,9 +3647,9 @@ let nutrCrop = 'tomato';
 // recipe. Drift detection only.
 //
 // REQs covered (in part): REQ-010 (mode flux/conc), REQ-011 (CHANNEL_ROLE),
-// REQ-012 (sum-to-1), REQ-017 (pH-aware eff), REQ-019 (phClass coverage),
+// REQ-012 (sum-to-1), REQ-017 (pH-aware efficiency), REQ-019 (phClass coverage),
 // REQ-022 (organicAllowed), REQ-023 (ecFactor), REQ-028 (cert annotations),
-// REQ-029 / 029a/b/c (Ksp + ions + tags), REQ-032 (maxStableHours),
+// REQ-029 / 029a/b/c (Ksp + ions + tags), REQ-032 (maximumStableHours),
 // REQ-053 (predictedTankPh), REQ-054 (chelate stablePhRange), REQ-055
 // (foliar pH curve).
 //
@@ -3674,7 +3674,7 @@ let nutrCrop = 'tomato';
 //   solubilityCap_g_per_L: number                   — cold water (REQ-021)
 //   phContribution: number                          — pH shift per g/L in clean water (REQ-053)
 //   stablePhRange: [min, max]                       — chelates only (REQ-054)
-//   maxStableHours: number                          — REQ-032
+//   maximumStableHours: number                          — REQ-032
 //   cert: number                                    — overall cert
 //
 // Notes on shortcut data:
@@ -3696,7 +3696,7 @@ const PRODUCT = {
     ecFactor: 1.34,                        // Sonneveld; cert 3
     solubilityCap_g_per_L: 100,            // cold-water binding; cert 4
     phContribution: -0.05,                 // near-neutral salt; cert 2
-    maxStableHours: 168,                   // sulfate stable in clean water; cert 4
+    maximumStableHours: 168,                   // sulfate stable in clean water; cert 4
     cert: 4,
   },
   'MgSO4-7H2O': {
@@ -3709,7 +3709,7 @@ const PRODUCT = {
     ecFactor: 0.95,                        // Sonneveld; cert 3
     solubilityCap_g_per_L: 700,            // very soluble; cert 5
     phContribution: -0.02,                 // near-neutral; cert 2
-    maxStableHours: 168,                   // cert 4
+    maximumStableHours: 168,                   // cert 4
     cert: 4,
   },
   'FeSO4-7H2O': {
@@ -3722,7 +3722,7 @@ const PRODUCT = {
     ecFactor: 1.0,                         // sulfate salt; cert 3
     solubilityCap_g_per_L: 290,            // CRC; cert 4
     phContribution: -0.30,                 // strong acidification by Fe²⁺ hydrolysis (linear approx; real curve flattens at high conc); cert 2
-    maxStableHours: 4,                     // air oxidation Fe²⁺→Fe³⁺ (REQ-032); cert 4
+    maximumStableHours: 4,                     // air oxidation Fe²⁺→Fe³⁺ (REQ-032); cert 4
     cert: 4,
   },
   'MnSO4': {
@@ -3735,7 +3735,7 @@ const PRODUCT = {
     ecFactor: 1.2,                         // cert 3
     solubilityCap_g_per_L: 520,            // very soluble; cert 4
     phContribution: -0.25,                 // mild acidification; cert 3
-    maxStableHours: 168,                   // cert 3
+    maximumStableHours: 168,                   // cert 3
     cert: 4,
   },
   'ZnSO4': {
@@ -3748,7 +3748,7 @@ const PRODUCT = {
     ecFactor: 1.2,                         // cert 3
     solubilityCap_g_per_L: 580,            // cert 4
     phContribution: -0.30,                 // cert 3
-    maxStableHours: 168,                   // cert 3
+    maximumStableHours: 168,                   // cert 3
     cert: 4,
   },
   'CuSO4': {
@@ -3761,7 +3761,7 @@ const PRODUCT = {
     ecFactor: 1.1,                         // cert 3
     solubilityCap_g_per_L: 320,            // cert 4
     phContribution: -0.35,                 // strongest hydrolysis acidifier; cert 3
-    maxStableHours: 168,                   // cert 3
+    maximumStableHours: 168,                   // cert 3
     cert: 4,
   },
   'Solubore': {
@@ -3774,7 +3774,7 @@ const PRODUCT = {
     ecFactor: 0.7,                         // weakly ionizing; cert 3
     solubilityCap_g_per_L: 60,             // borax cold-water cap; cert 4
     phContribution: 0.10,                  // mild alkalinizer; cert 3
-    maxStableHours: 168,                   // cert 3
+    maximumStableHours: 168,                   // cert 3
     cert: 3,
   },
   'NaMolybdate': {
@@ -3787,7 +3787,7 @@ const PRODUCT = {
     ecFactor: 0.8,                         // cert 3
     solubilityCap_g_per_L: 840,            // cert 4
     phContribution: 0.05,                  // slightly basic; cert 3
-    maxStableHours: 168,                   // cert 3
+    maximumStableHours: 168,                   // cert 3
     cert: 3,
   },
   // CaCl2-2H2O entry removed 2026-05-06 (Spray B retired — Teris grade
@@ -3807,7 +3807,7 @@ const PRODUCT = {
     ecFactor: 0.0,                         // not in tank; cert 5
     solubilityCap_g_per_L: 0,              // not water-mixed; cert 5
     phContribution: 0.0,                   // not in tank; cert 5
-    maxStableHours: Infinity,              // dry granular; cert 5
+    maximumStableHours: Infinity,              // dry granular; cert 5
     cert: 3,
   },
   'FarinePlumes': {
@@ -3820,7 +3820,7 @@ const PRODUCT = {
     ecFactor: 0.0,                         // cert 5
     solubilityCap_g_per_L: 0,              // cert 5
     phContribution: 0.0,                   // cert 5
-    maxStableHours: Infinity,              // dry; cert 5
+    maximumStableHours: Infinity,              // dry; cert 5
     cert: 4,
   },
   'AcadiePoissonHydrolyse': {
@@ -3833,7 +3833,7 @@ const PRODUCT = {
     ecFactor: 0.5,                         // mostly organic; some salt content; cert 2
     solubilityCap_g_per_L: 1000,           // miscible liquid; cert 4
     phContribution: -0.1,                  // mildly acidic; cert 2
-    maxStableHours: 24,                    // microbial degradation (REQ-032); cert 3
+    maximumStableHours: 24,                    // microbial degradation (REQ-032); cert 3
     cert: 3,
   },
   'AcadieAlguesLiquides': {
@@ -3846,7 +3846,7 @@ const PRODUCT = {
     ecFactor: 0.3,                         // low salt; cert 2
     solubilityCap_g_per_L: 1000,           // miscible; cert 4
     phContribution: -0.05,                 // ~neutral; cert 2
-    maxStableHours: 24,                    // cert 3
+    maximumStableHours: 24,                    // cert 3
     cert: 3,
   },
   'EZGRO-Ocean-15-1-1': {
@@ -3859,7 +3859,7 @@ const PRODUCT = {
     ecFactor: 0.8,                         // higher salt than Acadie; cert 2
     solubilityCap_g_per_L: 1000,           // miscible; cert 4
     phContribution: -0.15,                 // acidic; cert 2
-    maxStableHours: 24,                    // cert 3
+    maximumStableHours: 24,                    // cert 3
     cert: 3,
   },
 
@@ -3874,7 +3874,7 @@ const PRODUCT = {
     ecFactor: 0.0,                         // not in tank; cert 5
     solubilityCap_g_per_L: 0,              // insoluble in water; cert 5
     phContribution: 0.0,                   // not in tank; cert 5
-    maxStableHours: Infinity,              // cert 5
+    maximumStableHours: Infinity,              // cert 5
     cert: 4,
   },
 };
@@ -4095,7 +4095,7 @@ const TAGS_INERT = {
   'chloride':                  'soluble with all our cations',
   'free-K+':                   'no precipitation pairs in our recipes',
   'free-Mg2+':                 'no precipitation pairs in our recipes',
-  'free-Fe2+':                 'oxidation handled by maxStableHours; precipitation by Ksp pairs',
+  'free-Fe2+':                 'oxidation handled by maximumStableHours; precipitation by Ksp pairs',
   'free-Mn2+':                 'no precipitation pairs in our active recipes',
   'free-Zn2+':                 'no precipitation pairs in our active recipes',
   'free-Cu2+':                 'precipitation pairs handled by TAG_INCOMPATIBILITIES (Cu-protein) and separate-spray rules',
@@ -4140,7 +4140,7 @@ const INCOMPATIBLE_RECIPES = [
 //      hot water; adding it after other salts can drop tank pH or cause
 //      precipitation of K-containing complexes.
 //   2. Stability: FeSO₄ oxidizes quickly in air (Fe²⁺ → Fe³⁺ within hours
-//      — see PRODUCT['FeSO4-7H2O'].maxStableHours = 4). Add LAST, just
+//      — see PRODUCT['FeSO4-7H2O'].maximumStableHours = 4). Add LAST, just
 //      before sealing the spray container.
 //
 // Verifier schema (REQ-031): array of { recipe: string, order: [productName, ...] }.
@@ -4149,7 +4149,7 @@ const MIX_ORDER = [
   { recipe: 'fertigation.tomato',
     order: ['K2SO4', 'MgSO4-7H2O'] },
   // Spray A (Mn/Zn/B/Cu/Mo/Fe — no surfactant since 2026-05-06 yucca drop).
-  // FeSO₄-7H₂O added last (oxidation) per maxStableHours=4 on the product.
+  // FeSO₄-7H₂O added last (oxidation) per maximumStableHours=4 on the product.
   { recipe: 'foliar.tomato.A',
     order: ['MnSO4', 'ZnSO4', 'Solubore', 'CuSO4', 'NaMolybdate', 'FeSO4-7H2O'] },
   // Lettuce production fertigation (K + Mg + Fe maintenance).
@@ -4170,9 +4170,9 @@ const MIX_ORDER = [
 //     soil pH never touches the leaf surface.
 //   - Verifier note: REQ-018 should pass sprayPh (or rely on the foliar
 //     branch below) when checking foliar products. Calling
-//     effectiveEff('MnSO4','Mn', soilPh) without a foliar context would
+//     effectiveEfficiency('MnSO4','Mn', soilPh) without a foliar context would
 //     STILL bypass soil-pH for foliar products by design here.
-function effectiveEff(productName, element, soilPh, sprayPh) {
+function effectiveEfficiency(productName, element, soilPh, sprayPh) {
   if (sprayPh === undefined) sprayPh = null;
   const p = PRODUCT[productName];
   if (!p || !p.base || !p.base[element]) return 0;
@@ -4243,7 +4243,7 @@ function passiveSupplyMassFlow(crop, element, week) {
 
 // Compute the recipe a channel SHOULD use, from first principles.
 // For each element where CHANNEL_ROLE assigns this channel a fraction:
-//   target_mass = (demand[stage,el] − passive[el]) × CHANNEL_ROLE[el][channel]
+//   target_mass = (demand[stage,element] − passive[element]) × CHANNEL_ROLE[element][channel]
 //   product_mass = target_mass / (efficiency × analysis)
 // Output: { productName: gramsPerWeekPerArea }
 //
@@ -4255,8 +4255,8 @@ function computeRecipe(crop, stage, channel) {
   const bio = BIOMASS_DEMAND[stage] || {};
   const fruitYield = 1.5;                             // target kg/m²/wk; Phase 1 fixed
   const demand = {};
-  Object.keys(TOMATO_FRUIT_EXPORT).forEach(function(el) {
-    demand[el] = (TOMATO_FRUIT_EXPORT[el].g * fruitYield * 1000) + (bio[el] || 0);
+  Object.keys(TOMATO_FRUIT_EXPORT).forEach(function(element) {
+    demand[element] = (TOMATO_FRUIT_EXPORT[element].g * fruitYield * 1000) + (bio[element] || 0);
   });
   const soilPh = 7.4;                                 // Phase 1 assumption
   const sprayPh = 5.0;                                // typical sulfate-heavy Spray A
@@ -4289,50 +4289,50 @@ function computeRecipe(crop, stage, channel) {
     },
   };
   const channelMap = mapping[channel] || {};
-  const area = TOMATO_NUM_BEDS * TOMATO_BED_AREA;     // 382.9 m²
+  const area = TOMATO_NUMBER_BEDS * TOMATO_BED_AREA;     // 382.9 m²
 
-  Object.keys(channelMap).forEach(function(el) {
-    const role = (CHANNEL_ROLE[el] || {})[channel] || 0;
+  Object.keys(channelMap).forEach(function(element) {
+    const role = (CHANNEL_ROLE[element] || {})[channel] || 0;
     if (role <= 0) return;
     // Subtract passive supply for elements where passive is in CHANNEL_ROLE
-    const passiveRole = (CHANNEL_ROLE[el] || {}).passive || 0;
-    const passive_mg_m2 = passiveRole > 0 ? passiveSupplyMassFlow('tomato', el) * passiveRole : 0;
-    const need_mg_m2 = Math.max(0, demand[el] - passive_mg_m2) * role;
+    const passiveRole = (CHANNEL_ROLE[element] || {}).passive || 0;
+    const passive_mg_m2 = passiveRole > 0 ? passiveSupplyMassFlow('tomato', element) * passiveRole : 0;
+    const need_mg_m2 = Math.max(0, demand[element] - passive_mg_m2) * role;
     if (need_mg_m2 <= 0) return;
-    const products = channelMap[el];
+    const products = channelMap[element];
     // Split evenly across the listed products by mass fraction
     products.forEach(function(productName) {
       const p = PRODUCT[productName];
       if (!p) return;
-      const analysis = p.base[el] || 0;
+      const analysis = p.base[element] || 0;
       if (analysis <= 0) return;
-      // Sidedress: factor in mineralization efficiency (SIDEDRESS_MIN_EFF)
-      // Foliar: foliarPhResponse + 30% coverage already in effectiveEff
+      // Sidedress: factor in mineralization efficiency (SIDEDRESS_MINIMUM_EFFICIENCY)
+      // Foliar: foliarPhResponse + 30% coverage already in effectiveEfficiency
       // Fertigation: pH response on phClass
-      let eff;
+      let efficiency;
       if (channel === 'sidedress') {
-        const minKey = (productName === 'Actisol-5-3-2')
-          ? (el === 'N' ? 'Actisol_N' : el === 'P' ? 'Actisol_P' : 'Actisol_K')
+        const minimumEfficiencyKey = (productName === 'Actisol-5-3-2')
+          ? (element === 'N' ? 'Actisol_N' : element === 'P' ? 'Actisol_P' : 'Actisol_K')
           : 'FarinePlumes_N';
-        eff = (SIDEDRESS_MIN_EFF[minKey] || 0.5);     // mineralization eff; pH lockout for P captured separately
-        if (channel === 'sidedress' && el === 'P') {
+        efficiency = (SIDEDRESS_MINIMUM_EFFICIENCY[minimumEfficiencyKey] || 0.5);     // mineralization efficiency; pH lockout for P captured separately
+        if (channel === 'sidedress' && element === 'P') {
           // REQ-018: at pH 7.4 P is decorative — multiply by Cadre 0.10
-          eff *= PH_RESPONSE['organic-P'](7.4);
+          efficiency *= PH_RESPONSE['organic-P'](7.4);
         }
       } else if (channel === 'foliar') {
-        eff = effectiveEff(productName, el, soilPh, sprayPh);
-        // effectiveEff returns 0..1 already including coverage; that's the multiplier
+        efficiency = effectiveEfficiency(productName, element, soilPh, sprayPh);
+        // effectiveEfficiency returns 0..1 already including coverage; that's the multiplier
         // applied to mass arriving at leaf. Divide need by it to get applied mass.
-        if (eff <= 0) eff = 0.30;                     // floor — don't divide by 0
+        if (efficiency <= 0) efficiency = 0.30;                     // floor — don't divide by 0
       } else if (channel === 'fertigation') {
-        const cls = (typeof p.phClass === 'string') ? p.phClass : (p.phClass || {})[el];
-        eff = cls && PH_RESPONSE[cls] ? PH_RESPONSE[cls](soilPh) : 1.0;
+        const cls = (typeof p.phClass === 'string') ? p.phClass : (p.phClass || {})[element];
+        efficiency = cls && PH_RESPONSE[cls] ? PH_RESPONSE[cls](soilPh) : 1.0;
       } else {
-        eff = 1.0;
+        efficiency = 1.0;
       }
       // mass per m²/wk → grams across whole tomato area / share
       const share = 1.0 / products.length;
-      const mass_mg_m2_wk = (need_mg_m2 * share) / Math.max(eff, 0.001) / analysis;
+      const mass_mg_m2_wk = (need_mg_m2 * share) / Math.max(efficiency, 0.001) / analysis;
       // Convert to per-area total: for fertigation/foliar that's grams over the
       // whole tomato area; for sidedress it's grams per planche.
       let g_total;
@@ -4438,7 +4438,7 @@ function renderPhase1Comparison() {
 
   // FP fertigation: prefer FP_RECIPE_T5 override when set; otherwise fall back
   // to computeStageRecipe(stage) (mass-balance derivation from RECIPE_INPUTS).
-  // Mirrors the precedence in calcNutrSupply's FP branch.
+  // Mirrors the precedence in calculateNutritionSupply's FP branch.
   const fpStage = computeStageRecipe(stage) || { mgSulfate: 0, kSulfate: 0 };
   const fertFp      = {
     'K2SO4':      (FP_RECIPE_T5.fertigation['K2SO4']      != null) ? FP_RECIPE_T5.fertigation['K2SO4']      : fpStage.kSulfate,
@@ -4492,7 +4492,7 @@ function renderPhase1Comparison() {
     return h;
   };
 
-  html += section('Fertigation (g/sem · ' + (TOMATO_NUM_BEDS * TOMATO_BED_AREA).toFixed(0) + ' m²)', fertStored, fertFp, '');
+  html += section('Fertigation (g/sem · ' + (TOMATO_NUMBER_BEDS * TOMATO_BED_AREA).toFixed(0) + ' m²)', fertStored, fertFp, '');
   html += section('Engrais sol granulaire (g/planche/sem · 54,7 m²)', sidedressStored, sidedressFp, '');
   html += section('Foliaire (g par 15 L master)', foliarStored, foliarFp, '');
   return html;
@@ -4526,7 +4526,7 @@ function renderPhase1Comparison() {
 // full barrel mass; SME is a separate channel.
 
 // LUXURY_FACTOR — cap on supply.soil per element, applied as
-//   supply.soil[el] = min(SME[el] × transpiration, demand[el] × LUXURY_FACTOR[el])
+//   supply.soil[element] = min(SME[element] × transpiration, demand[element] × LUXURY_FACTOR[element])
 // Mechanism: HAK/HKT transporter saturation + demand-driven feedback.
 // Real uptake at saturating SME ≈ demand × small luxury fraction (vacuolar storage).
 // Excess in solution stays on CEC, leaches, or remains in solution.
@@ -4554,9 +4554,9 @@ const LUXURY_FACTOR = {
   Mo: 1.00,
 };
 
-function calcNutrSupply(stage, phLocked, transpFactor, targetYield, recipeMode) {
+function calculateNutritionSupply(stage, phLocked, transpFactor, targetYield, recipeMode) {
   const mode = recipeMode === 'fp' ? 'fp' : 'stored';
-  const area = TOMATO_NUM_BEDS * TOMATO_BED_AREA; // 382.9 m²
+  const area = TOMATO_NUMBER_BEDS * TOMATO_BED_AREA; // 382.9 m²
   // Recipe source: stored = STORED_RECIPE.tomato.{fertigation,sidedress,foliaire}
   // (live operational state — what the team weighs). fp = FP_RECIPE_T5 +
   // computeStageRecipe (mass-balance target, T5 only — caller is responsible
@@ -4620,11 +4620,11 @@ function calcNutrSupply(stage, phLocked, transpFactor, targetYield, recipeMode) 
     const sdAreaFactor_pre = 1000 / SIDEDRESS_AREA_PER_PLANCHE;
     const phLockoutFactor_P_pre = phLocked ? 0.10 : 0.50;
     const sidedressPre = {
-      N: (sdFp.actisol_g * PRODUCT_PCT.Actisol_N    * SIDEDRESS_MIN_EFF.Actisol_N
-        + sdFp.farine_g  * PRODUCT_PCT.FarinePlumes_N * SIDEDRESS_MIN_EFF.FarinePlumes_N
+      N: (sdFp.actisol_g * PRODUCT_PCT.Actisol_N    * SIDEDRESS_MINIMUM_EFFICIENCY.Actisol_N
+        + sdFp.farine_g  * PRODUCT_PCT.FarinePlumes_N * SIDEDRESS_MINIMUM_EFFICIENCY.FarinePlumes_N
          ) * sdAreaFactor_pre,
       P: sdFp.actisol_g * PRODUCT_PCT.Actisol_P * phLockoutFactor_P_pre * sdAreaFactor_pre,
-      K: sdFp.actisol_g * PRODUCT_PCT.Actisol_K * SIDEDRESS_MIN_EFF.Actisol_K * sdAreaFactor_pre,
+      K: sdFp.actisol_g * PRODUCT_PCT.Actisol_K * SIDEDRESS_MINIMUM_EFFICIENCY.Actisol_K * sdAreaFactor_pre,
     };
     // Compost release (g/m²/wk → mg/m²/wk). Source: window.CompostContribution
     // (REQ-080) — single source of truth, mirrors the gap chain in
@@ -4632,18 +4632,18 @@ function calcNutrSupply(stage, phLocked, transpFactor, targetYield, recipeMode) 
     const CC_pre = (typeof window !== 'undefined' && window.CompostContribution) ? window.CompostContribution : null;
     const tf_pre = transpFactor || 1.0;
     const ty_pre = (typeof targetYield === 'number' && targetYield > 0) ? targetYield : 1.5;
-    const demandPre = calcNutrDemand(ty_pre, stage, tf_pre);
+    const demandPre = calculateNutritionDemand(ty_pre, stage, tf_pre);
     // Per-element pre-foliar gap = max(0, demand − compost − sidedress − fert).
     // Only foliar-relevant elements (Mn/Zn/Cu/Fe/Mo/B) need to be in the gap;
     // computeFoliarRecipeForGap ignores keys it doesn't recognize.
     const FOLIAR_ELS = ['Mn', 'Zn', 'Cu', 'Fe', 'Mo', 'B'];
     const gapPre = {};
-    FOLIAR_ELS.forEach(function(el) {
-      const dem = (demandPre[el] && demandPre[el].total) || 0;
-      const compostMg_el = (CC_pre && CC_pre.releasePerWeek[el] != null) ? CC_pre.releasePerWeek[el] * 1000 : 0;
-      const sdMg_el = sidedressPre[el] || 0;
-      const fertMg_el = fertPre[el] || 0;
-      gapPre[el] = Math.max(0, dem - compostMg_el - sdMg_el - fertMg_el);
+    FOLIAR_ELS.forEach(function(element) {
+      const dem = (demandPre[element] && demandPre[element].total) || 0;
+      const compostMg_el = (CC_pre && CC_pre.releasePerWeek[element] != null) ? CC_pre.releasePerWeek[element] * 1000 : 0;
+      const sdMg_el = sidedressPre[element] || 0;
+      const fertMg_el = fertPre[element] || 0;
+      gapPre[element] = Math.max(0, dem - compostMg_el - sdMg_el - fertMg_el);
     });
     // Operator levers — same DOM inputs the stored-mode foliar path reads
     // (REQ-112). Defaults match the function's declared defaults.
@@ -4781,23 +4781,23 @@ function calcNutrSupply(stage, phLocked, transpFactor, targetYield, recipeMode) 
   const tf = transpFactor || 1.0;
   const ty = (typeof targetYield === 'number' && targetYield > 0) ? targetYield : 1.5;
   // REQ-081: pass tf so Ca/Mg biomass terms scale with canopy transpiration.
-  const demandBreakdown = calcNutrDemand(ty, stage, tf);
+  const demandBreakdown = calculateNutritionDemand(ty, stage, tf);
   const soil = {};
   // FP mode (2026-05-08): drop SME credit for everything fertigation/foliar can
   // deliver (K, Mg, N, Fe, Mn, Zn, B, Cu, Mo). Keep SME for Ca (saturated, can't
   // add) and P (pH-locked, banque scavenging is the accepted strategy via
   // ACCEPTED_DEFICITS). Stored mode unchanged — SME-based supply for all elements.
   const FP_SOIL_KEEP = { Ca: true, P: true };
-  ['N','P','K','Ca','Mg','Fe','Mn','Zn','B','Cu','Mo'].forEach(el => {
-    if (mode === 'fp' && !FP_SOIL_KEEP[el]) {
-      soil[el] = 0;
+  ['N','P','K','Ca','Mg','Fe','Mn','Zn','B','Cu','Mo'].forEach(element => {
+    if (mode === 'fp' && !FP_SOIL_KEEP[element]) {
+      soil[element] = 0;
       return;
     }
-    const massFlowPotential = soilWeeklyAvailable(el, phLocked, tf);
-    const demandTotal_el = (demandBreakdown[el] && demandBreakdown[el].total) || 0;
-    const luxury = (LUXURY_FACTOR[el] != null) ? LUXURY_FACTOR[el] : 1.0;
-    const demandCap = demandTotal_el * luxury;
-    soil[el] = Math.min(massFlowPotential, demandCap);
+    const massFlowPotential = soilWeeklyAvailable(element, phLocked, tf);
+    const demandTotal_element = (demandBreakdown[element] && demandBreakdown[element].total) || 0;
+    const luxury = (LUXURY_FACTOR[element] != null) ? LUXURY_FACTOR[element] : 1.0;
+    const demandCap = demandTotal_element * luxury;
+    soil[element] = Math.min(massFlowPotential, demandCap);
   });
 
   // Side-dressing contributions (granular, weekly, per stage). Reads from
@@ -4822,11 +4822,11 @@ function calcNutrSupply(stage, phLocked, transpFactor, targetYield, recipeMode) 
   const sdAreaFactor = 1000 / SIDEDRESS_AREA_PER_PLANCHE; // → mg/m²/wk per gram of product
   const phLockoutFactor_P = phLocked ? 0.10 : 0.50;
   const sidedress = {
-    N: (sd.actisol_g * PRODUCT_PCT.Actisol_N    * SIDEDRESS_MIN_EFF.Actisol_N
-      + sd.farine_g  * PRODUCT_PCT.FarinePlumes_N * SIDEDRESS_MIN_EFF.FarinePlumes_N
+    N: (sd.actisol_g * PRODUCT_PCT.Actisol_N    * SIDEDRESS_MINIMUM_EFFICIENCY.Actisol_N
+      + sd.farine_g  * PRODUCT_PCT.FarinePlumes_N * SIDEDRESS_MINIMUM_EFFICIENCY.FarinePlumes_N
        ) * sdAreaFactor,
     P: sd.actisol_g * PRODUCT_PCT.Actisol_P * phLockoutFactor_P * sdAreaFactor,
-    K: sd.actisol_g * PRODUCT_PCT.Actisol_K * SIDEDRESS_MIN_EFF.Actisol_K * sdAreaFactor,
+    K: sd.actisol_g * PRODUCT_PCT.Actisol_K * SIDEDRESS_MINIMUM_EFFICIENCY.Actisol_K * sdAreaFactor,
   };
   // REQ-157 — per-element efficiency map for sidedress channel. For routed
   // elements only (mg > 0). N blends Actisol + farine de plumes mineralization
@@ -4838,11 +4838,11 @@ function calcNutrSupply(stage, phLocked, transpFactor, targetYield, recipeMode) 
     const nFarineMass  = sd.farine_g  * PRODUCT_PCT.FarinePlumes_N;
     const nTotal       = nActisolMass + nFarineMass;
     sidedress.efficiency.N = nTotal > 0
-      ? (nActisolMass * SIDEDRESS_MIN_EFF.Actisol_N + nFarineMass * SIDEDRESS_MIN_EFF.FarinePlumes_N) / nTotal
-      : SIDEDRESS_MIN_EFF.Actisol_N;
+      ? (nActisolMass * SIDEDRESS_MINIMUM_EFFICIENCY.Actisol_N + nFarineMass * SIDEDRESS_MINIMUM_EFFICIENCY.FarinePlumes_N) / nTotal
+      : SIDEDRESS_MINIMUM_EFFICIENCY.Actisol_N;
   }
-  if (sidedress.P > 0) sidedress.efficiency.P = SIDEDRESS_MIN_EFF.Actisol_P * phLockoutFactor_P;
-  if (sidedress.K > 0) sidedress.efficiency.K = SIDEDRESS_MIN_EFF.Actisol_K;
+  if (sidedress.P > 0) sidedress.efficiency.P = SIDEDRESS_MINIMUM_EFFICIENCY.Actisol_P * phLockoutFactor_P;
+  if (sidedress.K > 0) sidedress.efficiency.K = SIDEDRESS_MINIMUM_EFFICIENCY.Actisol_K;
 
   // Fertigation contributions — barrel-loaded mass per m²/sem, full
   // delivery (no mixing-factor discount; concept retired 2026-05-10).
@@ -4862,10 +4862,10 @@ function calcNutrSupply(stage, phLocked, transpFactor, targetYield, recipeMode) 
   // soil pH; uses foliarPhResponse(sprayPh) × coverage (FOLIAR_COVERAGE_DEFAULT
   // = 0.30, no-yucca regime per 2026-05-05 decision).
   const foliarSprayPh = 5.0;
-  const foliarBaseEff = foliarPhResponse(foliarSprayPh) * 0.30;
+  const foliarBaseEfficiency = foliarPhResponse(foliarSprayPh) * 0.30;
   foliar.efficiency = {};
-  ['Mn','Zn','B','Cu','Mo','Fe'].forEach(el => {
-    if ((foliar[el] || 0) > 0) foliar.efficiency[el] = foliarBaseEff;
+  ['Mn','Zn','B','Cu','Mo','Fe'].forEach(element => {
+    if ((foliar[element] || 0) > 0) foliar.efficiency[element] = foliarBaseEfficiency;
   });
 
   // Total effective supply per element.
@@ -4874,8 +4874,8 @@ function calcNutrSupply(stage, phLocked, transpFactor, targetYield, recipeMode) 
   // double-count. Sidedress.* still computed; rendered in Block 3 as a bank-
   // maintenance view (drawdown vs. addition determines SME trajectory).
   const total = {};
-  Object.keys(TOMATO_FRUIT_EXPORT).forEach(el => {
-    total[el] = (fert[el] || 0) + (foliar[el] || 0) + (soil[el] || 0);
+  Object.keys(TOMATO_FRUIT_EXPORT).forEach(element => {
+    total[element] = (fert[element] || 0) + (foliar[element] || 0) + (soil[element] || 0);
   });
 
   // Fe display label — uses the active recipe source (stored or fp).
@@ -4917,7 +4917,7 @@ function pourquoiExpander(equationHtml, pluggedHtml, interpretationHtml) {
 
 // "Pourquoi cette dose" modal helpers — used by Bilan tables (Block 1 needs,
 // Block 2 soil, Block 3 fert, Block 4 foliar). Registry repopulated each
-// buildNutriment() render. Keys: `${blockId}.${el}` (e.g. `foliar.Mn`).
+// buildNutriment() render. Keys: `${blockId}.${element}` (e.g. `foliar.Mn`).
 // Defined alongside pourquoiExpander so buildNutriment can register entries
 // during the initial setPage() call at page load.
 window.currentPourquoi = window.currentPourquoi || {};
@@ -4932,24 +4932,24 @@ function showPourquoi(key) {
 
   // Interpretation: REQ-144 — must be a deterministic render of spec.
   // Accepted shapes:
-  //   { req: 'REQ-NNN', key: 'name', interp?: { ... } } — spec-anchored prose
+  //   { req: 'REQ-NNN', key: 'name', interpolation?: { ... } } — spec-anchored prose
   //                                                       (REQ owns the bytes)
   //   undefined / null / ''                            — empty interpretation
   // Plain-string form is deprecated (REQ-144). Pass it through with a
   // console warning so legacy registrations don't break, but new code
-  // MUST use the { req, key } shape.
-  const interpEl = document.getElementById('pq-modal-interp');
+  // MUST use the { requirementId, key } shape.
+  const interpretationElement = document.getElementById('pq-modal-interpolation');
   if (!d.interpretation) {
-    interpEl.innerHTML = '';
-    interpEl.removeAttribute('data-prose-source');
-  } else if (typeof d.interpretation === 'object' && d.interpretation.req) {
-    const text = renderSpec(d.interpretation.req, d.interpretation.key, d.interpretation.interp);
-    interpEl.innerHTML = text;
-    interpEl.setAttribute('data-prose-source', d.interpretation.req);
+    interpretationElement.innerHTML = '';
+    interpretationElement.removeAttribute('data-prose-source');
+  } else if (typeof d.interpretation === 'object' && d.interpretation.requirementId) {
+    const text = renderSpec(d.interpretation.requirementId, d.interpretation.key, d.interpretation.interpolation);
+    interpretationElement.innerHTML = text;
+    interpretationElement.setAttribute('data-prose-source', d.interpretation.requirementId);
   } else {
-    console.warn('showPourquoi: legacy string interpretation for key', key, '— migrate to { req, key } per REQ-144');
-    interpEl.innerHTML = String(d.interpretation);
-    interpEl.removeAttribute('data-prose-source');
+    console.warn('showPourquoi: legacy string interpretation for key', key, '— migrate to { requirementId, key } per REQ-144');
+    interpretationElement.innerHTML = String(d.interpretation);
+    interpretationElement.removeAttribute('data-prose-source');
   }
 
   document.getElementById('pq-modal').classList.add('open');
@@ -4973,7 +4973,7 @@ function fmtMg(v) {
 }
 
 // Format a value as g if >= 1000 mg, else mg.
-function fmtVal(mg) {
+function formatValue(mg) {
   if (mg <= 0) return '0';
   if (mg >= 1000) return (mg / 1000).toFixed(2).replace(/\.?0+$/, '') + ' g';
   if (mg >= 10)   return Math.round(mg) + ' mg';
@@ -4985,7 +4985,7 @@ function fmtVal(mg) {
 // Used inside each channel block.
 //
 // `pqKeyPrefix` (optional): when provided, every row becomes clickable and
-// opens the "Pourquoi cette dose" modal keyed by `${pqKeyPrefix}.${el}`.
+// opens the "Pourquoi cette dose" modal keyed by `${pqKeyPrefix}.${element}`.
 // The block populates that registry inside buildNutriment via
 // registerPourquoi(). If a key isn't registered, the row is still rendered
 // but the click is a no-op.
@@ -5014,20 +5014,20 @@ function renderGapGrid(gapsIn, contrib, gapsOut, pqKeyPrefix, details, blockId, 
       <div style="font-weight:700; color:var(--text-muted); font-size:10px; text-transform:uppercase; letter-spacing:1px;">Manque sortant</div>
       <div></div>
     </div>`;
-  order.forEach(el => {
-    const gIn = gapsIn[el] || 0;
-    const c = contrib[el] || 0;
-    const gOut = gapsOut[el] || 0;
+  order.forEach(element => {
+    const gIn = gapsIn[element] || 0;
+    const c = contrib[element] || 0;
+    const gOut = gapsOut[element] || 0;
     if (gIn <= 0 && c <= 0) return; // hide rows where there's nothing to show
     const icon = gOut <= 0 ? '✅' : (gOut < gIn * 0.3 ? '🟢' : (gOut < gIn * 0.7 ? '🟡' : '🔴'));
     // Row-level click only when details NOT provided (legacy path). pq-row
     // class kept either way for the hover style.
     const rowClickable = (pqKeyPrefix && !details)
-      ? `class="pq-row" onclick="showPourquoi('${pqKeyPrefix}.${el}')"`
+      ? `class="pq-row" onclick="showPourquoi('${pqKeyPrefix}.${element}')"`
       : `class="pq-row"`;
     // Apport ici cell — clickable per (block, element) when details + blockId given (REQ-138).
-    const det = (details || {})[el];
-    const cellOnclick = (blockId && det) ? `onclick="showCellCert('${blockId}', '${el}')"` : '';
+    const det = (details || {})[element];
+    const cellOnclick = (blockId && det) ? `onclick="showCellCert('${blockId}', '${element}')"` : '';
     const cellCursor = cellOnclick ? 'cursor:pointer; ' : '';
     // REQ-138 (revised 2026-05-11): emoji renders only when this channel
     // under-delivered for this element (gOut > 0). When fully covered, no
@@ -5052,10 +5052,10 @@ function renderGapGrid(gapsIn, contrib, gapsOut, pqKeyPrefix, details, blockId, 
       const showDelta = (uncapped > supplied && supplied > 0);
       const deltaLine = showDelta
         ? `<div style="font-family:'DM Mono',monospace; font-size:14px; margin-bottom:10px;">`
-            + `<span style="color:var(--text-muted);">${fmtVal(supplied)}</span>`
+            + `<span style="color:var(--text-muted);">${formatValue(supplied)}</span>`
             + ` <span style="color:var(--text-muted);">→</span> `
-            + `<strong>${fmtVal(uncapped)}</strong>`
-            + ` <span style="color:var(--text-muted);">(+${fmtVal(uncapped - supplied)})</span>`
+            + `<strong>${formatValue(uncapped)}</strong>`
+            + ` <span style="color:var(--text-muted);">(+${formatValue(uncapped - supplied)})</span>`
           + `</div>`
         : '';
       const rowsHtml = `<div style="display:grid; grid-template-columns:auto 1fr; column-gap:14px; row-gap:6px; font-size:12.5px;">`
@@ -5064,28 +5064,28 @@ function renderGapGrid(gapsIn, contrib, gapsOut, pqKeyPrefix, details, blockId, 
         + `<div style="color:var(--text-muted);">Levier</div><div>${lever}</div>`
       + `</div>`;
       const subtitleHtml = `<div style="font-size:12px; color:var(--text-muted); margin-top:-4px; margin-bottom:8px;">${kindLabel}</div>`;
-      registerPourquoi(blockId + '.cap.' + el + '.' + k, {
-        title: el + ' — ' + blockId,
+      registerPourquoi(blockId + '.cap.' + element + '.' + k, {
+        title: element + ' — ' + blockId,
         cert: det.cert != null ? det.cert : null,
         equation: subtitleHtml,                  // kind badge under the title
         plugged: deltaLine + rowsHtml,
         interpretation: '',
       });
       capEmoji = ` <span style="cursor:pointer;" title="${tooltipAttr}" `
-        + `onclick="event.stopPropagation(); showCapReason('${blockId}', '${el}', '${k}')">${emoji}</span>`;
+        + `onclick="event.stopPropagation(); showCapReason('${blockId}', '${element}', '${k}')">${emoji}</span>`;
     }
-    const cValueStr = c > 0 ? '−' + fmtVal(c) : '—';
-    const cellInner = `<span style="${cellCursor}font-family:'DM Mono',monospace; color:${c>0?'var(--text)':'var(--text-muted)'};">${cValueStr}</span>${capEmoji}`;
-    const efficiencyValue = efficiencyMap[el];
+    const contributionValueString = c > 0 ? '−' + formatValue(c) : '—';
+    const cellInner = `<span style="${cellCursor}font-family:'DM Mono',monospace; color:${c>0?'var(--text)':'var(--text-muted)'};">${contributionValueString}</span>${capEmoji}`;
+    const efficiencyValue = efficiencyMap[element];
     const efficiencyCellText = (typeof efficiencyValue === 'number' && isFinite(efficiencyValue))
       ? Math.round(efficiencyValue * 100) + ' %'
       : '—';
     html += `<div ${rowClickable} style="display:grid; grid-template-columns:${GRID_COLUMNS}; gap:4px 8px; padding:2px 4px; border-radius:3px;">
-      <div style="font-weight:600;">${el}</div>
-      <div style="font-family:'DM Mono',monospace; color:var(--text-muted);">${fmtVal(gIn)}</div>
+      <div style="font-weight:600;">${element}</div>
+      <div style="font-family:'DM Mono',monospace; color:var(--text-muted);">${formatValue(gIn)}</div>
       <div style="font-family:'DM Mono',monospace; color:var(--text-muted);">${efficiencyCellText}</div>
-      <div ${cellOnclick} data-cell-key="${blockId || ''}.cell.${el}" style="${cellCursor}">${cellInner}</div>
-      <div style="font-family:'DM Mono',monospace; font-weight:600; color:${gOut<=0?'#1e6b2d':(gOut<gIn*0.3?'#5a6b1e':'var(--text)')};">${gOut <= 0 ? '0 (couvert)' : fmtVal(gOut)}</div>
+      <div ${cellOnclick} data-cell-key="${blockId || ''}.cell.${element}" style="${cellCursor}">${cellInner}</div>
+      <div style="font-family:'DM Mono',monospace; font-weight:600; color:${gOut<=0?'#1e6b2d':(gOut<gIn*0.3?'#5a6b1e':'var(--text)')};">${gOut <= 0 ? '0 (couvert)' : formatValue(gOut)}</div>
       <div style="text-align:center;">${icon}</div>
     </div>`;
   });
@@ -5094,20 +5094,20 @@ function renderGapGrid(gapsIn, contrib, gapsOut, pqKeyPrefix, details, blockId, 
 }
 
 // REQ-138 — Per-(block, element) modal for cell clicks. Reuses showPourquoi
-// modal markup; the key shape is `${blockId}.cell.${el}` so each block keeps
+// modal markup; the key shape is `${blockId}.cell.${element}` so each block keeps
 // its own modal entry per element (no aggregation across elements/blocks).
-// Falls back to legacy `${blockId}.${el}` key for tomato blocks that
+// Falls back to legacy `${blockId}.${element}` key for tomato blocks that
 // pre-date REQ-138 (compost.N, sidedress.K, fert.Mg, foliar.Mn, etc.).
-function showCellCert(blockId, el) {
-  const newKey = blockId + '.cell.' + el;
-  const legacyKey = blockId + '.' + el;
+function showCellCert(blockId, element) {
+  const newKey = blockId + '.cell.' + element;
+  const legacyKey = blockId + '.' + element;
   if (window.currentPourquoi) {
     if (window.currentPourquoi[newKey]) { showPourquoi(newKey); return; }
     if (window.currentPourquoi[legacyKey]) { showPourquoi(legacyKey); return; }
   }
   // Last-resort fallback so a click never feels dead.
   registerPourquoi(newKey, {
-    title: el + ' — ' + blockId,
+    title: element + ' — ' + blockId,
     cert: null,
     equation: '',
     plugged: 'Aucun détail enregistré pour cette cellule.',
@@ -5117,16 +5117,16 @@ function showCellCert(blockId, el) {
 }
 
 // REQ-138 — Per-(block, element, capKind) modal for cap-emoji clicks. Distinct
-// key shape from cell modals (`${blockId}.cap.${el}.${kind}`) so cell-click
+// key shape from cell modals (`${blockId}.cap.${element}.${kind}`) so cell-click
 // and emoji-click never collide.
-function showCapReason(blockId, el, kind) {
-  const key = blockId + '.cap.' + el + '.' + kind;
+function showCapReason(blockId, element, kind) {
+  const key = blockId + '.cap.' + element + '.' + kind;
   if (window.currentPourquoi && window.currentPourquoi[key]) {
     showPourquoi(key);
     return;
   }
   registerPourquoi(key, {
-    title: el + ' — plafond ' + kind,
+    title: element + ' — plafond ' + kind,
     cert: null,
     equation: '',
     plugged: 'Aucune raison de plafond enregistrée.',
@@ -5161,7 +5161,7 @@ function setNutrCrop(crop) {
 
 // ═══════════════ SALANOVA POST-TRANSPLANT BILAN ═══════════════
 // Renders the lettuce subpage of the Nutrition page using the continuous
-// post-transplant model (calcLettuceNutrDemand × calcLettuceNutrSupply).
+// post-transplant model (calculateLettuceNutritionDemand × calculateLettuceNutritionSupply).
 // Mass-balance flow (2026-05-08, mirrored on tomato): demand → compost →
 // front-load → fertigation → leviers. Soil mass-flow drops out of the
 // supply chain — it draws on the bank, doesn't replenish.
@@ -5173,26 +5173,26 @@ function buildNutrimentLettuce() {
   const frontloadG  = parseFloat(document.getElementById('nutr-l-frontload').value)  || 0;
   const phLocked    = document.getElementById('nutr-l-phlocked').checked;
 
-  const demand = calcLettuceNutrDemand(transplantG, targetG, cycleDays, density);
-  const supply = calcLettuceNutrSupply(transplantG, targetG, density, phLocked, frontloadG);
+  const demand = calculateLettuceNutritionDemand(transplantG, targetG, cycleDays, density);
+  const supply = calculateLettuceNutritionSupply(transplantG, targetG, density, phLocked, frontloadG);
   const order = ['N','P','K','Ca','Mg','Fe','Mn','Zn','B','Cu','Mo'];
-  const LETTUCE_AREA = LETTUCE_NUM_BEDS * LETTUCE_BED_AREA;
+  const LETTUCE_AREA = LETTUCE_NUMBER_BEDS * LETTUCE_BED_AREA;
 
   // Pourquoi modal registry — wiped + repopulated each render. Keys use
-  // `lettuce-${block}.${el}` so they don't collide with tomato entries.
+  // `lettuce-${block}.${element}` so they don't collide with tomato entries.
   window.currentPourquoi = {};
 
   const massGainPerCycle = (targetG - transplantG) * density / 1000;
   const dwGain = massGainPerCycle * LETTUCE_DM_FRACTION;
 
   // Context block — surface the assumptions driving the numbers below.
-  const ctxEl = document.getElementById('nutr-l-context');
-  if (ctxEl) {
+  const contextElement = document.getElementById('nutr-l-context');
+  if (contextElement) {
     const tooBig = (transplantG >= targetG);
     const warn = tooBig
       ? ' <span style="color:#8a3e1e;">⚠ Cible ≤ transplant — aucun gain de masse, demande nulle.</span>'
       : '';
-    ctxEl.innerHTML =
+    contextElement.innerHTML =
       `Gain par tête : <strong style="color:var(--text);">${(targetG - transplantG).toFixed(0)} g</strong>`
       + ` sur ${cycleDays.toFixed(0)} jours · `
       + `gain m² : <strong style="color:var(--text);">${massGainPerCycle.toFixed(2)} kg/m²</strong>`
@@ -5205,16 +5205,16 @@ function buildNutrimentLettuce() {
   // window.CompostContribution.releasePerWeek is per-m² so it transfers directly.
   const compostMg = {};
   const CC = window.CompostContribution;
-  order.forEach(el => {
-    const gPerWk = CC.releasePerWeek[el];
-    compostMg[el] = (gPerWk != null ? gPerWk : 0) * 1000;
+  order.forEach(element => {
+    const gPerWk = CC.releasePerWeek[element];
+    compostMg[element] = (gPerWk != null ? gPerWk : 0) * 1000;
   });
 
   // Front-load (farine de plumes pre-transplant) — N only; mineralization
   // window per LETTUCE_FRONTLOAD_DEFAULTS. Mirror compost structure for the
   // gap chain: per-element supply map (mostly 0).
   const frontloadMg = {};
-  order.forEach(el => { frontloadMg[el] = 0; });
+  order.forEach(element => { frontloadMg[element] = 0; });
   frontloadMg.N = supply.frontload.N || 0;
 
   // Mass-balance gap chain: demand → compost → front-load → fertigation.
@@ -5223,11 +5223,11 @@ function buildNutrimentLettuce() {
   const gapAfterCompost   = {};
   const gapAfterFront     = {};
   const gapAfterFert      = {};
-  order.forEach(el => {
-    gapAfterDemand[el]  = demand[el] || 0;
-    gapAfterCompost[el] = Math.max(0, gapAfterDemand[el]  - (compostMg[el]      || 0));
-    gapAfterFront[el]   = Math.max(0, gapAfterCompost[el] - (frontloadMg[el]    || 0));
-    gapAfterFert[el]    = Math.max(0, gapAfterFront[el]   - (supply.fert[el]    || 0));
+  order.forEach(element => {
+    gapAfterDemand[element]  = demand[element] || 0;
+    gapAfterCompost[element] = Math.max(0, gapAfterDemand[element]  - (compostMg[element]      || 0));
+    gapAfterFront[element]   = Math.max(0, gapAfterCompost[element] - (frontloadMg[element]    || 0));
+    gapAfterFert[element]    = Math.max(0, gapAfterFront[element]   - (supply.fert[element]    || 0));
   });
 
   const fmt = v => (v == null || !isFinite(v)) ? '—'
@@ -5241,17 +5241,17 @@ function buildNutrimentLettuce() {
   // micros). DW tissue concentration moved out of the visible row into the
   // modal so the grid stays compact (per user request 2026-05-08).
   const certByEl = { N:4, P:4, K:4, Ca:4, Mg:4, Fe:3, Mn:3, Zn:3, B:3, Cu:3, Mo:3 };
-  order.forEach(el => {
-    const t = LETTUCE_TISSUE_DW[el];
-    const dwStr = t >= 1e-3 ? `${(t*100).toFixed(2)}%` : `${(t*1e6).toFixed(0)} ppm`;
+  order.forEach(element => {
+    const t = LETTUCE_TISSUE_DW[element];
+    const dryWeightString = t >= 1e-3 ? `${(t*100).toFixed(2)}%` : `${(t*1e6).toFixed(0)} ppm`;
     const dwGainPerWk_g = dwGain * 1000 * (7 / Math.max(1, cycleDays));
-    registerPourquoi(`lettuce-demand.${el}`, {
-      title: `${el} — besoin hebdomadaire (Salanova post-transplant)`,
-      cert: certByEl[el],
-      equation: `demand[${el}] = (gain frais × densité / 1000) × DM × (7 / cycleDays) × LETTUCE_TISSUE_DW[${el}] × 1 000`,
-      plugged: `gain ${(targetG - transplantG).toFixed(0)} g × ${density.toFixed(0)} plants/m² / 1 000 = ${massGainPerCycle.toFixed(2)} kg/m² · DM ${(LETTUCE_DM_FRACTION*100).toFixed(0)}% · sur ${cycleDays.toFixed(0)} j → DW ${dwGainPerWk_g.toFixed(1)} g/m²/sem · × ${dwStr} = <strong>${fmt(demand[el])} mg/m²/sem</strong>`,
-      interpretation: `Concentration tissulaire DW (Hochmuth + Sonneveld leafy greens) : <strong>${dwStr}</strong>. ` + (
-        certByEl[el] === 4
+    registerPourquoi(`lettuce-demand.${element}`, {
+      title: `${element} — besoin hebdomadaire (Salanova post-transplant)`,
+      cert: certByEl[element],
+      equation: `demand[${element}] = (gain frais × densité / 1000) × DM × (7 / cycleDays) × LETTUCE_TISSUE_DW[${element}] × 1 000`,
+      plugged: `gain ${(targetG - transplantG).toFixed(0)} g × ${density.toFixed(0)} plants/m² / 1 000 = ${massGainPerCycle.toFixed(2)} kg/m² · DM ${(LETTUCE_DM_FRACTION*100).toFixed(0)}% · sur ${cycleDays.toFixed(0)} j → DW ${dwGainPerWk_g.toFixed(1)} g/m²/sem · × ${dryWeightString} = <strong>${fmt(demand[element])} mg/m²/sem</strong>`,
+      interpretation: `Concentration tissulaire DW (Hochmuth + Sonneveld leafy greens) : <strong>${dryWeightString}</strong>. ` + (
+        certByEl[element] === 4
           ? 'Macros Salanova bien documentés en littérature serre — cert 4.'
           : 'Micros leafy greens : cert 3 (fourchette plus large, varie selon génétique + lumière).'
       )
@@ -5262,10 +5262,10 @@ function buildNutrimentLettuce() {
     <div style="font-weight:700; color:var(--text-muted); font-size:10px; text-transform:uppercase; letter-spacing:1px;">Besoin</div>
   </div>`;
   needsHtml += `<div style="font-size:12px;">`;
-  order.forEach(el => {
-    needsHtml += `<div class="pq-row" onclick="showPourquoi('lettuce-demand.${el}')" style="display:grid; grid-template-columns:0.6fr 1fr; gap:6px 12px; padding:2px 4px; border-radius:3px;">
-      <div style="font-weight:600;">${el}</div>
-      <div style="font-family:'DM Mono',monospace;">${fmt(demand[el])} <span style="color:var(--text-muted); font-size:10px;">mg/m²/sem</span></div>
+  order.forEach(element => {
+    needsHtml += `<div class="pq-row" onclick="showPourquoi('lettuce-demand.${element}')" style="display:grid; grid-template-columns:0.6fr 1fr; gap:6px 12px; padding:2px 4px; border-radius:3px;">
+      <div style="font-weight:600;">${element}</div>
+      <div style="font-family:'DM Mono',monospace;">${fmt(demand[element])} <span style="color:var(--text-muted); font-size:10px;">mg/m²/sem</span></div>
     </div>`;
   });
   needsHtml += `</div>`;
@@ -5275,33 +5275,33 @@ function buildNutrimentLettuce() {
   // Reads window.CompostContribution.releasePerWeek — same source-of-truth as
   // the tomato compost block (REQ-004). Per-element rows clickable for modal.
   let compostHtml = `<div style="font-size:12.5px; line-height:1.5; color:var(--text-muted); margin-bottom:10px;">Minéralisation hebdomadaire du compost Savaria ORGANIMIX appliqué à l'automne 2025 sur les planches Salanova (~25,4 kg/m², étiquette N 0,5 · P₂O₅ 0,1 · K₂O 0,1 · Ca 1,1 · Mg ~0,5 %). Décline avec le temps ; à revisiter quand le compost vieillit (~18-24 mois post-application).</div>`;
-  order.forEach(el => {
-    const gPerWk = CC.releasePerWeek[el];
+  order.forEach(element => {
+    const gPerWk = CC.releasePerWeek[element];
     if (gPerWk == null) {
-      registerPourquoi(`lettuce-compost.${el}`, {
-        title: `${el} — compost résiduel`,
+      registerPourquoi(`lettuce-compost.${element}`, {
+        title: `${element} — compost résiduel`,
         cert: 2,
-        equation: `compost[${el}] = 0 (non listé dans window.CompostContribution.releasePerWeek)`,
+        equation: `compost[${element}] = 0 (non listé dans window.CompostContribution.releasePerWeek)`,
         plugged: `Apport compost = 0 mg/m²/sem`,
         // stable — Savaria label declares only macros + Ca; micros not tracked
-        interpretation: `${el} n'est pas suivi dans la libération du compost (étiquette Savaria ne déclare que macros). Apport supposé négligeable à l'échelle hebdomadaire.`
+        interpretation: `${element} n'est pas suivi dans la libération du compost (étiquette Savaria ne déclare que macros). Apport supposé négligeable à l'échelle hebdomadaire.`
       });
       return;
     }
     const mgPerWk = gPerWk * 1000;
     const totalGPerWk = gPerWk * LETTUCE_AREA;
     // stable — Ca-saturation context; mineralization model; Mg label gap; P pH lockout
-    const note = el === 'Ca'
+    const note = element === 'Ca'
       ? '⚠ Le Ca du compost a contribué à la sursaturation calcique du sol (racine de la crise pH 7,4-7,5). Pas un manque à combler — un excès à laisser décliner par lessivage.'
-      : (el === 'Mg'
+      : (element === 'Mg'
         ? 'Mg % NON déclaré sur l\'étiquette Savaria (assomption conservatrice ~0,3 %). Cert 1-2 — vérifier auprès du fournisseur si le poste devient critique.'
-        : (el === 'P'
+        : (element === 'P'
           ? 'P verrouillé à pH ≥ 7 : Ca²⁺ précipite le phosphate fraîchement minéralisé en Ca-P avant absorption. Apport effectif très faible tant que le pH reste haut.'
           : 'Minéralisation année 1 × facteur saisonnier (Q10 ≈ 2 sur l\'activité microbienne).'));
-    registerPourquoi(`lettuce-compost.${el}`, {
-      title: `${el} — compost résiduel (Savaria ORGANIMIX)`,
-      cert: el === 'Mg' ? 1 : (el === 'Ca' ? 3 : 2),
-      equation: `compost[${el}] = window.CompostContribution.releasePerWeek[${el}] × 1 000`,
+    registerPourquoi(`lettuce-compost.${element}`, {
+      title: `${element} — compost résiduel (Savaria ORGANIMIX)`,
+      cert: element === 'Mg' ? 1 : (element === 'Ca' ? 3 : 2),
+      equation: `compost[${element}] = window.CompostContribution.releasePerWeek[${element}] × 1 000`,
       plugged: `${gPerWk.toFixed(3)} g/m²/sem × 1 000 = <strong>${mgPerWk.toFixed(0)} mg/m²/sem</strong> &nbsp;·&nbsp; total Salanova (${LETTUCE_AREA.toFixed(0)} m²) = ${totalGPerWk.toFixed(1)} g/sem`,
       interpretation: note
     });
@@ -5315,27 +5315,27 @@ function buildNutrimentLettuce() {
   // with click-to-modal rows. Only N is delivered; other rows surface "no
   // contribution" reasons in the modal.
   const fmWeeks = LETTUCE_FRONTLOAD_DEFAULTS.mineralizationWeeks;
-  const planches = LETTUCE_NUM_BEDS;
+  const planches = LETTUCE_NUMBER_BEDS;
   const planchAreaM2 = LETTUCE_BED_AREA;
   const totalKg = (frontloadG * planches * planchAreaM2) / 1000;
   registerPourquoi(`lettuce-frontload.N`, {
     title: 'N — front-load farine de plumes (pré-transplant)',
     cert: 3,
     equation: `frontload[N] = taux × FarinePlumes_N × eff_N × 1 000 / mineralizationWeeks`,
-    plugged: `${frontloadG.toFixed(0)} g/m² × ${PRODUCT_PCT.FarinePlumes_N} × ${SIDEDRESS_MIN_EFF.FarinePlumes_N} × 1 000 / ${fmWeeks} sem = <strong>${fmt(frontloadMg.N)} mg N/m²/sem</strong> &nbsp;·&nbsp; total ${planches} planches × ${planchAreaM2} m² = ${totalKg.toFixed(1)} kg`,
+    plugged: `${frontloadG.toFixed(0)} g/m² × ${PRODUCT_PCT.FarinePlumes_N} × ${SIDEDRESS_MINIMUM_EFFICIENCY.FarinePlumes_N} × 1 000 / ${fmWeeks} sem = <strong>${fmt(frontloadMg.N)} mg N/m²/sem</strong> &nbsp;·&nbsp; total ${planches} planches × ${planchAreaM2} m² = ${totalKg.toFixed(1)} kg`,
     // stable — feather meal mineralization rate + N-only profile
     interpretation: 'Farine de plumes 13-0-0 appliquée avant transplant et incorporée. Minéralisation 75 % sur ~4 sem de relâche en sol chaud (cert 3). Distribué uniformément sur la fenêtre — N effectif hebdo = N total × 75 % / nombre de semaines.'
   });
-  ['P','K','Ca','Mg','Fe','Mn','Zn','B','Cu','Mo'].forEach(el => {
-    registerPourquoi(`lettuce-frontload.${el}`, {
-      title: `${el} — pas dans le front-load`,
+  ['P','K','Ca','Mg','Fe','Mn','Zn','B','Cu','Mo'].forEach(element => {
+    registerPourquoi(`lettuce-frontload.${element}`, {
+      title: `${element} — pas dans le front-load`,
       cert: 3,
-      equation: `frontload[${el}] = 0`,
+      equation: `frontload[${element}] = 0`,
       plugged: `Apport front-load = 0 mg/m²/sem`,
       // stable — feather meal is N-only; P/Ca already saturated, others not delivered
-      interpretation: el === 'P' || el === 'Ca'
-        ? `Pas de ${el} dans le front-load — ${el === 'P' ? 'banque Mehlich saturée + lockout pH' : 'sol Ca-saturé, ajout anti-utile'}. Farine de plumes = 13-0-0 (N seul).`
-        : `Farine de plumes = 13-0-0 (N seul). ${el} doit venir d'un autre canal.`
+      interpretation: element === 'P' || element === 'Ca'
+        ? `Pas de ${element} dans le front-load — ${element === 'P' ? 'banque Mehlich saturée + lockout pH' : 'sol Ca-saturé, ajout anti-utile'}. Farine de plumes = 13-0-0 (N seul).`
+        : `Farine de plumes = 13-0-0 (N seul). ${element} doit venir d'un autre canal.`
     });
   });
   let flHtml = `<div style="font-size:12.5px; line-height:1.5; color:var(--text-muted); margin-bottom:10px;">Farine de plumes 13-0-0 appliquée avant transplant à <strong style="color:var(--text);">${frontloadG.toFixed(0)} g/m²</strong> (~${totalKg.toFixed(1)} kg total sur ${planches} planches × ${planchAreaM2} m²). Minéralisation 75 % distribuée sur ~${fmWeeks} sem (cert 3). N seul — aucun P, aucun Ca (les deux déjà saturés au sol).</div>`;
@@ -5377,20 +5377,20 @@ function buildNutrimentLettuce() {
     // stable — Fe oxidation chemistry at high pH is invariant
     interpretation: 'À pH ≥ 7, Fe²⁺ → Fe³⁺ rapide (oxydation) ; réductase racinaire supprimée en sol calcaire. Apport effectif ~15 % de la dose. Foliaire Fe-EDDHA = bypass durable si la carence persiste.'
   });
-  ['N','P','Ca','Mn','Zn','B','Cu','Mo'].forEach(el => {
-    registerPourquoi(`lettuce-fert.${el}`, {
-      title: `${el} — pas en fertigation`,
+  ['N','P','Ca','Mn','Zn','B','Cu','Mo'].forEach(element => {
+    registerPourquoi(`lettuce-fert.${element}`, {
+      title: `${element} — pas en fertigation`,
       cert: 3,
-      equation: `fert[${el}] = 0 (élément absent de LETTUCE)`,
+      equation: `fert[${element}] = 0 (élément absent de LETTUCE)`,
       plugged: `Apport fertigation = 0 mg/m²/sem`,
       // stable — N biofilm risk; Ca-saturated soil; sulfate-oligo high-pH precipitation
-      interpretation: el === 'N'
+      interpretation: element === 'N'
         ? 'N retiré de la fertigation laitue : risque de biofilm dans le baril (matière organique). Le compost résiduel + le front-load couvrent.'
-        : el === 'Ca'
+        : element === 'Ca'
           ? 'Sol Ca-saturé — apport supplémentaire anti-utile.'
-          : el === 'P'
+          : element === 'P'
             ? 'P précipite avec Ca²⁺ à pH ≥ 7 avant d\'atteindre les racines. Banque Mehlich saturée (678 kg/ha).'
-            : `${el} retiré de la fertigation à pH ≥ 7 (sulfates d'oligos précipitent en hydroxydes/phosphates de Ca avant absorption). Foliaire bypasse cette chimie. Réintroduire si pH < 6,5.`
+            : `${element} retiré de la fertigation à pH ≥ 7 (sulfates d'oligos précipitent en hydroxydes/phosphates de Ca avant absorption). Foliaire bypasse cette chimie. Réintroduire si pH < 6,5.`
     });
   });
   fertHtml += `<div style="font-size:11.5px; color:var(--text-muted); margin-bottom:4px;">Manque entrant (après front-load) → manque restant après fertigation :</div>`;
@@ -5399,10 +5399,10 @@ function buildNutrimentLettuce() {
 
   // ─── Block 5: Leviers (auto-derived from gap chain residual) ───
   let missHtml = `<div style="font-size:11.5px; color:var(--text-muted); margin-bottom:8px;">Manque résiduel après les trois canaux (compost, front-load, fertigation). Trier par magnitude pour prioriser ; le levier propose comment fermer le gap.</div>`;
-  const gaps = order.map(el => ({
-    el,
-    gap: gapAfterFert[el] || 0,
-    demand: demand[el] || 0,
+  const gaps = order.map(element => ({
+    element,
+    gap: gapAfterFert[element] || 0,
+    demand: demand[element] || 0,
   })).filter(g => g.demand > 0 && g.gap > 0)
      .sort((a, b) => (b.gap / Math.max(1, b.demand)) - (a.gap / Math.max(1, a.demand)));
 
@@ -5416,10 +5416,10 @@ function buildNutrimentLettuce() {
       <div style="font-weight:700; color:var(--text-muted); font-size:10px; text-transform:uppercase; letter-spacing:1px;">Levier</div>`;
     gaps.forEach(g => {
       const pct = (g.gap / g.demand) * 100;
-      const lever = lettuceLeverFor(g.el, phLocked);
+      const lever = lettuceLeverFor(g.element, phLocked);
       const pctColor = pct >= 80 ? '#8a3e1e' : pct >= 50 ? '#a86a1e' : 'var(--text)';
       missHtml += `
-        <div style="font-weight:600;">${g.el}</div>
+        <div style="font-weight:600;">${g.element}</div>
         <div style="font-family:'DM Mono',monospace;">${fmt(g.gap)}</div>
         <div style="font-family:'DM Mono',monospace; color:${pctColor};">${Math.round(pct)}%</div>
         <div style="font-size:11.5px; line-height:1.5;">${lever}</div>`;
@@ -5433,8 +5433,8 @@ function buildNutrimentLettuce() {
   // recipe + LETTUCE_FRONTLOAD_DEFAULTS as the proposed target with rationale
   // per channel. Stage-independent (lettuce has no stages).
   try {
-    const proposedEl = document.getElementById('nutr-l-proposed');
-    if (proposedEl) proposedEl.innerHTML = renderProposedRecipeLettuce({
+    const proposedElement = document.getElementById('nutr-l-proposed');
+    if (proposedElement) proposedElement.innerHTML = renderProposedRecipeLettuce({
       demand, supply, frontloadMg, gapAfterFront, frontloadG,
     });
   } catch (e) {
@@ -5523,31 +5523,31 @@ function renderProposedRecipeLettuce({ demand, supply, frontloadMg, gapAfterFron
 
 // Lever advice per element for the Salanova subpage. Auto-derived from
 // element identity + pH state. Kept short so the Block 5 grid stays readable.
-function lettuceLeverFor(el, phLocked) {
-  if (el === 'N') {
+function lettuceLeverFor(element, phLocked) {
+  if (element === 'N') {
     return 'Augmenter le front-load (farine de plumes) OU ajouter du poisson hydrolysé Acadie 2-4-0.5 à la fertigation (1-2 mL/L stock). Bypass quasi immédiat (1-3 jours) vs farine (1-2 sem). <strong>N est le plus gros gap structurel</strong> tant que la fertigation reste sans N.';
   }
-  if (el === 'P') {
+  if (element === 'P') {
     return phLocked
       ? 'Lockout pH — soufre élémentaire à la planche (programme en cours). Pas d\'apport supplémentaire de P (banque Mehlich 678 kg/ha déjà saturée).'
       : 'Le bank Mehlich devrait suivre une fois le pH baissé. Pas d\'apport supplémentaire.';
   }
-  if (el === 'Ca') {
+  if (element === 'Ca') {
     return 'Sol Ca-saturé — pas d\'apport. Si la cinétique de translocation devient limitante (tip-burn), gérer par climat (VPD, ventilation) plutôt que par apport.';
   }
-  if (el === 'K' || el === 'Mg') {
+  if (element === 'K' || element === 'Mg') {
     return 'Déjà luxe via fertigation actuelle ; ne pas augmenter.';
   }
-  if (el === 'Fe') {
+  if (element === 'Fe') {
     return 'Programme actuel : nursery loading + FeSO₄ 7,5 g/100m²/sem (efficacité ~15% à pH 7,4). Foliaire Fe-EDDHA pourrait combler à court terme ; soufre + chute pH = solution durable.';
   }
-  if (el === 'Mn' || el === 'Zn') {
-    return `<strong>Aucun canal de livraison</strong> à pH 7,4 (lockout sol + foliaire laitue retiré). Réintroduire foliaire ${el}SO₄ pour les laitues tant que pH ≥ 6,5. À revisiter quand le soufre baisse le pH.`;
+  if (element === 'Mn' || element === 'Zn') {
+    return `<strong>Aucun canal de livraison</strong> à pH 7,4 (lockout sol + foliaire laitue retiré). Réintroduire foliaire ${element}SO₄ pour les laitues tant que pH ≥ 6,5. À revisiter quand le soufre baisse le pH.`;
   }
-  if (el === 'B') {
+  if (element === 'B') {
     return 'Bore Mehlich vide (<0,1 ppm) — amendement bore prévu sur la page Sol (déclenché à pH < 7). En attendant : foliaire Solubore avec spray laitue.';
   }
-  if (el === 'Cu' || el === 'Mo') {
+  if (element === 'Cu' || element === 'Mo') {
     return 'Demande absolue petite ; banque sol comble probablement. Surveiller au tissue test.';
   }
   return '';
@@ -5564,7 +5564,7 @@ function buildNutrimentNursery() {
   const traysCohort = parseFloat(document.getElementById('nutr-n-trays').value)   || 50;
   const appsPerWeek = parseFloat(document.getElementById('nutr-n-applications')?.value) || 1;
 
-  const demand = calcNurseryDemand(targetG, cycleDays, cellsPerTray);
+  const demand = calculateNurseryDemand(targetG, cycleDays, cellsPerTray);
   const order = ['N','P','K','Ca','Mg','Fe','Mn','Zn','B','Cu','Mo'];
 
   const dwPerPlant_g = targetG * LETTUCE_NURSERY_DM_FRACTION;
@@ -5585,9 +5585,9 @@ function buildNutrimentNursery() {
     : '';
 
   // Context block
-  const ctxEl = document.getElementById('nutr-n-context');
-  if (ctxEl) {
-    ctxEl.innerHTML =
+  const contextElement = document.getElementById('nutr-n-context');
+  if (contextElement) {
+    contextElement.innerHTML =
       `Cible <strong style="color:var(--text);">${targetG.toFixed(0)} g/plant</strong> en `
       + `<strong style="color:var(--text);">${cycleDays.toFixed(0)} j</strong> · `
       + `gain DW/plant : <strong style="color:var(--text);">${dwPerPlant_g.toFixed(2)} g</strong> sur le cycle `
@@ -5611,21 +5611,21 @@ function buildNutrimentNursery() {
     <div style="font-weight:700; color:var(--text-muted); font-size:10px; text-transform:uppercase; letter-spacing:1px;">Par plant</div>
     <div style="font-weight:700; color:var(--text-muted); font-size:10px; text-transform:uppercase; letter-spacing:1px;">Cert</div>`;
   const certByEl = { N:3, P:3, K:3, Ca:3, Mg:3, Fe:2, Mn:2, Zn:2, B:2, Cu:2, Mo:2 };
-  order.forEach(el => {
-    const d = demand[el] || { perPlant_mg: 0 };
+  order.forEach(element => {
+    const d = demand[element] || { perPlant_mg: 0 };
     html += `
-      <div style="font-weight:600;">${el}</div>
+      <div style="font-weight:600;">${element}</div>
       <div style="font-family:'DM Mono',monospace;">${fmt(d.perPlant_mg)} <span style="color:var(--text-muted); font-size:10px;">mg/sem</span></div>
-      <div style="color:var(--text-muted); font-size:11px;">cert ${certByEl[el]}</div>`;
+      <div style="color:var(--text-muted); font-size:11px;">cert ${certByEl[element]}</div>`;
   });
   html += `</div>`;
   document.getElementById('nutr-n-needs').innerHTML = html;
 
   // ─── Gap chain (REQ-129): demand → substrate → fertigation → leviers ───
-  // Build flat demand[el] = perTray_mg for the renderGapGrid pipeline.
+  // Build flat demand[element] = perTray_mg for the renderGapGrid pipeline.
   const demandFlat = {};
-  ['N','P','K','Ca','Mg','Fe','Mn','Zn','B','Cu','Mo'].forEach(el => {
-    demandFlat[el] = (demand[el] || {}).perTray_mg || 0;
+  ['N','P','K','Ca','Mg','Fe','Mn','Zn','B','Cu','Mo'].forEach(element => {
+    demandFlat[element] = (demand[element] || {}).perTray_mg || 0;
   });
 
   // ─── Block 2: Substrate (REQ-127) — recipe header + gap-grid table ───
@@ -5637,29 +5637,29 @@ function buildNutrimentNursery() {
   const subAvg = subResult.perTray_mg || {};
   const subDetails = subResult.details || {};
   const subContrib = {};
-  ['N','P','K','Ca','Mg','Fe','Mn','Zn','B','Cu','Mo'].forEach(el => {
-    subContrib[el] = subAvg[el] || 0;
+  ['N','P','K','Ca','Mg','Fe','Mn','Zn','B','Cu','Mo'].forEach(element => {
+    subContrib[element] = subAvg[element] || 0;
   });
   const gapAfterSubstrate = {};
-  ['N','P','K','Ca','Mg','Fe','Mn','Zn','B','Cu','Mo'].forEach(el => {
-    gapAfterSubstrate[el] = Math.max(0, demandFlat[el] - (subContrib[el] || 0));
+  ['N','P','K','Ca','Mg','Fe','Mn','Zn','B','Cu','Mo'].forEach(element => {
+    gapAfterSubstrate[element] = Math.max(0, demandFlat[element] - (subContrib[element] || 0));
   });
   // REQ-138 — register pourquoi entries (cell-cert + per-cap) for each element.
-  ['N','P','K','Ca','Mg','Fe','Mn','Zn','B','Cu','Mo'].forEach(el => {
-    const v = subContrib[el] || 0;
-    const det = subDetails[el] || { cert: null, cap: null };
-    registerPourquoi('nursery-substrate.cell.' + el, {
-      title: el + ' — Réserve substrat (semis)',
+  ['N','P','K','Ca','Mg','Fe','Mn','Zn','B','Cu','Mo'].forEach(element => {
+    const v = subContrib[element] || 0;
+    const det = subDetails[element] || { cert: null, cap: null };
+    registerPourquoi('nursery-substrate.cell.' + element, {
+      title: element + ' — Réserve substrat (semis)',
       cert: det.cert,
       equation: 'apport substrat moyen = OM2 starter × release_curve + farine × N_label × minéralisation × release_curve',
       plugged: '<strong>' + fmt(v) + ' mg/plateau/sem</strong> (moyenne sur ' + SCN.OM2_RELEASE_CURVE_BY_WEEK.length + ' sem du cycle)',
-      interpretation: el === 'N'
+      interpretation: element === 'N'
         ? 'OM2 starter charge (cert 2 placeholder, fiche Berger pendante) + farine de plumes 13-0-0 minéralisée 75% en ~5 sem (cert 4 produit). Cert combiné = min(2, 4) = 2.'
         : 'Source: OM2 starter charge (cert 2 placeholder, fiche Berger pendante). Farine de plumes ne porte que du N. Cert raisé à 4 quand la fiche datasheet Berger sera intégrée.',
     });
     if (det.cap) {
-      registerPourquoi('nursery-substrate.cap.' + el + '.' + det.cap.kind, {
-        title: el + ' — plafond ' + (det.cap.kind === 'damage' ? 'plante 🔥' : det.cap.kind === 'precipitation' ? 'précipitation 💧' : 'autre ❗'),
+      registerPourquoi('nursery-substrate.cap.' + element + '.' + det.cap.kind, {
+        title: element + ' — plafond ' + (det.cap.kind === 'damage' ? 'plante 🔥' : det.cap.kind === 'precipitation' ? 'précipitation 💧' : 'autre ❗'),
         cert: det.cert,
         equation: '',
         plugged: det.cap.reason,
@@ -5697,29 +5697,29 @@ function buildNutrimentNursery() {
   // also exposes details per element.
   const fertContrib = {};
   const fertDetails = supply.details || {};
-  ['N','P','K','Ca','Mg','Fe','Mn','Zn','B','Cu','Mo'].forEach(el => {
-    fertContrib[el] = (supply.perTray_mg || {})[el] || 0;
+  ['N','P','K','Ca','Mg','Fe','Mn','Zn','B','Cu','Mo'].forEach(element => {
+    fertContrib[element] = (supply.perTray_mg || {})[element] || 0;
   });
   // Gap chain step 2 — feeds Block 4 (leviers) as residual.
   const gapAfterFert = {};
-  ['N','P','K','Ca','Mg','Fe','Mn','Zn','B','Cu','Mo'].forEach(el => {
-    gapAfterFert[el] = Math.max(0, gapAfterSubstrate[el] - fertContrib[el]);
+  ['N','P','K','Ca','Mg','Fe','Mn','Zn','B','Cu','Mo'].forEach(element => {
+    gapAfterFert[element] = Math.max(0, gapAfterSubstrate[element] - fertContrib[element]);
   });
   // REQ-138 — register pourquoi entries per (block, element) cell + cap.
-  ['N','P','K','Ca','Mg','Fe','Mn','Zn','B','Cu','Mo'].forEach(el => {
-    const v = fertContrib[el] || 0;
-    const det = fertDetails[el] || { cert: null, cap: null };
+  ['N','P','K','Ca','Mg','Fe','Mn','Zn','B','Cu','Mo'].forEach(element => {
+    const v = fertContrib[element] || 0;
+    const det = fertDetails[element] || { cert: null, cap: null };
     if (v <= 0 && !det.cap) return;
-    registerPourquoi('nursery-fert.cell.' + el, {
-      title: el + ' — Fertigation (semis)',
+    registerPourquoi('nursery-fert.cell.' + element, {
+      title: element + ' — Fertigation (semis)',
       cert: det.cert,
-      equation: 'apport = Σ (recipe[product].g/L × tray_volume × product.base[' + el + ']) × applications/sem',
+      equation: 'apport = Σ (recipe[product].g/L × tray_volume × product.base[' + element + ']) × applications/sem',
       plugged: '<strong>' + fmt(v) + ' mg/plateau/sem</strong> à ' + appsPerWeek + '× /sem · CE bidon ' + ce.toFixed(2) + ' mS/cm.',
-      interpretation: 'Cert combiné = min(cert) parmi les produits qui apportent ' + el + '. Augmenter applications/sem (REQ-122) ou ajouter un produit (REQ-124) pour combler le manque sortant.',
+      interpretation: 'Cert combiné = min(cert) parmi les produits qui apportent ' + element + '. Augmenter applications/sem (REQ-122) ou ajouter un produit (REQ-124) pour combler le manque sortant.',
     });
     if (det.cap) {
-      registerPourquoi('nursery-fert.cap.' + el + '.' + det.cap.kind, {
-        title: el + ' — plafond ' + (det.cap.kind === 'damage' ? 'plante 🔥' : det.cap.kind === 'precipitation' ? 'précipitation 💧' : 'autre ❗'),
+      registerPourquoi('nursery-fert.cap.' + element + '.' + det.cap.kind, {
+        title: element + ' — plafond ' + (det.cap.kind === 'damage' ? 'plante 🔥' : det.cap.kind === 'precipitation' ? 'précipitation 💧' : 'autre ❗'),
         cert: det.cert,
         equation: '',
         plugged: det.cap.reason,
@@ -5749,26 +5749,26 @@ function buildNutrimentNursery() {
   // Includes (REQ-123) min applicationsPerWeek to hit 100% on sourced
   // elements, and (REQ-124) sourced vs unsourced classification.
   const gaps = [];
-  ['N','P','K','Ca','Mg','Fe','Mn','Zn','B','Cu','Mo'].forEach(el => {
-    const d = demandFlat[el] || 0;
-    const gap = gapAfterFert[el] || 0;
-    if (d > 0) gaps.push({ el, gap, demand: d });
+  ['N','P','K','Ca','Mg','Fe','Mn','Zn','B','Cu','Mo'].forEach(element => {
+    const d = demandFlat[element] || 0;
+    const gap = gapAfterFert[element] || 0;
+    if (d > 0) gaps.push({ element, gap, demand: d });
   });
   gaps.sort((a, b) => (b.gap / Math.max(1, b.demand)) - (a.gap / Math.max(1, a.demand)));
 
-  // For the minApplicationsPerWeek + sourced/unsourced check, "demand the
+  // For the minimumApplicationsPerWeek + sourced/unsourced check, "demand the
   // fertigation must cover" = gapAfterSubstrate (substrate already in chain).
-  const minApps = FN.minApplicationsPerWeek(recipe, gapAfterSubstrate, trayL, ceCap);
+  const minimumApps = FN.minimumApplicationsPerWeek(recipe, gapAfterSubstrate, trayL, ceCap);
   const sourceSplit = FN.nurseryElementsBySource(recipe, gapAfterSubstrate, trayL);
-  const minAppsLine = minApps === null
+  const minimumAppsLine = minimumApps === null
     ? `<span style="color:#8a3e1e;">⚠ Recette plafonnée : même à 7×/sem, certains éléments sourcés ne couvrent pas la demande. Augmenter dose par fertigation OU ajouter un produit.</span>`
-    : `Pour couvrir 100% de N/P/K (sources actives, sans substrat) : <strong style="color:var(--text);">${minApps}×/sem</strong>${minApps > appsPerWeek ? ` (actuellement ${appsPerWeek}×)` : ''}.`;
+    : `Pour couvrir 100% de N/P/K (sources actives, sans substrat) : <strong style="color:var(--text);">${minimumApps}×/sem</strong>${minimumApps > appsPerWeek ? ` (actuellement ${appsPerWeek}×)` : ''}.`;
   const unsourcedLine = sourceSplit.unsourced.length > 0
     ? ` Éléments sans source dans la recette (frequency ne ferme pas le gap) : <strong>${sourceSplit.unsourced.join(', ')}</strong>.`
     : '';
 
   let levHtml = `<div style="font-size:11.5px; color:var(--text-muted); margin-bottom:8px;">Manque = besoin − substrat − fertigation. Trié par % manquant.</div>`;
-  levHtml += `<div style="margin-bottom:10px; padding:8px 10px; background:var(--input-bg); border:1px solid var(--border); border-radius:var(--radius-sm); font-size:11.5px; line-height:1.55;">${minAppsLine}${unsourcedLine}</div>`;
+  levHtml += `<div style="margin-bottom:10px; padding:8px 10px; background:var(--input-bg); border:1px solid var(--border); border-radius:var(--radius-sm); font-size:11.5px; line-height:1.55;">${minimumAppsLine}${unsourcedLine}</div>`;
   const openGaps = gaps.filter(g => g.gap > 0);
   if (openGaps.length === 0) {
     levHtml += `<div style="padding:10px; background:#eef7f1; border:1px solid #b8d9c4; border-radius:6px; color:#1e6b2d; font-weight:600;">✓ Tous les besoins sont couverts au taux courant.</div>`;
@@ -5780,10 +5780,10 @@ function buildNutrimentNursery() {
       <div style="font-weight:700; color:var(--text-muted); font-size:10px; text-transform:uppercase; letter-spacing:1px;">Levier</div>`;
     openGaps.forEach(g => {
       const pct = (g.gap / g.demand) * 100;
-      const lever = nurseryLeverFor(g.el);
+      const lever = nurseryLeverFor(g.element);
       const pctColor = pct >= 80 ? '#8a3e1e' : pct >= 50 ? '#a86a1e' : 'var(--text)';
       levHtml += `
-        <div style="font-weight:600;">${g.el}</div>
+        <div style="font-weight:600;">${g.element}</div>
         <div style="font-family:'DM Mono',monospace;">${fmt(g.gap)}</div>
         <div style="font-family:'DM Mono',monospace; color:${pctColor};">${Math.round(pct)}%</div>
         <div style="font-size:11.5px; line-height:1.5;">${lever}</div>`;
@@ -5795,23 +5795,23 @@ function buildNutrimentNursery() {
 
 // Lever advice per element for the Semis subpage. Auto-derived from element
 // identity (mirrors lettuceLeverFor on Salanova subpage). Cert 3.
-function nurseryLeverFor(el) {
-  if (el === 'N') {
+function nurseryLeverFor(element) {
+  if (element === 'N') {
     return 'Augmenter <strong>EZ-Gro Océan 15-1-1</strong> dans le bidon (15% N). Plafond pratique : CE bidon ≤ 3,0 mS/cm.';
   }
-  if (el === 'P') {
+  if (element === 'P') {
     return 'Garder <strong>Acadie poisson 2-4-0.5</strong> à 6+ mL/L — c\'est la source P principale (Océan trop pauvre en P).';
   }
-  if (el === 'K') {
-    return 'Substrat OM2 livre peu de K. Si gap réel : ajouter <strong>K₂SO₄</strong> au bidon (Ecocert ✓ — sulfate of potash).';
+  if (element === 'K') {
+    return 'Substrat OM2 livre peu de K. Si gap réelement : ajouter <strong>K₂SO₄</strong> au bidon (Ecocert ✓ — sulfate of potash).';
   }
-  if (el === 'Ca') {
+  if (element === 'Ca') {
     return 'Pas de source Ca soluble Ecocert dans la recette. La chaux dans OM2 doit couvrir — confirmer via fiche Berger OM2 (cert 2 placeholder).';
   }
-  if (el === 'Mg') {
+  if (element === 'Mg') {
     return 'Substrat partiel ; ajouter <strong>MgSO₄·7H₂O</strong> (Epsom, Ecocert ✓) au bidon si gap > 30%.';
   }
-  if (el === 'Fe' || el === 'Mn' || el === 'Zn' || el === 'B' || el === 'Cu' || el === 'Mo') {
+  if (element === 'Fe' || element === 'Mn' || element === 'Zn' || element === 'B' || element === 'Cu' || element === 'Mo') {
     return 'Algue Acadie 2 mL/L livre des traces (~1-5% du besoin selon élément). Si gap > 50% : augmenter le dose d\'algue OU ajouter un foliaire micros. Confirmer au tissue test.';
   }
   return '';
@@ -5824,7 +5824,7 @@ function nurseryLeverFor(el) {
 // soil bank is filling, holding, or depleting. This view is independent from
 // the Bilan's per-week supply chain (soil → fertigation → foliar) — sidedress
 // is not summed there to avoid double-counting past mineralization that's
-// already captured in the SME. See `calcNutrSupply` for the model rationale.
+// already captured in the SME. See `calculateNutritionSupply` for the model rationale.
 
 function buildBanqueSol() {
   const phLocked = document.getElementById('nutr-phlocked').checked;
@@ -5832,17 +5832,17 @@ function buildBanqueSol() {
   const target  = parseFloat(document.getElementById('nutr-target').value)  || 1.5;
   const current = parseFloat(document.getElementById('nutr-current').value) || 1.3;
   const transpFactor = transpirationFactor(current, target);
-  // calcNutrSupply reads STORED_RECIPE.tomato.sidedress[stage] (REQ-004
+  // calculateNutritionSupply reads STORED_RECIPE.tomato.sidedress[stage] (REQ-004
   // source-of-truth) and produces supply.sidedress (per-element granular
   // addition) and supply.soil (per-element weekly drawdown via SME ×
-  // transpiration, capped at demand × LUXURY_FACTOR — see calcNutrSupply
+  // transpiration, capped at demand × LUXURY_FACTOR — see calculateNutritionSupply
   // for the cap rationale).
-  const supply = calcNutrSupply(stage, phLocked, transpFactor, target);
+  const supply = calculateNutritionSupply(stage, phLocked, transpFactor, target);
   const r = supply.raw;
 
   // Inline helper: compute per-element granular addition (mg/m²/wk) given a
   // sidedress recipe { actisol_g, farine_g } and the current pH lockout state.
-  // Mirrors exactly the `sidedress` block in calcNutrSupply so the stored
+  // Mirrors exactly the `sidedress` block in calculateNutritionSupply so the stored
   // recipe column matches what the Bilan / supply chain would have shown.
   const planche = SIDEDRESS_AREA_PER_PLANCHE;
   const phLockoutFactor_P = phLocked ? 0.10 : 0.50;
@@ -5850,11 +5850,11 @@ function buildBanqueSol() {
   function additionFor(recipe) {
     if (!recipe) return null;
     return {
-      N: (recipe.actisol_g * PRODUCT_PCT.Actisol_N    * SIDEDRESS_MIN_EFF.Actisol_N
-        + recipe.farine_g  * PRODUCT_PCT.FarinePlumes_N * SIDEDRESS_MIN_EFF.FarinePlumes_N
+      N: (recipe.actisol_g * PRODUCT_PCT.Actisol_N    * SIDEDRESS_MINIMUM_EFFICIENCY.Actisol_N
+        + recipe.farine_g  * PRODUCT_PCT.FarinePlumes_N * SIDEDRESS_MINIMUM_EFFICIENCY.FarinePlumes_N
          ) * sdAreaFactor,
       P: recipe.actisol_g * PRODUCT_PCT.Actisol_P * phLockoutFactor_P * sdAreaFactor,
-      K: recipe.actisol_g * PRODUCT_PCT.Actisol_K * SIDEDRESS_MIN_EFF.Actisol_K * sdAreaFactor,
+      K: recipe.actisol_g * PRODUCT_PCT.Actisol_K * SIDEDRESS_MINIMUM_EFFICIENCY.Actisol_K * sdAreaFactor,
     };
   }
   const storedRecipe = STORED_RECIPE.tomato.sidedress[stage];
@@ -5895,20 +5895,20 @@ function buildBanqueSol() {
       <div style="font-weight:700; color:var(--text-muted); font-size:10px; text-transform:uppercase; letter-spacing:1px;">FP — ajout</div>
       <div style="font-weight:700; color:var(--text-muted); font-size:10px; text-transform:uppercase; letter-spacing:1px;">Stockée — net</div>
       <div style="font-weight:700; color:var(--text-muted); font-size:10px; text-transform:uppercase; letter-spacing:1px;">FP — net</div>`;
-    bankElems.forEach(el => {
-      const drawdown = supply.soil[el] || 0;
-      const sAdd     = storedAdd[el] || 0;
-      const fAdd     = fpAdd[el] || 0;
+    bankElems.forEach(element => {
+      const drawdown = supply.soil[element] || 0;
+      const sAdd     = storedAdd[element] || 0;
+      const fAdd     = fpAdd[element] || 0;
       const sT = trajectoryFor(sAdd, drawdown);
       const fT = trajectoryFor(fAdd, drawdown);
       const sSign = sT.net >= 0 ? '+' : '−';
       const fSign = fT.net >= 0 ? '+' : '−';
-      html += `<div style="font-weight:600;">${el}</div>
-        <div style="font-family:'DM Mono',monospace; color:var(--text-muted);">${fmtVal(drawdown)}</div>
-        <div style="font-family:'DM Mono',monospace; color:var(--text);">+ ${fmtVal(sAdd)}</div>
-        <div style="font-family:'DM Mono',monospace; color:var(--text);">+ ${fmtVal(fAdd)}</div>
-        <div style="font-family:'DM Mono',monospace; font-weight:600; color:${sT.color};">${sSign} ${fmtVal(Math.abs(sT.net))} <span style="font-weight:700;">${sT.arrow}</span></div>
-        <div style="font-family:'DM Mono',monospace; font-weight:600; color:${fT.color};">${fSign} ${fmtVal(Math.abs(fT.net))} <span style="font-weight:700;">${fT.arrow}</span></div>`;
+      html += `<div style="font-weight:600;">${element}</div>
+        <div style="font-family:'DM Mono',monospace; color:var(--text-muted);">${formatValue(drawdown)}</div>
+        <div style="font-family:'DM Mono',monospace; color:var(--text);">+ ${formatValue(sAdd)}</div>
+        <div style="font-family:'DM Mono',monospace; color:var(--text);">+ ${formatValue(fAdd)}</div>
+        <div style="font-family:'DM Mono',monospace; font-weight:600; color:${sT.color};">${sSign} ${formatValue(Math.abs(sT.net))} <span style="font-weight:700;">${sT.arrow}</span></div>
+        <div style="font-family:'DM Mono',monospace; font-weight:600; color:${fT.color};">${fSign} ${formatValue(Math.abs(fT.net))} <span style="font-weight:700;">${fT.arrow}</span></div>`;
     });
     html += `</div>`;
   } else {
@@ -5919,15 +5919,15 @@ function buildBanqueSol() {
       <div style="font-weight:700; color:var(--text-muted); font-size:10px; text-transform:uppercase; letter-spacing:1px;">Granulaire ajoute</div>
       <div style="font-weight:700; color:var(--text-muted); font-size:10px; text-transform:uppercase; letter-spacing:1px;">Net banque</div>
       <div></div>`;
-    bankElems.forEach(el => {
-      const drawdown = supply.soil[el] || 0;
-      const addition = storedAdd[el] || 0;
+    bankElems.forEach(element => {
+      const drawdown = supply.soil[element] || 0;
+      const addition = storedAdd[element] || 0;
       const t = trajectoryFor(addition, drawdown);
       const sign = t.net >= 0 ? '+' : '−';
-      html += `<div style="font-weight:600;">${el}</div>
-        <div style="font-family:'DM Mono',monospace; color:var(--text-muted);">${fmtVal(drawdown)}</div>
-        <div style="font-family:'DM Mono',monospace; color:var(--text);">+ ${fmtVal(addition)}</div>
-        <div style="font-family:'DM Mono',monospace; font-weight:600; color:${t.color};">${sign} ${fmtVal(Math.abs(t.net))}</div>
+      html += `<div style="font-weight:600;">${element}</div>
+        <div style="font-family:'DM Mono',monospace; color:var(--text-muted);">${formatValue(drawdown)}</div>
+        <div style="font-family:'DM Mono',monospace; color:var(--text);">+ ${formatValue(addition)}</div>
+        <div style="font-family:'DM Mono',monospace; font-weight:600; color:${t.color};">${sign} ${formatValue(Math.abs(t.net))}</div>
         <div style="text-align:center; color:${t.color}; font-weight:700;">${t.arrow}</div>`;
     });
     html += `</div>`;
@@ -5935,11 +5935,11 @@ function buildBanqueSol() {
   // Pourquoi expanders for the sidedress addition equation. Show N (Actisol +
   // Farine) and P (with pH lockout) as the two distinct equation shapes.
   // (planche, phLockoutFactor_P, sdAreaFactor declared above for additionFor.)
-  const sdN_actisol_mg = r.sd_actisol_g * PRODUCT_PCT.Actisol_N    * SIDEDRESS_MIN_EFF.Actisol_N    * 1000 / planche;
-  const sdN_farine_mg  = r.sd_farine_g  * PRODUCT_PCT.FarinePlumes_N * SIDEDRESS_MIN_EFF.FarinePlumes_N * 1000 / planche;
+  const sdN_actisol_mg = r.sd_actisol_g * PRODUCT_PCT.Actisol_N    * SIDEDRESS_MINIMUM_EFFICIENCY.Actisol_N    * 1000 / planche;
+  const sdN_farine_mg  = r.sd_farine_g  * PRODUCT_PCT.FarinePlumes_N * SIDEDRESS_MINIMUM_EFFICIENCY.FarinePlumes_N * 1000 / planche;
   html += pourquoiExpander(
     'sidedress[N] = (actisol_g × Actisol_N × Actisol_min_eff + farine_g × Farine_N × Farine_min_eff) × 1000 / planche_area',
-    `(${r.sd_actisol_g} × ${PRODUCT_PCT.Actisol_N} × ${SIDEDRESS_MIN_EFF.Actisol_N} + ${r.sd_farine_g} × ${PRODUCT_PCT.FarinePlumes_N} × ${SIDEDRESS_MIN_EFF.FarinePlumes_N}) × 1000 / ${planche} m² = ${sdN_actisol_mg.toFixed(0)} + ${sdN_farine_mg.toFixed(0)} = ${(supply.sidedress.N||0).toFixed(0)} mg N/m²/sem`,
+    `(${r.sd_actisol_g} × ${PRODUCT_PCT.Actisol_N} × ${SIDEDRESS_MINIMUM_EFFICIENCY.Actisol_N} + ${r.sd_farine_g} × ${PRODUCT_PCT.FarinePlumes_N} × ${SIDEDRESS_MINIMUM_EFFICIENCY.FarinePlumes_N}) × 1000 / ${planche} m² = ${sdN_actisol_mg.toFixed(0)} + ${sdN_farine_mg.toFixed(0)} = ${(supply.sidedress.N||0).toFixed(0)} mg N/m²/sem`,
     `Apport hebdomadaire à la réserve. Régime stade-établi : tout le matériel des semaines passées minéralise simultanément, donc l'apport hebdo ≈ minéralisation hebdo (efficacité cert 3, serre tempérée).`
   );
   html += pourquoiExpander(
@@ -5949,18 +5949,18 @@ function buildBanqueSol() {
   );
   html += pourquoiExpander(
     'sidedress[K] = actisol_g × Actisol_K × Actisol_K_min_eff × 1000 / planche_area',
-    `${r.sd_actisol_g} × ${PRODUCT_PCT.Actisol_K.toFixed(4)} × ${SIDEDRESS_MIN_EFF.Actisol_K} × 1000 / ${planche} m² = ${(supply.sidedress.K||0).toFixed(0)} mg K/m²/sem`,
+    `${r.sd_actisol_g} × ${PRODUCT_PCT.Actisol_K.toFixed(4)} × ${SIDEDRESS_MINIMUM_EFFICIENCY.Actisol_K} × 1000 / ${planche} m² = ${(supply.sidedress.K||0).toFixed(0)} mg K/m²/sem`,
     `K libéré rapidement (85%) parce que dans les granules il est mostly water-soluble — pas dépendant de la minéralisation microbienne comme N/P.`
   );
-  // Footer reads efficiency numbers live from SIDEDRESS_MIN_EFF + the pH-lockout
+  // Footer reads efficiency numbers live from SIDEDRESS_MINIMUM_EFFICIENCY + the pH-lockout
   // factor declared above so editing the constants flows here automatically.
   // stable — mineralization regime explanation (steady-state, warm greenhouse) is
   // domain context; the values themselves are the source-of-truth read from code.
-  const pctN_act = Math.round(SIDEDRESS_MIN_EFF.Actisol_N * 100);
-  const pctK_act = Math.round(SIDEDRESS_MIN_EFF.Actisol_K * 100);
-  const pctN_far = Math.round(SIDEDRESS_MIN_EFF.FarinePlumes_N * 100);
-  const pctP_eff = Math.round(phLockoutFactor_P * 100);
-  html += `<div style="margin-top:10px; padding-top:8px; border-top:1px dashed var(--border); font-size:11px; color:var(--text-muted); line-height:1.5;">Efficacité minéralisation (régime stade établi, serre tempérée) : Actisol N ${pctN_act}% · Actisol K ${pctK_act}% · Farine N ${pctN_far}%. <strong>P</strong> à pH ${phLocked ? '≥ 7' : 'ajusté'} : ${pctP_eff}% ${phLocked ? '(précipitation Ca-P)' : ''} — le P n'est plus une livraison crédible tant que le pH reste haut, l'addition à la banque reste faible.</div>`;
+  const pctN_act = Math.round(SIDEDRESS_MINIMUM_EFFICIENCY.Actisol_N * 100);
+  const pctK_act = Math.round(SIDEDRESS_MINIMUM_EFFICIENCY.Actisol_K * 100);
+  const pctN_far = Math.round(SIDEDRESS_MINIMUM_EFFICIENCY.FarinePlumes_N * 100);
+  const pctP_efficiency = Math.round(phLockoutFactor_P * 100);
+  html += `<div style="margin-top:10px; padding-top:8px; border-top:1px dashed var(--border); font-size:11px; color:var(--text-muted); line-height:1.5;">Efficacité minéralisation (régime stade établi, serre tempérée) : Actisol N ${pctN_act}% · Actisol K ${pctK_act}% · Farine N ${pctN_far}%. <strong>P</strong> à pH ${phLocked ? '≥ 7' : 'ajusté'} : ${pctP_efficiency}% ${phLocked ? '(précipitation Ca-P)' : ''} — le P n'est plus une livraison crédible tant que le pH reste haut, l'addition à la banque reste faible.</div>`;
   document.getElementById('banque-content').innerHTML = html;
 }
 
@@ -6132,7 +6132,7 @@ function parseHash() {
   const crop = allowed.includes(rest[1]) ? rest[1] : null;
   // Recipe-source segment — only meaningful on the nutriment page. Sanitized to
   // 'fp' | 'stored'; anything else (or missing) leaves recipe = null so the
-  // caller falls back to the default ('fp'). FP is T5-only; the init block
+  // caller falls back to the default ('fp'). FP is T5-only; the initialize block
   // forces nutrStage='T5' when recipe='fp' is restored from the hash.
   const recipe = (page === 'nutriment' && (rest[2] === 'fp' || rest[2] === 'stored'))
     ? rest[2]
@@ -6140,7 +6140,7 @@ function parseHash() {
   return { admin, page, crop, recipe };
 }
 // Default recipe-source for the Nutrition page. Mirrors `let nutrRecipeMode = 'fp'`
-// — kept as a named constant so syncHash and the init parser stay in sync.
+// — kept as a named constant so syncHash and the initialize parser stay in sync.
 const DEFAULT_NUTR_RECIPE = 'fp';
 
 function syncHash() {
@@ -6249,8 +6249,8 @@ window.addEventListener('hashchange', () => {
  'nutr-l-transplant','nutr-l-target','nutr-l-days','nutr-l-density',
  'nutr-l-frontload','nutr-l-phlocked',
  'nutr-n-target','nutr-n-days','nutr-n-cells','nutr-n-trays','nutr-n-applications'].forEach(id => {
-  const el = document.getElementById(id);
-  if (el) el.addEventListener('input', buildNutriment);
+  const element = document.getElementById(id);
+  if (element) element.addEventListener('input', buildNutriment);
 });
 // Checkbox elements only fire 'change' reliably on toggle, not 'input',
 // in some older WebKit paths. Wire 'change' too for the surfactant box.
@@ -6262,20 +6262,20 @@ document.querySelectorAll('[data-nstage]').forEach(b => {
 
 // Init
 {
-  const init = parseHash(); // restore page+crop+recipe from URL (hot-reload / bookmark)
-  currentPage = init.page;
-  if (init.crop) {
-    if (init.page === 'diagnostic') diagCrop = init.crop;
-    else if (init.page === 'nutriment') nutrCrop = init.crop;
-    else currentCrop = init.crop;
+  const initialize = parseHash(); // restore page+crop+recipe from URL (hot-reload / bookmark)
+  currentPage = initialize.page;
+  if (initialize.crop) {
+    if (initialize.page === 'diagnostic') diagCrop = initialize.crop;
+    else if (initialize.page === 'nutriment') nutrCrop = initialize.crop;
+    else currentCrop = initialize.crop;
   }
   // Restore the Nutrition recipe-source toggle. Sanitization already happened
   // in parseHash (anything non-{fp,stored} → null). Null falls back to the
   // module default (DEFAULT_NUTR_RECIPE = 'fp'). FP requires T5 — when the hash
   // explicitly resolves to 'fp' we force nutrStage='T5' so demand and supply
   // stay stage-consistent regardless of any future stage segment.
-  if (init.page === 'nutriment') {
-    if (init.recipe === 'fp' || init.recipe === 'stored') nutrRecipeMode = init.recipe;
+  if (initialize.page === 'nutriment') {
+    if (initialize.recipe === 'fp' || initialize.recipe === 'stored') nutrRecipeMode = initialize.recipe;
     else nutrRecipeMode = DEFAULT_NUTR_RECIPE;
     if (nutrRecipeMode === 'fp') nutrStage = 'T5';
   }
@@ -6291,8 +6291,8 @@ fetch('history.json?_=' + Date.now())
   .then(r => r.ok ? r.json() : [])
   .then(h => {
     if (h.length > 0) {
-      const el = document.getElementById('last-update');
-      if (el) el.textContent = 'Mis à jour le ' + (h[0].date_fr || h[0].date) + ' · ';
+      const element = document.getElementById('last-update');
+      if (element) element.textContent = 'Mis à jour le ' + (h[0].date_fr || h[0].date) + ' · ';
     }
   })
   .catch(() => {});
@@ -6309,7 +6309,7 @@ fetch('history.json?_=' + Date.now())
     <div id="pq-modal-title" class="pq-modal-title"></div>
     <div id="pq-modal-eq" class="pq-modal-eq"></div>
     <div id="pq-modal-plugged" class="pq-modal-plugged"></div>
-    <div id="pq-modal-interp" class="pq-modal-interp"></div>
+    <div id="pq-modal-interpolation" class="pq-modal-interpolation"></div>
   </div>
 </div>
 </body>

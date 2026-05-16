@@ -22,14 +22,14 @@ window.YieldRange = {
   // Read-only constants exposed for the app UI (chart axis bounds, label
   // text, threshold display, modal table render, etc.) — values live in
   // data.js.
-  RGR_MAX_LETTUCE_NURSERY,
+  RGR_MAXIMUM_LETTUCE_NURSERY,
   W_INIT_GERMINATED_G,
   LED_PPFD,
   DLI_SUN_OUTDOOR_QC_ANNUAL,         // REQ-131
   GH_LIGHT_TRANSMISSION_DOUBLE_POLY, // REQ-131
   DLI_SUN_GH_ANNUAL_AVG_QC,
   CANOPY_CAP_BY_PLATEAU,
-  TRAJECTORY_MAX_DAYS,
+  TRAJECTORY_MAXIMUM_DAYS,
   POTENTIAL_THRESHOLD,
   F_LIGHT_BREAKPOINTS,               // REQ-132 modal table source
 };

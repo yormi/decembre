@@ -28,11 +28,11 @@ const FLOAT_TOLERANCE = 1e-9;         // exact-multiplication checks
 
 describe('REQ-081 — Ca and Mg biomass demand coupled to transpiration', () => {
   test('REQ-081 — Ca biomass scales linearly with transpFactor across [0.4, 0.7, 1.0]', () => {
-    const baseline = namespace.calcNutrDemand(REPRESENTATIVE_YIELD, REPRESENTATIVE_STAGE, 1.0);
+    const baseline = namespace.calculateNutritionDemand(REPRESENTATIVE_YIELD, REPRESENTATIVE_STAGE, 1.0);
     assert.ok(baseline.Ca.biomass > 0,
       'precondition: Ca biomass at tf=1.0 must be positive');
     for (const transpFactor of [0.4, 0.7, 1.0]) {
-      const scaled = namespace.calcNutrDemand(REPRESENTATIVE_YIELD, REPRESENTATIVE_STAGE, transpFactor);
+      const scaled = namespace.calculateNutritionDemand(REPRESENTATIVE_YIELD, REPRESENTATIVE_STAGE, transpFactor);
       const expected = baseline.Ca.biomass * transpFactor;
       assert.ok(Math.abs(scaled.Ca.biomass - expected) < FLOAT_TOLERANCE,
         `Ca biomass at tf=${transpFactor} should be ${expected}, got ${scaled.Ca.biomass}`);
@@ -40,11 +40,11 @@ describe('REQ-081 — Ca and Mg biomass demand coupled to transpiration', () => 
   });
 
   test('REQ-081 — Mg biomass scales linearly with transpFactor across [0.4, 0.7, 1.0]', () => {
-    const baseline = namespace.calcNutrDemand(REPRESENTATIVE_YIELD, REPRESENTATIVE_STAGE, 1.0);
+    const baseline = namespace.calculateNutritionDemand(REPRESENTATIVE_YIELD, REPRESENTATIVE_STAGE, 1.0);
     assert.ok(baseline.Mg.biomass > 0,
       'precondition: Mg biomass at tf=1.0 must be positive');
     for (const transpFactor of [0.4, 0.7, 1.0]) {
-      const scaled = namespace.calcNutrDemand(REPRESENTATIVE_YIELD, REPRESENTATIVE_STAGE, transpFactor);
+      const scaled = namespace.calculateNutritionDemand(REPRESENTATIVE_YIELD, REPRESENTATIVE_STAGE, transpFactor);
       const expected = baseline.Mg.biomass * transpFactor;
       assert.ok(Math.abs(scaled.Mg.biomass - expected) < FLOAT_TOLERANCE,
         `Mg biomass at tf=${transpFactor} should be ${expected}, got ${scaled.Mg.biomass}`);
@@ -53,9 +53,9 @@ describe('REQ-081 — Ca and Mg biomass demand coupled to transpiration', () => 
 
   for (const element of DECOUPLED_ELEMENTS) {
     test(`REQ-081 — ${element} biomass unchanged across transpFactor in [0.4, 0.7, 1.0]`, () => {
-      const baseline = namespace.calcNutrDemand(REPRESENTATIVE_YIELD, REPRESENTATIVE_STAGE, 1.0);
+      const baseline = namespace.calculateNutritionDemand(REPRESENTATIVE_YIELD, REPRESENTATIVE_STAGE, 1.0);
       for (const transpFactor of [0.4, 0.7, 1.0]) {
-        const scaled = namespace.calcNutrDemand(REPRESENTATIVE_YIELD, REPRESENTATIVE_STAGE, transpFactor);
+        const scaled = namespace.calculateNutritionDemand(REPRESENTATIVE_YIELD, REPRESENTATIVE_STAGE, transpFactor);
         assert.equal(scaled[element].biomass, baseline[element].biomass,
           `${element} biomass at tf=${transpFactor} must equal baseline ${baseline[element].biomass}`);
       }
@@ -63,9 +63,9 @@ describe('REQ-081 — Ca and Mg biomass demand coupled to transpiration', () => 
   }
 
   test('REQ-081 — fruit-export term is never scaled by transpFactor (all 11 elements)', () => {
-    const baseline = namespace.calcNutrDemand(REPRESENTATIVE_YIELD, REPRESENTATIVE_STAGE, 1.0);
+    const baseline = namespace.calculateNutritionDemand(REPRESENTATIVE_YIELD, REPRESENTATIVE_STAGE, 1.0);
     for (const transpFactor of [0.4, 0.7, 1.0]) {
-      const scaled = namespace.calcNutrDemand(REPRESENTATIVE_YIELD, REPRESENTATIVE_STAGE, transpFactor);
+      const scaled = namespace.calculateNutritionDemand(REPRESENTATIVE_YIELD, REPRESENTATIVE_STAGE, transpFactor);
       for (const element of ALL_ELEMENTS) {
         assert.equal(scaled[element].fruit, baseline[element].fruit,
           `${element} fruit at tf=${transpFactor} must match baseline (REQ-081: fruit never scaled)`);
@@ -74,7 +74,7 @@ describe('REQ-081 — Ca and Mg biomass demand coupled to transpiration', () => 
   });
 
   test('REQ-081 — total = fruit + biomass after transpFactor applied', () => {
-    const result = namespace.calcNutrDemand(REPRESENTATIVE_YIELD, REPRESENTATIVE_STAGE, 0.6);
+    const result = namespace.calculateNutritionDemand(REPRESENTATIVE_YIELD, REPRESENTATIVE_STAGE, 0.6);
     for (const element of ALL_ELEMENTS) {
       const expectedTotal = result[element].fruit + result[element].biomass;
       assert.ok(Math.abs(result[element].total - expectedTotal) < FLOAT_TOLERANCE,
@@ -84,8 +84,8 @@ describe('REQ-081 — Ca and Mg biomass demand coupled to transpiration', () => 
   });
 
   test('REQ-081 — default transpFactor is 1.0 (Ca/Mg biomass equal full-transp value)', () => {
-    const explicit = namespace.calcNutrDemand(REPRESENTATIVE_YIELD, REPRESENTATIVE_STAGE, 1.0);
-    const defaulted = namespace.calcNutrDemand(REPRESENTATIVE_YIELD, REPRESENTATIVE_STAGE);
+    const explicit = namespace.calculateNutritionDemand(REPRESENTATIVE_YIELD, REPRESENTATIVE_STAGE, 1.0);
+    const defaulted = namespace.calculateNutritionDemand(REPRESENTATIVE_YIELD, REPRESENTATIVE_STAGE);
     for (const element of ALL_ELEMENTS) {
       assert.equal(defaulted[element].biomass, explicit[element].biomass,
         `${element} biomass with default transpFactor must equal tf=1.0`);
@@ -98,7 +98,7 @@ describe('REQ-081 — Ca and Mg biomass demand coupled to transpiration', () => 
     // Pins the formula: fruit = yield × export_g × 1000, biomass = BIOMASS_DEMAND[stage].
     // N : 2.7 × 0.60 = 1.62 g/kg → 2430 mg/m²/wk fruit; BIOMASS_DEMAND.T5.N = 1620
     // Ca: 1.5 × 0.05 = 0.075 g/kg → 112.5 mg/m²/wk fruit; BIOMASS_DEMAND.T5.Ca = 2138
-    const result = namespace.calcNutrDemand(1.5, 'T5', 1.0);
+    const result = namespace.calculateNutritionDemand(1.5, 'T5', 1.0);
     assert.ok(Math.abs(result.N.fruit - 2430) < 1e-6,
       `N fruit should be 2430 mg/m²/wk, got ${result.N.fruit}`);
     assert.ok(Math.abs(result.N.biomass - 1620) < 1e-6,
@@ -112,7 +112,7 @@ describe('REQ-081 — Ca and Mg biomass demand coupled to transpiration', () => 
   });
 
   test('REQ-081 — known-good Ca biomass at yield=1.5, T5, tf=0.6 (= 2138 × 0.6 = 1282.8)', () => {
-    const result = namespace.calcNutrDemand(1.5, 'T5', 0.6);
+    const result = namespace.calculateNutritionDemand(1.5, 'T5', 0.6);
     assert.ok(Math.abs(result.Ca.biomass - 1282.8) < 1e-6,
       `Ca biomass at tf=0.6 should be 1282.8, got ${result.Ca.biomass}`);
     // Fruit term untouched — REQ-081
@@ -175,7 +175,7 @@ describe('REQ-083 — Public API namespace window.PlantNeedsTomato', () => {
     'TOMATO_REMOVAL',
     'TRANSP_COUPLED_BIOMASS',
   ];
-  const REQUIRED_FUNCTIONS = ['calcNutrDemand', 'certFor'];
+  const REQUIRED_FUNCTIONS = ['calculateNutritionDemand', 'certFor'];
 
   test('REQ-083 — window.PlantNeedsTomato exists and is an object', () => {
     assert.ok(namespace, 'window.PlantNeedsTomato must be defined after model.js loads');

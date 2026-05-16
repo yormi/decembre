@@ -3,7 +3,7 @@
 // Loads dist/index.html into jsdom and exposes the runtime constants the
 // fertigation model depends on (RECIPE_INPUTS, BIOMASS_DEMAND,
 // TOMATO_FRUIT_EXPORT, PRODUCT_PCT, SIDEDRESS_*, STORED_RECIPE,
-// TOMATO_NUM_BEDS, TOMATO_BED_AREA, FP_RECIPE_T5, computeStageRecipe,
+// TOMATO_NUMBER_BEDS, TOMATO_BED_AREA, FP_RECIPE_T5, computeStageRecipe,
 // FIRST_PRINCIPLES_T5_FERTIGATION, plus window.FertigationRecipeTomato
 // and window.CompostContribution which are already on window).
 //
@@ -30,8 +30,8 @@ const EXPOSE_NAMES = [
   'TOMATO_FRUIT_EXPORT',
   'PRODUCT_PCT',
   'SIDEDRESS_AREA_PER_PLANCHE',
-  'SIDEDRESS_MIN_EFF',
-  'TOMATO_NUM_BEDS',
+  'SIDEDRESS_MINIMUM_EFFICIENCY',
+  'TOMATO_NUMBER_BEDS',
   'TOMATO_BED_AREA',
   'STORED_RECIPE',
   'FP_RECIPE_T5',

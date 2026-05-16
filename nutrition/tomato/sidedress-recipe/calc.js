@@ -10,7 +10,7 @@
 //   N_offtake_mg/m²/wk = TOMATO_FRUIT_EXPORT.N × stageYield × 1000 + BIOMASS_DEMAND[stage].N
 //   N_compost_mg/m²/wk = window.CompostContribution.releasePerWeek.N × 1000
 //   N_needed           = max(0, N_offtake − N_compost)
-//   g_per_m²           = N_needed / (product.n_pct × product.eff) / 1000
+//   g_per_m²           = N_needed / (product.n_pct × product.efficiency) / 1000
 //   g_per_planche      = round(g_per_m² × SIDEDRESS_AREA_PER_PLANCHE)
 //
 // `product` must be a key of SIDEDRESS_PRODUCTS whose ca_pct === 0
@@ -46,7 +46,7 @@ function computeStageSidedress(stage, product) {
   const n_compost_mg = (compost.N || 0) * 1000;
   const n_needed_mg_per_m2 = Math.max(0, n_offtake_mg - n_compost_mg);
 
-  const g_per_m2      = n_needed_mg_per_m2 / (spec.n_pct * spec.eff) / 1000;
+  const g_per_m2      = n_needed_mg_per_m2 / (spec.n_pct * spec.efficiency) / 1000;
   const g_per_planche = Math.round(g_per_m2 * SIDEDRESS_AREA_PER_PLANCHE);
 
   // Flat shape: per-product fields named after the product key (lowercased

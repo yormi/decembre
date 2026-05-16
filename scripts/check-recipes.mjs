@@ -4,7 +4,7 @@
 // Loads index.html into jsdom, exposes the runtime objects (PRODUCT,
 // CHANNEL_ROLE, PH_RESPONSE, KSP_PAIRS, KSP_SAFE, TAG_INCOMPATIBILITIES,
 // TAGS_INERT, BIOMASS_DEMAND, TOMATO_FRUIT_EXPORT, computeRecipe,
-// effectiveEff, predictedCE, predictedTankPh, getWeekNumber), then runs
+// effectiveEfficiency, predictedCE, predictedTankPh, getWeekNumber), then runs
 // structural + DOM-walk checks for the REQs listed below.
 //
 // Implements (Phase 2):
@@ -168,13 +168,13 @@ const exposeNames = [
   'LETTUCE',
   'RECIPE_HISTORY', 'RECIPE_INPUTS',
   'ACCEPTED_DEFICITS', 'ACCEPTED_EXCESSES',
-  'PRODUCT_PCT', 'SIDEDRESS_AREA_PER_PLANCHE', 'SIDEDRESS_MIN_EFF',
+  'PRODUCT_PCT', 'SIDEDRESS_AREA_PER_PLANCHE', 'SIDEDRESS_MINIMUM_EFFICIENCY',
   'SIDEDRESS_PRODUCTS',
-  'TOMATO_NUM_BEDS', 'TOMATO_BED_AREA',
+  'TOMATO_NUMBER_BEDS', 'TOMATO_BED_AREA',
   'PAGES', 'ADMIN_PAGES', 'CROP_PAGES',
-  'effectiveEff', 'predictedCE', 'predictedTankPh', 'computeRecipe',
+  'effectiveEfficiency', 'predictedCE', 'predictedTankPh', 'computeRecipe',
   'computeStageRecipe',
-  'calcNutrDemand',
+  'calculateNutritionDemand',
   'COMPOST_AMENDMENT', 'COMPOST_LABEL_PCT', 'COMPOST_MINERALIZATION_YEAR1',
   'COMPOST_SEASONAL_FACTOR', 'COMPOST_RELEASE_PER_WEEK', 'theoreticalReleasePerWeek',
   'FIRST_PRINCIPLES_SIDEDRESS', 'computeStageSidedress',
@@ -194,12 +194,12 @@ const exposeNames = [
   'FOLIAR_COVERAGE_DEFAULT', 'FOLIAR_COVERAGE_WITH_YUCCA', 'computeFoliarSupply',
   'BURN_CAP_BASE_G', 'burnCapG', 'computeFoliarRecipeForGap',
   // Nursery plant-needs (REQ-090..093). Until app/index.html @includes the
-  // partials, window.PlantNeedsNursery / NURSERY_TARGETS / calcNurseryDemand
+  // partials, window.PlantNeedsNursery / NURSERY_TARGETS / calculateNurseryDemand
   // are absent — the verifier's REQ-090..093 block loads the source files via
   // Node vm and runs assertions there, so the checks pass pre-integration and
   // also remain valid post-integration (the source-of-truth is the file set).
   'PlantNeedsNursery',
-  'NURSERY_TARGETS', 'calcNurseryDemand',
+  'NURSERY_TARGETS', 'calculateNurseryDemand',
   'LETTUCE_NURSERY_TISSUE_DW', 'LETTUCE_NURSERY_DM_FRACTION',
   'getWeekNumber', 'foliarPhResponse',
   // The following are EXPECTED constants for REQ-030/031 — not currently
@@ -216,9 +216,9 @@ const exposeScript = `<script>
 
 let instrumentedHtml;
 const bodyClose = '</body>';
-const idx = rawHtml.lastIndexOf(bodyClose);
-if (idx >= 0) {
-  instrumentedHtml = rawHtml.slice(0, idx) + exposeScript + rawHtml.slice(idx);
+const index = rawHtml.lastIndexOf(bodyClose);
+if (index >= 0) {
+  instrumentedHtml = rawHtml.slice(0, index) + exposeScript + rawHtml.slice(index);
 } else {
   instrumentedHtml = rawHtml + exposeScript;
 }
@@ -284,17 +284,17 @@ const ACCEPTED_DEFICITS    = ph1.ACCEPTED_DEFICITS;
 const ACCEPTED_EXCESSES    = ph1.ACCEPTED_EXCESSES;
 const PRODUCT_PCT          = ph1.PRODUCT_PCT;
 const SIDEDRESS_AREA_PER_PLANCHE = ph1.SIDEDRESS_AREA_PER_PLANCHE;
-const SIDEDRESS_MIN_EFF    = ph1.SIDEDRESS_MIN_EFF;
+const SIDEDRESS_MINIMUM_EFFICIENCY = ph1.SIDEDRESS_MINIMUM_EFFICIENCY;
 const SIDEDRESS_PRODUCTS   = ph1.SIDEDRESS_PRODUCTS;
-const TOMATO_NUM_BEDS      = ph1.TOMATO_NUM_BEDS;
+const TOMATO_NUMBER_BEDS   = ph1.TOMATO_NUMBER_BEDS;
 const TOMATO_BED_AREA      = ph1.TOMATO_BED_AREA;
 const ADMIN_PAGES          = ph1.ADMIN_PAGES || [];
 const getWeekNumber        = ph1.getWeekNumber;
-const effectiveEff         = ph1.effectiveEff;
+const effectiveEfficiency  = ph1.effectiveEfficiency;
 const predictedTankPh      = ph1.predictedTankPh;
 const foliarPhResponse     = ph1.foliarPhResponse;
 const computeStageRecipe   = ph1.computeStageRecipe;
-const calcNutrDemand       = ph1.calcNutrDemand;
+const calculateNutritionDemand = ph1.calculateNutritionDemand;
 const FP_RECIPE_T5         = ph1.FP_RECIPE_T5;
 const FIRST_PRINCIPLES_T5_FERTIGATION = ph1.FIRST_PRINCIPLES_T5_FERTIGATION;
 const COMPOST_AMENDMENT    = ph1.COMPOST_AMENDMENT;
@@ -409,11 +409,11 @@ const adminContentIds = new Set(
   (ADMIN_PAGES || []).map(slug => `page-${slug}-content`)
 );
 
-function isInsideAdmin(el) {
-  let cur = el;
-  while (cur && cur !== window.document) {
-    if (cur.id && adminContentIds.has(cur.id)) return true;
-    cur = cur.parentElement;
+function isInsideAdmin(element) {
+  let current = element;
+  while (current && current !== window.document) {
+    if (current.id && adminContentIds.has(current.id)) return true;
+    current = current.parentElement;
   }
   return false;
 }
@@ -448,7 +448,7 @@ if (typeof getWeekNumber !== 'function') {
   fail('getWeekNumber est exposé', 'function not found on window');
 } else {
   const RealDate = window.Date;
-  function withFixedDate(iso, fn) {
+  function withFixedDate(iso, handler) {
     const fixed = new RealDate(iso + 'T12:00:00');
     class FixedDate extends RealDate {
       constructor(...args) {
@@ -458,7 +458,7 @@ if (typeof getWeekNumber !== 'function') {
       static now() { return fixed.getTime(); }
     }
     window.Date = FixedDate;
-    try { return fn(); } finally { window.Date = RealDate; }
+    try { return handler(); } finally { window.Date = RealDate; }
   }
   const cases = [
     { iso: '2026-01-04', expected: 1 },
@@ -502,10 +502,10 @@ if (!CHANNEL_ROLE || !BIOMASS_DEMAND || !TOMATO_FRUIT_EXPORT) {
 } else {
   const demandElements = new Set();
   for (const stage of Object.keys(BIOMASS_DEMAND)) {
-    for (const el of Object.keys(BIOMASS_DEMAND[stage])) demandElements.add(el);
+    for (const element of Object.keys(BIOMASS_DEMAND[stage])) demandElements.add(element);
   }
-  for (const el of Object.keys(TOMATO_FRUIT_EXPORT)) demandElements.add(el);
-  const missing = [...demandElements].filter(el => !CHANNEL_ROLE[el]);
+  for (const element of Object.keys(TOMATO_FRUIT_EXPORT)) demandElements.add(element);
+  const missing = [...demandElements].filter(element => !CHANNEL_ROLE[element]);
   if (missing.length === 0) {
     pass(`CHANNEL_ROLE couvre les ${demandElements.size} éléments (BIOMASS_DEMAND + TOMATO_FRUIT_EXPORT)`);
   } else {
@@ -515,7 +515,7 @@ if (!CHANNEL_ROLE || !BIOMASS_DEMAND || !TOMATO_FRUIT_EXPORT) {
 
 // ─── REQ-081 — Ca/Mg biomass scaled by transpFactor; others unchanged ──
 //
-// calcNutrDemand(yield, stage, transpFactor) must apply transpFactor to the
+// calculateNutritionDemand(yield, stage, transpFactor) must apply transpFactor to the
 // biomass term for Ca and Mg only. Verified by calling at tf=1.0 vs tf=0.5
 // and asserting Ca/Mg biomass term halves while N/P/K/micros are unchanged.
 //
@@ -523,29 +523,29 @@ if (!CHANNEL_ROLE || !BIOMASS_DEMAND || !TOMATO_FRUIT_EXPORT) {
 
 header('REQ-081 — Ca/Mg biomass demand × transpFactor');
 
-if (!calcNutrDemand) {
-  fail('calcNutrDemand exposé', 'missing on window');
+if (!calculateNutritionDemand) {
+  fail('calculateNutritionDemand exposé', 'missing on window');
 } else {
   const stage = 'T5';
   const y = 1.5;
-  const fullTransp = calcNutrDemand(y, stage, 1.0);
-  const halfTransp = calcNutrDemand(y, stage, 0.5);
+  const fullTransp = calculateNutritionDemand(y, stage, 1.0);
+  const halfTransp = calculateNutritionDemand(y, stage, 0.5);
   const COUPLED = ['Ca', 'Mg'];
   const DECOUPLED = ['N', 'P', 'K', 'Fe', 'Mn', 'Zn', 'B', 'Cu', 'Mo'];
   const offenders = [];
-  for (const el of COUPLED) {
-    const ratio = (fullTransp[el].biomass > 0)
-      ? halfTransp[el].biomass / fullTransp[el].biomass
+  for (const element of COUPLED) {
+    const ratio = (fullTransp[element].biomass > 0)
+      ? halfTransp[element].biomass / fullTransp[element].biomass
       : null;
     if (ratio == null || Math.abs(ratio - 0.5) > 0.01) {
-      offenders.push(`${el}: biomass ratio at tf=0.5 should be 0.5, got ${ratio == null ? 'n/a' : ratio.toFixed(3)}`);
+      offenders.push(`${element}: biomass ratio at tf=0.5 should be 0.5, got ${ratio == null ? 'n/a' : ratio.toFixed(3)}`);
     }
   }
-  for (const el of DECOUPLED) {
-    const a = fullTransp[el].biomass;
-    const b = halfTransp[el].biomass;
+  for (const element of DECOUPLED) {
+    const a = fullTransp[element].biomass;
+    const b = halfTransp[element].biomass;
     if (a !== b) {
-      offenders.push(`${el}: biomass should be unchanged at tf=0.5, was ${a} → ${b}`);
+      offenders.push(`${element}: biomass should be unchanged at tf=0.5, was ${a} → ${b}`);
     }
   }
   if (offenders.length === 0) {
@@ -558,7 +558,7 @@ if (!calcNutrDemand) {
 
 // ─── REQ-082 — Stage-transition continuity for BIOMASS_DEMAND ───────────
 //
-// Catches order-of-magnitude hand-edit errors in BIOMASS_DEMAND[stage][el]
+// Catches order-of-magnitude hand-edit errors in BIOMASS_DEMAND[stage][element]
 // (typo dropping/adding a digit, factor-of-10 unit slip, etc.). Threshold
 // 2.5× the prior stage's value — chosen to allow legitimate phenological
 // spikes (T2→T3 P at flowering is +167%; T3→T4 Fe drop is −72%) while
@@ -575,19 +575,19 @@ if (!BIOMASS_DEMAND) {
   const stages = Object.keys(BIOMASS_DEMAND);
   const offenders = [];
   for (let i = 1; i < stages.length; i++) {
-    const prev = stages[i - 1];
-    const cur  = stages[i];
+    const previous = stages[i - 1];
+    const current  = stages[i];
     const els  = new Set([
-      ...Object.keys(BIOMASS_DEMAND[prev]),
-      ...Object.keys(BIOMASS_DEMAND[cur]),
+      ...Object.keys(BIOMASS_DEMAND[previous]),
+      ...Object.keys(BIOMASS_DEMAND[current]),
     ]);
-    for (const el of els) {
-      const a = BIOMASS_DEMAND[prev][el] || 0;
-      const b = BIOMASS_DEMAND[cur][el]  || 0;
+    for (const element of els) {
+      const a = BIOMASS_DEMAND[previous][element] || 0;
+      const b = BIOMASS_DEMAND[current][element]  || 0;
       if (a <= 0) continue; // avoid div-by-zero; nothing meaningful to compare
       const ratio = Math.abs(b - a) / a;
       if (ratio > 2.5) {
-        offenders.push(`${prev}→${cur} ${el}: ${a} → ${b} (Δ=${(ratio*100).toFixed(0)}%)`);
+        offenders.push(`${previous}→${current} ${element}: ${a} → ${b} (Δ=${(ratio*100).toFixed(0)}%)`);
       }
     }
   }
@@ -616,7 +616,7 @@ if (!PN) {
   const expectedKeys = [
     'TOMATO_FRUIT_EXPORT', 'BIOMASS_DEMAND', 'TOMATO_DEMAND_CERT',
     'TOMATO_REMOVAL', 'TRANSP_COUPLED_BIOMASS',
-    'calcNutrDemand', 'certFor',
+    'calculateNutritionDemand', 'certFor',
   ];
   const missing = expectedKeys.filter(k => PN[k] == null);
   if (missing.length > 0) {
@@ -647,23 +647,23 @@ if (!COMPOST_RELEASE_PER_WEEK || !COMPOST_LABEL_PCT
   fail('Compost-contribution constants exposed', 'one or more globals missing');
 } else {
   const offenders = [];
-  for (const el of Object.keys(COMPOST_RELEASE_PER_WEEK)) {
-    const stored = COMPOST_RELEASE_PER_WEEK[el];
-    const labelPct = COMPOST_LABEL_PCT[el];
-    const yr1 = COMPOST_MINERALIZATION_YEAR1[el];
+  for (const element of Object.keys(COMPOST_RELEASE_PER_WEEK)) {
+    const stored = COMPOST_RELEASE_PER_WEEK[element];
+    const labelPct = COMPOST_LABEL_PCT[element];
+    const yr1 = COMPOST_MINERALIZATION_YEAR1[element];
     if (labelPct == null || yr1 == null) {
-      offenders.push(`${el}: stored ${stored} but label %/min %/m1 missing`);
+      offenders.push(`${element}: stored ${stored} but label %/min %/m1 missing`);
       continue;
     }
     const applied = COMPOST_AMENDMENT.applicationRateKgPerM2 * 1000 * labelPct;
     const theoretical = (applied * yr1 / 52) * COMPOST_SEASONAL_FACTOR;
     if (theoretical <= 0) {
-      offenders.push(`${el}: theoretical = 0 (bad inputs)`);
+      offenders.push(`${element}: theoretical = 0 (bad inputs)`);
       continue;
     }
     const ratio = stored / theoretical;
     if (ratio < 0.5 || ratio > 1.5) {
-      offenders.push(`${el}: stored ${stored.toFixed(3)} vs theoretical ${theoretical.toFixed(3)} (ratio ${ratio.toFixed(2)})`);
+      offenders.push(`${element}: stored ${stored.toFixed(3)} vs theoretical ${theoretical.toFixed(3)} (ratio ${ratio.toFixed(2)})`);
     }
   }
   if (offenders.length === 0) {
@@ -715,7 +715,7 @@ header('REQ-140 — SoilContribution.BANK_MG_M2.tomato declared in mg/m²');
     fail('SoilContribution.BANK_MG_M2.tomato exists', 'namespace or tomato entry missing');
   } else {
     const tomato = SC.BANK_MG_M2.tomato;
-    const missing = ['P','K','Ca','Mg'].filter(el => !(typeof tomato[el] === 'number' && tomato[el] >= 1000));
+    const missing = ['P','K','Ca','Mg'].filter(element => !(typeof tomato[element] === 'number' && tomato[element] >= 1000));
     if (missing.length > 0) {
       fail('SoilContribution.BANK_MG_M2.tomato has macros ≥ 1000 mg/m²', `manquants ou < 1000: ${missing.join(', ')}`);
     } else {
@@ -734,9 +734,9 @@ header('REQ-141 — Only CONTRIBUTING elements (P, Ca) participate in the gap ch
     if (SC.CONTRIBUTING.P !== true)  offenders.push('CONTRIBUTING.P not true');
     if (SC.CONTRIBUTING.Ca !== true) offenders.push('CONTRIBUTING.Ca not true');
     // Non-contributing elements must return 0 even with bank data (K, Mg) or large demand.
-    for (const el of ['N','K','Mg','Fe','Mn','Zn','B','Cu','Mo']) {
-      const v = SC.weeklyContribution('tomato', el, 1000);
-      if (v !== 0) offenders.push(`weeklyContribution(tomato, ${el}, 1000) === ${v} (expected 0)`);
+    for (const element of ['N','K','Mg','Fe','Mn','Zn','B','Cu','Mo']) {
+      const v = SC.weeklyContribution('tomato', element, 1000);
+      if (v !== 0) offenders.push(`weeklyContribution(tomato, ${element}, 1000) === ${v} (expected 0)`);
     }
     // Contributing elements must clamp to bank when demand exceeds it.
     const caHuge = SC.weeklyContribution('tomato', 'Ca', 1e9);
@@ -834,7 +834,7 @@ if (!computeStageSidedress) {
     }
   }
   if (offenders.length === 0) {
-    pass(`Tous les stades (${stages.length}) renvoient {actisol_g, farine_g, alfalfa_g, chosen, g_per_planche} numériques ≥ 0`);
+    pass(`Tous les stades (${stages.length}) renvoient {actisol_g, farine_g, alfalfa_g, chosen, g_per_planche} numberériques ≥ 0`);
   } else {
     fail('Stage coverage + numeric output', offenders.map(o => `  ${o}`).join('\n'));
   }
@@ -848,7 +848,7 @@ if (!computeStageSidedress) {
 //   n_offtake = TOMATO_FRUIT_EXPORT.N × stageYield × 1000 + BIOMASS_DEMAND.N
 //   n_compost = CompostContribution.releasePerWeek.N × 1000
 //   n_needed  = max(0, offtake − compost)
-//   g/planche = round(n_needed / (p.n_pct × p.eff) / 1000 × area)
+//   g/planche = round(n_needed / (p.n_pct × p.efficiency) / 1000 × area)
 //
 // Spec: nutrition/tomato/sidedress-recipe/spec.md → REQ-087.
 
@@ -864,7 +864,7 @@ if (!computeStageSidedress || !SIDEDRESS_PRODUCTS || !SIDEDRESS_AREA_PER_PLANCHE
   const compostN = window.CompostContribution.releasePerWeek.N;
   const area = SIDEDRESS_AREA_PER_PLANCHE;
   // Test the wired default ('FarinePlumes') AND the alfalfa branch — both
-  // are Ca-free, both go through the same formula with their own n_pct/eff.
+  // are Ca-free, both go through the same formula with their own n_pct/efficiency.
   const testProducts = ['FarinePlumes', 'AlfalfaMeal'];
   for (const product of testProducts) {
     const p = SIDEDRESS_PRODUCTS[product];
@@ -881,7 +881,7 @@ if (!computeStageSidedress || !SIDEDRESS_PRODUCTS || !SIDEDRESS_AREA_PER_PLANCHE
       const offtake = TOMATO_FRUIT_EXPORT.N.g * 1000 * y + biomassN;
       const compost = compostN * 1000;
       const needed = Math.max(0, offtake - compost);
-      const expected_g_m2 = needed / (p.n_pct * p.eff) / 1000;
+      const expected_g_m2 = needed / (p.n_pct * p.efficiency) / 1000;
       const expected_g_planche = Math.round(expected_g_m2 * area);
       const r = computeStageSidedress(s, product);
       const actual = r[field];
@@ -913,7 +913,7 @@ if (!SR) {
   fail('window.SidedressRecipeTomato exists', 'namespace not declared (model.js include may be missing or out of order)');
 } else {
   const expectedKeys = [
-    'AREA_PER_PLANCHE', 'PRODUCTS', 'MIN_EFF', 'FIRST_PRINCIPLES_BY_STAGE',
+    'AREA_PER_PLANCHE', 'PRODUCTS', 'MINIMUM_EFFICIENCY', 'FIRST_PRINCIPLES_BY_STAGE',
     'computeStageSidedress',
   ];
   const missing = expectedKeys.filter(k => SR[k] == null);
@@ -1000,7 +1000,7 @@ if (!computeStageSidedress || !SIDEDRESS_PRODUCTS) {
 // Function implements K + Mg + B (Solubore) branches. (REQ-098 with-compost
 // subtraction restored 2026-05-15 per B1-REV; uptake factor added per
 // REQ-155 B2-REV same day.):
-//   demand_to_bed = demand / PH_UPTAKE_FACTOR_AT_CURRENT_SOIL[el]
+//   demand_to_bed = demand / PH_UPTAKE_FACTOR_AT_CURRENT_SOIL[element]
 //   k_offtake     = TOMATO_FRUIT_EXPORT.K × stageYield × 1000 + BIOMASS_DEMAND[stage].K
 //   k_demand_to_bed = k_offtake / uptake.K
 //   k_sd          = sd.actisol_g × Actisol_K × min_eff × 1000 / SIDEDRESS_AREA
@@ -1016,13 +1016,13 @@ header('REQ-098 — computeStageRecipe matches mass-balance formula');
 const CC_release = window.CompostContribution && window.CompostContribution.releasePerWeek;
 const uptake_phase1 = ph1.PH_UPTAKE_FACTOR_AT_CURRENT_SOIL;
 if (!computeStageRecipe || !TOMATO_FRUIT_EXPORT || !BIOMASS_DEMAND
-    || !PRODUCT_PCT || !SIDEDRESS_MIN_EFF || !SIDEDRESS_AREA_PER_PLANCHE
-    || !TOMATO_NUM_BEDS || !TOMATO_BED_AREA || !STORED_RECIPE
+    || !PRODUCT_PCT || !SIDEDRESS_MINIMUM_EFFICIENCY || !SIDEDRESS_AREA_PER_PLANCHE
+    || !TOMATO_NUMBER_BEDS || !TOMATO_BED_AREA || !STORED_RECIPE
     || !ph1.RECIPE_INPUTS || !CC_release || !uptake_phase1) {
   fail('Fertigation + upstream constants exposed', 'one or more globals missing (incl. window.CompostContribution.releasePerWeek, PH_UPTAKE_FACTOR_AT_CURRENT_SOIL)');
 } else {
   const stages = Object.keys(ph1.RECIPE_INPUTS.stageYield);
-  const totalArea = TOMATO_NUM_BEDS * TOMATO_BED_AREA;
+  const totalArea = TOMATO_NUMBER_BEDS * TOMATO_BED_AREA;
   const kCompostMg = (CC_release.K || 0) * 1000;
   const mgCompostMg = (CC_release.Mg || 0) * 1000;
   const bCompostMg = (CC_release.B || 0) * 1000;
@@ -1038,7 +1038,7 @@ if (!computeStageRecipe || !TOMATO_FRUIT_EXPORT || !BIOMASS_DEMAND
     const kDemand = (TOMATO_FRUIT_EXPORT.K.g * 1000 * y) + (biomass.K || 0);
     const kDemandToBed = kDemand / uK;
     const kSd = (sd.actisol_g * PRODUCT_PCT.Actisol_K
-                 * (SIDEDRESS_MIN_EFF.Actisol_K || 0.85) * 1000)
+                 * (SIDEDRESS_MINIMUM_EFFICIENCY.Actisol_K || 0.85) * 1000)
                  / SIDEDRESS_AREA_PER_PLANCHE;
     const kNeeded = Math.max(0, kDemandToBed - kSd - kCompostMg);
     const expectedKsulfate = Math.round((kNeeded / 1000 / PRODUCT_PCT.K2SO4_K) * totalArea);
@@ -1160,12 +1160,12 @@ if (!uf) {
 } else {
   const offenders = [];
   const expected = { K: 0.90, Mg: 0.85, B: 0.80 };
-  for (const el of ['K', 'Mg', 'B']) {
-    const v = uf[el];
+  for (const element of ['K', 'Mg', 'B']) {
+    const v = uf[element];
     if (typeof v !== 'number' || v <= 0 || v > 1) {
-      offenders.push(`PH_UPTAKE_FACTOR_AT_CURRENT_SOIL.${el} must be a number in (0, 1], got ${v}`);
-    } else if (Math.abs(v - expected[el]) > 0.0001) {
-      offenders.push(`PH_UPTAKE_FACTOR_AT_CURRENT_SOIL.${el}=${v} vs expected B2-REV default ${expected[el]}`);
+      offenders.push(`PH_UPTAKE_FACTOR_AT_CURRENT_SOIL.${element} must be a number in (0, 1], got ${v}`);
+    } else if (Math.abs(v - expected[element]) > 0.0001) {
+      offenders.push(`PH_UPTAKE_FACTOR_AT_CURRENT_SOIL.${element}=${v} vs expected B2-REV default ${expected[element]}`);
     }
   }
   if (offenders.length === 0) {
@@ -1183,10 +1183,10 @@ if (!CHANNEL_ROLE) {
   fail('CHANNEL_ROLE exposed', 'missing');
 } else {
   const offenders = [];
-  for (const [el, channels] of Object.entries(CHANNEL_ROLE)) {
+  for (const [element, channels] of Object.entries(CHANNEL_ROLE)) {
     const sum = Object.values(channels).reduce((a, b) => a + (Number(b) || 0), 0);
     if (Math.abs(sum - 1.0) > 0.05) {
-      offenders.push(`${el}: sum=${sum.toFixed(3)}`);
+      offenders.push(`${element}: sum=${sum.toFixed(3)}`);
     }
   }
   if (offenders.length === 0) {
@@ -1212,8 +1212,8 @@ if (!PRODUCT) {
       continue;
     }
     if (typeof p.phClass === 'string') continue; // uniform — covers everything
-    for (const el of baseEls) {
-      if (!(el in p.phClass)) offenders.push(`${name}: phClass missing key ${el}`);
+    for (const element of baseEls) {
+      if (!(element in p.phClass)) offenders.push(`${name}: phClass missing key ${element}`);
     }
   }
   if (offenders.length === 0) {
@@ -1259,7 +1259,7 @@ if (!PRODUCT) {
 
 // ─── REQ-023 — every product has an ecFactor (number, 0 explicit) ──────
 
-header('REQ-023 — Tout produit a ecFactor (numérique, 0 explicite)');
+header('REQ-023 — Tout produit a ecFactor (numberérique, 0 explicite)');
 
 if (!PRODUCT) {
   fail('PRODUCT exposed', 'missing');
@@ -1380,19 +1380,19 @@ if (!TOMATO_REMOVAL) {
 } else {
   // Reference values (g uptake per kg fresh fruit, tomato).
   // Inter-source mean = average of {Yara high, Sonneveld 2009, Koller 2016 avg}.
-  const REF_MEAN = {
+  const REFERENCE_MEAN = {
     N:  (2.3 + 2.5 + 2.9) / 3,        // 2.566...
     P:  (0.36 + 0.57 + 0.39) / 3,     // 0.44
     K:  (3.3 + 4.0 + 4.48) / 3,       // 3.926...
     Mg: (0.54 + 0.67 + 0.5) / 3,      // 0.57
   };
   const failures = [];
-  for (const [el, mean] of Object.entries(REF_MEAN)) {
-    const cur = TOMATO_REMOVAL[el]?.g;
-    if (typeof cur !== 'number') {
-      failures.push(`${el}: missing or non-numeric in TOMATO_REMOVAL`);
-    } else if (cur + 1e-9 < mean) {
-      failures.push(`${el}: ${cur} < mean ${mean.toFixed(2)}`);
+  for (const [element, mean] of Object.entries(REFERENCE_MEAN)) {
+    const current = TOMATO_REMOVAL[element]?.g;
+    if (typeof current !== 'number') {
+      failures.push(`${element}: missing or non-numeric in TOMATO_REMOVAL`);
+    } else if (current + 1e-9 < mean) {
+      failures.push(`${element}: ${current} < mean ${mean.toFixed(2)}`);
     }
   }
   if (failures.length === 0) {
@@ -1411,22 +1411,22 @@ if (!TOMATO_REMOVAL) {
 // ─────────────────────────────────────────────────────────────────────────
 
 // Helper — sidedress effective contribution (mg/m²/wk per element) for a stage.
-function sidedressEffective(stage, el) {
-  if (!TOMATO_SIDEDRESS || !PRODUCT_PCT || !SIDEDRESS_MIN_EFF) return 0;
+function sidedressEffective(stage, element) {
+  if (!TOMATO_SIDEDRESS || !PRODUCT_PCT || !SIDEDRESS_MINIMUM_EFFICIENCY) return 0;
   const sd = TOMATO_SIDEDRESS[stage] || { actisol_g: 0, farine_g: 0 };
   const area = SIDEDRESS_AREA_PER_PLANCHE || 54.7;
   let mg_m2 = 0;
-  if (el === 'N') {
+  if (element === 'N') {
     mg_m2 += (sd.actisol_g * (PRODUCT_PCT.Actisol_N || 0)
-             * (SIDEDRESS_MIN_EFF.Actisol_N || 0.6) * 1000) / area;
+             * (SIDEDRESS_MINIMUM_EFFICIENCY.Actisol_N || 0.6) * 1000) / area;
     mg_m2 += (sd.farine_g  * (PRODUCT_PCT.FarinePlumes_N || 0)
-             * (SIDEDRESS_MIN_EFF.FarinePlumes_N || 0.75) * 1000) / area;
-  } else if (el === 'P') {
+             * (SIDEDRESS_MINIMUM_EFFICIENCY.FarinePlumes_N || 0.75) * 1000) / area;
+  } else if (element === 'P') {
     mg_m2 += (sd.actisol_g * (PRODUCT_PCT.Actisol_P || 0)
-             * (SIDEDRESS_MIN_EFF.Actisol_P || 0.5) * 1000) / area;
-  } else if (el === 'K') {
+             * (SIDEDRESS_MINIMUM_EFFICIENCY.Actisol_P || 0.5) * 1000) / area;
+  } else if (element === 'K') {
     mg_m2 += (sd.actisol_g * (PRODUCT_PCT.Actisol_K || 0)
-             * (SIDEDRESS_MIN_EFF.Actisol_K || 0.85) * 1000) / area;
+             * (SIDEDRESS_MINIMUM_EFFICIENCY.Actisol_K || 0.85) * 1000) / area;
   }
   return mg_m2;
 }
@@ -1434,22 +1434,22 @@ function sidedressEffective(stage, el) {
 // Helper — fertigation effective contribution (mg/m²/wk per element) at current
 // soil pH using computeStageRecipe(stage). Only K and Mg modeled in mass-balance
 // (per computeStageRecipe). Returns 0 for elements not delivered via fertigation.
-function fertigationEffective(stage, el, soilPh) {
-  if (typeof computeStageRecipe !== 'function' || !PRODUCT_PCT || !TOMATO_NUM_BEDS || !TOMATO_BED_AREA) return 0;
+function fertigationEffective(stage, element, soilPh) {
+  if (typeof computeStageRecipe !== 'function' || !PRODUCT_PCT || !TOMATO_NUMBER_BEDS || !TOMATO_BED_AREA) return 0;
   const recipe = computeStageRecipe(stage) || {};
-  const totalArea = TOMATO_NUM_BEDS * TOMATO_BED_AREA;
+  const totalArea = TOMATO_NUMBER_BEDS * TOMATO_BED_AREA;
   let mg_m2 = 0;
-  if (el === 'K') {
-    const eff = (effectiveEff && PRODUCT && PRODUCT.K2SO4)
-      ? Math.max(0.05, effectiveEff('K2SO4', 'K', soilPh))  // 0 floor would zero supply
+  if (element === 'K') {
+    const efficiency = (effectiveEfficiency && PRODUCT && PRODUCT.K2SO4)
+      ? Math.max(0.05, effectiveEfficiency('K2SO4', 'K', soilPh))  // 0 floor would zero supply
       : 1.0;
-    const mg_total = (recipe.kSulfate || 0) * (PRODUCT_PCT.K2SO4_K || 0.415) * 1000 * eff;
+    const mg_total = (recipe.kSulfate || 0) * (PRODUCT_PCT.K2SO4_K || 0.415) * 1000 * efficiency;
     mg_m2 = mg_total / totalArea;
-  } else if (el === 'Mg') {
-    const eff = (effectiveEff && PRODUCT && PRODUCT['MgSO4-7H2O'])
-      ? Math.max(0.05, effectiveEff('MgSO4-7H2O', 'Mg', soilPh))
+  } else if (element === 'Mg') {
+    const efficiency = (effectiveEfficiency && PRODUCT && PRODUCT['MgSO4-7H2O'])
+      ? Math.max(0.05, effectiveEfficiency('MgSO4-7H2O', 'Mg', soilPh))
       : 1.0;
-    const mg_total = (recipe.mgSulfate || 0) * (PRODUCT_PCT.MgSO4_Mg || 0.0986) * 1000 * eff;
+    const mg_total = (recipe.mgSulfate || 0) * (PRODUCT_PCT.MgSO4_Mg || 0.0986) * 1000 * efficiency;
     mg_m2 = mg_total / totalArea;
   }
   return mg_m2;
@@ -1459,18 +1459,18 @@ function fertigationEffective(stage, el, soilPh) {
 // COMPOST_RELEASE_PER_WEEK directly (single source of truth, exposed via
 // instrumentation; consumers in the live app use
 // window.CompostContribution.releasePerWeek which wraps the same constant).
-function compostReleaseMg(el) {
+function compostReleaseMg(element) {
   if (!COMPOST_RELEASE_PER_WEEK) return 0;
-  return (COMPOST_RELEASE_PER_WEEK[el] || 0) * 1000;  // g→mg
+  return (COMPOST_RELEASE_PER_WEEK[element] || 0) * 1000;  // g→mg
 }
 
-// Helper — total demand (mg/m²/wk) for (stage, el).
-function stageDemandMg(stage, el) {
+// Helper — total demand (mg/m²/wk) for (stage, element).
+function stageDemandMg(stage, element) {
   if (!TOMATO_FRUIT_EXPORT || !BIOMASS_DEMAND || !RECIPE_INPUTS) return 0;
   const y = (RECIPE_INPUTS.stageYield || {})[stage] || 0;
-  const fruit_g = (TOMATO_FRUIT_EXPORT[el] && TOMATO_FRUIT_EXPORT[el].g) || 0;
+  const fruit_g = (TOMATO_FRUIT_EXPORT[element] && TOMATO_FRUIT_EXPORT[element].g) || 0;
   const fruit_mg = fruit_g * 1000 * y;
-  const bio_mg = (BIOMASS_DEMAND[stage] || {})[el] || 0;
+  const bio_mg = (BIOMASS_DEMAND[stage] || {})[element] || 0;
   return fruit_mg + bio_mg;
 }
 
@@ -1497,17 +1497,17 @@ if (typeof computeStageRecipe !== 'function' || !TOMATO_SIDEDRESS || !RECIPE_INP
   // it via compost + sidedress.
   const offenders = [];
   for (const stage of STAGES) {
-    for (const el of MASS_BALANCE_ELEMENTS) {
-      const demand = stageDemandMg(stage, el);
+    for (const element of MASS_BALANCE_ELEMENTS) {
+      const demand = stageDemandMg(stage, element);
       if (demand <= 0) continue;  // skip null demand entries
-      const supply = compostReleaseMg(el)
-                   + sidedressEffective(stage, el)
-                   + fertigationEffective(stage, el, SOIL_PH_NOW);
+      const supply = compostReleaseMg(element)
+                   + sidedressEffective(stage, element)
+                   + fertigationEffective(stage, element, SOIL_PH_NOW);
       const ratio = supply / demand;
       if (ratio < 0.90) {
-        const accepted = ACCEPTED_DEFICITS.find(d => d.stage === stage && d.element === el);
+        const accepted = ACCEPTED_DEFICITS.find(d => d.stage === stage && d.element === element);
         if (!accepted) {
-          offenders.push(`${stage}.${el}: supply=${supply.toFixed(0)} demand=${demand.toFixed(0)} ratio=${ratio.toFixed(2)} (no ACCEPTED_DEFICITS annotation)`);
+          offenders.push(`${stage}.${element}: supply=${supply.toFixed(0)} demand=${demand.toFixed(0)} ratio=${ratio.toFixed(2)} (no ACCEPTED_DEFICITS annotation)`);
         }
       }
     }
@@ -1534,17 +1534,17 @@ if (typeof computeStageRecipe !== 'function' || !TOMATO_SIDEDRESS || !RECIPE_INP
 } else {
   const offenders = [];
   for (const stage of STAGES) {
-    for (const el of MASS_BALANCE_ELEMENTS) {
-      const demand = stageDemandMg(stage, el);
+    for (const element of MASS_BALANCE_ELEMENTS) {
+      const demand = stageDemandMg(stage, element);
       if (demand <= 0) continue;
-      const supply = compostReleaseMg(el)
-                   + sidedressEffective(stage, el)
-                   + fertigationEffective(stage, el, SOIL_PH_NOW);
+      const supply = compostReleaseMg(element)
+                   + sidedressEffective(stage, element)
+                   + fertigationEffective(stage, element, SOIL_PH_NOW);
       const ratio = supply / demand;
       if (ratio > 1.3) {
-        const accepted = ACCEPTED_EXCESSES.find(e => e.stage === stage && e.element === el);
+        const accepted = ACCEPTED_EXCESSES.find(e => e.stage === stage && e.element === element);
         if (!accepted) {
-          offenders.push(`${stage}.${el}: supply=${supply.toFixed(0)} demand=${demand.toFixed(0)} ratio=${ratio.toFixed(2)} (no ACCEPTED_EXCESSES annotation)`);
+          offenders.push(`${stage}.${element}: supply=${supply.toFixed(0)} demand=${demand.toFixed(0)} ratio=${ratio.toFixed(2)} (no ACCEPTED_EXCESSES annotation)`);
         }
       }
     }
@@ -1625,8 +1625,8 @@ if (!STORED_RECIPE || !FP_RECIPE_T5 || typeof window.buildNutriment !== 'functio
       if (typeof window.setNutrRecipeMode === 'function') window.setNutrRecipeMode('fp');
       if (typeof window.setNutrStage === 'function') window.setNutrStage('T5');
       window.buildNutriment();
-      const phase1El = window.document.getElementById('nutr-phase1');
-      const phase1Text = phase1El ? phase1El.textContent : '';
+      const phase1Element = window.document.getElementById('nutr-phase1');
+      const phase1Text = phase1Element ? phase1Element.textContent : '';
       if (!/\b150\b/.test(phase1Text)) {
         offenders.push(`Block 8 K2SO4 row missing "150" (FP/Stored=1.5 expected) — text: ${phase1Text.slice(0, 200)}…`);
       }
@@ -1646,25 +1646,25 @@ if (!STORED_RECIPE || !FP_RECIPE_T5 || typeof window.buildNutriment !== 'functio
 
 // ─── REQ-017 — pH-aware effective efficiency in [0,1] ─────────────────────
 
-header('REQ-017 — effectiveEff(product, el, pH) renvoie [0,1] pour soilPh=7.0');
+header('REQ-017 — effectiveEfficiency(product, element, pH) renvoie [0,1] pour soilPh=7.0');
 
-if (typeof effectiveEff !== 'function' || !PRODUCT) {
-  fail('REQ-017 — effectiveEff exposed', 'function or PRODUCT missing');
+if (typeof effectiveEfficiency !== 'function' || !PRODUCT) {
+  fail('REQ-017 — effectiveEfficiency exposed', 'function or PRODUCT missing');
 } else {
   const offenders = [];
   for (const [name, p] of Object.entries(PRODUCT)) {
     const baseEls = Object.keys(p.base || {});
-    for (const el of baseEls) {
-      const eff = effectiveEff(name, el, 7.0);
-      if (typeof eff !== 'number' || Number.isNaN(eff) || eff < 0 || eff > 1) {
-        offenders.push(`${name}.${el}: effectiveEff=${eff}`);
+    for (const element of baseEls) {
+      const efficiency = effectiveEfficiency(name, element, 7.0);
+      if (typeof efficiency !== 'number' || Number.isNaN(efficiency) || efficiency < 0 || efficiency > 1) {
+        offenders.push(`${name}.${element}: effectiveEfficiency=${efficiency}`);
       }
     }
   }
   if (offenders.length === 0) {
-    pass(`effectiveEff ∈ [0,1] pour tout (produit, élément) à pH 7.0`);
+    pass(`effectiveEfficiency ∈ [0,1] pour tout (produit, élément) à pH 7.0`);
   } else {
-    fail('effectiveEff hors [0,1]', offenders.join('\n'));
+    fail('effectiveEfficiency hors [0,1]', offenders.join('\n'));
   }
 }
 
@@ -1673,12 +1673,12 @@ if (typeof effectiveEff !== 'function' || !PRODUCT) {
 // Active recipes today: computeStageRecipe (K2SO4, MgSO4-7H2O via fertigation),
 // FOLIAR.tomato.A (MnSO4, ZnSO4, Solubore, CuSO4, NaMolybdate, FeSO4-7H2O),
 // TOMATO_SIDEDRESS (Actisol-5-3-2, FarinePlumes). For each, walk product.base
-// and assert effectiveEff(product, el, soilPh) ≥ 0.05 unless flagged decorative.
+// and assert effectiveEfficiency(product, element, soilPh) ≥ 0.05 unless flagged decorative.
 
-header('REQ-018 — Aucun produit "décoratif" (eff < 5%) sans drapeau');
+header('REQ-018 — Aucun produit "décoratif" (efficiency < 5%) sans drapeau');
 
-if (typeof effectiveEff !== 'function' || !PRODUCT) {
-  fail('REQ-018 — effectiveEff / PRODUCT exposés', 'missing');
+if (typeof effectiveEfficiency !== 'function' || !PRODUCT) {
+  fail('REQ-018 — effectiveEfficiency / PRODUCT exposés', 'missing');
 } else {
   const ACTIVE_PRODUCTS = [
     'K2SO4', 'MgSO4-7H2O',                      // fertigation
@@ -1695,36 +1695,36 @@ if (typeof effectiveEff !== 'function' || !PRODUCT) {
     // For foliar products, sample sprayPh = 5.0 (typical sulfate Spray A).
     // For non-foliar, only soilPh matters.
     const sprayPh = (p.ch === 'foliar') ? 5.0 : null;
-    for (const el of baseEls) {
-      const eff = effectiveEff(name, el, SOIL_PH_NOW, sprayPh);
-      if (eff < 0.05) {
-        offenders.push(`${name}.${el}: eff=${eff.toFixed(3)} at soilPh ${SOIL_PH_NOW}`);
+    for (const element of baseEls) {
+      const efficiency = effectiveEfficiency(name, element, SOIL_PH_NOW, sprayPh);
+      if (efficiency < 0.05) {
+        offenders.push(`${name}.${element}: efficiency=${efficiency.toFixed(3)} at soilPh ${SOIL_PH_NOW}`);
       }
     }
   }
   if (offenders.length === 0) {
-    pass('Tous les produits actifs ont eff ≥ 5% à pH actuel');
+    pass('Tous les produits actifs ont efficiency ≥ 5% à pH actuel');
   } else {
-    fail('Produits décoratifs non flaggés (eff < 5%)', offenders.join('\n'));
+    fail('Produits décoratifs non flaggés (efficiency < 5%)', offenders.join('\n'));
   }
 }
 
-// ─── REQ-020 — pH lockout gate (FeSO4 effective eff drops with rising pH) ─
+// ─── REQ-020 — pH lockout gate (FeSO4 effective efficiency drops with rising pH) ─
 
-header('REQ-020 — Lockout pH: effectiveEff(FeSO4, Fe, 7.4) < (Fe, 6.5)');
+header('REQ-020 — Lockout pH: effectiveEfficiency(FeSO4, Fe, 7.4) < (Fe, 6.5)');
 
-if (typeof effectiveEff !== 'function' || !PRODUCT || !PRODUCT['FeSO4-7H2O']) {
-  fail('REQ-020 — FeSO4 / effectiveEff exposed', 'missing');
+if (typeof effectiveEfficiency !== 'function' || !PRODUCT || !PRODUCT['FeSO4-7H2O']) {
+  fail('REQ-020 — FeSO4 / effectiveEfficiency exposed', 'missing');
 } else {
-  const lo = effectiveEff('FeSO4-7H2O', 'Fe', 6.5);
-  const hi = effectiveEff('FeSO4-7H2O', 'Fe', 7.4);
+  const lo = effectiveEfficiency('FeSO4-7H2O', 'Fe', 6.5);
+  const hi = effectiveEfficiency('FeSO4-7H2O', 'Fe', 7.4);
   if (typeof lo !== 'number' || typeof hi !== 'number') {
-    fail('REQ-020 — effectiveEff returns numbers', `lo=${lo} hi=${hi}`);
+    fail('REQ-020 — effectiveEfficiency returns numbers', `lo=${lo} hi=${hi}`);
   } else if (hi < lo) {
-    pass(`effectiveEff(FeSO4-7H2O, Fe, 7.4)=${hi.toFixed(3)} < (Fe, 6.5)=${lo.toFixed(3)} — lockout active`);
+    pass(`effectiveEfficiency(FeSO4-7H2O, Fe, 7.4)=${hi.toFixed(3)} < (Fe, 6.5)=${lo.toFixed(3)} — lockout active`);
   } else {
     fail('REQ-020 — pH lockout differentiates Fe at 6.5 vs 7.4',
-         `eff(7.4)=${hi.toFixed(3)} should be < eff(6.5)=${lo.toFixed(3)}`);
+         `efficiency(7.4)=${hi.toFixed(3)} should be < efficiency(6.5)=${lo.toFixed(3)}`);
   }
 }
 
@@ -1745,14 +1745,14 @@ if (!PRODUCT || typeof computeStageRecipe !== 'function') {
   const offenders = [];
 
   // Fertigation: max dose across all stages.
-  let kMax = 0, mgMax = 0;
+  let kMaximum = 0, mgMaximum = 0;
   for (const stage of STAGES) {
     const r = computeStageRecipe(stage) || {};
-    if ((r.kSulfate || 0) > kMax) kMax = r.kSulfate;
-    if ((r.mgSulfate || 0) > mgMax) mgMax = r.mgSulfate;
+    if ((r.kSulfate || 0) > kMaximum) kMaximum = r.kSulfate;
+    if ((r.mgSulfate || 0) > mgMaximum) mgMaximum = r.mgSulfate;
   }
-  const kConc = kMax / STOCK_VOL_L;
-  const mgConc = mgMax / STOCK_VOL_L;
+  const kConc = kMaximum / STOCK_VOL_L;
+  const mgConc = mgMaximum / STOCK_VOL_L;
   if (kConc > (PRODUCT.K2SO4?.solubilityCap_g_per_L || 100)) {
     offenders.push(`K2SO4: ${kConc.toFixed(1)} g/L > cap ${PRODUCT.K2SO4.solubilityCap_g_per_L}`);
   }
@@ -1957,11 +1957,11 @@ if (typeof MIX_ORDER === 'undefined' || MIX_ORDER === undefined) {
 
 // ─── REQ-032 — Stock barrel time-stability ────────────────────────────────
 //
-// PRODUCT entries already declare maxStableHours — assert non-empty for active
+// PRODUCT entries already declare maximumStableHours — assert non-empty for active
 // fertigation/foliar products. This is the schema half of REQ-032; the UI
 // "stock-age warning" remains TODO.
 
-header('REQ-032 — maxStableHours déclaré sur tout produit en recette active');
+header('REQ-032 — maximumStableHours déclaré sur tout produit en recette active');
 
 if (!PRODUCT) {
   fail('REQ-032 — PRODUCT exposed', 'missing');
@@ -1974,14 +1974,14 @@ if (!PRODUCT) {
   for (const name of ACTIVE) {
     const p = PRODUCT[name];
     if (!p) { offenders.push(`${name}: missing`); continue; }
-    if (typeof p.maxStableHours !== 'number' || p.maxStableHours <= 0) {
-      offenders.push(`${name}: maxStableHours=${p.maxStableHours}`);
+    if (typeof p.maximumStableHours !== 'number' || p.maximumStableHours <= 0) {
+      offenders.push(`${name}: maximumStableHours=${p.maximumStableHours}`);
     }
   }
   if (offenders.length === 0) {
-    pass('maxStableHours numérique sur tous les produits actifs (UI age-warning: TODO)');
+    pass('maximumStableHours numberérique sur tous les produits actifs (UI age-warning: TODO)');
   } else {
-    fail('REQ-032 — maxStableHours manquant', offenders.join('\n'));
+    fail('REQ-032 — maximumStableHours manquant', offenders.join('\n'));
   }
 }
 
@@ -2107,8 +2107,8 @@ header('REQ-060 — Convention "// stable —" en usage (compte ≥ 5)');
 
 // ─── REQ-061 — Cascade order (foliar > 0 only when earlier channels short) ─
 //
-// For each (stage, el) with a non-foliar replenishment chain, assert that if
-// FOLIAR.tomato.A contains a dose for `el`, then offtake > compost + sidedress
+// For each (stage, element) with a non-foliar replenishment chain, assert that if
+// FOLIAR.tomato.A contains a dose for `element`, then offtake > compost + sidedress
 // + fertigation. Foliar-only elements (Mn/Zn/Cu/B/Mo/Fe per CHANNEL_ROLE) are
 // SKIPPED — for them foliar IS the earliest non-passive channel.
 
@@ -2118,7 +2118,7 @@ if (!FOLIAR || !FOLIAR.tomato || !CHANNEL_ROLE) {
   fail('REQ-061 — FOLIAR / CHANNEL_ROLE exposés', 'missing');
 } else {
   // Map foliar-product label → element delivered.
-  const FOLIAR_EL = {
+  const FOLIAR_ELEMENT = {
     'MnSO₄': 'Mn', 'ZnSO₄': 'Zn', 'Solubore': 'B',
     'CuSO₄': 'Cu', 'Molybdate de sodium': 'Mo', 'FeSO₄·7H₂O': 'Fe',
   };
@@ -2126,22 +2126,22 @@ if (!FOLIAR || !FOLIAR.tomato || !CHANNEL_ROLE) {
   for (const item of FOLIAR.tomato.A || []) {
     const g = parseFloat((item.master || '').replace(/[^\d.]/g, ''));
     if (!isFinite(g) || g <= 0) continue;
-    for (const k in FOLIAR_EL) if ((item.name || '').includes(k)) foliarEls.add(FOLIAR_EL[k]);
+    for (const k in FOLIAR_ELEMENT) if ((item.name || '').includes(k)) foliarEls.add(FOLIAR_ELEMENT[k]);
   }
   // For elements not foliar-only per CHANNEL_ROLE, assert offtake > earlier supply.
   const offenders = [];
-  for (const el of foliarEls) {
-    const role = CHANNEL_ROLE[el] || {};
+  for (const element of foliarEls) {
+    const role = CHANNEL_ROLE[element] || {};
     const foliarOnly = role.foliar >= 1.0
       && !role.fertigation && !role.sidedress && !role.frontload;
     if (foliarOnly) continue;  // foliar IS earliest active channel
     // Cascade test at peak T5.
-    const off = stageDemandMg('T5', el);
-    const earlier = compostReleaseMg(el)
-                  + sidedressEffective('T5', el)
-                  + fertigationEffective('T5', el, SOIL_PH_NOW);
+    const off = stageDemandMg('T5', element);
+    const earlier = compostReleaseMg(element)
+                  + sidedressEffective('T5', element)
+                  + fertigationEffective('T5', element, SOIL_PH_NOW);
     if (off <= earlier) {
-      offenders.push(`${el}: foliar dosed but offtake ${off.toFixed(0)} ≤ earlier ${earlier.toFixed(0)}`);
+      offenders.push(`${element}: foliar dosed but offtake ${off.toFixed(0)} ≤ earlier ${earlier.toFixed(0)}`);
     }
   }
   if (offenders.length === 0) {
@@ -2249,14 +2249,14 @@ header('REQ-002 — Pas de produits non-Ecocert dans le copy de l\'app');
     if (matches && matches.length > 0) {
       // Find the first occurrence in the original (with line numbers) so the
       // operator can locate it. Walk lines once.
-      let lineNum = -1;
+      let lineNumber = -1;
       for (let i = 0; i < lines.length; i++) {
         const t = lines[i].trim();
         if (t.startsWith('//') || t.startsWith('*') || t.startsWith('<!--')) continue;
-        if (re.test(lines[i])) { lineNum = i + 1; re.lastIndex = 0; break; }
+        if (re.test(lines[i])) { lineNumber = i + 1; re.lastIndex = 0; break; }
         re.lastIndex = 0;
       }
-      hits.push(`${forbidden}: ${matches.length} occurrence(s), first at line ${lineNum}`);
+      hits.push(`${forbidden}: ${matches.length} occurrence(s), first at line ${lineNumber}`);
     }
   }
 
@@ -2272,7 +2272,7 @@ header('REQ-002 — Pas de produits non-Ecocert dans le copy de l\'app');
 // The nursery/plant-needs subproject (data + calc + model) lives at
 // nutrition/nursery/plant-needs/{data.js,calc.js,model.js}. Until
 // app/index.html @includes the partials, window.PlantNeedsNursery /
-// NURSERY_TARGETS / calcNurseryDemand are absent from the dist/index.html
+// NURSERY_TARGETS / calculateNurseryDemand are absent from the dist/index.html
 // artifact. To avoid a chicken-and-egg between source-of-truth (the partials)
 // and verifier runtime (jsdom on dist/index.html), we load the partials
 // directly into a Node vm sandbox and run REQ-090..093 against that. After
@@ -2284,10 +2284,10 @@ header('REQ-002 — Pas de produits non-Ecocert dans le copy de l\'app');
 import vm from 'node:vm';
 
 let nurseryNs = null;
-let nurseryLoadErr = null;
+let nurseryLoadError = null;
 try {
   const dataSrc  = readFileSync(join(REPO_ROOT, 'nutrition/nursery/plant-needs/data.js'),  'utf8');
-  const calcSrc  = readFileSync(join(REPO_ROOT, 'nutrition/nursery/plant-needs/calc.js'),  'utf8');
+  const pureFunctionSource  = readFileSync(join(REPO_ROOT, 'nutrition/nursery/plant-needs/calc.js'),  'utf8');
   const modelSrc = readFileSync(join(REPO_ROOT, 'nutrition/nursery/plant-needs/model.js'), 'utf8');
   // The partials use bare `const` declarations and `window.PlantNeedsNursery
   // = {…}`. A shared sandbox with a `window` host lets all three modules see
@@ -2295,12 +2295,12 @@ try {
   // browser when loaded in dependency order.
   const sandbox = { window: {} };
   vm.createContext(sandbox);
-  vm.runInContext(dataSrc + '\n' + calcSrc + '\n' + modelSrc, sandbox, {
+  vm.runInContext(dataSrc + '\n' + pureFunctionSource + '\n' + modelSrc, sandbox, {
     filename: 'nursery-plant-needs-bundle.js',
   });
   nurseryNs = sandbox.window.PlantNeedsNursery || null;
 } catch (err) {
-  nurseryLoadErr = err && err.message || String(err);
+  nurseryLoadError = err && err.message || String(err);
 }
 
 // ─── INV-1 — Element coverage closed (11 canonical elements) ─────────────
@@ -2309,7 +2309,7 @@ header('Nursery plant-needs INV-1 — Element coverage closed (11 elements)');
 
 if (!nurseryNs) {
   fail('Nursery partials load + expose window.PlantNeedsNursery',
-       nurseryLoadErr || 'window.PlantNeedsNursery not produced by the partials');
+       nurseryLoadError || 'window.PlantNeedsNursery not produced by the partials');
 } else {
   const expected = ['N','P','K','Ca','Mg','Fe','Mn','Zn','B','Cu','Mo'];
   const actual = Object.keys(nurseryNs.LETTUCE_NURSERY_TISSUE_DW || {});
@@ -2325,27 +2325,27 @@ if (!nurseryNs) {
 
 // ─── REQ-090 — Linearity in targetG ─────────────────────────────────────
 //
-// calcNurseryDemand(2g, days, cells) returns 2× the values of
-// calcNurseryDemand(1g, days, cells), per element, on perTray_mg. Asserted
+// calculateNurseryDemand(2g, days, cells) returns 2× the values of
+// calculateNurseryDemand(1g, days, cells), per element, on perTray_mg. Asserted
 // within ±0.1 %.
 //
 // Spec: nutrition/nursery/plant-needs/spec.md → REQ-090.
 
 header('REQ-090 — Nursery demand linear in targetG (±0.1 %)');
 
-if (!nurseryNs || typeof nurseryNs.calcNurseryDemand !== 'function') {
-  fail('calcNurseryDemand exposed on window.PlantNeedsNursery',
-       nurseryLoadErr || 'function missing on namespace');
+if (!nurseryNs || typeof nurseryNs.calculateNurseryDemand !== 'function') {
+  fail('calculateNurseryDemand exposed on window.PlantNeedsNursery',
+       nurseryLoadError || 'function missing on namespace');
 } else {
-  const fn = nurseryNs.calcNurseryDemand;
-  const a = fn(1, 35, 50);
-  const b = fn(2, 35, 50);
+  const handler = nurseryNs.calculateNurseryDemand;
+  const a = handler(1, 35, 50);
+  const b = handler(2, 35, 50);
   const offenders = [];
-  for (const el of Object.keys(a)) {
-    if (a[el].perTray_mg === 0) continue;
-    const ratio = b[el].perTray_mg / a[el].perTray_mg;
+  for (const element of Object.keys(a)) {
+    if (a[element].perTray_mg === 0) continue;
+    const ratio = b[element].perTray_mg / a[element].perTray_mg;
     if (Math.abs(ratio - 2.0) / 2.0 > 0.001) {
-      offenders.push(`${el}: ratio=${ratio.toFixed(5)} (expected 2.0)`);
+      offenders.push(`${element}: ratio=${ratio.toFixed(5)} (expected 2.0)`);
     }
   }
   if (offenders.length === 0) {
@@ -2357,26 +2357,26 @@ if (!nurseryNs || typeof nurseryNs.calcNurseryDemand !== 'function') {
 
 // ─── REQ-091 — Inverse-linearity in cycleDays ───────────────────────────
 //
-// calcNurseryDemand(g, 70, cells).perTray_mg is exactly half of
-// calcNurseryDemand(g, 35, cells).perTray_mg, per element. ±0.1 %.
+// calculateNurseryDemand(g, 70, cells).perTray_mg is exactly half of
+// calculateNurseryDemand(g, 35, cells).perTray_mg, per element. ±0.1 %.
 //
 // Spec: nutrition/nursery/plant-needs/spec.md → REQ-091.
 
 header('REQ-091 — Nursery demand inverse-linear in cycleDays (±0.1 %)');
 
-if (!nurseryNs || typeof nurseryNs.calcNurseryDemand !== 'function') {
-  fail('calcNurseryDemand exposed on window.PlantNeedsNursery',
-       nurseryLoadErr || 'function missing on namespace');
+if (!nurseryNs || typeof nurseryNs.calculateNurseryDemand !== 'function') {
+  fail('calculateNurseryDemand exposed on window.PlantNeedsNursery',
+       nurseryLoadError || 'function missing on namespace');
 } else {
-  const fn = nurseryNs.calcNurseryDemand;
-  const short = fn(90, 35, 50);
-  const long  = fn(90, 70, 50);
+  const handler = nurseryNs.calculateNurseryDemand;
+  const short = handler(90, 35, 50);
+  const long  = handler(90, 70, 50);
   const offenders = [];
-  for (const el of Object.keys(short)) {
-    if (short[el].perTray_mg === 0) continue;
-    const ratio = long[el].perTray_mg / short[el].perTray_mg;
+  for (const element of Object.keys(short)) {
+    if (short[element].perTray_mg === 0) continue;
+    const ratio = long[element].perTray_mg / short[element].perTray_mg;
     if (Math.abs(ratio - 0.5) / 0.5 > 0.001) {
-      offenders.push(`${el}: ratio=${ratio.toFixed(5)} (expected 0.5)`);
+      offenders.push(`${element}: ratio=${ratio.toFixed(5)} (expected 0.5)`);
     }
   }
   if (offenders.length === 0) {
@@ -2395,15 +2395,15 @@ if (!nurseryNs || typeof nurseryNs.calcNurseryDemand !== 'function') {
 
 header('REQ-092 — Nursery N demand ∈ [50, 70] mg/plant/wk au défaut');
 
-if (!nurseryNs || typeof nurseryNs.calcNurseryDemand !== 'function') {
-  fail('calcNurseryDemand exposed on window.PlantNeedsNursery',
-       nurseryLoadErr || 'function missing on namespace');
+if (!nurseryNs || typeof nurseryNs.calculateNurseryDemand !== 'function') {
+  fail('calculateNurseryDemand exposed on window.PlantNeedsNursery',
+       nurseryLoadError || 'function missing on namespace');
 } else {
-  const fn = nurseryNs.calcNurseryDemand;
-  const out = fn(90, 35, 50);
+  const handler = nurseryNs.calculateNurseryDemand;
+  const out = handler(90, 35, 50);
   const n = out.N && out.N.perPlant_mg;
   if (typeof n !== 'number' || !isFinite(n)) {
-    fail('N perPlant_mg numérique', `valeur: ${n}`);
+    fail('N perPlant_mg numberérique', `valeur: ${n}`);
   } else if (n < 50 || n > 70) {
     fail('N perPlant_mg ∈ [50, 70]', `valeur: ${n.toFixed(2)} mg`);
   } else {
@@ -2414,7 +2414,7 @@ if (!nurseryNs || typeof nurseryNs.calcNurseryDemand !== 'function') {
 // ─── REQ-093 — window.PlantNeedsNursery public API surface ──────────────
 //
 // Asserts the namespace exists and exposes the declared keys; spot-checks
-// that calcNurseryDemand returns shape `{ perPlant_mg, perTray_mg }` per
+// that calculateNurseryDemand returns shape `{ perPlant_mg, perTray_mg }` per
 // element and demandPerTray returns a number.
 //
 // Spec: nutrition/nursery/plant-needs/spec.md → REQ-093.
@@ -2423,18 +2423,18 @@ header('REQ-093 — window.PlantNeedsNursery public API surface');
 
 if (!nurseryNs) {
   fail('window.PlantNeedsNursery exists',
-       nurseryLoadErr || 'namespace not declared (model.js include may be missing or out of order)');
+       nurseryLoadError || 'namespace not declared (model.js include may be missing or out of order)');
 } else {
   const expectedKeys = [
     'LETTUCE_NURSERY_TISSUE_DW', 'LETTUCE_NURSERY_DM_FRACTION',
     'NURSERY_TARGETS',
-    'calcNurseryDemand', 'demandPerTray',
+    'calculateNurseryDemand', 'demandPerTray',
   ];
   const missing = expectedKeys.filter(k => nurseryNs[k] == null);
   if (missing.length > 0) {
     fail('PlantNeedsNursery exposes the public API', `manquants: ${missing.join(', ')}`);
   } else {
-    const out = nurseryNs.calcNurseryDemand(90, 35, 50);
+    const out = nurseryNs.calculateNurseryDemand(90, 35, 50);
     const n = out && out.N;
     const perTray = nurseryNs.demandPerTray('N');
     const okShape = n
@@ -2443,8 +2443,8 @@ if (!nurseryNs) {
                  && typeof perTray       === 'number'
                  && isFinite(n.perPlant_mg) && isFinite(n.perTray_mg) && isFinite(perTray);
     if (!okShape) {
-      fail('PlantNeedsNursery.calcNurseryDemand / demandPerTray return correct shape',
-           `calcNurseryDemand(...).N: ${JSON.stringify(n)}; demandPerTray('N'): ${typeof perTray}`);
+      fail('PlantNeedsNursery.calculateNurseryDemand / demandPerTray return correct shape',
+           `calculateNurseryDemand(...).N: ${JSON.stringify(n)}; demandPerTray('N'): ${typeof perTray}`);
     } else {
       pass(`PlantNeedsNursery exposes ${expectedKeys.length} clés (toutes présentes, shape OK)`);
     }
@@ -2464,20 +2464,20 @@ if (!nurseryNs) {
 // Spec: nutrition/nursery/substrate-contribution/spec.md → REQ-094..097.
 
 let SCN = window.SubstrateContributionNursery;
-let scnLoadErr = null;
+let substrateLoadError = null;
 if (!SCN) {
   try {
     const dataSrc  = readFileSync(join(REPO_ROOT, 'nutrition/nursery/substrate-contribution/data.js'),  'utf8');
-    const calcSrc  = readFileSync(join(REPO_ROOT, 'nutrition/nursery/substrate-contribution/calc.js'),  'utf8');
+    const pureFunctionSource  = readFileSync(join(REPO_ROOT, 'nutrition/nursery/substrate-contribution/calc.js'),  'utf8');
     const modelSrc = readFileSync(join(REPO_ROOT, 'nutrition/nursery/substrate-contribution/model.js'), 'utf8');
     const sandbox = { window: {} };
     vm.createContext(sandbox);
-    vm.runInContext(dataSrc + '\n' + calcSrc + '\n' + modelSrc, sandbox, {
+    vm.runInContext(dataSrc + '\n' + pureFunctionSource + '\n' + modelSrc, sandbox, {
       filename: 'nursery-substrate-contribution-bundle.js',
     });
     SCN = sandbox.window.SubstrateContributionNursery || null;
   } catch (err) {
-    scnLoadErr = err && err.message || String(err);
+    substrateLoadError = err && err.message || String(err);
   }
 }
 
@@ -2487,7 +2487,7 @@ header('REQ-094 — Substrate front-load cap ≤ 9 g + INV-2 release-curve mass 
 
 if (!SCN) {
   fail('SubstrateContributionNursery namespace available',
-       scnLoadErr || 'partials did not produce window.SubstrateContributionNursery');
+       substrateLoadError || 'partials did not produce window.SubstrateContributionNursery');
 } else {
   const cap = SCN.LIMITS && SCN.LIMITS.maxFeatherMealPerTrayG;
   if (typeof cap !== 'number') {
@@ -2519,7 +2519,7 @@ if (!SCN) {
 header('REQ-095 — Substrate release linéaire en feather meal (OM2 invariant)');
 
 if (!SCN || typeof SCN.theoreticalSubstrateReleasePerWeek !== 'function') {
-  fail('theoreticalSubstrateReleasePerWeek exposed', scnLoadErr || 'function missing');
+  fail('theoreticalSubstrateReleasePerWeek exposed', substrateLoadError || 'function missing');
 } else {
   // Pick week 2 (peak feather meal release) for a clean signal.
   const W = 2;
@@ -2540,9 +2540,9 @@ if (!SCN || typeof SCN.theoreticalSubstrateReleasePerWeek !== 'function') {
 
   // (b) OM2-only elements unchanged when fmG doubles.
   const om2Drift = [];
-  for (const el of ['P', 'K', 'Ca', 'Mg']) {
-    if (Math.abs(rX[el] - r2X[el]) > 1e-6) {
-      om2Drift.push(`${el}: ${rX[el].toFixed(3)} vs ${r2X[el].toFixed(3)}`);
+  for (const element of ['P', 'K', 'Ca', 'Mg']) {
+    if (Math.abs(rX[element] - r2X[element]) > 1e-6) {
+      om2Drift.push(`${element}: ${rX[element].toFixed(3)} vs ${r2X[element].toFixed(3)}`);
     }
   }
   if (om2Drift.length === 0) {
@@ -2560,13 +2560,13 @@ if (!SCN || typeof SCN.cycleAverageReleasePerTray !== 'function'
     || !SCN.FEATHER_MEAL_LABEL_PCT
     || typeof SCN.FEATHER_MEAL_MINERALIZATION_FRAC !== 'number') {
   fail('cycleAverageReleasePerTray + feather meal constants exposed',
-       scnLoadErr || 'one or more globals missing');
+       substrateLoadError || 'one or more globals missing');
 } else {
   const fmG = SCN.NURSERY_FEATHER_MEAL_DEFAULT_G_PER_TRAY || 9;
   const W   = (SCN.OM2_RELEASE_CURVE_BY_WEEK || []).length || 5;
   const result = SCN.cycleAverageReleasePerTray(fmG);
   // REQ-136 — function now returns { perTray_mg, details }; legacy callers
-  // that read avg[el] directly are migrated to avg.perTray_mg[el].
+  // that read avg[element] directly are migrated to avg.perTray_mg[element].
   const avg = (result && result.perTray_mg) ? result.perTray_mg : result;
 
   // Closed-form mass-balance for N:
@@ -2599,7 +2599,7 @@ header('REQ-097 — window.SubstrateContributionNursery public API surface');
 
 if (!SCN) {
   fail('SubstrateContributionNursery exists',
-       scnLoadErr || 'namespace not declared (model.js include may be missing or out of order)');
+       substrateLoadError || 'namespace not declared (model.js include may be missing or out of order)');
 } else {
   const expectedKeys = [
     'OM2_STARTER_CHARGE_PPM',
@@ -2673,15 +2673,15 @@ header('Foliar INV-1 — Element coverage closed + numeric output');
         offenders.push(`${s}: returned ${typeof r}`);
         continue;
       }
-      for (const el of expectedEls) {
-        const v = r[el];
+      for (const element of expectedEls) {
+        const v = r[element];
         if (typeof v !== 'number' || !isFinite(v) || v < 0) {
-          offenders.push(`${s}/${el}: ${v} (typeof ${typeof v})`);
+          offenders.push(`${s}/${element}: ${v} (typeof ${typeof v})`);
         }
       }
     }
     if (offenders.length === 0) {
-      pass(`Tous les stades (${stages.length}) × ${expectedEls.length} éléments renvoient des valeurs numériques ≥ 0`);
+      pass(`Tous les stades (${stages.length}) × ${expectedEls.length} éléments renvoient des valeurs numberériques ≥ 0`);
     } else {
       fail('Foliar INV-1 — element coverage + numeric output', offenders.slice(0, 5).map(o => `  ${o}`).join('\n'));
     }
@@ -2706,7 +2706,7 @@ header('REQ-101 — Foliar delivery applies FOLIAR_COVERAGE_DEFAULT (Mn, Fe)');
       || typeof FRT.FOLIAR_COVERAGE_DEFAULT !== 'number'
       || !STORED_RECIPE?.tomato?.foliaire?.A
       || !PRODUCT_PCT
-      || !TOMATO_NUM_BEDS || !TOMATO_BED_AREA) {
+      || !TOMATO_NUMBER_BEDS || !TOMATO_BED_AREA) {
     fail('REQ-101 — foliar namespace + STORED_RECIPE + PRODUCT_PCT exposés', 'missing');
   } else {
     const A = STORED_RECIPE.tomato.foliaire.A;
@@ -2715,19 +2715,19 @@ header('REQ-101 — Foliar delivery applies FOLIAR_COVERAGE_DEFAULT (Mn, Fe)');
       const item = A.find(x => (x.name || '').includes(substr));
       return item ? parseG(item.master) : 0;
     };
-    const area = TOMATO_NUM_BEDS * TOMATO_BED_AREA;
+    const area = TOMATO_NUMBER_BEDS * TOMATO_BED_AREA;
     const cov = FRT.FOLIAR_COVERAGE_DEFAULT;
     const offenders = [];
     const PINNED = [
-      { el: 'Mn', g: findG('MnSO₄'), pct: PRODUCT_PCT.MnSO4_Mn },
-      { el: 'Fe', g: findG('FeSO₄'), pct: PRODUCT_PCT.FeSO4_Fe },
+      { element: 'Mn', g: findG('MnSO₄'), pct: PRODUCT_PCT.MnSO4_Mn },
+      { element: 'Fe', g: findG('FeSO₄'), pct: PRODUCT_PCT.FeSO4_Fe },
     ];
     const supply = FRT.computeFoliarSupply('T5');
-    for (const { el, g, pct } of PINNED) {
+    for (const { element, g, pct } of PINNED) {
       const expected = (g * pct * 1000) / area * cov;
-      const actual = supply[el];
+      const actual = supply[element];
       if (Math.abs(actual - expected) > Math.max(0.01, expected * 0.01)) {
-        offenders.push(`${el}: actual=${actual.toFixed(3)} vs expected=${expected.toFixed(3)} (g=${g}, pct=${pct}, cov=${cov})`);
+        offenders.push(`${element}: actual=${actual.toFixed(3)} vs expected=${expected.toFixed(3)} (g=${g}, pct=${pct}, cov=${cov})`);
       }
     }
     if (offenders.length === 0) {
@@ -2793,17 +2793,17 @@ header('REQ-112 — computeFoliarSupply(stage, opts) — sprayCount + surfactant
     const ELEMENTS = ['Fe', 'Mn', 'Zn', 'B', 'Cu', 'Mo'];
     const ratioYucca = FRT.FOLIAR_COVERAGE_WITH_YUCCA / FRT.FOLIAR_COVERAGE_DEFAULT;
     const offenders = [];
-    for (const el of ELEMENTS) {
-      if (Math.abs(baseline[el] - noOpts[el]) > 0.001) {
-        offenders.push(`${el}: defaults diverge (no-opt=${noOpts[el]} vs single-arg=${baseline[el]})`);
+    for (const element of ELEMENTS) {
+      if (Math.abs(baseline[element] - noOpts[element]) > 0.001) {
+        offenders.push(`${element}: defaults diverge (no-opt=${noOpts[element]} vs single-arg=${baseline[element]})`);
       }
-      if (baseline[el] > 0 && Math.abs(doubled[el] - 2 * baseline[el]) > Math.max(0.001, baseline[el] * 0.01)) {
-        offenders.push(`${el}: sprayCount=2 should double (baseline=${baseline[el]}, doubled=${doubled[el]})`);
+      if (baseline[element] > 0 && Math.abs(doubled[element] - 2 * baseline[element]) > Math.max(0.001, baseline[element] * 0.01)) {
+        offenders.push(`${element}: sprayCount=2 should double (baseline=${baseline[element]}, doubled=${doubled[element]})`);
       }
-      if (baseline[el] > 0) {
-        const expected = baseline[el] * ratioYucca;
-        if (Math.abs(withYucca[el] - expected) > Math.max(0.001, expected * 0.01)) {
-          offenders.push(`${el}: surfactant=true should ×${ratioYucca.toFixed(3)} (baseline=${baseline[el]}, with=${withYucca[el]}, expected=${expected.toFixed(3)})`);
+      if (baseline[element] > 0) {
+        const expected = baseline[element] * ratioYucca;
+        if (Math.abs(withYucca[element] - expected) > Math.max(0.001, expected * 0.01)) {
+          offenders.push(`${element}: surfactant=true should ×${ratioYucca.toFixed(3)} (baseline=${baseline[element]}, with=${withYucca[element]}, expected=${expected.toFixed(3)})`);
         }
       }
     }
@@ -2825,15 +2825,15 @@ header('REQ-112 — computeFoliarSupply(stage, opts) — sprayCount + surfactant
     const stubDouble = FRT.computeFoliarSupply('T5', { sprayCount: 2 },   stubRecipe);
     const stubYucca  = FRT.computeFoliarSupply('T5', { surfactant: true }, stubRecipe);
     let anyStubPositive = false;
-    for (const el of ELEMENTS) {
-      if (stubBase[el] > 0) anyStubPositive = true;
-      if (stubBase[el] > 0 && Math.abs(stubDouble[el] - 2 * stubBase[el]) > Math.max(0.001, stubBase[el] * 0.01)) {
-        offenders.push(`${el} (stub recipe): sprayCount=2 should double (base=${stubBase[el]}, doubled=${stubDouble[el]})`);
+    for (const element of ELEMENTS) {
+      if (stubBase[element] > 0) anyStubPositive = true;
+      if (stubBase[element] > 0 && Math.abs(stubDouble[element] - 2 * stubBase[element]) > Math.max(0.001, stubBase[element] * 0.01)) {
+        offenders.push(`${element} (stub recipe): sprayCount=2 should double (base=${stubBase[element]}, doubled=${stubDouble[element]})`);
       }
-      if (stubBase[el] > 0) {
-        const expected = stubBase[el] * ratioYucca;
-        if (Math.abs(stubYucca[el] - expected) > Math.max(0.001, expected * 0.01)) {
-          offenders.push(`${el} (stub recipe): surfactant=true should ×${ratioYucca.toFixed(3)} (base=${stubBase[el]}, with=${stubYucca[el]}, expected=${expected.toFixed(3)})`);
+      if (stubBase[element] > 0) {
+        const expected = stubBase[element] * ratioYucca;
+        if (Math.abs(stubYucca[element] - expected) > Math.max(0.001, expected * 0.01)) {
+          offenders.push(`${element} (stub recipe): surfactant=true should ×${ratioYucca.toFixed(3)} (base=${stubBase[element]}, with=${stubYucca[element]}, expected=${expected.toFixed(3)})`);
         }
       }
     }
@@ -2864,27 +2864,27 @@ header('REQ-115 — computeFoliarRecipeForGap (min-dose clamp + surfactant + bur
   } else {
     const offenders = [];
 
-    // Tiny gap → all zeros (min-dose clamp). 0.001 mg/m²/wk for every el.
+    // Tiny gap → all zeros (min-dose clamp). 0.001 mg/m²/wk for every element.
     const tiny = { Mn: 0.001, Zn: 0.001, Cu: 0.001, Fe: 0.001, Mo: 0.001, B: 0.001 };
     const tinyRecipe = FRT.computeFoliarRecipeForGap(tiny);
     Object.keys(tinyRecipe).forEach(function(k) {
       if (tinyRecipe[k] !== 0) offenders.push(`tiny gap: ${k}=${tinyRecipe[k]} (expected 0 — min-dose clamp)`);
     });
 
-    // Huge gap → every el clipped to BURN_CAP_BASE_G[el]
+    // Huge gap → every element clipped to BURN_CAP_BASE_G[element]
     // (with the rounding-up to nearest 0.5 g preserving the cap exactly).
     const huge = { Mn: 1000, Zn: 1000, Cu: 1000, Fe: 1000, Mo: 1000, B: 1000 };
     const hugeRecipe = FRT.computeFoliarRecipeForGap(huge, { surfactant: false });
     const PAIRS = [
-      { el: 'Mn', key: 'MnSO4_g' },
-      { el: 'Zn', key: 'ZnSO4_g' },
-      { el: 'Cu', key: 'CuSO4_g' },
-      { el: 'Fe', key: 'FeSO4_g' },
-      { el: 'Mo', key: 'NaMoO4_g' },
-      { el: 'B',  key: 'Solubore_g' },
+      { element: 'Mn', key: 'MnSO4_g' },
+      { element: 'Zn', key: 'ZnSO4_g' },
+      { element: 'Cu', key: 'CuSO4_g' },
+      { element: 'Fe', key: 'FeSO4_g' },
+      { element: 'Mo', key: 'NaMoO4_g' },
+      { element: 'B',  key: 'Solubore_g' },
     ];
     PAIRS.forEach(function(p) {
-      const expected = FRT.burnCapG(p.el);
+      const expected = FRT.burnCapG(p.element);
       const actual = hugeRecipe[p.key];
       // After CE-scale loop the cap may be reduced to fit total CE budget,
       // so actual ≤ expected is the correct invariant. (Strict equality
@@ -2928,25 +2928,25 @@ header('REQ-115 — computeFoliarRecipeForGap (min-dose clamp + surfactant + bur
 //
 // Spec: nutrition/tomato/foliar-recipe/spec.md → REQ-116.
 //
-// Integration test: call calcNutrSupply twice in FP mode at T5. Between
+// Integration test: call calculateNutritionSupply twice in FP mode at T5. Between
 // calls, bump COMPOST_RELEASE_PER_WEEK.Mn so the pre-foliar gap drops
 // sharply. Assert FP_RECIPE_T5.foliar.MnSO4 decreased. Restore the compost
 // value at the end so downstream tests see canonical state.
 //
-// Wrapped in try/catch — if calcNutrSupply isn't reachable (jsdom didn't
+// Wrapped in try/catch — if calculateNutritionSupply isn't reachable (jsdom didn't
 // expose it, page DOM not initialized, etc.) the verifier reports the
 // failure cleanly rather than crashing the whole run.
 
-header('REQ-116 — FP foliar recipe live-derived from pre-foliar gap chain (calcNutrSupply integration)');
+header('REQ-116 — FP foliar recipe live-derived from pre-foliar gap chain (calculateNutritionSupply integration)');
 
 {
-  const calcNutrSupply = window.calcNutrSupply;
+  const calculateNutritionSupply = window.calculateNutritionSupply;
   const FRT = window.FoliarRecipeTomato;
   const CC  = window.CompostContribution;
   const fpFoliar = FP_RECIPE_T5 && FP_RECIPE_T5.foliar;
-  if (typeof calcNutrSupply !== 'function' || !FRT || !CC || !CC.releasePerWeek || !fpFoliar) {
-    fail('REQ-116 prerequisites available (calcNutrSupply / FoliarRecipeTomato / CompostContribution / FP_RECIPE_T5.foliar)',
-         `calcNutrSupply: ${typeof calcNutrSupply}, FRT: ${!!FRT}, CC: ${!!CC}, CC.releasePerWeek: ${!!(CC && CC.releasePerWeek)}, FP_RECIPE_T5.foliar: ${!!fpFoliar}`);
+  if (typeof calculateNutritionSupply !== 'function' || !FRT || !CC || !CC.releasePerWeek || !fpFoliar) {
+    fail('REQ-116 prerequisites available (calculateNutritionSupply / FoliarRecipeTomato / CompostContribution / FP_RECIPE_T5.foliar)',
+         `calculateNutritionSupply: ${typeof calculateNutritionSupply}, FRT: ${!!FRT}, CC: ${!!CC}, CC.releasePerWeek: ${!!(CC && CC.releasePerWeek)}, FP_RECIPE_T5.foliar: ${!!fpFoliar}`);
   } else {
     let offenders = [];
     const originalMnRelease = CC.releasePerWeek.Mn;
@@ -2954,18 +2954,18 @@ header('REQ-116 — FP foliar recipe live-derived from pre-foliar gap chain (cal
       // Baseline: default compost state. T5, phLocked=true, transpFactor=1.0,
       // target=1.5 kg/m²/wk — match the page defaults so FP_RECIPE_T5.foliar
       // reflects the canonical FP state.
-      calcNutrSupply('T5', true, 1.0, 1.5, 'fp');
+      calculateNutritionSupply('T5', true, 1.0, 1.5, 'fp');
       const baselineMn = fpFoliar['MnSO4'];
       if (!isFinite(baselineMn) || baselineMn < 0) {
-        offenders.push(`baseline FP_RECIPE_T5.foliar.MnSO4 = ${baselineMn} (expected finite ≥ 0 after calcNutrSupply FP call)`);
+        offenders.push(`baseline FP_RECIPE_T5.foliar.MnSO4 = ${baselineMn} (expected finite ≥ 0 after calculateNutritionSupply FP call)`);
       }
 
       // Mutation: huge Mn release from compost (1 g/m²/wk = 1000 mg/m²/wk),
       // far above any plausible Mn demand. Pre-foliar gap.Mn drops to 0,
       // so computeFoliarRecipeForGap should return MnSO4_g = 0 (min-dose
-      // clamp). Confirms calcNutrSupply consults the live compost chain.
+      // clamp). Confirms calculateNutritionSupply consults the live compost chain.
       CC.releasePerWeek.Mn = 1.0;
-      calcNutrSupply('T5', true, 1.0, 1.5, 'fp');
+      calculateNutritionSupply('T5', true, 1.0, 1.5, 'fp');
       const droppedMn = fpFoliar['MnSO4'];
       if (!(droppedMn < baselineMn)) {
         offenders.push(`after compost.Mn bump, FP_RECIPE_T5.foliar.MnSO4 = ${droppedMn}; expected < baseline ${baselineMn} (gap closed → recipe shrinks)`);
@@ -2974,16 +2974,16 @@ header('REQ-116 — FP foliar recipe live-derived from pre-foliar gap chain (cal
         offenders.push(`after compost.Mn bump, FP_RECIPE_T5.foliar.MnSO4 = ${droppedMn}; expected exactly 0 (gap = 0 → min-dose clamp)`);
       }
     } catch (e) {
-      offenders.push(`calcNutrSupply FP call threw: ${e && e.message ? e.message : e}`);
+      offenders.push(`calculateNutritionSupply FP call threw: ${e && e.message ? e.message : e}`);
     } finally {
       // Restore — downstream tests / re-runs see canonical state.
       CC.releasePerWeek.Mn = originalMnRelease;
       // Re-derive once at canonical state so FP_RECIPE_T5.foliar reflects
       // baseline for any subsequent verifier that reads it.
-      try { calcNutrSupply('T5', true, 1.0, 1.5, 'fp'); } catch (e) { void e; }
+      try { calculateNutritionSupply('T5', true, 1.0, 1.5, 'fp'); } catch (e) { void e; }
     }
     if (offenders.length === 0) {
-      pass('FP_RECIPE_T5.foliar.MnSO4 shrinks when compost.Mn rises (pre-foliar gap chain wired through calcNutrSupply)');
+      pass('FP_RECIPE_T5.foliar.MnSO4 shrinks when compost.Mn rises (pre-foliar gap chain wired through calculateNutritionSupply)');
     } else {
       fail('REQ-116 — FP foliar live derivation', offenders.map(function(o) { return '  ' + o; }).join('\n'));
     }
@@ -3022,7 +3022,7 @@ header('REQ-105 — Light ceiling reactive to solarPerGram (mutate input → tex
 
 {
   const inp = window.document.getElementById('nutr-solar-per-gram');
-  const ceilingEl = window.document.getElementById('nutr-light-ceiling');
+  const ceilingElement = window.document.getElementById('nutr-light-ceiling');
   let logicJsBody = '';
   try {
     logicJsBody = readFileSync(
@@ -3041,16 +3041,16 @@ header('REQ-105 — Light ceiling reactive to solarPerGram (mutate input → tex
   // (real users don't have a fallback). If the listener isn't wired, the
   // displayed text stays unchanged and this fails — which is the point.
   let textBefore = null, textAfter = null;
-  if (inp && ceilingEl) {
+  if (inp && ceilingElement) {
     try {
       // Force an initial render via input event at default 7
       inp.value = '7';
       inp.dispatchEvent(new window.Event('input', { bubbles: true }));
-      textBefore = (ceilingEl.textContent || '').trim();
+      textBefore = (ceilingElement.textContent || '').trim();
       // Mutate to 14 + dispatch — listener (if wired) will re-render
       inp.value = '14';
       inp.dispatchEvent(new window.Event('input', { bubbles: true }));
-      textAfter = (ceilingEl.textContent || '').trim();
+      textAfter = (ceilingElement.textContent || '').trim();
       // Restore default for downstream checks
       inp.value = '7';
       inp.dispatchEvent(new window.Event('input', { bubbles: true }));
@@ -3117,7 +3117,7 @@ header('REQ-107 — Recipe toggle: First principles left, default; products-in-p
     if (parent !== storedBtn.parentElement) {
       offenders.push('FP and Stockée buttons not siblings');
     } else {
-      const order = Array.from(parent.children).filter(el => el.tagName === 'BUTTON');
+      const order = Array.from(parent.children).filter(element => element.tagName === 'BUTTON');
       if (order[0] !== fpBtn) {
         offenders.push(`FP button is not first child (got id="${order[0]?.id || '?'}")`);
       }
@@ -3154,7 +3154,7 @@ header('REQ-107 — Recipe toggle: First principles left, default; products-in-p
 // Section 2 of the Bilan UI specs. Spec:
 // nutrition/tomato/app/spec.md → REQ-108..111.
 
-header('REQ-108 — Block 1 calls PN.calcNutrDemand (no bare-global lookups in render)');
+header('REQ-108 — Block 1 calls PN.calculateNutritionDemand (no bare-global lookups in render)');
 
 {
   let logicJsBody = '';
@@ -3168,17 +3168,17 @@ header('REQ-108 — Block 1 calls PN.calcNutrDemand (no bare-global lookups in r
   // `document.getElementById('nutr-needs').innerHTML = html1` line.
   const block1Match = logicJsBody.match(/Block 1[\s\S]*?nutr-needs.*?innerHTML/);
   const block1Body = block1Match ? block1Match[0] : '';
-  const usesPnDemand = /PN\.calcNutrDemand|window\.PlantNeedsTomato\.calcNutrDemand/.test(logicJsBody);
+  const usesPnDemand = /PN\.calculateNutritionDemand|window\.PlantNeedsTomato\.calculateNutritionDemand/.test(logicJsBody);
   // Negative lookbehind for `.` excludes namespaced access (PN.BIOMASS_DEMAND).
   const bareBiomassInBlock1   = /(?<!\.)\bBIOMASS_DEMAND\s*\[/.test(block1Body);
   const bareFruitExportInBlock1 = /(?<!\.)\bTOMATO_FRUIT_EXPORT\s*\[/.test(block1Body);
   if (!usesPnDemand) {
-    fail('logic.js calls PN.calcNutrDemand', 'pattern not found');
+    fail('logic.js calls PN.calculateNutritionDemand', 'pattern not found');
   } else if (bareBiomassInBlock1 || bareFruitExportInBlock1) {
     fail('No bare BIOMASS_DEMAND / TOMATO_FRUIT_EXPORT in Block 1 render',
          `${bareBiomassInBlock1 ? 'BIOMASS_DEMAND[ ' : ''}${bareFruitExportInBlock1 ? 'TOMATO_FRUIT_EXPORT[' : ''}`);
   } else {
-    pass('Block 1 demand routé via PN.calcNutrDemand ; pas d\'accès bare-global');
+    pass('Block 1 demand routé via PN.calculateNutritionDemand ; pas d\'accès bare-global');
   }
 }
 
@@ -3215,7 +3215,7 @@ header('REQ-109 — Block 1 row click opens cert + equation + plugged modal (no 
     offenders.push(`row count ${rowsCount} ≠ TOMATO_FRUIT_EXPORT keys ${expectedElements.length}`);
   }
   if (!allHaveOnclick || clickableCount !== rowsCount) {
-    offenders.push(`only ${clickableCount}/${rowsCount} rows wire showPourquoi('demand.<el>')`);
+    offenders.push(`only ${clickableCount}/${rowsCount} rows wire showPourquoi('demand.<element>')`);
   }
   if (interpretationLeaked) {
     offenders.push('modal interpretation node has text — should be empty per REQ-109');
@@ -3231,23 +3231,23 @@ header('REQ-110 — Block 1 reactive to target + stage changes');
 
 {
   const targetInp = window.document.getElementById('nutr-target');
-  const needsEl = window.document.getElementById('nutr-needs');
+  const needsElement = window.document.getElementById('nutr-needs');
   let textBefore = null, textAfterTarget = null, textAfterStage = null;
-  if (targetInp && needsEl) {
+  if (targetInp && needsElement) {
     try {
       targetInp.value = '1.5';
       targetInp.dispatchEvent(new window.Event('input', { bubbles: true }));
-      textBefore = (needsEl.textContent || '').trim();
+      textBefore = (needsElement.textContent || '').trim();
       // Mutate target
       targetInp.value = '0.5';
       targetInp.dispatchEvent(new window.Event('input', { bubbles: true }));
-      textAfterTarget = (needsEl.textContent || '').trim();
+      textAfterTarget = (needsElement.textContent || '').trim();
       // Restore + change stage to T1 via the data-nstage button
       targetInp.value = '1.5';
       targetInp.dispatchEvent(new window.Event('input', { bubbles: true }));
       const t1 = window.document.querySelector('[data-nstage="T1"]');
       if (t1) t1.dispatchEvent(new window.Event('click', { bubbles: true }));
-      textAfterStage = (needsEl.textContent || '').trim();
+      textAfterStage = (needsElement.textContent || '').trim();
       // Restore back to T5
       const t5 = window.document.querySelector('[data-nstage="T5"]');
       if (t5) t5.dispatchEvent(new window.Event('click', { bubbles: true }));
@@ -3269,21 +3269,21 @@ header('REQ-110 — Block 1 reactive to target + stage changes');
 header('REQ-111 — Block 1 row layout: 4 columns (Él. / Fruit / Biomasse / Total)');
 
 {
-  const needsEl = window.document.getElementById('nutr-needs');
+  const needsElement = window.document.getElementById('nutr-needs');
   let headerHasFruitBiomasse = false;
   let allRowsFourCells = true;
   let firstRowCellCount = 0;
-  if (needsEl) {
-    const headerText = (needsEl.textContent || '');
+  if (needsElement) {
+    const headerText = (needsElement.textContent || '');
     headerHasFruitBiomasse = /Fruit/.test(headerText) && /Biomasse/.test(headerText);
-    const rows = needsEl.querySelectorAll('.pq-row');
-    rows.forEach((r, idx) => {
+    const rows = needsElement.querySelectorAll('.pq-row');
+    rows.forEach((r, index) => {
       const cellCount = r.children.length;
-      if (idx === 0) firstRowCellCount = cellCount;
+      if (index === 0) firstRowCellCount = cellCount;
       if (cellCount !== 4) allRowsFourCells = false;
     });
   }
-  if (!needsEl) {
+  if (!needsElement) {
     fail('#nutr-needs reachable', 'missing');
   } else if (!headerHasFruitBiomasse) {
     fail('Block 1 header contains "Fruit" + "Biomasse" labels', 'one or both missing');
@@ -3314,14 +3314,14 @@ header('REQ-122 — nurseryRecipeSupply scales linearly with applicationsPerWeek
     const sup3 = FN.nurseryRecipeSupply(recipe, trayL, 3);
     const els = Object.keys(sup1.perTray_mg || {});
     let bad = [];
-    for (const el of els) {
-      const e1 = sup1.perTray_mg[el] || 0;
+    for (const element of els) {
+      const e1 = sup1.perTray_mg[element] || 0;
       if (e1 <= 0) continue;
-      const e2 = (sup2.perTray_mg || {})[el] || 0;
-      const e3 = (sup3.perTray_mg || {})[el] || 0;
+      const e2 = (sup2.perTray_mg || {})[element] || 0;
+      const e3 = (sup3.perTray_mg || {})[element] || 0;
       // Allow ±0.1% tolerance for float math
-      if (Math.abs(e2 / e1 - 2) > 0.001) bad.push(`${el}: 2× ratio = ${(e2/e1).toFixed(4)}`);
-      if (Math.abs(e3 / e1 - 3) > 0.001) bad.push(`${el}: 3× ratio = ${(e3/e1).toFixed(4)}`);
+      if (Math.abs(e2 / e1 - 2) > 0.001) bad.push(`${element}: 2× ratio = ${(e2/e1).toFixed(4)}`);
+      if (Math.abs(e3 / e1 - 3) > 0.001) bad.push(`${element}: 3× ratio = ${(e3/e1).toFixed(4)}`);
     }
     if (bad.length === 0) {
       pass(`Linearité confirmée pour ${els.length} éléments à N=2 et N=3`);
@@ -3331,11 +3331,11 @@ header('REQ-122 — nurseryRecipeSupply scales linearly with applicationsPerWeek
   }
 }
 
-header('REQ-123 — minApplicationsPerWeek returns integer ≤ 7 or null');
+header('REQ-123 — minimumApplicationsPerWeek returns integer ≤ 7 or null');
 {
   const FN = window.FertigationNursery;
-  if (!FN || typeof FN.minApplicationsPerWeek !== 'function') {
-    fail('REQ-123 — minApplicationsPerWeek present', 'function missing on namespace');
+  if (!FN || typeof FN.minimumApplicationsPerWeek !== 'function') {
+    fail('REQ-123 — minimumApplicationsPerWeek present', 'function missing on namespace');
   } else {
     // Realistic-ish synthetic demand at 90 g target / 35 d / 50 cells. Read from
     // PlantNeedsNursery if loaded; else inline fallback.
@@ -3346,7 +3346,7 @@ header('REQ-123 — minApplicationsPerWeek returns integer ≤ 7 or null');
     const recipe = FN.NURSERY_RECIPE_DEFAULT;
     const trayL  = (FN.NURSERY_FERTIGATION_DEFAULTS || {}).trayVolumeL || 1.25;
     const cap    = FN.NURSERY_CE_CAP_MS_CM || 3.0;
-    const N = FN.minApplicationsPerWeek(recipe, demand, trayL, cap);
+    const N = FN.minimumApplicationsPerWeek(recipe, demand, trayL, cap);
     const ok = (N === null) || (Number.isInteger(N) && N >= 1 && N <= 7);
     if (!ok) {
       fail('REQ-123 — return type', `got ${N} (expected integer 1-7 or null)`);
@@ -3354,13 +3354,13 @@ header('REQ-123 — minApplicationsPerWeek returns integer ≤ 7 or null');
       // Cross-check: at returned N, every sourced element should be covered.
       // (null path: just assert it returned null cleanly.)
       if (N === null) {
-        pass('minApplicationsPerWeek returns null (recipe dose-bound or > 7×/sem) — well-formed');
+        pass('minimumApplicationsPerWeek returns null (recipe dose-bound or > 7×/sem) — well-formed');
       } else {
         const sup = FN.nurseryRecipeSupply(recipe, trayL, N);
-        const sourced = ['N', 'P', 'K'].filter(el => (sup.perTray_mg[el] || 0) > 0);
-        const covered = sourced.every(el => (sup.perTray_mg[el] || 0) >= demand[el]);
+        const sourced = ['N', 'P', 'K'].filter(element => (sup.perTray_mg[element] || 0) > 0);
+        const covered = sourced.every(element => (sup.perTray_mg[element] || 0) >= demand[element]);
         if (covered) {
-          pass(`minApplicationsPerWeek = ${N} couvre N/P/K (sources actives)`);
+          pass(`minimumApplicationsPerWeek = ${N} couvre N/P/K (sources actives)`);
         } else {
           fail('REQ-123 — couverture à N', `sourced ${sourced.join(',')} pas tous ≥ demande à N=${N}`);
         }
@@ -3378,8 +3378,8 @@ header('REQ-124 — nurseryElementsBySource splits sourced vs unsourced');
     const PNN = window.PlantNeedsNursery;
     const demand = {};
     if (PNN && typeof PNN.demandPerTray === 'function') {
-      ['N','P','K','Ca','Mg','Fe','Mn','Zn','B','Cu','Mo'].forEach(el => {
-        demand[el] = PNN.demandPerTray(el);
+      ['N','P','K','Ca','Mg','Fe','Mn','Zn','B','Cu','Mo'].forEach(element => {
+        demand[element] = PNN.demandPerTray(element);
       });
     } else {
       Object.assign(demand, { N:3150, P:315, K:3780, Ca:1260, Mg:250, Fe:13, Mn:3.2, Zn:2.5, B:1.9, Cu:0.5, Mo:0.03 });
@@ -3392,7 +3392,7 @@ header('REQ-124 — nurseryElementsBySource splits sourced vs unsourced');
       const allEls = Object.keys(demand);
       const union = out.sourced.concat(out.unsourced).sort().join(',');
       const exp = allEls.slice().sort().join(',');
-      const dupes = out.sourced.filter(el => out.unsourced.includes(el));
+      const dupes = out.sourced.filter(element => out.unsourced.includes(element));
       if (union !== exp) {
         fail('REQ-124 — couverture', `union ${union} ≠ demande ${exp}`);
       } else if (dupes.length > 0) {
@@ -3401,7 +3401,7 @@ header('REQ-124 — nurseryElementsBySource splits sourced vs unsourced');
         // N + P + K must be sourced at default recipe; Mo must be unsourced
         // (no product carries it). Other elements (Ca/Mg/Fe/Mn/Zn/B/Cu) are
         // implementation-defined depending on whether kelp's traces count.
-        const need = ['N', 'P', 'K'].filter(el => !out.sourced.includes(el));
+        const need = ['N', 'P', 'K'].filter(element => !out.sourced.includes(element));
         const moInUnsourced = out.unsourced.includes('Mo');
         if (need.length > 0) {
           fail('REQ-124 — N/P/K sourcés', `manquants: ${need.join(',')}; sourced=${out.sourced.join(',')}`);
@@ -3460,25 +3460,25 @@ header('REQ-126 — applicationsPerWeek coerced to integer ∈ [1, 7]');
       [NaN,  1,  'NaN → 1'],
       [undefined, 1, 'undefined → 1'],
     ];
-    const N_ref = sup1.perTray_mg.N || 0;
+    const N_reference = sup1.perTray_mg.N || 0;
     const offenders = [];
     for (const [input, expectedN, label] of cases) {
       const sup = FN.nurseryRecipeSupply(recipe, trayL, input);
-      const expectedNvalue = expectedN * N_ref;
+      const expectedNvalue = expectedN * N_reference;
       const got = sup.perTray_mg.N || 0;
       if (Math.abs(got / expectedNvalue - 1) > 0.001) {
         offenders.push(`${label}: got N=${got.toFixed(0)}, expected ${expectedNvalue.toFixed(0)}`);
       }
     }
-    // minApplicationsPerWeek never returns fractional / 0
+    // minimumApplicationsPerWeek never returns fractional / 0
     const PNN = window.PlantNeedsNursery;
     const dem = (PNN && PNN.demandPerTray) ? { N: PNN.demandPerTray('N') } : { N: 3150 };
-    const N = FN.minApplicationsPerWeek(recipe, dem, trayL, FN.NURSERY_CE_CAP_MS_CM);
+    const N = FN.minimumApplicationsPerWeek(recipe, dem, trayL, FN.NURSERY_CE_CAP_MS_CM);
     if (N !== null && (!Number.isInteger(N) || N < 1 || N > 7)) {
-      offenders.push(`minApplicationsPerWeek returned ${N} (must be null or integer 1-7)`);
+      offenders.push(`minimumApplicationsPerWeek returned ${N} (must be null or integer 1-7)`);
     }
     if (offenders.length === 0) {
-      pass(`coercion validée sur ${cases.length} cas + minApplicationsPerWeek retour entier/null`);
+      pass(`coercion validée sur ${cases.length} cas + minimumApplicationsPerWeek retour entier/null`);
     } else {
       fail('REQ-126 — coercion', offenders.slice(0, 3).join(' · '));
     }
@@ -3587,11 +3587,11 @@ if (typeof window.setNutrCrop === 'function') {
 
 header('REQ-130 — Block 1 (Besoins): 3-col table (Él / Par plant / Cert)');
 {
-  const needsEl = window.document.getElementById('nutr-n-needs');
-  if (!needsEl) {
+  const needsElement = window.document.getElementById('nutr-n-needs');
+  if (!needsElement) {
     fail('REQ-130 — #nutr-n-needs present', 'DOM node missing');
   } else {
-    const html = needsEl.innerHTML || '';
+    const html = needsElement.innerHTML || '';
     // 3-col grid signature (matches the new Block 1 layout)
     const has3Col = /grid-template-columns:\s*0\.5fr 1fr 0\.6fr/.test(html);
     // Per-plant unit visible
@@ -3628,27 +3628,27 @@ header('REQ-130 — Block 1 (Besoins): 3-col table (Él / Par plant / Cert)');
 // inline here to keep the block self-contained. (The two declarations
 // must stay in sync; both reflect REQ-137 amended 2026-05-15.)
 const REQ127_128_HEADER_ORDER = ['Él.', 'Manque entrant', 'Efficacité', 'Apport ici', 'Manque sortant', ''];
-function assertSixColGapGrid(blockEl) {
-  const headerStrip = findGapGridHeaderStrip(blockEl);
+function assertSixColGapGrid(blockElement) {
+  const headerStrip = findGapGridHeaderStrip(blockElement);
   if (!headerStrip) return { ok: false, why: 'gap-grid header strip not found' };
   const cols = Array.from(headerStrip.children);
   if (cols.length !== 6) return { ok: false, why: `header has ${cols.length} columns, expected 6` };
   const headerTexts = cols.map(d => (d.textContent || '').trim());
-  const matches = REQ127_128_HEADER_ORDER.every((expected, idx) => headerTexts[idx] === expected);
+  const matches = REQ127_128_HEADER_ORDER.every((expected, index) => headerTexts[index] === expected);
   if (!matches) return { ok: false, why: `header text [${headerTexts.join(' | ')}] != [${REQ127_128_HEADER_ORDER.join(' | ')}]` };
   return { ok: true };
 }
 
 header('REQ-127 — Block 2 (substrate) layout: recipe header + 6-col gap-grid');
 {
-  const subEl = window.document.getElementById('nutr-n-substrate');
-  if (!subEl) {
+  const subElement = window.document.getElementById('nutr-n-substrate');
+  if (!subElement) {
     fail('REQ-127 — #nutr-n-substrate present', 'DOM node missing');
   } else {
-    const html = subEl.innerHTML || '';
+    const html = subElement.innerHTML || '';
     const hasRecipeHeader = /Farine de plumes\s+\d/.test(html);
-    const gridCheck = assertSixColGapGrid(subEl);
-    const pqRows = subEl.querySelectorAll('.pq-row');
+    const gridCheck = assertSixColGapGrid(subElement);
+    const pqRows = subElement.querySelectorAll('.pq-row');
     if (!hasRecipeHeader) {
       fail('REQ-127 — recipe header', '"Farine de plumes Xg/plateau" not found in Block 2');
     } else if (!gridCheck.ok) {
@@ -3663,16 +3663,16 @@ header('REQ-127 — Block 2 (substrate) layout: recipe header + 6-col gap-grid')
 
 header('REQ-128 — Block 3 (fertigation) layout: recipe header + CE/pH + 6-col gap-grid');
 {
-  const fEl = window.document.getElementById('nutr-n-fertigation');
-  if (!fEl) {
+  const fertigationElement = window.document.getElementById('nutr-n-fertigation');
+  if (!fertigationElement) {
     fail('REQ-128 — #nutr-n-fertigation present', 'DOM node missing');
   } else {
-    const html = fEl.innerHTML || '';
+    const html = fertigationElement.innerHTML || '';
     const hasRecipeHeader = /Recette par plateau/.test(html) && /×\d+\/sem/.test(html);
     const hasCE = /CE pr[ée]dite/.test(html) && /mS\/cm/.test(html);
     const hasPh = /pH pr[ée]dit/.test(html);
-    const gridCheck = assertSixColGapGrid(fEl);
-    const pqRows = fEl.querySelectorAll('.pq-row');
+    const gridCheck = assertSixColGapGrid(fertigationElement);
+    const pqRows = fertigationElement.querySelectorAll('.pq-row');
     const offs = [];
     if (!hasRecipeHeader) offs.push('recipe header (×N/sem)');
     if (!hasCE) offs.push('CE readout');
@@ -3703,19 +3703,19 @@ header('REQ-129 — Gap chain order demand → substrate → fertigation');
     const targetG = 90, cycleDays = 35, cellsPerTray = 50;
     const fmG = SCN.NURSERY_FEATHER_MEAL_DEFAULT_G_PER_TRAY;
     const trayL = FN.NURSERY_FERTIGATION_DEFAULTS.trayVolumeL;
-    const dem = PNN.calcNurseryDemand(targetG, cycleDays, cellsPerTray);
+    const dem = PNN.calculateNurseryDemand(targetG, cycleDays, cellsPerTray);
     const subAvg = SCN.cycleAverageReleasePerTray(fmG);
     const sup = FN.nurseryRecipeSupply(FN.NURSERY_RECIPE_DEFAULT, trayL, 1);
     const offs = [];
-    for (const el of ['N','P','K','Ca','Mg']) {
-      const d = (dem[el] || {}).perTray_mg || 0;
-      const s = subAvg[el] || 0;
+    for (const element of ['N','P','K','Ca','Mg']) {
+      const d = (dem[element] || {}).perTray_mg || 0;
+      const s = subAvg[element] || 0;
       const gapAfterSub = Math.max(0, d - s);
-      const f = (sup.perTray_mg || {})[el] || 0;
+      const f = (sup.perTray_mg || {})[element] || 0;
       const gapAfterFert = Math.max(0, gapAfterSub - f);
       // Sanity: chain monotonically non-increasing
       if (!(d >= gapAfterSub && gapAfterSub >= gapAfterFert)) {
-        offs.push(`${el}: chain not monotonic (${d.toFixed(0)} → ${gapAfterSub.toFixed(0)} → ${gapAfterFert.toFixed(0)})`);
+        offs.push(`${element}: chain not monotonic (${d.toFixed(0)} → ${gapAfterSub.toFixed(0)} → ${gapAfterFert.toFixed(0)})`);
       }
     }
     if (offs.length === 0) {
@@ -3738,7 +3738,7 @@ if (typeof window.setNutrCrop === 'function') {
   try { window.setNutrCrop('nursery'); } catch (e) { /* swallow */ }
 }
 
-header('REQ-136 — substrate + fertigation return details{el: {cert, cap}}');
+header('REQ-136 — substrate + fertigation return details{element: {cert, cap}}');
 {
   const SCN = window.SubstrateContributionNursery;
   const FN  = window.FertigationNursery;
@@ -3750,10 +3750,10 @@ header('REQ-136 — substrate + fertigation return details{el: {cert, cap}}');
     } else if (!r.details || typeof r.details !== 'object') {
       offs.push('substrate: missing details map');
     } else {
-      for (const el of Object.keys(r.perTray_mg)) {
-        const d = r.details[el];
+      for (const element of Object.keys(r.perTray_mg)) {
+        const d = r.details[element];
         if (!d || typeof d.cert !== 'number' || d.cert < 0 || d.cert > 5) {
-          offs.push(`substrate.details.${el}: cert out of [0,5]`);
+          offs.push(`substrate.details.${element}: cert out of [0,5]`);
         }
         if (d && d.cap !== null && d.cap !== undefined) {
           // REQ-136 4-field schema (2026-05-11): kind, constraint, limit, lever, uncappedMg
@@ -3762,7 +3762,7 @@ header('REQ-136 — substrate + fertigation return details{el: {cert, cap}}');
               || typeof d.cap.limit !== 'string'      || !d.cap.limit
               || typeof d.cap.lever !== 'string'      || !d.cap.lever
               || typeof d.cap.uncappedMg !== 'number') {
-            offs.push(`substrate.details.${el}.cap: malformed (need kind/constraint/limit/lever/uncappedMg)`);
+            offs.push(`substrate.details.${element}.cap: malformed (need kind/constraint/limit/lever/uncappedMg)`);
           }
         }
       }
@@ -3778,10 +3778,10 @@ header('REQ-136 — substrate + fertigation return details{el: {cert, cap}}');
     } else if (!r.details) {
       offs.push('fert: missing details map');
     } else {
-      for (const el of Object.keys(r.perTray_mg)) {
-        const d = r.details[el];
+      for (const element of Object.keys(r.perTray_mg)) {
+        const d = r.details[element];
         if (!d || typeof d.cert !== 'number') {
-          offs.push(`fert.details.${el}: missing cert`);
+          offs.push(`fert.details.${element}: missing cert`);
         }
       }
     }
@@ -3797,14 +3797,14 @@ header('REQ-136 — substrate + fertigation return details{el: {cert, cap}}');
 
 header('REQ-138 — Apport ici cells + cap emojis keyed per (block, element)');
 {
-  const subEl = window.document.getElementById('nutr-n-substrate');
-  const fertEl = window.document.getElementById('nutr-n-fertigation');
+  const subElement = window.document.getElementById('nutr-n-substrate');
+  const fertigationElement = window.document.getElementById('nutr-n-fertigation');
   const offs = [];
-  if (!subEl) offs.push('#nutr-n-substrate missing');
-  if (!fertEl) offs.push('#nutr-n-fertigation missing');
+  if (!subElement) offs.push('#nutr-n-substrate missing');
+  if (!fertigationElement) offs.push('#nutr-n-fertigation missing');
   if (offs.length === 0) {
-    const subHtml = subEl.innerHTML || '';
-    const fertHtml = fertEl.innerHTML || '';
+    const subHtml = subElement.innerHTML || '';
+    const fertHtml = fertigationElement.innerHTML || '';
     const subHasCellKeys = /data-cell-key="nursery-substrate\.cell\.\w+"/.test(subHtml);
     const fertHasCellKeys = /data-cell-key="nursery-fert\.cell\.\w+"/.test(fertHtml);
     const subHasFireEmoji = subHtml.includes('🔥');
@@ -3843,12 +3843,12 @@ if (typeof window.setNutrCrop === 'function') {
 // 6-col template share the leading `0.6fr` Él. column, so this selector
 // keeps finding the wrapper across the rollout. The downstream column-count
 // assertion lives in the REQ-137 matcher itself.
-function findGapGridWrapper(blockEl) {
-  if (!blockEl) return null;
+function findGapGridWrapper(blockElement) {
+  if (!blockElement) return null;
   // jsdom serializes inline style with no space after the colon
   // ("grid-template-columns:0.6fr ..."). The CSS attribute selector matches
   // on the serialized string, so omit the space.
-  const inner = blockEl.querySelector(
+  const inner = blockElement.querySelector(
     'div[style*="grid-template-columns:0.6fr"]'
   );
   if (!inner) return null;
@@ -3866,8 +3866,8 @@ function findGapGridWrapper(blockEl) {
 // Shared helper for REQ-137 / REQ-156: from a contribution-block container,
 // return the gap-grid header-strip element (the first child div under the
 // wrapper). Used to count columns + read header text.
-function findGapGridHeaderStrip(blockEl) {
-  const wrapper = findGapGridWrapper(blockEl);
+function findGapGridHeaderStrip(blockElement) {
+  const wrapper = findGapGridWrapper(blockElement);
   if (!wrapper) return null;
   // Wrapper's first child is the header strip (a display:grid div). Its
   // direct children are one <div> per column.
@@ -3876,8 +3876,8 @@ function findGapGridHeaderStrip(blockEl) {
 
 // Shared helper for REQ-137 / REQ-156: return all data rows (.pq-row) of
 // the gap-grid in a contribution-block container.
-function findGapGridDataRows(blockEl) {
-  const wrapper = findGapGridWrapper(blockEl);
+function findGapGridDataRows(blockElement) {
+  const wrapper = findGapGridWrapper(blockElement);
   if (!wrapper) return [];
   return Array.from(wrapper.querySelectorAll('.pq-row'));
 }
@@ -3902,15 +3902,15 @@ header('REQ-137 — Tomato Bilan blocks: 6-col gap-grid + cell-keying + gap-grid
   const blockKeys = ['compost', 'sidedress', 'fert', 'foliar'];
   const offs = [];
   for (let i = 0; i < blockIds.length; i++) {
-    const el = window.document.getElementById(blockIds[i]);
-    if (!el) { offs.push(`#${blockIds[i]} missing`); continue; }
-    const html = el.innerHTML || '';
+    const element = window.document.getElementById(blockIds[i]);
+    if (!element) { offs.push(`#${blockIds[i]} missing`); continue; }
+    const html = element.innerHTML || '';
     const hasCellKeys = new RegExp(`data-cell-key="${blockKeys[i]}\\.cell\\.\\w+"`).test(html);
     if (!hasCellKeys) offs.push(`${blockIds[i]} cells missing data-cell-key`);
     // 6-column gap-grid: count children under the header strip + verify
     // header text matches REQ137_HEADER_ORDER (Efficacité between Manque
     // entrant and Apport ici per REQ-137 amendment 2026-05-15).
-    const headerStrip = findGapGridHeaderStrip(el);
+    const headerStrip = findGapGridHeaderStrip(element);
     if (!headerStrip) {
       offs.push(`${blockIds[i]} gap-grid header strip not found`);
     } else {
@@ -3919,23 +3919,23 @@ header('REQ-137 — Tomato Bilan blocks: 6-col gap-grid + cell-keying + gap-grid
         offs.push(`${blockIds[i]} header has ${cols.length} columns, expected 6`);
       } else {
         const headerTexts = cols.map(d => (d.textContent || '').trim());
-        const ok = REQ137_HEADER_ORDER.every((expected, idx) => headerTexts[idx] === expected);
+        const ok = REQ137_HEADER_ORDER.every((expected, index) => headerTexts[index] === expected);
         if (!ok) {
           offs.push(`${blockIds[i]} header text [${headerTexts.join(' | ')}] != [${REQ137_HEADER_ORDER.join(' | ')}]`);
         }
       }
     }
-    const pqRows = el.querySelectorAll('.pq-row');
+    const pqRows = element.querySelectorAll('.pq-row');
     if (pqRows.length === 0) offs.push(`${blockIds[i]} has no .pq-row entries`);
     // Gap-grid wrapper's previousElementSibling must be a <table> (REQ-152
     // adjacency clause referenced from REQ-137).
-    const wrapper = findGapGridWrapper(el);
+    const wrapper = findGapGridWrapper(element);
     if (!wrapper) {
       offs.push(`${blockIds[i]} gap-grid wrapper not found`);
     } else {
-      const prev = wrapper.previousElementSibling;
-      if (!prev || prev.tagName !== 'TABLE') {
-        offs.push(`${blockIds[i]} gap-grid is not the immediate next sibling of a <table> (got ${prev ? prev.tagName.toLowerCase() : 'null'})`);
+      const previous = wrapper.previousElementSibling;
+      if (!previous || previous.tagName !== 'TABLE') {
+        offs.push(`${blockIds[i]} gap-grid is not the immediate next sibling of a <table> (got ${previous ? previous.tagName.toLowerCase() : 'null'})`);
       }
     }
   }
@@ -3998,9 +3998,9 @@ header('REQ-156 — Efficacité cell renders integer % or `—` per data row (To
   const ABSENT = '—';
   const offenders = [];
   for (const block of blocks) {
-    const el = window.document.getElementById(block.id);
-    if (!el) { offenders.push(`#${block.id} (${block.label}): container missing`); continue; }
-    const dataRows = findGapGridDataRows(el);
+    const element = window.document.getElementById(block.id);
+    if (!element) { offenders.push(`#${block.id} (${block.label}): container missing`); continue; }
+    const dataRows = findGapGridDataRows(element);
     if (dataRows.length === 0) {
       // Block has no rendered rows (all elements at gIn=0 + c=0 are hidden
       // by the renderer). Pass with a note so the structural absence is
@@ -4049,15 +4049,15 @@ header('REQ-156 — Efficacité cell renders integer % or `—` per data row (To
 // supply, foliar supply, front-load supply, nursery substrate, nursery
 // fertigation) MUST expose a per-element `efficiency` map alongside its
 // flat mg map and `details` payload. For each element the channel routes,
-// `efficiency[el] ∈ [0, 1]`. Elements not routed are absent.
+// `efficiency[element] ∈ [0, 1]`. Elements not routed are absent.
 //
 // In-scope (verified directly by walking runtime returns):
-//   - calcNutrSupply(stage, ...) — fertigation channel (window.calcNutrSupply
+//   - calculateNutritionSupply(stage, ...) — fertigation channel (window.calculateNutritionSupply
 //     returns {fert, foliar, sidedress, soil, total}; efficiency lives on
 //     the `fert` child, which is the fertigation channel's namespace).
-//   - calcNutrSupply foliar branch — `supply.foliar.efficiency`.
-//   - calcNutrSupply sidedress branch — `supply.sidedress.efficiency`.
-//   - calcLettuceNutrSupply(...) — front-load channel (window.calcLettuceNutrSupply
+//   - calculateNutritionSupply foliar branch — `supply.foliar.efficiency`.
+//   - calculateNutritionSupply sidedress branch — `supply.sidedress.efficiency`.
+//   - calculateLettuceNutritionSupply(...) — front-load channel (window.calculateLettuceNutritionSupply
 //     returns {soil, fert, frontload, total}; efficiency lives on `frontload`).
 //   - window.FertigationNursery.nurseryRecipeSupply — nursery fertigation;
 //     returns {perTray_mg, details, efficiency}.
@@ -4085,42 +4085,42 @@ header('REQ-157 — Contribution-channel efficiency map exposed on runtime retur
       return out;
     }
     // Routed elements: those with a non-zero mg in the channel's flat map.
-    const routedElements = Object.keys(routedMg || {}).filter(el => Number(routedMg[el]) > 0);
-    for (const el of routedElements) {
-      const value = efficiency[el];
+    const routedElements = Object.keys(routedMg || {}).filter(element => Number(routedMg[element]) > 0);
+    for (const element of routedElements) {
+      const value = efficiency[element];
       if (typeof value !== 'number' || !isFinite(value)) {
-        out.push(`${label}: efficiency.${el} = ${value} (expected number for routed element)`);
+        out.push(`${label}: efficiency.${element} = ${value} (expected number for routed element)`);
       } else if (value < 0 || value > 1) {
-        out.push(`${label}: efficiency.${el} = ${value} (expected [0, 1])`);
+        out.push(`${label}: efficiency.${element} = ${value} (expected [0, 1])`);
       }
     }
     // Non-routed elements: absent from the efficiency map. We check the
     // canonical 11-element set; mg=0 elements MUST NOT appear.
     const ALL_ELEMENTS = ['N','P','K','Ca','Mg','Fe','Mn','Zn','B','Cu','Mo'];
-    for (const el of ALL_ELEMENTS) {
-      const mg = Number((routedMg || {})[el]) || 0;
-      if (mg <= 0 && Object.prototype.hasOwnProperty.call(efficiency, el)) {
-        out.push(`${label}: efficiency.${el} present (=${efficiency[el]}) for non-routed element (mg=0)`);
+    for (const element of ALL_ELEMENTS) {
+      const mg = Number((routedMg || {})[element]) || 0;
+      if (mg <= 0 && Object.prototype.hasOwnProperty.call(efficiency, element)) {
+        out.push(`${label}: efficiency.${element} present (=${efficiency[element]}) for non-routed element (mg=0)`);
       }
     }
     return out;
   }
 
-  // ─── Tomato channels via calcNutrSupply ─────────────────────────────
-  // calcNutrSupply returns {total, fert, foliar, soil, sidedress, raw}.
+  // ─── Tomato channels via calculateNutritionSupply ─────────────────────────────
+  // calculateNutritionSupply returns {total, fert, foliar, soil, sidedress, raw}.
   // Per REQ-157, each contribution channel exposes its own efficiency
   // map as a sibling. The fertigation/foliar/sidedress branches are
   // separate channels and each gets verified independently.
-  if (typeof window.calcNutrSupply !== 'function') {
-    offenders.push('window.calcNutrSupply not exposed — cannot verify tomato channels');
+  if (typeof window.calculateNutritionSupply !== 'function') {
+    offenders.push('window.calculateNutritionSupply not exposed — cannot verify tomato channels');
   } else {
     let supply = null;
     try {
       // Match the canonical FP call shape used by the REQ-116 verifier
       // above: T5, phLocked=true, transpFactor=1.0, target=1.5.
-      supply = window.calcNutrSupply('T5', true, 1.0, 1.5, 'fp');
+      supply = window.calculateNutritionSupply('T5', true, 1.0, 1.5, 'fp');
     } catch (e) {
-      offenders.push(`calcNutrSupply threw: ${e && e.message ? e.message : e}`);
+      offenders.push(`calculateNutritionSupply threw: ${e && e.message ? e.message : e}`);
     }
     if (supply) {
       // Fertigation channel: supply.fert is { K, Mg, [B] } today (per the
@@ -4148,20 +4148,20 @@ header('REQ-157 — Contribution-channel efficiency map exposed on runtime retur
     }
   }
 
-  // ─── Lettuce front-load channel via calcLettuceNutrSupply ──────────
-  // calcLettuceNutrSupply returns {soil, fert, frontload, total,
+  // ─── Lettuce front-load channel via calculateLettuceNutritionSupply ──────────
+  // calculateLettuceNutritionSupply returns {soil, fert, frontload, total,
   // canopyFactor}. The front-load channel's efficiency map is a sibling
   // of `frontload` — lives at supply.frontload.efficiency.
-  if (typeof window.calcLettuceNutrSupply !== 'function') {
-    offenders.push('window.calcLettuceNutrSupply not exposed — cannot verify lettuce front-load channel');
+  if (typeof window.calculateLettuceNutritionSupply !== 'function') {
+    offenders.push('window.calculateLettuceNutritionSupply not exposed — cannot verify lettuce front-load channel');
   } else {
     let lettuceSupply = null;
     try {
       // Representative call: 30 g transplant → 100 g target, 43 plants/m²,
       // phLocked=true, 50 g/m² front-load (matches Salanova page defaults).
-      lettuceSupply = window.calcLettuceNutrSupply(30, 100, 43, true, 50);
+      lettuceSupply = window.calculateLettuceNutritionSupply(30, 100, 43, true, 50);
     } catch (e) {
-      offenders.push(`calcLettuceNutrSupply threw: ${e && e.message ? e.message : e}`);
+      offenders.push(`calculateLettuceNutritionSupply threw: ${e && e.message ? e.message : e}`);
     }
     if (lettuceSupply) {
       offenders.push(...validateEfficiencyMap(
@@ -4265,6 +4265,80 @@ header('REQ-157 — Contribution-channel efficiency map exposed on runtime retur
       fail('REQ-157 — substrate-contribution efficiency map', substrateOffenders.slice(0, 4).join(' · '));
     }
   }
+
+  // ── PO-157 extension (2026-05-16) — tomato fertigation / foliar / sidedress
+  // model-layer namespaces. Each exposes a static `efficiency` map; the
+  // integrator-side mg map (supply.fert / supply.foliar / supply.sidedress)
+  // is already checked above against its own routed-element membership.
+  // Here we validate namespace presence + per-element [0, 1] + alignment
+  // to the channel's routed element set under STORED defaults.
+
+  // window.FertigationRecipeTomato.efficiency — K / Mg / B at current soil pH.
+  {
+    const FR = window.FertigationRecipeTomato;
+    const offendersFertigation = [];
+    if (!FR || !FR.efficiency) {
+      offendersFertigation.push('window.FertigationRecipeTomato.efficiency not exposed');
+    } else {
+      // Channel routes K / Mg / B per STORED + REQ-061. Synthetic routedMg
+      // marks those three as non-zero so validateEfficiencyMap accepts them.
+      const routedMg = { K: 1, Mg: 1, B: 1 };
+      offendersFertigation.push(...validateEfficiencyMap(
+        'fertigation-recipe namespace (window.FertigationRecipeTomato.efficiency)',
+        routedMg,
+        FR.efficiency
+      ));
+    }
+    if (offendersFertigation.length === 0) {
+      pass('REQ-157 — fertigation-recipe efficiency map (window.FertigationRecipeTomato.efficiency)');
+    } else {
+      fail('REQ-157 — fertigation-recipe efficiency map', offendersFertigation.slice(0, 4).join(' · '));
+    }
+  }
+
+  // window.FoliarRecipeTomato.efficiency — Mn/Zn/Cu/Fe/Mo at current
+  // no-yucca regime; B absent (single-channel via fertigation, REQ-061).
+  {
+    const FoR = window.FoliarRecipeTomato;
+    const offendersFoliar = [];
+    if (!FoR || !FoR.efficiency) {
+      offendersFoliar.push('window.FoliarRecipeTomato.efficiency not exposed');
+    } else {
+      const routedMg = { Mn: 1, Zn: 1, Cu: 1, Fe: 1, Mo: 1 };
+      offendersFoliar.push(...validateEfficiencyMap(
+        'foliar-recipe namespace (window.FoliarRecipeTomato.efficiency)',
+        routedMg,
+        FoR.efficiency
+      ));
+    }
+    if (offendersFoliar.length === 0) {
+      pass('REQ-157 — foliar-recipe efficiency map (window.FoliarRecipeTomato.efficiency)');
+    } else {
+      fail('REQ-157 — foliar-recipe efficiency map', offendersFoliar.slice(0, 4).join(' · '));
+    }
+  }
+
+  // window.SidedressRecipeTomato.efficiency — N only (FP-default product
+  // FarinePlumes; Actisol REQ-089-gated out on Ca-saturated soil).
+  {
+    const SR = window.SidedressRecipeTomato;
+    const offendersSidedress = [];
+    if (!SR || !SR.efficiency) {
+      offendersSidedress.push('window.SidedressRecipeTomato.efficiency not exposed');
+    } else {
+      const routedMg = { N: 1 };
+      offendersSidedress.push(...validateEfficiencyMap(
+        'sidedress-recipe namespace (window.SidedressRecipeTomato.efficiency)',
+        routedMg,
+        SR.efficiency
+      ));
+    }
+    if (offendersSidedress.length === 0) {
+      pass('REQ-157 — sidedress-recipe efficiency map (window.SidedressRecipeTomato.efficiency)');
+    } else {
+      fail('REQ-157 — sidedress-recipe efficiency map', offendersSidedress.slice(0, 4).join(' · '));
+    }
+  }
 }
 
 // ─── REQ-152 — Contribution-block recipe table ─────────────────────────
@@ -4304,9 +4378,9 @@ function compositionCellOrderOk(cellText) {
   // repeats, no out-of-order).
   let cursor = -1;
   for (const sym of symbols) {
-    const idx = REQ152_ELEMENT_ORDER.indexOf(sym);
-    if (idx <= cursor) return false; // out-of-order or repeated
-    cursor = idx;
+    const index = REQ152_ELEMENT_ORDER.indexOf(sym);
+    if (index <= cursor) return false; // out-of-order or repeated
+    cursor = index;
   }
   // Separator: when more than one element, require `·` between them.
   if (symbols.length > 1 && !stripped.includes('·')) return false;
@@ -4325,20 +4399,20 @@ header('REQ-152 — Contribution-block recipe table — Tomato page (Salanova/Se
   ];
   const offenders = [];
   for (const block of blocks) {
-    const el = window.document.getElementById(block.id);
-    if (!el) { offenders.push(`#${block.id} (${block.label}): container missing`); continue; }
+    const element = window.document.getElementById(block.id);
+    if (!element) { offenders.push(`#${block.id} (${block.label}): container missing`); continue; }
     // Locate the gap-grid wrapper — its immediate previous sibling must be the recipe <table>.
-    const wrapper = findGapGridWrapper(el);
+    const wrapper = findGapGridWrapper(element);
     if (!wrapper) {
       offenders.push(`#${block.id} (${block.label}): gap-grid wrapper not found (renderer not emitting REQ-137 grid)`);
       continue;
     }
-    const prev = wrapper.previousElementSibling;
-    if (!prev || prev.tagName !== 'TABLE') {
-      offenders.push(`#${block.id} (${block.label}): recipe <table> missing — gap-grid's previousElementSibling is ${prev ? prev.tagName.toLowerCase() : 'null'}`);
+    const previous = wrapper.previousElementSibling;
+    if (!previous || previous.tagName !== 'TABLE') {
+      offenders.push(`#${block.id} (${block.label}): recipe <table> missing — gap-grid's previousElementSibling is ${previous ? previous.tagName.toLowerCase() : 'null'}`);
       continue;
     }
-    const table = prev;
+    const table = previous;
     // Header row: Produit | Composition (% m/m) | Quantité
     const headerCells = Array.from(table.querySelectorAll('thead th, thead td'));
     const headerTexts = headerCells.map(c => c.textContent.trim());
@@ -4424,9 +4498,9 @@ header('REQ-139 — App must call subproject namespace (no inline reimplementati
   // today. Add a row here whenever a new model.js function gets wired
   // into the app.
   const REGISTRY = [
-    { ns: 'FoliarRecipeTomato',  fn: 'computeFoliarSupply',         consumer: 'app/index.html' },
-    { ns: 'FoliarRecipeTomato',  fn: 'computeFoliarRecipeForGap',   consumer: 'app/index.html' },
-    { ns: 'CompostContribution', fn: 'releasePerWeek',              consumer: 'app/index.html' },
+    { ns: 'FoliarRecipeTomato',  handler: 'computeFoliarSupply',         consumer: 'app/index.html' },
+    { ns: 'FoliarRecipeTomato',  handler: 'computeFoliarRecipeForGap',   consumer: 'app/index.html' },
+    { ns: 'CompostContribution', handler: 'releasePerWeek',              consumer: 'app/index.html' },
   ];
 
   // Inline-formula blacklist: per-element foliar-supply shape.
@@ -4447,7 +4521,7 @@ header('REQ-139 — App must call subproject namespace (no inline reimplementati
 
   // Layer 1 — registry positive check.
   for (const row of REGISTRY) {
-    const needle = `window.${row.ns}.${row.fn}`;
+    const needle = `window.${row.ns}.${row.handler}`;
     if (!consumerSrc.includes(needle)) {
       offenders.push(`${row.consumer} missing call to ${needle} (registry says it must be the consumer)`);
     }
@@ -4497,7 +4571,7 @@ header('REQ-144 — Operator-facing prose is a deterministic render of spec (opt
   // Collect every REQ-NNN that exists as a spec header anywhere in the
   // spec tree. The bash umbrella verifier does this too — we duplicate it
   // here to keep the node verifier self-contained.
-  const specReqIds = new Set();
+  const requirementIdSet = new Set();
   {
     const specFiles = [
       join(REPO_ROOT, 'requirements.md'),
@@ -4518,18 +4592,18 @@ header('REQ-144 — Operator-facing prose is a deterministic render of spec (opt
       try {
         const text = readFileSync(path, 'utf8');
         const matches = text.match(/^## (REQ-\d{3}[a-z]?)\b/gm) || [];
-        for (const m of matches) specReqIds.add(m.replace(/^## /, ''));
+        for (const m of matches) requirementIdSet.add(m.replace(/^## /, ''));
       } catch { /* ignore missing files */ }
     }
   }
 
   // Pre-scan consumer source files for function declarations so
-  // `derived:<fn>` can be validated without an AST. Cheap heuristic — looks
-  // for `function fn(`, `const fn =`, `let fn =`, `var fn =`, `fn = function`,
-  // `fn: function`, `fn(...) {`, `fn = (` (arrow) patterns. False positives
+  // `derived:<handler>` can be validated without an AST. Cheap heuristic — looks
+  // for `function handler(`, `const handler =`, `let handler =`, `var handler =`, `handler = function`,
+  // `handler: function`, `handler(...) {`, `handler = (` (arrow) patterns. False positives
   // tolerated (we err on the side of allowing); false negatives surface as
   // verifier failures the author must investigate.
-  const declaredFnNames = new Set();
+  const declaredFunctionNames = new Set();
   {
     const sourceDirs = ['app', 'nutrition', 'yield-range'];
     function walkSrc(dir) {
@@ -4549,7 +4623,7 @@ header('REQ-144 — Operator-facing prose is a deterministic render of spec (opt
               ];
               for (const re of patterns) {
                 let m;
-                while ((m = re.exec(text))) declaredFnNames.add(m[1]);
+                while ((m = re.exec(text))) declaredFunctionNames.add(m[1]);
               }
             } catch { /* ignore */ }
           }
@@ -4596,15 +4670,15 @@ header('REQ-144 — Operator-facing prose is a deterministic render of spec (opt
       // Validate the value shape.
       if (source === 'label') continue;
       if (source.startsWith('derived:') && source.length > 'derived:'.length) {
-        const fnName = source.slice('derived:'.length);
-        if (!declaredFnNames.has(fnName)) {
-          offenders.push(`data-prose-source="${source}" — function "${fnName}" not declared in source`);
+        const functionName = source.slice('derived:'.length);
+        if (!declaredFunctionNames.has(functionName)) {
+          offenders.push(`data-prose-source="${source}" — function "${functionName}" not declared in source`);
           if (offenders.length >= 5) break;
         }
         continue;
       }
       if (/^REQ-\d{3}[a-z]?$/.test(source)) {
-        if (!specReqIds.has(source)) {
+        if (!requirementIdSet.has(source)) {
           offenders.push(`data-prose-source="${source}" points to unknown spec entry`);
           if (offenders.length >= 5) break;
         }
@@ -4677,8 +4751,8 @@ header('REQ-145 — Pourquoi modal interpretation strings (renderSpec call sites
       }
     }
 
-    // Indirect calls via { req: 'REQ-145', key: '<key>' } — also valid call site.
-    const indirectRe = /req:\s*['"]REQ-145['"]\s*,\s*key:\s*([^,}]+)/g;
+    // Indirect calls via { requirementId: 'REQ-145', key: '<key>' } — also valid call site.
+    const indirectRe = /requirementId:\s*['"]REQ-145['"]\s*,\s*key:\s*([^,}]+)/g;
     for (const path of consumers) {
       let text;
       try { text = readFileSync(path, 'utf8'); } catch { continue; }
@@ -4701,6 +4775,327 @@ header('REQ-145 — Pourquoi modal interpretation strings (renderSpec call sites
     pass(`SPEC_STRINGS['REQ-145'] has ${Object.keys(specStrings).length} keys · 6 consumer call sites resolve OK`);
   } else {
     fail('REQ-145 — pourquoi modal interpretation strings', offenders.join('\n'));
+  }
+}
+
+// ─── REQ-158 — Function/variable/property names in JS source must be full
+//     words (no abbreviations) ────────────────────────────────────────────
+//
+// Spec: requirements.md → REQ-158. Walk owned-surface JS source (app/,
+// nutrition/, yield-range/ plus this verifier itself), extract identifier
+// declarations via regex, and flag any whose name (or a camelCase segment)
+// matches the denylist of common abbreviations. A whitelist exempts
+// chemistry terms (pH), units (mg/kg/g/L/m²), audit-trail recipe keys
+// (FeSO4, kSulfate_g, …), and idiomatic for-loop iterators (i/j/k).
+//
+// Designed-to-fail-until-Wave-2: per the PO entry 2026-05-15 15:42 the
+// initial run is expected to fail with N hits; Wave 2 owns the refactor.
+// Test files (*.test.mjs, test-helpers.mjs) are excluded — PO entry scopes
+// to runtime app source only ("JS source in app/, nutrition/, yield-range/").
+
+header('REQ-158 — Function/variable/property names in JS source must be full words (no abbreviations)');
+{
+  const DENYLIST = new Set([
+    'eff', 'idx', 'req', 'temp', 'calc', 'cfg', 'init', 'min', 'max',
+    'el', 'ph', 'cb', 'cnt', 'prev', 'curr', 'tmp', 'fn', 'obj', 'arr',
+    'str', 'num', 'val', 'res', 'err', 'msg', 'ctx', 'ref', 'pos',
+    'len', 'sz', 'cur', 'nxt', 'prv',
+  ]);
+
+  // Whitelist segments (case-insensitive match on a camelCase segment) that
+  // exempt the identifier even if some other segment is denylisted.
+  const WHITELIST_SEGMENTS = new Set([
+    'cert',                // certainty
+    'cap',                 // capacity / cap
+    'ph',                  // pH chemistry term (Ph/PH/ph all OK as segment)
+    'g', 'kg', 'mg', 'l', 'ml', 'm2',  // unit suffixes
+    'ppm',                 // parts per million
+  ]);
+
+  // Exact identifier names that are always OK — STORED_RECIPE / RECIPE_HISTORY
+  // audit-trail keys and product brand names (proper nouns). These names are
+  // load-bearing for organic-cert traceability per /retire-recipe; they must
+  // not be refactored even when they contain unit-suffix segments.
+  const WHITELIST_LITERAL = new Set([
+    // STORED_RECIPE keys (sulfate / boron / feather meal etc.)
+    'kSulfate', 'mgSulfate', 'solubore',
+    'kSulfate_g', 'mgSulfate_g', 'solubore_g',
+    'actisol_g', 'farinePlumes_g',
+    'FeSO4_g', 'MnSO4_g', 'ZnSO4_g', 'CuSO4_g', 'NaMoO4_g',
+    // Product brand / chemical formulas (proper nouns)
+    'K2SO4', 'K2SO4_K', 'MgSO4', 'MgSO4_Mg', 'Solubore', 'Solubore_B',
+    'Actisol', 'Actisol_K', 'Actisol_N',
+    'FarinePlumes', 'FarinePlumes_N',
+    'FeSO4', 'MnSO4', 'ZnSO4', 'CuSO4', 'NaMoO4',
+  ]);
+
+  // Split a camelCase / snake_case identifier into lowercase segments. The
+  // segmentation handles both styles plus all-caps runs (e.g., `FPRecipe` →
+  // ['fp', 'recipe']; `actisol_g` → ['actisol', 'g']; `effectiveEff` →
+  // ['effective', 'efficiency']).
+  function segmentIdentifier(identifier) {
+    return identifier
+      .replace(/([a-z0-9])([A-Z])/g, '$1_$2')   // camelCase boundary
+      .replace(/([A-Z]+)([A-Z][a-z])/g, '$1_$2') // ACRONYMRun → ACRONYM_Run
+      .split(/[_\s]+/)
+      .filter(Boolean)
+      .map(segment => segment.toLowerCase());
+  }
+
+  // Decide whether a candidate identifier is a denylist hit.
+  // Returns the offending segment (or whole identifier) when flagged, else null.
+  function denylistHit(identifier) {
+    if (WHITELIST_LITERAL.has(identifier)) return null;
+    const segments = segmentIdentifier(identifier);
+    // Whitelist-segment exemption runs first so domain terms beat the
+    // abbreviation rule even when the bare identifier is on the denylist.
+    // (e.g., `ph` as a function parameter is the chemistry term, not the
+    // disallowed abbreviation `ph` for `previousHandler`.)
+    for (const segment of segments) {
+      if (WHITELIST_SEGMENTS.has(segment)) return null;
+    }
+    // Exact whole-identifier match against the denylist (case-sensitive
+    // per the brief — `Eff` ≠ `efficiency`).
+    if (DENYLIST.has(identifier)) return identifier;
+    // Segment-level match — flag if any lowercase segment is on the
+    // denylist AND that segment is not the entire identifier (the whole
+    // case is already caught above).
+    for (const segment of segments) {
+      if (DENYLIST.has(segment) && segments.length > 1) return segment;
+    }
+    return null;
+  }
+
+  // Extract candidate identifiers from a chunk of JS source. Returns an
+  // array of {name, lineNumber, lineText}. The extractors are deliberately
+  // approximate — false-positive rate is low and false-negatives are the
+  // real risk (silent miss) so we err toward over-extraction.
+  function extractIdentifiers(jsSource) {
+    const out = [];
+    const lines = jsSource.split('\n');
+
+    // Per-line scan. We track whether each line is inside the iterator
+    // header of a `for (let i = 0; ...; i++)` so we can skip i/j/k there.
+    const FOR_LOOP_ITER_RE = /\bfor\s*\(\s*(?:let|var|const)\s+([A-Za-z_$][A-Za-z0-9_$]*)\s*=\s*0\s*;[^;]*\1\s*<[^;]+;[^)]*\1\s*\+\+\s*\)/;
+
+    for (let lineNumber = 0; lineNumber < lines.length; lineNumber++) {
+      const lineText = lines[lineNumber];
+      const trimmed = lineText.trim();
+
+      // Skip pure-comment lines and blanks.
+      if (trimmed === '' || trimmed.startsWith('//') || trimmed.startsWith('*') || trimmed.startsWith('/*')) {
+        continue;
+      }
+
+      // Detect idiomatic for-loop iterator and remember its name to skip.
+      const forIteratorMatch = lineText.match(FOR_LOOP_ITER_RE);
+      const forIteratorName = forIteratorMatch ? forIteratorMatch[1] : null;
+
+      // 1. function NAME(
+      for (const match of lineText.matchAll(/\bfunction\s+([A-Za-z_$][A-Za-z0-9_$]*)\s*\(/g)) {
+        out.push({ name: match[1], lineNumber: lineNumber + 1, lineText: trimmed });
+      }
+
+      // 2. const/let/var NAME = (top-level + scoped declarations)
+      for (const match of lineText.matchAll(/\b(?:const|let|var)\s+([A-Za-z_$][A-Za-z0-9_$]*)\s*=/g)) {
+        const name = match[1];
+        // Skip the for-loop iterator we just identified (if any).
+        if (forIteratorName && name === forIteratorName) continue;
+        out.push({ name, lineNumber: lineNumber + 1, lineText: trimmed });
+      }
+
+      // 3. class NAME
+      for (const match of lineText.matchAll(/\bclass\s+([A-Za-z_$][A-Za-z0-9_$]*)\b/g)) {
+        out.push({ name: match[1], lineNumber: lineNumber + 1, lineText: trimmed });
+      }
+
+      // 4. Object-literal keys at declaration position:
+      //    `{NAME:` or `, NAME:` or line-leading `NAME:` (when inside an
+      //    object literal across multiple lines). Restrict to lines that
+      //    look like key:value pairs to avoid matching `case foo:` or
+      //    labelled statements.
+      for (const match of lineText.matchAll(/(?:^|[,{])\s*([A-Za-z_$][A-Za-z0-9_$]*)\s*:/g)) {
+        const name = match[1];
+        // Filter common false positives: switch labels, `default:`, and
+        // single-word ternary/object-shorthand patterns are rare here.
+        if (name === 'default' || name === 'case') continue;
+        // Avoid double-extracting names that the `const NAME =` extractor
+        // already picked up (when an object literal sits on the same line
+        // as a declaration).
+        out.push({ name, lineNumber: lineNumber + 1, lineText: trimmed });
+      }
+
+      // 5. Function-parameter declarations and arrow-function parameter lists.
+      //    `function name(A, B, C)` and `(A, B) =>`.
+      const functionParameterMatch = lineText.match(/\bfunction\s*\*?\s*[A-Za-z_$]?[A-Za-z0-9_$]*\s*\(([^)]*)\)/);
+      if (functionParameterMatch) {
+        const params = functionParameterMatch[1].split(',').map(p => p.trim()).filter(Boolean);
+        for (const param of params) {
+          // Strip default-value, destructuring, and rest patterns to get the bare name.
+          const bare = param.replace(/=.*$/, '').replace(/^\.\.\./, '').trim();
+          // Skip destructuring patterns ({...} / [...]) — handled separately below.
+          if (bare.startsWith('{') || bare.startsWith('[')) continue;
+          if (/^[A-Za-z_$][A-Za-z0-9_$]*$/.test(bare)) {
+            out.push({ name: bare, lineNumber: lineNumber + 1, lineText: trimmed });
+          }
+        }
+      }
+      const arrowMatch = lineText.match(/\(([^)]*)\)\s*=>/);
+      if (arrowMatch) {
+        const params = arrowMatch[1].split(',').map(p => p.trim()).filter(Boolean);
+        for (const param of params) {
+          const bare = param.replace(/=.*$/, '').replace(/^\.\.\./, '').trim();
+          if (bare.startsWith('{') || bare.startsWith('[')) continue;
+          if (/^[A-Za-z_$][A-Za-z0-9_$]*$/.test(bare)) {
+            out.push({ name: bare, lineNumber: lineNumber + 1, lineText: trimmed });
+          }
+        }
+      }
+
+      // 6. Destructuring patterns:
+      //    `const {A, B} = ...` and `const [A, B] = ...`.
+      const destructuringObjectMatch = lineText.match(/\b(?:const|let|var)\s*\{([^}]*)\}\s*=/);
+      if (destructuringObjectMatch) {
+        for (const piece of destructuringObjectMatch[1].split(',')) {
+          // Allow renaming syntax `{a: b}` — pull the binding name (after `:`).
+          const bindingMatch = piece.match(/(?::\s*)?([A-Za-z_$][A-Za-z0-9_$]*)\s*(?:=|$)/);
+          if (bindingMatch) {
+            out.push({ name: bindingMatch[1], lineNumber: lineNumber + 1, lineText: trimmed });
+          }
+        }
+      }
+      const destructuringArrayMatch = lineText.match(/\b(?:const|let|var)\s*\[([^\]]*)\]\s*=/);
+      if (destructuringArrayMatch) {
+        for (const piece of destructuringArrayMatch[1].split(',')) {
+          const bindingMatch = piece.match(/^\s*([A-Za-z_$][A-Za-z0-9_$]*)/);
+          if (bindingMatch) {
+            out.push({ name: bindingMatch[1], lineNumber: lineNumber + 1, lineText: trimmed });
+          }
+        }
+      }
+    }
+
+    return out;
+  }
+
+  // Recursively collect every .js file under a directory, skipping dist/
+  // and node_modules/, and excluding test files (*.test.mjs/test-helpers).
+  function collectJsFiles(rootDir) {
+    const out = [];
+    if (!existsSync(rootDir)) return out;
+    function walk(directory) {
+      let entries;
+      try { entries = readdirSync(directory, { withFileTypes: true }); }
+      catch { return; }
+      for (const entry of entries) {
+        const fullPath = join(directory, entry.name);
+        if (entry.isDirectory()) {
+          if (entry.name === 'dist' || entry.name === 'node_modules' || entry.name === '.claude') continue;
+          walk(fullPath);
+        } else if (entry.isFile()) {
+          if (!entry.name.endsWith('.js')) continue;
+          if (entry.name === 'test-helpers.mjs') continue;
+          out.push(fullPath);
+        }
+      }
+    }
+    walk(rootDir);
+    return out;
+  }
+
+  // Build the owned-surface file list.
+  const ownedFiles = [];
+
+  // 1. app/index.html — extract <script> block contents only.
+  const indexHtmlPath = join(REPO_ROOT, 'app', 'index.html');
+  if (existsSync(indexHtmlPath)) {
+    const htmlText = readFileSync(indexHtmlPath, 'utf8');
+    // Concatenate every <script>…</script> body (skip src= references).
+    const scriptRe = /<script(?![^>]*\bsrc=)[^>]*>([\s\S]*?)<\/script>/g;
+    let scriptBodies = '';
+    let scriptMatch;
+    while ((scriptMatch = scriptRe.exec(htmlText))) {
+      // Preserve line numbers from the source HTML by counting newlines up
+      // to this script start, padding with blank lines.
+      const startOffset = scriptMatch.index;
+      const linesBefore = htmlText.slice(0, startOffset).split('\n').length;
+      const currentLines = scriptBodies.split('\n').length;
+      const padding = '\n'.repeat(Math.max(0, linesBefore - currentLines));
+      scriptBodies += padding + scriptMatch[1];
+    }
+    ownedFiles.push({ path: indexHtmlPath, source: scriptBodies });
+  }
+
+  // 2. nutrition/render.js + every *.js under nutrition/ and yield-range/.
+  const nutritionDir = join(REPO_ROOT, 'nutrition');
+  const yieldRangeDir = join(REPO_ROOT, 'yield-range');
+  for (const path of [...collectJsFiles(nutritionDir), ...collectJsFiles(yieldRangeDir)]) {
+    try {
+      ownedFiles.push({ path, source: readFileSync(path, 'utf8') });
+    } catch { /* skip unreadable */ }
+  }
+
+  // 3. scripts/check-recipes.mjs itself (matcher applies to its own source).
+  const selfPath = join(REPO_ROOT, 'scripts', 'check-recipes.mjs');
+  if (existsSync(selfPath)) {
+    ownedFiles.push({ path: selfPath, source: readFileSync(selfPath, 'utf8') });
+  }
+
+  // Walk + collect hits.
+  const hits = [];                // {file, line, name, segment, lineText}
+  const hitsByFile = new Map();   // path → count
+  const hitsByIdentifier = new Map(); // name → count
+
+  for (const { path, source } of ownedFiles) {
+    const identifiers = extractIdentifiers(source);
+    // Dedupe identifier-occurrences per (line, name) to avoid double-counting
+    // when several extractors fire on the same declaration.
+    const seenOnFile = new Set();
+    for (const { name, lineNumber, lineText } of identifiers) {
+      const dedupeKey = `${lineNumber}:${name}`;
+      if (seenOnFile.has(dedupeKey)) continue;
+      seenOnFile.add(dedupeKey);
+      const segment = denylistHit(name);
+      if (!segment) continue;
+      hits.push({ file: path, line: lineNumber, name, segment, lineText });
+      hitsByFile.set(path, (hitsByFile.get(path) || 0) + 1);
+      hitsByIdentifier.set(name, (hitsByIdentifier.get(name) || 0) + 1);
+    }
+  }
+
+  if (hits.length === 0) {
+    pass(`scanned ${ownedFiles.length} files · 0 denylist hits`);
+  } else {
+    // Build a structured fail() detail. fail() only prints the first 5
+    // lines of detail by design, so we route the full report to stdout
+    // directly (matching the REQ-152 pattern of printing rich detail
+    // outside the fail() call).
+    fail('REQ-158 — identifier names are full words (no abbreviations)',
+      `${hits.length} denylist hits across ${hitsByFile.size} files`);
+
+    process.stdout.write(`\n    ${c.dim}── REQ-158 hit list (top 50) ──${c.reset}\n`);
+    const printable = hits.slice(0, 50);
+    for (const hit of printable) {
+      const relativePath = hit.file.startsWith(REPO_ROOT) ? hit.file.slice(REPO_ROOT.length + 1) : hit.file;
+      process.stdout.write(`    ${c.dim}${relativePath}:${hit.line}${c.reset}  ${c.red}${hit.name}${c.reset} (segment: ${hit.segment})  ${c.dim}${hit.lineText.slice(0, 80)}${c.reset}\n`);
+    }
+    if (hits.length > printable.length) {
+      process.stdout.write(`    ${c.dim}(+${hits.length - printable.length} more)${c.reset}\n`);
+    }
+
+    process.stdout.write(`\n    ${c.dim}── Hits-by-file summary (top 10) ──${c.reset}\n`);
+    const byFileSorted = [...hitsByFile.entries()].sort((a, b) => b[1] - a[1]).slice(0, 10);
+    for (const [path, count] of byFileSorted) {
+      const relativePath = path.startsWith(REPO_ROOT) ? path.slice(REPO_ROOT.length + 1) : path;
+      process.stdout.write(`    ${c.dim}${String(count).padStart(4)}  ${relativePath}${c.reset}\n`);
+    }
+
+    process.stdout.write(`\n    ${c.dim}── Top 10 hit identifiers ──${c.reset}\n`);
+    const byIdentifierSorted = [...hitsByIdentifier.entries()].sort((a, b) => b[1] - a[1]).slice(0, 10);
+    for (const [name, count] of byIdentifierSorted) {
+      process.stdout.write(`    ${c.dim}${String(count).padStart(4)}  ${name}${c.reset}\n`);
+    }
+    process.stdout.write('\n');
   }
 }
 

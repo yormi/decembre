@@ -65,7 +65,7 @@ describe('REQ-087 — chosen product sized to N gap after compost', () => {
     const offtake_mg = ph1.TOMATO_FRUIT_EXPORT.N.g * 1000 * y + biomassN;
     const compost_mg = compostN * 1000;
     const needed_mg  = Math.max(0, offtake_mg - compost_mg);
-    const g_per_m2   = needed_mg / (p.n_pct * p.eff) / 1000;
+    const g_per_m2   = needed_mg / (p.n_pct * p.efficiency) / 1000;
     return Math.round(g_per_m2 * ph1.SIDEDRESS_AREA_PER_PLANCHE);
   }
 
@@ -99,7 +99,7 @@ describe('REQ-087 — chosen product sized to N gap after compost', () => {
     const alfalfa = ph1.computeStageSidedress('T5', 'AlfalfaMeal').alfalfa_g;
     const fp = ph1.SIDEDRESS_PRODUCTS.FarinePlumes;
     const ap = ph1.SIDEDRESS_PRODUCTS.AlfalfaMeal;
-    const expectedRatio = (fp.n_pct * fp.eff) / (ap.n_pct * ap.eff);
+    const expectedRatio = (fp.n_pct * fp.efficiency) / (ap.n_pct * ap.efficiency);
     const actualRatio   = alfalfa / farine;
     // 5 % tolerance to absorb rounding to whole grams at low doses.
     assert.ok(
@@ -146,7 +146,7 @@ describe('REQ-088 — window.SidedressRecipeTomato public API', () => {
     const expectedKeys = [
       'AREA_PER_PLANCHE',
       'PRODUCTS',
-      'MIN_EFF',
+      'MINIMUM_EFFICIENCY',
       'FIRST_PRINCIPLES_BY_STAGE',
       'computeStageSidedress',
     ];
@@ -167,7 +167,7 @@ describe('REQ-088 — window.SidedressRecipeTomato public API', () => {
     for (const [key, p] of Object.entries(products)) {
       assert.equal(typeof p.ca_pct, 'number', `${key}.ca_pct must be a number`);
       assert.equal(typeof p.n_pct,  'number', `${key}.n_pct must be a number`);
-      assert.equal(typeof p.eff,    'number', `${key}.eff must be a number`);
+      assert.equal(typeof p.efficiency, 'number', `${key}.efficiency must be a number`);
     }
   });
 
@@ -194,15 +194,15 @@ describe('REQ-088 — window.SidedressRecipeTomato public API', () => {
     }
   });
 
-  test('REQ-088 — MIN_EFF retains backwards-compat keys for legacy consumers', () => {
-    // Legacy consumers (calcNutrSupply, computeStageRecipe, buildBanqueSol,
+  test('REQ-088 — MINIMUM_EFFICIENCY retains backwards-compat keys for legacy consumers', () => {
+    // Legacy consumers (calculateNutritionSupply, computeStageRecipe, buildBanqueSol,
     // buildNutriment) still read these specific keys. Spec REQ-088 calls
-    // out MIN_EFF explicitly as the derived backwards-compat view.
-    const minEff = window.SidedressRecipeTomato.MIN_EFF;
+    // out MINIMUM_EFFICIENCY explicitly as the derived backwards-compat view.
+    const minimumEfficiency = window.SidedressRecipeTomato.MINIMUM_EFFICIENCY;
     for (const key of ['Actisol_N', 'Actisol_P', 'Actisol_K', 'FarinePlumes_N']) {
-      assert.equal(typeof minEff[key], 'number', `MIN_EFF.${key} must be a number`);
-      assert.ok(minEff[key] > 0 && minEff[key] <= 1,
-        `MIN_EFF.${key}=${minEff[key]} must be in (0, 1]`);
+      assert.equal(typeof minimumEfficiency[key], 'number', `MINIMUM_EFFICIENCY.${key} must be a number`);
+      assert.ok(minimumEfficiency[key] > 0 && minimumEfficiency[key] <= 1,
+        `MINIMUM_EFFICIENCY.${key}=${minimumEfficiency[key]} must be in (0, 1]`);
     }
   });
 });

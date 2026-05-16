@@ -20,13 +20,13 @@
 function theoreticalSubstrateReleasePerWeek(week, featherMealPerTrayG) {
   // Bounds: clamp week to [1, curveLen]; if out of range and curve has 0
   // for the week, that simply means "no release in that week."
-  const wIdx = (typeof week === 'number' && week >= 1) ? Math.floor(week) - 1 : 0;
+  const weekIndex = (typeof week === 'number' && week >= 1) ? Math.floor(week) - 1 : 0;
   const fmG = (typeof featherMealPerTrayG === 'number' && isFinite(featherMealPerTrayG))
             ? featherMealPerTrayG
             : NURSERY_FEATHER_MEAL_DEFAULT_G_PER_TRAY;
 
   // (1) OM2 starter charge — every element in the table.
-  const om2Frac = OM2_RELEASE_CURVE_BY_WEEK[wIdx] || 0;
+  const om2Frac = OM2_RELEASE_CURVE_BY_WEEK[weekIndex] || 0;
   const out = { N: 0, P: 0, K: 0, Ca: 0, Mg: 0 };
   for (const el of Object.keys(OM2_STARTER_CHARGE_PPM)) {
     const starter_mg = OM2_STARTER_CHARGE_PPM[el] * NURSERY_TRAY_SUBSTRATE_VOL_L;
@@ -34,7 +34,7 @@ function theoreticalSubstrateReleasePerWeek(week, featherMealPerTrayG) {
   }
 
   // (2) Feather meal — N only.
-  const fmFrac = FEATHER_MEAL_RELEASE_CURVE_BY_WEEK[wIdx] || 0;
+  const fmFrac = FEATHER_MEAL_RELEASE_CURVE_BY_WEEK[weekIndex] || 0;
   const fmTotalN_mg = fmG * (FEATHER_MEAL_LABEL_PCT.N || 0)
                           * FEATHER_MEAL_MINERALIZATION_FRAC * 1000;
   out.N += fmTotalN_mg * fmFrac;

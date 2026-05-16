@@ -17,7 +17,7 @@
 // and root-pump kinetics, so they keep the un-scaled biomass term.
 const TRANSP_COUPLED_BIOMASS = { Ca: true, Mg: true };
 
-function calcNutrDemand(yieldKgPerM2, stage, transpFactor = 1.0) {
+function calculateNutritionDemand(yieldKgPerM2, stage, transpFactor = 1.0) {
   const out = {};
   const bio = BIOMASS_DEMAND[stage] || {};
   Object.keys(TOMATO_FRUIT_EXPORT).forEach(el => {

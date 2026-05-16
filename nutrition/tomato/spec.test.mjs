@@ -130,40 +130,40 @@ function compostReleaseMg(el) {
 function sidedressEffectiveMg(stage, el) {
   const sidedressTable = G.STORED_RECIPE && G.STORED_RECIPE.tomato
     && G.STORED_RECIPE.tomato.sidedress;
-  if (!sidedressTable || !G.PRODUCT_PCT || !G.SIDEDRESS_MIN_EFF) return 0;
+  if (!sidedressTable || !G.PRODUCT_PCT || !G.SIDEDRESS_MINIMUM_EFFICIENCY) return 0;
   const sidedress = sidedressTable[stage] || { actisol_g: 0, farine_g: 0 };
   const area = G.SIDEDRESS_AREA_PER_PLANCHE || 54.7;
   let mg_per_m2 = 0;
   if (el === 'N') {
     mg_per_m2 += (sidedress.actisol_g * (G.PRODUCT_PCT.Actisol_N || 0)
-      * (G.SIDEDRESS_MIN_EFF.Actisol_N || 0.6) * 1000) / area;
+      * (G.SIDEDRESS_MINIMUM_EFFICIENCY.Actisol_N || 0.6) * 1000) / area;
     mg_per_m2 += (sidedress.farine_g * (G.PRODUCT_PCT.FarinePlumes_N || 0)
-      * (G.SIDEDRESS_MIN_EFF.FarinePlumes_N || 0.75) * 1000) / area;
+      * (G.SIDEDRESS_MINIMUM_EFFICIENCY.FarinePlumes_N || 0.75) * 1000) / area;
   } else if (el === 'P') {
     mg_per_m2 += (sidedress.actisol_g * (G.PRODUCT_PCT.Actisol_P || 0)
-      * (G.SIDEDRESS_MIN_EFF.Actisol_P || 0.5) * 1000) / area;
+      * (G.SIDEDRESS_MINIMUM_EFFICIENCY.Actisol_P || 0.5) * 1000) / area;
   } else if (el === 'K') {
     mg_per_m2 += (sidedress.actisol_g * (G.PRODUCT_PCT.Actisol_K || 0)
-      * (G.SIDEDRESS_MIN_EFF.Actisol_K || 0.85) * 1000) / area;
+      * (G.SIDEDRESS_MINIMUM_EFFICIENCY.Actisol_K || 0.85) * 1000) / area;
   }
   return mg_per_m2;
 }
 
 function fertigationEffectiveMg(stage, el, soilPh) {
   if (typeof G.computeStageRecipe !== 'function' || !G.PRODUCT_PCT
-    || !G.TOMATO_NUM_BEDS || !G.TOMATO_BED_AREA) return 0;
+    || !G.TOMATO_NUMBER_BEDS || !G.TOMATO_BED_AREA) return 0;
   const recipe = G.computeStageRecipe(stage) || {};
-  const totalArea = G.TOMATO_NUM_BEDS * G.TOMATO_BED_AREA;
+  const totalArea = G.TOMATO_NUMBER_BEDS * G.TOMATO_BED_AREA;
   let mg_per_m2 = 0;
   if (el === 'K') {
-    const eff = (G.effectiveEff && G.PRODUCT && G.PRODUCT.K2SO4)
-      ? Math.max(0.05, G.effectiveEff('K2SO4', 'K', soilPh))
+    const eff = (G.effectiveEfficiency && G.PRODUCT && G.PRODUCT.K2SO4)
+      ? Math.max(0.05, G.effectiveEfficiency('K2SO4', 'K', soilPh))
       : 1.0;
     const mg_total = (recipe.kSulfate || 0) * (G.PRODUCT_PCT.K2SO4_K || 0.415) * 1000 * eff;
     mg_per_m2 = mg_total / totalArea;
   } else if (el === 'Mg') {
-    const eff = (G.effectiveEff && G.PRODUCT && G.PRODUCT['MgSO4-7H2O'])
-      ? Math.max(0.05, G.effectiveEff('MgSO4-7H2O', 'Mg', soilPh))
+    const eff = (G.effectiveEfficiency && G.PRODUCT && G.PRODUCT['MgSO4-7H2O'])
+      ? Math.max(0.05, G.effectiveEfficiency('MgSO4-7H2O', 'Mg', soilPh))
       : 1.0;
     const mg_total = (recipe.mgSulfate || 0) * (G.PRODUCT_PCT.MgSO4_Mg || 0.0986) * 1000 * eff;
     mg_per_m2 = mg_total / totalArea;
@@ -221,7 +221,7 @@ describe('REQ-013 — Σ(channel_supply) ≥ 0.9 × demand (under-fert guard)', 
     assert.ok(t5.solubore >= 0, 'computeStageRecipe(T5).solubore must be non-negative');
 
     const stageYield = G.RECIPE_INPUTS.stageYield.T5;
-    const totalArea  = G.TOMATO_NUM_BEDS * G.TOMATO_BED_AREA;
+    const totalArea  = G.TOMATO_NUMBER_BEDS * G.TOMATO_BED_AREA;
     const compostK_g_per_m2  = (G.COMPOST_RELEASE_PER_WEEK && G.COMPOST_RELEASE_PER_WEEK.K)  || 0;
     const compostMg_g_per_m2 = (G.COMPOST_RELEASE_PER_WEEK && G.COMPOST_RELEASE_PER_WEEK.Mg) || 0;
     const uptake = G.PH_UPTAKE_FACTOR_AT_CURRENT_SOIL || {};
@@ -232,7 +232,7 @@ describe('REQ-013 — Σ(channel_supply) ≥ 0.9 × demand (under-fert guard)', 
     const kOfftakeMg     = G.TOMATO_FRUIT_EXPORT.K.g * stageYield * 1000 + G.BIOMASS_DEMAND.T5.K;
     const kDemandToBedMg = kOfftakeMg / uK;
     const kSidedressMg   = G.STORED_RECIPE.tomato.sidedress.T5.actisol_g
-                            * G.PRODUCT_PCT.Actisol_K * G.SIDEDRESS_MIN_EFF.Actisol_K * 1000
+                            * G.PRODUCT_PCT.Actisol_K * G.SIDEDRESS_MINIMUM_EFFICIENCY.Actisol_K * 1000
                             / G.SIDEDRESS_AREA_PER_PLANCHE;
     const kCompostMg     = compostK_g_per_m2 * 1000;
     const kNeededMg      = Math.max(0, kDemandToBedMg - kSidedressMg - kCompostMg);

@@ -74,7 +74,7 @@ describe('REQ-101 — Coverage discount applied to foliar delivery', () => {
   test('REQ-101 — Mn delivery matches recipe_g × pct × 1000 / area × coverage', () => {
     const FRT = win.FoliarRecipeTomato;
     const A = win.STORED_RECIPE.tomato.foliaire.A;
-    const area = win.TOMATO_NUM_BEDS * win.TOMATO_BED_AREA;
+    const area = win.TOMATO_NUMBER_BEDS * win.TOMATO_BED_AREA;
     const cov = FRT.FOLIAR_COVERAGE_DEFAULT;
     const mnEntry = A.find(x => (x.name || '').includes('MnSO₄'));
     const mnG = parseFloat(String(mnEntry.master).replace(',', '.'));
@@ -89,7 +89,7 @@ describe('REQ-101 — Coverage discount applied to foliar delivery', () => {
   test('REQ-101 — Fe delivery matches FeSO₄·7H₂O (20 % Fe) path under coverage', () => {
     const FRT = win.FoliarRecipeTomato;
     const A = win.STORED_RECIPE.tomato.foliaire.A;
-    const area = win.TOMATO_NUM_BEDS * win.TOMATO_BED_AREA;
+    const area = win.TOMATO_NUMBER_BEDS * win.TOMATO_BED_AREA;
     const cov = FRT.FOLIAR_COVERAGE_DEFAULT;
     const feEntry = A.find(x => (x.name || '').includes('FeSO₄'));
     const feG = parseFloat(String(feEntry.master).replace(',', '.'));
@@ -124,10 +124,10 @@ describe('REQ-103 — window.FoliarRecipeTomato public API namespace', () => {
     assert.equal(typeof FRT.computeFoliarSupply, 'function');
   });
 
-  test('REQ-103 — AREA_M2 reflects live TOMATO_NUM_BEDS × TOMATO_BED_AREA', () => {
+  test('REQ-103 — AREA_M2 reflects live TOMATO_NUMBER_BEDS × TOMATO_BED_AREA', () => {
     // The model.js exposes AREA_M2 as a getter so a future bed reconfig
     // propagates without code edits — pin that behavior.
-    const expected = win.TOMATO_NUM_BEDS * win.TOMATO_BED_AREA;
+    const expected = win.TOMATO_NUMBER_BEDS * win.TOMATO_BED_AREA;
     assert.equal(win.FoliarRecipeTomato.AREA_M2, expected);
   });
 
@@ -380,16 +380,16 @@ describe('REQ-115 — computeFoliarRecipeForGap (min-dose clamp + burn cap + CE 
 });
 
 describe('REQ-116 — FP foliar recipe live-derived from pre-foliar gap chain', () => {
-  // Integration test: call calcNutrSupply twice in FP mode at T5. Bumping
+  // Integration test: call calculateNutritionSupply twice in FP mode at T5. Bumping
   // CompostContribution.releasePerWeek.Mn closes the pre-foliar Mn gap, so
   // FP_RECIPE_T5.foliar.MnSO4 must drop (and hit the min-dose clamp == 0).
   // Restores compost release at the end so canonical state is preserved.
   test('REQ-116 — FP_RECIPE_T5.foliar.MnSO4 shrinks to 0 when compost.Mn closes the gap', () => {
-    const calcNutrSupply = win.calcNutrSupply;
+    const calculateNutritionSupply = win.calculateNutritionSupply;
     const CC = win.CompostContribution;
     const fpFoliar = win.FP_RECIPE_T5 && win.FP_RECIPE_T5.foliar;
-    assert.equal(typeof calcNutrSupply, 'function',
-      'calcNutrSupply must be defined on window for FP-mode integration');
+    assert.equal(typeof calculateNutritionSupply, 'function',
+      'calculateNutritionSupply must be defined on window for FP-mode integration');
     assert.ok(CC && CC.releasePerWeek,
       'CompostContribution.releasePerWeek required to mutate Mn release');
     assert.ok(fpFoliar, 'FP_RECIPE_T5.foliar must exist');
@@ -398,7 +398,7 @@ describe('REQ-116 — FP foliar recipe live-derived from pre-foliar gap chain', 
     try {
       // Baseline: canonical state. T5, phLocked=true, transpFactor=1.0,
       // target=1.5 kg/m²/wk → match Bilan defaults.
-      calcNutrSupply('T5', true, 1.0, 1.5, 'fp');
+      calculateNutritionSupply('T5', true, 1.0, 1.5, 'fp');
       const baselineMn = fpFoliar['MnSO4'];
       assert.ok(isFinite(baselineMn) && baselineMn >= 0,
         `baseline FP_RECIPE_T5.foliar.MnSO4=${baselineMn}; expected finite ≥ 0`);
@@ -407,7 +407,7 @@ describe('REQ-116 — FP foliar recipe live-derived from pre-foliar gap chain', 
       // demand. Pre-foliar gap.Mn collapses to 0, so the gap-derived recipe
       // must drop MnSO4 to 0 (min-dose clamp).
       CC.releasePerWeek.Mn = 1.0;
-      calcNutrSupply('T5', true, 1.0, 1.5, 'fp');
+      calculateNutritionSupply('T5', true, 1.0, 1.5, 'fp');
       const droppedMn = fpFoliar['MnSO4'];
       assert.ok(droppedMn < baselineMn,
         `after compost.Mn bump, expected MnSO4 < baseline ${baselineMn}, got ${droppedMn}`);
@@ -416,7 +416,7 @@ describe('REQ-116 — FP foliar recipe live-derived from pre-foliar gap chain', 
     } finally {
       // Restore canonical compost state for any subsequent test.
       CC.releasePerWeek.Mn = originalMnRelease;
-      try { calcNutrSupply('T5', true, 1.0, 1.5, 'fp'); } catch (_) { /* swallow */ }
+      try { calculateNutritionSupply('T5', true, 1.0, 1.5, 'fp'); } catch (_) { /* swallow */ }
     }
   });
 

@@ -29,7 +29,7 @@
 // jsdom boot mirrors scripts/check-recipes.mjs — load dist/index.html
 // because calc.js / model.js depend on globals declared elsewhere in the
 // page (RECIPE_INPUTS, BIOMASS_DEMAND, TOMATO_FRUIT_EXPORT, PRODUCT_PCT,
-// SIDEDRESS_*, STORED_RECIPE, TOMATO_NUM_BEDS, TOMATO_BED_AREA,
+// SIDEDRESS_*, STORED_RECIPE, TOMATO_NUMBER_BEDS, TOMATO_BED_AREA,
 // FP_RECIPE_T5, FIRST_PRINCIPLES_T5_FERTIGATION,
 // PH_UPTAKE_FACTOR_AT_CURRENT_SOIL).
 
@@ -83,7 +83,7 @@ describe('REQ-098 — computeStageRecipe matches mass-balance formula (uptake-fa
   //   k_offtake_mg/m²/wk   = TOMATO_FRUIT_EXPORT.K × stageYield × 1000
   //                          + BIOMASS_DEMAND[stage].K
   //   k_sidedress_mg/m²/wk = STORED_RECIPE.tomato.sidedress[stage].actisol_g
-  //                           × PRODUCT_PCT.Actisol_K × SIDEDRESS_MIN_EFF.Actisol_K × 1000
+  //                           × PRODUCT_PCT.Actisol_K × SIDEDRESS_MINIMUM_EFFICIENCY.Actisol_K × 1000
   //                           / SIDEDRESS_AREA_PER_PLANCHE
   //   k_compost_mg/m²/wk   = CompostContribution.releasePerWeek.K × 1000
   //   k_needed_mg/m²/wk    = max(0, k_demand_to_bed − k_sidedress − k_compost)
@@ -126,12 +126,12 @@ describe('REQ-098 — computeStageRecipe matches mass-balance formula (uptake-fa
       'PRODUCT_PCT must be exposed');
     assert.equal(typeof ph1.SIDEDRESS_AREA_PER_PLANCHE, 'number',
       'SIDEDRESS_AREA_PER_PLANCHE must be exposed');
-    assert.equal(typeof ph1.SIDEDRESS_MIN_EFF, 'object',
-      'SIDEDRESS_MIN_EFF must be exposed');
+    assert.equal(typeof ph1.SIDEDRESS_MINIMUM_EFFICIENCY, 'object',
+      'SIDEDRESS_MINIMUM_EFFICIENCY must be exposed');
     assert.equal(typeof ph1.STORED_RECIPE, 'object',
       'STORED_RECIPE must be exposed');
-    assert.equal(typeof ph1.TOMATO_NUM_BEDS, 'number',
-      'TOMATO_NUM_BEDS must be exposed');
+    assert.equal(typeof ph1.TOMATO_NUMBER_BEDS, 'number',
+      'TOMATO_NUMBER_BEDS must be exposed');
     assert.equal(typeof ph1.TOMATO_BED_AREA, 'number',
       'TOMATO_BED_AREA must be exposed');
     assert.equal(typeof ph1.PH_UPTAKE_FACTOR_AT_CURRENT_SOIL, 'object',
@@ -148,7 +148,7 @@ describe('REQ-098 — computeStageRecipe matches mass-balance formula (uptake-fa
 
   test('REQ-098 — kSulfate matches (demand/uptake − sidedress − compost) for every stage', () => {
     const stages = Object.keys(ph1.RECIPE_INPUTS.stageYield);
-    const totalArea = ph1.TOMATO_NUM_BEDS * ph1.TOMATO_BED_AREA;
+    const totalArea = ph1.TOMATO_NUMBER_BEDS * ph1.TOMATO_BED_AREA;
     const kCompostMg = (compostReleasePerWeek.K || 0) * 1000;
     const uK = (ph1.PH_UPTAKE_FACTOR_AT_CURRENT_SOIL || {}).K || 1;
     const offenders = [];
@@ -160,11 +160,11 @@ describe('REQ-098 — computeStageRecipe matches mass-balance formula (uptake-fa
       const kOfftakeMg = (ph1.TOMATO_FRUIT_EXPORT.K.g * 1000 * stageYield)
         + (biomass.K || 0);
       const kDemandToBedMg = kOfftakeMg / uK;
-      // calc.js falls back to 0.85 if SIDEDRESS_MIN_EFF.K is undefined; the
+      // calc.js falls back to 0.85 if SIDEDRESS_MINIMUM_EFFICIENCY.K is undefined; the
       // canonical key is Actisol_K (also 0.85). Both produce identical math.
-      const sidedressEff = (ph1.SIDEDRESS_MIN_EFF && ph1.SIDEDRESS_MIN_EFF.Actisol_K) || 0.85;
+      const sidedressEfficiency = (ph1.SIDEDRESS_MINIMUM_EFFICIENCY && ph1.SIDEDRESS_MINIMUM_EFFICIENCY.Actisol_K) || 0.85;
       const kSidedressMg = (sidedress.actisol_g * ph1.PRODUCT_PCT.Actisol_K
-        * sidedressEff * 1000)
+        * sidedressEfficiency * 1000)
         / ph1.SIDEDRESS_AREA_PER_PLANCHE;
       const kNeededMg = Math.max(0, kDemandToBedMg - kSidedressMg - kCompostMg);
       const expectedKsulfate = Math.round(
@@ -182,7 +182,7 @@ describe('REQ-098 — computeStageRecipe matches mass-balance formula (uptake-fa
 
   test('REQ-098 — mgSulfate matches (demand/uptake − compost) for every stage (sidedress carries no Mg)', () => {
     const stages = Object.keys(ph1.RECIPE_INPUTS.stageYield);
-    const totalArea = ph1.TOMATO_NUM_BEDS * ph1.TOMATO_BED_AREA;
+    const totalArea = ph1.TOMATO_NUMBER_BEDS * ph1.TOMATO_BED_AREA;
     const mgCompostMg = (compostReleasePerWeek.Mg || 0) * 1000;
     const uMg = (ph1.PH_UPTAKE_FACTOR_AT_CURRENT_SOIL || {}).Mg || 1;
     const offenders = [];
@@ -210,7 +210,7 @@ describe('REQ-098 — computeStageRecipe matches mass-balance formula (uptake-fa
 
   test('REQ-098 — solubore matches (demand/uptake − compost) for every stage (sidedress carries no B)', () => {
     const stages = Object.keys(ph1.RECIPE_INPUTS.stageYield);
-    const totalArea = ph1.TOMATO_NUM_BEDS * ph1.TOMATO_BED_AREA;
+    const totalArea = ph1.TOMATO_NUMBER_BEDS * ph1.TOMATO_BED_AREA;
     const bCompostMg = (compostReleasePerWeek.B || 0) * 1000;
     const uB = (ph1.PH_UPTAKE_FACTOR_AT_CURRENT_SOIL || {}).B || 1;
     const offenders = [];
@@ -446,7 +446,7 @@ describe('REQ-151 — computeFertigationSupply(stage, opts, recipe)', () => {
     if (typeof fn !== 'function') {
       assert.fail('computeFertigationSupply not yet implemented');
     }
-    const totalArea = ph1.TOMATO_NUM_BEDS * ph1.TOMATO_BED_AREA;
+    const totalArea = ph1.TOMATO_NUMBER_BEDS * ph1.TOMATO_BED_AREA;
     const recipe = { kSulfate_g: 5568, mgSulfate_g: 1963, solubore_g: 11 };
     const supply = fn('T5', {}, recipe);
     const expectedK = 5568 * ph1.PRODUCT_PCT.K2SO4_K * 1000 / totalArea;
@@ -459,7 +459,7 @@ describe('REQ-151 — computeFertigationSupply(stage, opts, recipe)', () => {
     if (typeof fn !== 'function') {
       assert.fail('computeFertigationSupply not yet implemented');
     }
-    const totalArea = ph1.TOMATO_NUM_BEDS * ph1.TOMATO_BED_AREA;
+    const totalArea = ph1.TOMATO_NUMBER_BEDS * ph1.TOMATO_BED_AREA;
     const recipe = { kSulfate_g: 5568, mgSulfate_g: 1963, solubore_g: 11 };
     const supply = fn('T5', {}, recipe);
     const expectedMg = 1963 * ph1.PRODUCT_PCT.MgSO4_Mg * 1000 / totalArea;
@@ -472,7 +472,7 @@ describe('REQ-151 — computeFertigationSupply(stage, opts, recipe)', () => {
     if (typeof fn !== 'function') {
       assert.fail('computeFertigationSupply not yet implemented');
     }
-    const totalArea = ph1.TOMATO_NUM_BEDS * ph1.TOMATO_BED_AREA;
+    const totalArea = ph1.TOMATO_NUMBER_BEDS * ph1.TOMATO_BED_AREA;
     const recipe = { kSulfate_g: 5568, mgSulfate_g: 1963, solubore_g: 11 };
     const supply = fn('T5', {}, recipe);
     const expectedB = 11 * ph1.PRODUCT_PCT.Solubore_B * 1000 / totalArea;
@@ -512,7 +512,7 @@ describe('REQ-151 — computeFertigationSupply(stage, opts, recipe)', () => {
     if (typeof fn !== 'function') {
       assert.fail('computeFertigationSupply not yet implemented');
     }
-    const totalArea = ph1.TOMATO_NUM_BEDS * ph1.TOMATO_BED_AREA;
+    const totalArea = ph1.TOMATO_NUMBER_BEDS * ph1.TOMATO_BED_AREA;
     // Only kSulfate_g supplied — mgSulfate_g and solubore_g default to 0.
     const supply = fn('T5', {}, { kSulfate_g: 5568 });
     const expectedK = 5568 * ph1.PRODUCT_PCT.K2SO4_K * 1000 / totalArea;

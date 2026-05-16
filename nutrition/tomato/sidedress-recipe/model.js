@@ -15,7 +15,11 @@ window.SidedressRecipeTomato = {
   PRODUCTS:                   SIDEDRESS_PRODUCTS,
   // Per-(product, element) mineralization efficiency at steady-state
   // (legacy view kept for backwards-compat — derived from PRODUCTS).
-  MIN_EFF:                    SIDEDRESS_MIN_EFF,
+  MINIMUM_EFFICIENCY:         SIDEDRESS_MINIMUM_EFFICIENCY,
+  // Per-element efficiency (REQ-157) — channel delivery fraction at
+  // current FP-default product (FarinePlumes; Actisol REQ-089-gated out
+  // on Ca-saturated soil). N-only: 0.75 (Sonneveld mineralization).
+  efficiency:                 SIDEDRESS_EFFICIENCY_AT_CURRENT_PRODUCTS,
   // Per-stage FP target { actisol_g, farine_g, alfalfa_g, chosen, g_per_planche },
   // populated at script load
   FIRST_PRINCIPLES_BY_STAGE:  FIRST_PRINCIPLES_SIDEDRESS,

@@ -15,7 +15,7 @@
 //   - FIRST_PRINCIPLES_T5_FERTIGATION boot-pin via wireFpFertigation()
 //     (REQ-154 invariant) → FP_RECIPE_T5.fertigation
 //   - Block 7 stored-vs-FP drift gauge (renderPhase1Comparison)
-//   - calcNutrSupply when nutrRecipeMode === 'fp'
+//   - calculateNutritionSupply when nutrRecipeMode === 'fp'
 //   - computeStageSidedress (sidedress mass-balance variant — N-only)
 //
 // Formula (per element, total tomato area = 382.9 m²):
@@ -45,7 +45,7 @@
 // weekly dose for the 7-bed × 54.7 m² tomato area.
 function computeStageRecipe(stage) {
   const y = RECIPE_INPUTS.stageYield[stage] || 0;
-  const totalArea = TOMATO_NUM_BEDS * TOMATO_BED_AREA;
+  const totalArea = TOMATO_NUMBER_BEDS * TOMATO_BED_AREA;
   const sd = STORED_RECIPE.tomato.sidedress[stage] || { actisol_g: 0, farine_g: 0 };
   const biomass = BIOMASS_DEMAND[stage] || {};
   const compost = (typeof window !== 'undefined' && window.CompostContribution && window.CompostContribution.releasePerWeek) || {};
@@ -54,7 +54,7 @@ function computeStageRecipe(stage) {
   // ── K ──
   const k_demand_mg = (TOMATO_FRUIT_EXPORT.K.g * 1000 * y) + (biomass.K || 0);
   const k_demand_to_bed = k_demand_mg / (uptake.K || 1);
-  const k_sd_mg = (sd.actisol_g * PRODUCT_PCT.Actisol_K * (SIDEDRESS_MIN_EFF.K || 0.85) * 1000) / SIDEDRESS_AREA_PER_PLANCHE;
+  const k_sd_mg = (sd.actisol_g * PRODUCT_PCT.Actisol_K * (SIDEDRESS_MINIMUM_EFFICIENCY.K || 0.85) * 1000) / SIDEDRESS_AREA_PER_PLANCHE;
   const k_compost_mg = (compost.K || 0) * 1000;
   const k_fert_mg_per_m2 = Math.max(0, k_demand_to_bed - k_sd_mg - k_compost_mg);
   const kSulfate = Math.round((k_fert_mg_per_m2 / 1000 / PRODUCT_PCT.K2SO4_K) * totalArea);
@@ -69,7 +69,7 @@ function computeStageRecipe(stage) {
 
   // ── B (Solubore) — single-channel B at T5+ (REQ-061) ──
   // TOMATO_FRUIT_EXPORT[el].g uses uniform-field convention (×1000 → mg)
-  // for both macros and micros — see plant-needs/calc.js calcNutrDemand.
+  // for both macros and micros — see plant-needs/calc.js calculateNutritionDemand.
   const b_demand_mg = (TOMATO_FRUIT_EXPORT.B.g * 1000 * y) + (biomass.B || 0);
   const b_demand_to_bed = b_demand_mg / (uptake.B || 1);
   const b_compost_mg = (compost.B || 0) * 1000;
@@ -90,7 +90,7 @@ function computeStageRecipe(stage) {
 // has no stage signal).
 function computeFertigationSupply(stage, opts, recipe) {
   void opts;
-  const area = TOMATO_NUM_BEDS * TOMATO_BED_AREA;
+  const area = TOMATO_NUMBER_BEDS * TOMATO_BED_AREA;
   let canonical = recipe;
   if (!canonical) {
     const stored = (STORED_RECIPE.tomato.fertigation || {})[stage] || {};

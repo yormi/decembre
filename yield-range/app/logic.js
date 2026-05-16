@@ -45,8 +45,8 @@ function renderYieldRange() {
   const ledHours = slider ? parseInt(slider.value, 10) : 16;
 
   // Update slider label.
-  const labelEl = document.getElementById('yr-led-hours-label');
-  if (labelEl) labelEl.textContent = `${ledHours} h`;
+  const labelElement = document.getElementById('yr-led-hours-label');
+  if (labelElement) labelElement.textContent = `${ledHours} h`;
 
   // Run the math model.
   const { canopyCapG, daysToPotential, trajectory } = window.YieldRange.predictNurseryYield({ plateauSize, ledHours });
@@ -59,9 +59,9 @@ function renderYieldRange() {
   // → "· pic à J<n>"; null → "· pic non atteint dans la fenêtre de 49 jours".
   // Empty string when the slot isn't in the DOM yet (defensive — same shape
   // as capEl above).
-  const daysEl = document.getElementById('yr-days-to-potential');
-  if (daysEl) {
-    daysEl.textContent = (daysToPotential != null)
+  const daysElement = document.getElementById('yr-days-to-potential');
+  if (daysElement) {
+    daysElement.textContent = (daysToPotential != null)
       ? `· pic à J${daysToPotential}`
       : `· pic non atteint dans la fenêtre de 49 jours`;
   }
@@ -74,10 +74,10 @@ function renderYieldRange() {
   // bench DLI (green optimum / yellow ramp / red stalled or saturated).
   // Breakpoints sourced from F_LIGHT_BREAKPOINTS via f_light(); no
   // hardcoded DLI thresholds in the UI (REQ-060).
-  const dliEl = document.getElementById('yr-dli-value');
+  const dliElement = document.getElementById('yr-dli-value');
   const dliBench = window.YieldRange.dliBenchAvg(ledHours);
-  if (dliEl) {
-    dliEl.textContent = String(Math.round(dliBench));
+  if (dliElement) {
+    dliElement.textContent = String(Math.round(dliBench));
     const fLight = window.YieldRange.f_light(dliBench);
     // Tier thresholds: ≤5% (green), ≤30% (yellow), >30% (red) —
     // same green/yellow/red palette signals "near optimum / partial / off-band".
@@ -85,13 +85,13 @@ function renderYieldRange() {
     if      (fLight >= 0.95) dliColor = '#1e6b2d';  // green — optimum band
     else if (fLight >= 0.70) dliColor = '#a08020';  // yellow — light-limited ramp or mild saturation
     else                     dliColor = '#b03030';  // red — stalled (<4 mol) or saturation floor
-    dliEl.style.color = dliColor;
+    dliElement.style.color = dliColor;
   }
 
   // REQ-121: chart re-render. Replace SVG markup wholesale on each call —
   // simplest approach; trajectory is 50 points so cost is negligible.
-  const chartEl = document.getElementById('yr-chart-container');
-  if (chartEl) chartEl.innerHTML = renderYieldRangeChart(trajectory, canopyCapG, daysToPotential);
+  const chartElement = document.getElementById('yr-chart-container');
+  if (chartElement) chartElement.innerHTML = renderYieldRangeChart(trajectory, canopyCapG, daysToPotential);
 }
 
 // REQ-132: f_light response modal. Auto-renders the breakpoint table from
@@ -189,17 +189,17 @@ function renderYieldRangeChart(trajectory, canopyCapG, daysToPotential) {
   const plotW = W - ML - MR;
   const plotH = H - MT - MB;
 
-  const xMin = 0;
-  const xMax = trajectory[trajectory.length - 1].day; // 49
-  const yMin = 0;
-  const yMax = canopyCapG * 1.1;
+  const xMinimum = 0;
+  const xMaximum = trajectory[trajectory.length - 1].day; // 49
+  const yMinimum = 0;
+  const yMaximum = canopyCapG * 1.1;
 
-  const x = day => ML + (day - xMin) / (xMax - xMin) * plotW;
-  const y = w   => MT + plotH - (w - yMin) / (yMax - yMin) * plotH;
+  const x = day => ML + (day - xMinimum) / (xMaximum - xMinimum) * plotW;
+  const y = w   => MT + plotH - (w - yMinimum) / (yMaximum - yMinimum) * plotH;
 
   // X ticks every 7 days (0, 7, 14, 21, 28, 35, 42, 49).
   const xTicks = [];
-  for (let d = 0; d <= xMax; d += 7) xTicks.push(d);
+  for (let d = 0; d <= xMaximum; d += 7) xTicks.push(d);
   // Y ticks: 0, then evenly-spaced fractions of canopyCapG (0.25, 0.5, 0.75, 1.0).
   const yTicks = [0, canopyCapG * 0.25, canopyCapG * 0.5, canopyCapG * 0.75, canopyCapG];
 
@@ -207,7 +207,7 @@ function renderYieldRangeChart(trajectory, canopyCapG, daysToPotential) {
   const axisColor = 'var(--text-muted)';
   const gridColor = 'var(--border)';
   const seriesColor = 'var(--text)';
-  const refLineColor = 'var(--text-muted)';
+  const referenceLineColor = 'var(--text-muted)';
   const markerColor = '#8a3e1e';
 
   let svg = `<svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" style="width:100%; height:auto; display:block; font-family:inherit;">`;
@@ -232,8 +232,8 @@ function renderYieldRangeChart(trajectory, canopyCapG, daysToPotential) {
   // Horizontal reference line at canopyCapG (REQ-121). Dashed, with a
   // "Plafond" label at the right edge.
   const yCap = y(canopyCapG);
-  svg += `<line x1="${ML}" y1="${yCap}" x2="${ML + plotW}" y2="${yCap}" stroke="${refLineColor}" stroke-width="1" stroke-dasharray="4 3"/>`;
-  svg += `<text x="${ML + plotW + 6}" y="${yCap + 4}" text-anchor="start" font-size="11" fill="${refLineColor}" font-family="'DM Mono',monospace">Plafond</text>`;
+  svg += `<line x1="${ML}" y1="${yCap}" x2="${ML + plotW}" y2="${yCap}" stroke="${referenceLineColor}" stroke-width="1" stroke-dasharray="4 3"/>`;
+  svg += `<text x="${ML + plotW + 6}" y="${yCap + 4}" text-anchor="start" font-size="11" fill="${referenceLineColor}" font-family="'DM Mono',monospace">Plafond</text>`;
 
   // Trajectory polyline.
   const points = trajectory.map(p => `${x(p.day)},${y(p.weight_g)}`).join(' ');

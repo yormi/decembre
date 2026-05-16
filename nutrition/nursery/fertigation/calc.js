@@ -7,7 +7,7 @@
 //     given  recipe  = { Ocean_15_1_1: gPerL, AcadiePoisson: gPerL, AcadieKelp: gPerL }
 //     and    trayVolumeL = L per tray per application (default 1.25)
 //     return { perTray_mg: { N, P, K, ... } }  weekly-delivered mg of each
-//            element per tray (sum across products, base[el] × dose × volume).
+//            element per tray (sum across products, base[element] × dose × volume).
 //
 //   nurseryRecipeCE(recipe, dilution = 1)
 //     return mS/cm at 20 °C — water_baseline + Σ ecFactor × gPerL × dilution.
@@ -35,9 +35,9 @@
 
   // Sum delivered mg of each element across all products in the recipe,
   // multiplied by tray volume × applicationsPerWeek (REQ-122). Each product
-  // contributes base[el] × g/L × L × 1000 mg per fertigation; multiply by
+  // contributes base[element] × g/L × L × 1000 mg per fertigation; multiply by
   // applicationsPerWeek for total weekly supply.
-  // REQ-136 — also returns `details[el] = { cert, cap }` per element. cap
+  // REQ-136 — also returns `details[element] = { cert, cap }` per element. cap
   // fires when the recipe is at the EC cap and pushing higher would exceed
   // it (currently rare at default doses); otherwise null.
   function nurseryRecipeSupply(recipe, trayVolumeL, applicationsPerWeek) {
@@ -58,13 +58,13 @@
       const gPerL = Number(recipe[name]) || 0;
       if (gPerL <= 0) continue;
       const massPerTray_g = gPerL * trayVolumeL * N;   // total product mass per tray per week
-      for (const el of Object.keys(p.base)) {
-        const frac = Number(p.base[el]) || 0;
+      for (const element of Object.keys(p.base)) {
+        const frac = Number(p.base[element]) || 0;
         if (frac <= 0) continue;
         const mg = massPerTray_g * frac * 1000;        // g → mg
-        perTray_mg[el] = (perTray_mg[el] || 0) + mg;
-        if (!elCertContrib[el]) elCertContrib[el] = [];
-        elCertContrib[el].push(Number(p.cert) || 3);
+        perTray_mg[element] = (perTray_mg[element] || 0) + mg;
+        if (!elCertContrib[element]) elCertContrib[element] = [];
+        elCertContrib[element].push(Number(p.cert) || 3);
       }
     }
     // REQ-136 (revised 2026-05-10 evening) — per-element details. cap is
@@ -94,13 +94,13 @@
       N:  '↑ poisson hydrolysé',
       P:  '↑ Acadie poisson',
     };
-    for (const el of allEls) {
-      const supplied = perTray_mg[el] || 0;
-      const certs = elCertContrib[el] || [3];
+    for (const element of allEls) {
+      const supplied = perTray_mg[element] || 0;
+      const certs = elCertContrib[element] || [3];
       const minCert = certs.reduce((a, b) => Math.min(a, b), 5);
       if (supplied > 0) {
         const headroom = (ceCap - ce) / Math.max(0.01, ce);
-        details[el] = {
+        details[element] = {
           cert: minCert,
           cap: {
             kind: 'damage',
@@ -111,13 +111,13 @@
           },
         };
       } else {
-        details[el] = {
+        details[element] = {
           cert: minCert,
           cap: {
             kind: 'other',
             constraint: 'Pas de source dans la recette',
             limit: '0 mg via fertigation',
-            lever: FERT_SOURCE_LEVER[el] || 'ajouter un produit porteur',
+            lever: FERT_SOURCE_LEVER[element] || 'ajouter un produit porteur',
             uncappedMg: 0,
           },
         };
@@ -128,9 +128,9 @@
     // chemistry. Amino-N from fish hydrolysate is already in plant-available
     // form (no mineralization step). Routed elements (mg > 0) get 1.0;
     // non-routed elements stay absent.
-    for (const el of allEls) {
-      const supplied = perTray_mg[el] || 0;
-      if (supplied > 0) efficiency[el] = 1.0;
+    for (const element of allEls) {
+      const supplied = perTray_mg[element] || 0;
+      if (supplied > 0) efficiency[element] = 1.0;
     }
     return { perTray_mg, details, efficiency };
   }
@@ -141,7 +141,7 @@
   //   - per-fertigation EC > ceCap (recipe is dose-bound, not frequency-bound)
   //   - even at N = 7 some sourced element falls short of demand
   // Returns 1 when already covered at single weekly application.
-  function minApplicationsPerWeek(recipe, demandPerTray, trayVolumeL, ceCap) {
+  function minimumApplicationsPerWeek(recipe, demandPerTray, trayVolumeL, ceCap) {
     if (!recipe || typeof recipe !== 'object') return null;
     if (!demandPerTray || typeof demandPerTray !== 'object') return null;
     if (typeof trayVolumeL !== 'number' || !isFinite(trayVolumeL) || trayVolumeL <= 0) {
@@ -153,23 +153,23 @@
       if (CE > ceCap) return null;
     }
     const sup1 = nurseryRecipeSupply(recipe, trayVolumeL, 1);
-    let minN = 1;
-    for (const el of Object.keys(demandPerTray)) {
-      const need = Number(demandPerTray[el]) || 0;
+    let minimumN = 1;
+    for (const element of Object.keys(demandPerTray)) {
+      const need = Number(demandPerTray[element]) || 0;
       if (need <= 0) continue;
-      const supEl = (sup1.perTray_mg || {})[el] || 0;
-      if (supEl <= 0) continue;                        // unsourced — REQ-124 territory
-      const required = Math.ceil(need / supEl);
-      if (required > minN) minN = required;
+      const suppliedForElement = (sup1.perTray_mg || {})[element] || 0;
+      if (suppliedForElement <= 0) continue;                        // unsourced — REQ-124 territory
+      const required = Math.ceil(need / suppliedForElement);
+      if (required > minimumN) minimumN = required;
     }
-    if (minN > 7) return null;
-    return minN;
+    if (minimumN > 7) return null;
+    return minimumN;
   }
 
   // Classify demand elements as sourced (recipe delivers any of this
   // element via a product in NURSERY_PRODUCTS) vs unsourced (no product
   // in the recipe carries it) (REQ-124). LITERAL interpretation — whether
-  // frequency can cover the demand is a separate check (minApplicationsPerWeek
+  // frequency can cover the demand is a separate check (minimumApplicationsPerWeek
   // returns null in the dose-bound case). The two failure modes are
   // operationally different:
   //   - sourced + dose-bound: increase per-fert dose (until EC binds)
@@ -184,10 +184,10 @@
     const els = (demandPerTray && typeof demandPerTray === 'object')
       ? Object.keys(demandPerTray)
       : ['N','P','K','Ca','Mg','Fe','Mn','Zn','B','Cu','Mo'];
-    for (const el of els) {
-      const supEl = (sup1.perTray_mg || {})[el] || 0;
-      if (supEl > 0) sourced.push(el);
-      else unsourced.push(el);
+    for (const element of els) {
+      const suppliedForElement = (sup1.perTray_mg || {})[element] || 0;
+      if (suppliedForElement > 0) sourced.push(element);
+      else unsourced.push(element);
     }
     return { sourced, unsourced };
   }
@@ -234,7 +234,7 @@
       nurseryRecipeSupply,
       nurseryRecipeCE,
       nurseryRecipeTankPh,
-      minApplicationsPerWeek,
+      minimumApplicationsPerWeek,
       nurseryElementsBySource,
     };
   }

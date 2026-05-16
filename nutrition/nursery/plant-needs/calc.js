@@ -18,7 +18,7 @@
 // per-week term is **inverse-linear in cycleDays** (REQ-091) — both
 // asserted by the verifier.
 
-function calcNurseryDemand(targetG, cycleDays, cellsPerTray) {
+function calculateNurseryDemand(targetG, cycleDays, cellsPerTray) {
   const days = Math.max(1, cycleDays);
   const cells = Math.max(0, cellsPerTray);
   const targetSafe = Math.max(0, targetG);

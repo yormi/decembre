@@ -7,7 +7,7 @@
 //     BIOMASS_DEMAND[stage]→ ongoing canopy / new structures (growth in place)
 // Kept here for traceability and as a sanity check. A future test could assert:
 //     TOMATO_FRUIT_EXPORT × yield + BIOMASS_DEMAND[T5] ≈ TOMATO_REMOVAL × yield
-// at production stages (within ~10%). See `calcNutrDemand` for the active math.
+// at production stages (within ~10%). See `calculateNutritionDemand` for the active math.
 // ────────────────────────────────────────────────────────────────────────────
 // Whole-plant tomato uptake per kg fresh fruit produced.
 // `g` field = grams (macros) / grams converted-from-mg (micros — 0.010 = 10 mg).

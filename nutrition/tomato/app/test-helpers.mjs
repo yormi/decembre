@@ -4,7 +4,7 @@
 // concatenates into dist/index.html. Most REQs in this subproject are
 // page-level (DOM rendering, listener wiring, modal behaviour) and depend
 // on globals defined throughout app/index.html (STORED_RECIPE, PRODUCT_PCT,
-// TOMATO_NUM_BEDS, calcNutrSupply, registerPourquoi, fmtVal, etc.) plus
+// TOMATO_NUMBER_BEDS, calculateNutritionSupply, registerPourquoi, fmtVal, etc.) plus
 // the per-subproject namespaces (window.PlantNeedsTomato,
 // window.FoliarRecipeTomato, window.CompostContribution, …).
 //
@@ -69,7 +69,7 @@ export function readLogicJs() {
 
 // Read app/index.html source for cross-file REQs (REQ-106 default-mode
 // declaration, REQ-113 listener wiring array, REQ-004 source-of-truth
-// references in calcNutrSupply).
+// references in calculateNutritionSupply).
 export function readAppIndexHtml() {
   return readFileSync(join(REPO_ROOT, 'app', 'index.html'), 'utf8');
 }

@@ -23,7 +23,7 @@ window.PlantNeedsTomato = {
 
   // Core demand function. REQ-081 applies transpFactor to Ca/Mg biomass
   // term only; phloem-mobile macros and active-transport micros decoupled.
-  calcNutrDemand,
+  calculateNutritionDemand,
 
   // Convenience: cert per (stage, el) on the merged transferability scale.
   // Stable fallback to 1 (default placeholder) if the table is missing

@@ -318,19 +318,19 @@ describe('REQ-107 — Toggle: First principles left + default; products-in-play 
 
 // ─── REQ-108 — Block 1 demand sourced from PlantNeedsTomato ────────────
 
-describe('REQ-108 — Block 1 demand sourced from PN.calcNutrDemand', () => {
-  test('REQ-108 — window.PlantNeedsTomato.calcNutrDemand exists at runtime', () => {
+describe('REQ-108 — Block 1 demand sourced from PN.calculateNutritionDemand', () => {
+  test('REQ-108 — window.PlantNeedsTomato.calculateNutritionDemand exists at runtime', () => {
     // Behavioral: the spec references the public API by name. If the
     // namespace shape changes (e.g. method renamed), the Bilan breaks.
     const { window } = loadTomatoApp();
     assert.ok(window.PlantNeedsTomato, 'window.PlantNeedsTomato namespace missing');
-    assert.equal(typeof window.PlantNeedsTomato.calcNutrDemand, 'function',
-      'PN.calcNutrDemand must be a function');
+    assert.equal(typeof window.PlantNeedsTomato.calculateNutritionDemand, 'function',
+      'PN.calculateNutritionDemand must be a function');
   });
 
-  test('REQ-108 — logic.js Block 1 calls PN.calcNutrDemand (no inline reimplementation)', () => {
+  test('REQ-108 — logic.js Block 1 calls PN.calculateNutritionDemand (no inline reimplementation)', () => {
     const body = readLogicJs();
-    assert.match(body, /PN\.calcNutrDemand|window\.PlantNeedsTomato\.calcNutrDemand/);
+    assert.match(body, /PN\.calculateNutritionDemand|window\.PlantNeedsTomato\.calculateNutritionDemand/);
   });
 
   test('REQ-108 — Block 1 render section has no bare BIOMASS_DEMAND[ access', () => {
@@ -347,17 +347,17 @@ describe('REQ-108 — Block 1 demand sourced from PN.calcNutrDemand', () => {
     assert.doesNotMatch(block1[0], /(?<!\.)\bTOMATO_FRUIT_EXPORT\s*\[/);
   });
 
-  test('REQ-108 — rendered Block 1 totals match PN.calcNutrDemand output (N at T5, target 1.5)', () => {
+  test('REQ-108 — rendered Block 1 totals match PN.calculateNutritionDemand output (N at T5, target 1.5)', () => {
     // Load-bearing behavioral assertion: pin that the value rendered in
     // Block 1 actually came from the API call. Set target=1.5, stage=T5,
-    // read N from the row, compare to PN.calcNutrDemand(1.5, 'T5', 1.0).N.total.
+    // read N from the row, compare to PN.calculateNutritionDemand(1.5, 'T5', 1.0).N.total.
     const { window } = loadTomatoApp();
     const target = window.document.getElementById('nutr-target');
     target.value = '1.5';
     target.dispatchEvent(new window.Event('input', { bubbles: true }));
     window.setNutrStage('T5');
     const PN = window.PlantNeedsTomato;
-    const expectedBreakdown = PN.calcNutrDemand(1.5, 'T5', 1.0);
+    const expectedBreakdown = PN.calculateNutritionDemand(1.5, 'T5', 1.0);
     const expectedNTotalMg = expectedBreakdown.N.total; // mg/m²/sem
     // Find the N row in #nutr-needs.
     const rows = window.document.querySelectorAll('#nutr-needs .pq-row');
@@ -380,7 +380,7 @@ describe('REQ-108 — Block 1 demand sourced from PN.calcNutrDemand', () => {
       `N total not numeric: "${nRow.children[3].textContent}"`);
     const diff = Math.abs(totalRenderedMg - expectedNTotalMg) / expectedNTotalMg;
     assert.ok(diff < 0.05,
-      `rendered N total ${totalRenderedMg} mg ≠ PN.calcNutrDemand ${expectedNTotalMg} mg (diff ${(diff*100).toFixed(1)}%)`);
+      `rendered N total ${totalRenderedMg} mg ≠ PN.calculateNutritionDemand ${expectedNTotalMg} mg (diff ${(diff*100).toFixed(1)}%)`);
   });
 });
 
@@ -505,7 +505,7 @@ describe('REQ-111 — Block 1 row layout: 4 columns (Él. / Fruit / Biomasse / T
 
   test('REQ-111 — N row at T5 / target=1.5 splits into matching fruit + biomass terms', () => {
     // Load-bearing behavioral assertion: the spec says values come from
-    // calcNutrDemand returning the {fruit, biomass, total} shape. Pin
+    // calculateNutritionDemand returning the {fruit, biomass, total} shape. Pin
     // that the Fruit and Biomasse cells correspond to the API's split,
     // not some other computation. Compare in mg (fmtVal shifts to "g"
     // above 1000 mg).
@@ -515,7 +515,7 @@ describe('REQ-111 — Block 1 row layout: 4 columns (Él. / Fruit / Biomasse / T
     target.dispatchEvent(new window.Event('input', { bubbles: true }));
     window.setNutrStage('T5');
     const PN = window.PlantNeedsTomato;
-    const breakdown = PN.calcNutrDemand(1.5, 'T5', 1.0).N;
+    const breakdown = PN.calculateNutritionDemand(1.5, 'T5', 1.0).N;
     const rows = window.document.querySelectorAll('#nutr-needs .pq-row');
     let nRow = null;
     for (const row of rows) {
@@ -688,10 +688,10 @@ describe('REQ-114 — Block 5 reactive to sprayCount + surfactant changes', () =
 // function must reference: computeStageRecipe(stage), STORED_RECIPE.tomato
 // .foliaire.A, STORED_RECIPE.tomato.sidedress[stage], BIOMASS_DEMAND[stage],
 // TOMATO_FRUIT_EXPORT[el]. Source-grep pairs the consumer (app/index.html)
-// + runtime check that calcNutrSupply produces non-trivial output.
+// + runtime check that calculateNutritionSupply produces non-trivial output.
 
 describe('REQ-004 — Bilan reads from source-of-truth recipes', () => {
-  test('REQ-004 — calcNutrSupply calls computeStageRecipe(stage)', () => {
+  test('REQ-004 — calculateNutritionSupply calls computeStageRecipe(stage)', () => {
     const html = readAppIndexHtml();
     assert.match(html, /computeStageRecipe\(stage\)/);
   });
@@ -711,16 +711,16 @@ describe('REQ-004 — Bilan reads from source-of-truth recipes', () => {
     assert.match(html, /BIOMASS_DEMAND\[stage\]/);
   });
 
-  test('REQ-004 — Bilan reads TOMATO_FRUIT_EXPORT[el] (fruit export per element)', () => {
+  test('REQ-004 — Bilan reads TOMATO_FRUIT_EXPORT[element] (fruit export per element)', () => {
     const html = readAppIndexHtml();
-    assert.match(html, /TOMATO_FRUIT_EXPORT\[el\]/);
+    assert.match(html, /TOMATO_FRUIT_EXPORT\[element\]/);
   });
 
-  test('REQ-004 — runtime: calcNutrSupply returns supply.fert with K and Mg numbers', () => {
+  test('REQ-004 — runtime: calculateNutritionSupply returns supply.fert with K and Mg numbers', () => {
     const { window } = loadTomatoApp();
-    assert.equal(typeof window.calcNutrSupply, 'function',
-      'calcNutrSupply must be exposed on window');
-    const supply = window.calcNutrSupply('T5', true, 1.0, 1.5, 'stored');
+    assert.equal(typeof window.calculateNutritionSupply, 'function',
+      'calculateNutritionSupply must be exposed on window');
+    const supply = window.calculateNutritionSupply('T5', true, 1.0, 1.5, 'stored');
     assert.ok(supply && supply.fert, 'supply.fert should exist');
     assert.equal(typeof supply.fert.K, 'number');
     assert.equal(typeof supply.fert.Mg, 'number');
@@ -728,15 +728,15 @@ describe('REQ-004 — Bilan reads from source-of-truth recipes', () => {
   });
 
   test('REQ-004 — stored fertigation K matches STORED_RECIPE.tomato.fertigation[T5].kSulfate × analysis', () => {
-    // Load-bearing: pin that the *value* returned by calcNutrSupply is
+    // Load-bearing: pin that the *value* returned by calculateNutritionSupply is
     // actually derived from STORED_RECIPE, not a hardcoded constant. We
     // don't write to STORED_RECIPE; we just read it (via window.eval since
     // the const is module-scoped, not hoisted to window) and assert the
     // supply value matches the public formula.
     const { window } = loadTomatoApp();
-    const supply = window.calcNutrSupply('T5', true, 1.0, 1.5, 'stored');
+    const supply = window.calculateNutritionSupply('T5', true, 1.0, 1.5, 'stored');
     const storedKSulfate = window.eval('STORED_RECIPE.tomato.fertigation.T5.kSulfate');
-    const area = window.eval('TOMATO_NUM_BEDS * TOMATO_BED_AREA');
+    const area = window.eval('TOMATO_NUMBER_BEDS * TOMATO_BED_AREA');
     const productPct = window.eval('PRODUCT_PCT.K2SO4_K');
     const mK = typeof window.getMultK === 'function' ? window.getMultK() : 1;
     const expectedK = (storedKSulfate * mK * productPct) / area * 1000;

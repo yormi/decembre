@@ -13,7 +13,7 @@
 // → asymptotes around d28 to d35. Matches the upper bound of "best case" for
 // Décembre's observed 16g (heat-stressed, sub-optimal). Cert 3, will need refit
 // when more cohort data lands.
-const RGR_MAX_LETTUCE_NURSERY = 0.40;
+const RGR_MAXIMUM_LETTUCE_NURSERY = 0.40;
 
 // ─── Initial seedling weight at germination (day 0) ───
 // Salanova germinated radicle + cotyledon, peat substrate; cert 4.
@@ -60,7 +60,7 @@ const CANOPY_CAP_BY_PLATEAU = { 50: 25, 32: 50, 24: 80, 18: 120 };
 
 // ─── Trajectory window (REQ-118) ───
 // 50 entries from day 0 to day 49 inclusive.
-const TRAJECTORY_MAX_DAYS = 49;
+const TRAJECTORY_MAXIMUM_DAYS = 49;
 
 // ─── "At potential" threshold (REQ-117 — daysToPotential output) ───
 // W ≥ 0.95 × canopyCapG triggers the daysToPotential marker.

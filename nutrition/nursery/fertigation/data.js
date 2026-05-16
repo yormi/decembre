@@ -52,7 +52,7 @@
       solubilityCap_g_per_L: 1000,               // miscible per label; cert 4
       // Acidifying via amino-N protonation; rough first-pass.
       phContribution: -0.15,                     // pH shift per g/L in clean 20°C water; cert 2
-      maxStableHours: 24,                        // microbial degradation; cert 3
+      maximumStableHours: 24,                        // microbial degradation; cert 3
       cert: 3,
     },
 
@@ -74,7 +74,7 @@
       ecFactor: 0.15,                            // mS/cm per g/L; cert 3
       solubilityCap_g_per_L: 1000,               // miscible; cert 4
       phContribution: -0.10,                     // mildly acidic; cert 2
-      maxStableHours: 24,                        // microbial; cert 3
+      maximumStableHours: 24,                        // microbial; cert 3
       cert: 3,
     },
 
@@ -121,7 +121,7 @@
       ecFactor: 0.10,                            // mS/cm per g/L; cert 2 (calibrated from production-solution measurement window)
       solubilityCap_g_per_L: 1000,               // miscible; cert 4
       phContribution: 0.02,                     // alkaline (datasheet pH 7.4-8.2) — small positive shift; cert 2
-      maxStableHours: 24,                        // cert 3
+      maximumStableHours: 24,                        // cert 3
       cert: 4,                                   // datasheet-anchored
     },
 
