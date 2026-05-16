@@ -23,8 +23,13 @@ window.SubstrateContributionNursery = {
   NURSERY_FEATHER_MEAL_DEFAULT_G_PER_TRAY,
   // Operational ceiling — germination protection.
   LIMITS,
+  // Per-element efficiency (REQ-157) — fraction of applied substrate-product
+  // mass plant-available across the 5-week cycle. See data.js + derivation.md
+  // for the definitional choice (cycle-mean × mineralization for N;
+  // cycle-mean for OM2-only elements).
+  efficiency:                              NURSERY_SUBSTRATE_EFFICIENCY,
   // Per-week release function: returns { N, P, K, Ca, Mg } in mg/tray/wk.
   theoreticalSubstrateReleasePerWeek,
-  // Cycle-average release: per-element mg/tray/wk averaged across the cycle.
+  // Cycle-average release: returns { perTray_mg, details, efficiency }.
   cycleAverageReleasePerTray,
 };

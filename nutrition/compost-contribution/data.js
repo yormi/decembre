@@ -58,3 +58,29 @@ const COMPOST_RELEASE_PER_WEEK = {
   Ca: 4.82,
   Mg: 0.50,
 };
+
+// Per-element efficiency for the Efficacité column (REQ-157) — share of
+// applied compost mass that becomes plant-available within year 1 under
+// current Décembre conditions (pH 7.3-7.5, Ca-saturated bed). Numerically
+// equals COMPOST_MINERALIZATION_YEAR1 because the pH-lockout discount is
+// already baked into the per-element mineralization rate (notably P at
+// 0.05 reflects the current-pH lockout, not a neutral-pH textbook 0.20).
+// Re-exposed as a separate constant so REQ-080's namespace contract names
+// it explicitly and renderers (REQ-156) read a single canonical handle.
+//
+// Per-element cert reflects the effective certainty on the plant-available
+// fraction, propagating from the weaker of {mineralization-rate cert,
+// label-input cert}:
+//   N  cert 2 — MINERALIZATION_YEAR1.N (Stanford & Smith textbook)
+//   P  cert 2 — MINERALIZATION_YEAR1.P (pH-locked at current 7.3-7.5)
+//   K  cert 2 — MINERALIZATION_YEAR1.K (highly soluble in compost)
+//   Ca cert 3 — MINERALIZATION_YEAR1.Ca (consistent with Berger post-application)
+//   Mg cert 1 — LABEL_PCT.Mg is assumed (label gap); the mineralization
+//                rate cert (2) is dominated by the upstream LABEL gap
+const COMPOST_EFFICIENCY = {
+  N:  0.30,
+  P:  0.05,
+  K:  0.65,
+  Ca: 0.60,
+  Mg: 0.30,
+};

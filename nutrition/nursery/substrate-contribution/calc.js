@@ -43,13 +43,17 @@ function theoreticalSubstrateReleasePerWeek(week, featherMealPerTrayG) {
 }
 
 // Convenience: average release across the 5 weeks of the cycle (mg/tray/wk).
-// REQ-136 — returns { perTray_mg, details } where details[el] = { cert, cap }.
+// REQ-136 — returns { perTray_mg, details, efficiency } where
+//   details[el] = { cert, cap } (REQ-136)
+//   efficiency[el] = NURSERY_SUBSTRATE_EFFICIENCY (REQ-157 sibling map;
+//     same object returned to all callers — defined in data.js)
 // Cap fires for N when featherMealPerTrayG hits LIMITS.maxFeatherMealPerTrayG
 // (germination protection — REQ-094).
 //
 // Backwards-compat note: this function previously returned a flat
-// {N, P, K, Ca, Mg} map. After REQ-136 it returns the wrapped shape;
-// callers must read `result.perTray_mg[el]` instead of `result[el]`.
+// {N, P, K, Ca, Mg} map. After REQ-136 it returned `{perTray_mg, details}`;
+// after REQ-157 (2026-05-15) it returns `{perTray_mg, details, efficiency}`.
+// Callers reading `result.perTray_mg[el]` are unaffected.
 function cycleAverageReleasePerTray(featherMealPerTrayG) {
   const W = OM2_RELEASE_CURVE_BY_WEEK.length;
   const sum = { N: 0, P: 0, K: 0, Ca: 0, Mg: 0 };
@@ -85,5 +89,5 @@ function cycleAverageReleasePerTray(featherMealPerTrayG) {
     Ca: { cert: 2, cap: { kind: 'other', constraint: 'Chaux OM2 figée',   limit: 'sans levier substrat',     lever: 'Ca soluble Ecocert (rare)',       uncappedMg: 0 } },
     Mg: { cert: 2, cap: { kind: 'other', constraint: 'Chaux OM2 figée',   limit: 'sans levier substrat',     lever: 'ajouter MgSO₄·7H₂O fertigation', uncappedMg: 0 } },
   };
-  return { perTray_mg, details };
+  return { perTray_mg, details, efficiency: NURSERY_SUBSTRATE_EFFICIENCY };
 }

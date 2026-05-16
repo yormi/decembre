@@ -85,3 +85,35 @@ const NURSERY_FEATHER_MEAL_DEFAULT_G_PER_TRAY = 9;
 const LIMITS = {
   maxFeatherMealPerTrayG: 9,  // cert 4 — operational ceiling, not a soft target
 };
+
+// Per-element efficiency for the Efficacité column (REQ-157) — share of
+// applied substrate-product mass that becomes plant-available across the
+// 5-week nursery cycle. Time-distributed: the release-curve sum (≈ 1.0
+// per INV-2 mass balance) means OM2-borne elements fully release across
+// the cycle; feather-meal N additionally discounts by mineralization.
+//
+// Definitional choice (see derivation.md):
+//   N  = FEATHER_MEAL_MINERALIZATION_FRAC × Σ(OM2_RELEASE_CURVE_BY_WEEK)
+//      ≈ 0.75 × 1.0 = 0.75
+//      (simplification: ignores OM2-N contribution which is small at
+//       default rates; the headline number reads as the feather-meal
+//       efficiency since feather meal dominates the N flux per tray)
+//   P/K/Ca/Mg = Σ(OM2_RELEASE_CURVE_BY_WEEK) ≈ 1.0  (OM2-only elements;
+//      the starter charge releases fully across the 5-week cycle into a
+//      small, root-contact-rich peat plug, so plant-available ≈ released)
+//
+// Per-element cert reflects the dominant uncertainty:
+//   N  cert 3 — feather-meal mineralization (Sonneveld & Voogt textbook,
+//                cool-greenhouse organic-N profile); the OM2-N omission
+//                drops cert from 4 to 3
+//   P  cert 2 — OM2 datasheet pending (placeholder values)
+//   K  cert 2 — OM2 datasheet pending
+//   Ca cert 3 — limestone-buffered peat adequacy (Berger family typical)
+//   Mg cert 3 — limestone-buffered peat adequacy
+const NURSERY_SUBSTRATE_EFFICIENCY = {
+  N:  0.75,
+  P:  1.0,
+  K:  1.0,
+  Ca: 1.0,
+  Mg: 1.0,
+};

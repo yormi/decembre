@@ -22,6 +22,10 @@ window.CompostContribution = {
   SEASONAL_FACTOR:         COMPOST_SEASONAL_FACTOR,
   // Per-element weekly release in g/m²/wk — what consumers read.
   releasePerWeek:          COMPOST_RELEASE_PER_WEEK,
+  // Per-element efficiency (REQ-157) — fraction of applied compost mass
+  // plant-available within year 1, accounting for pH lockout (P) and
+  // label-gap uncertainty (Mg). See data.js for per-element cert.
+  efficiency:              COMPOST_EFFICIENCY,
   // Mass-balance check helper. Returns the formula value (which the
   // stored release is allowed to drift from within ±50% per REQ-079;
   // Mg is the only current divergence).
