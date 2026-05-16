@@ -441,12 +441,16 @@ Every contribution-channel function (compost release, substrate release,
 sidedress supply, fertigation supply, foliar supply, front-load supply,
 nursery substrate, nursery fertigation) MUST expose a per-element `efficiency`
 map alongside its existing flat mg map (`perTray_mg` / `perM2_mg`) and
-`details` payload (REQ-136). For each element the channel routes,
-`efficiency[element]` is a number in `[0, 1]` — the share of applied product
-mass that the channel delivers as plant-available for that element under
-current soil / pH / coverage conditions. Elements the channel does not route
-are absent from the map; the gap-grid renderer (REQ-156) treats absence as
-`—`.
+`details` payload (REQ-136). The map declares the channel's CAPABILITY: for
+every element the channel is structurally able to deliver under current
+soil / pH / coverage conditions, `efficiency[element]` is a number in
+`[0, 1]` — the share of applied product mass that would be plant-available
+for that element IF the channel were dosed for it. Elements outside the
+channel's capability are absent from the map; the gap-grid renderer
+(REQ-156) treats absence as `—`. Whether the channel actually doses the
+element this call is reflected in the `Apport ici` column, not here.
+Amended 2026-05-16 per Guillaume's direct ruling: capability view, not
+per-call realized view.
 
 ---
 
@@ -530,10 +534,14 @@ full 3-row breakdown. Tooltip and modal share the same three strings.
 ## REQ-156 — Efficacité column semantics
 
 In every contribution-block gap-grid (REQ-137), the Efficacité cell of each
-element row displays, as an integer percent, the share of the applied product
-mass that the channel delivers as plant-available for that element under
-current conditions. The cell renders `—` when the channel routes no product
-carrying that element.
+element row displays, as an integer percent, the channel's per-element
+plant-available efficiency under current soil / pH / coverage conditions —
+independent of whether the channel actually doses that element this call.
+The cell renders `—` only when the element falls outside the channel's
+capability map (the channel is structurally unable to deliver it). Amended
+2026-05-16 per Guillaume's direct ruling to show capability efficiency
+always, so operators see what each channel could deliver if dosed; the
+`Apport ici` column carries the per-call realized mg.
 
 ---
 

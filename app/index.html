@@ -4837,15 +4837,10 @@ function calculateNutritionSupply(stage, phLocked, transpFactor, targetYield, re
   if (fertB > 0) fert.B = fertB;
   fert.efficiency = window.FertigationRecipeTomato.efficiency;
 
-  // REQ-157 — per-element efficiency for foliar channel. Foliar bypasses
-  // soil pH; uses foliarPhResponse(sprayPh) × coverage (FOLIAR_COVERAGE_DEFAULT
-  // = 0.30, no-yucca regime per 2026-05-05 decision).
-  const foliarSprayPh = 5.0;
-  const foliarBaseEfficiency = foliarPhResponse(foliarSprayPh) * 0.30;
-  foliar.efficiency = {};
-  ['Mn','Zn','B','Cu','Mo','Fe'].forEach(element => {
-    if ((foliar[element] || 0) > 0) foliar.efficiency[element] = foliarBaseEfficiency;
-  });
+  // REQ-157 (amended 2026-05-16) — capability map for the foliar channel
+  // sourced from window.FoliarRecipeTomato. Declares per-element coverage
+  // regardless of whether the channel doses the element this call.
+  foliar.efficiency = window.FoliarRecipeTomato.efficiency;
 
   // Total effective supply per element.
   // NOTE: sidedress is NOT summed here — past sidedress mineralization is

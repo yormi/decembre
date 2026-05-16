@@ -4076,31 +4076,30 @@ header('REQ-157 — Contribution-channel efficiency map exposed on runtime retur
 {
   const offenders = [];
 
-  // Validate that an `efficiency` map is well-formed against a routed-mg
-  // map. Returns an array of offender strings (empty when OK).
-  function validateEfficiencyMap(label, routedMg, efficiency) {
+  // Validate that an `efficiency` map is well-formed. Per REQ-157 (amended
+  // 2026-05-16), the map declares CHANNEL CAPABILITY independently of
+  // whether the channel doses the element this call — so every key whose
+  // value is a finite number in [0, 1] is acceptable regardless of the
+  // routed-mg map. Routed-mg is no longer used for filtering; it stays as
+  // a parameter for backward call-site signature compatibility but the
+  // validator only checks value range + finiteness on the keys present.
+  function validateEfficiencyMap(label, _routedMg, efficiency) {
     const out = [];
     if (!efficiency || typeof efficiency !== 'object') {
       out.push(`${label}: efficiency map missing or not an object (got ${typeof efficiency})`);
       return out;
     }
-    // Routed elements: those with a non-zero mg in the channel's flat map.
-    const routedElements = Object.keys(routedMg || {}).filter(element => Number(routedMg[element]) > 0);
-    for (const element of routedElements) {
+    const ALL_ELEMENTS = ['N','P','K','Ca','Mg','Fe','Mn','Zn','B','Cu','Mo'];
+    for (const element of Object.keys(efficiency)) {
+      if (!ALL_ELEMENTS.includes(element)) {
+        out.push(`${label}: efficiency.${element} — unknown element (not in canonical 11)`);
+        continue;
+      }
       const value = efficiency[element];
       if (typeof value !== 'number' || !isFinite(value)) {
-        out.push(`${label}: efficiency.${element} = ${value} (expected number for routed element)`);
+        out.push(`${label}: efficiency.${element} = ${value} (expected finite number)`);
       } else if (value < 0 || value > 1) {
         out.push(`${label}: efficiency.${element} = ${value} (expected [0, 1])`);
-      }
-    }
-    // Non-routed elements: absent from the efficiency map. We check the
-    // canonical 11-element set; mg=0 elements MUST NOT appear.
-    const ALL_ELEMENTS = ['N','P','K','Ca','Mg','Fe','Mn','Zn','B','Cu','Mo'];
-    for (const element of ALL_ELEMENTS) {
-      const mg = Number((routedMg || {})[element]) || 0;
-      if (mg <= 0 && Object.prototype.hasOwnProperty.call(efficiency, element)) {
-        out.push(`${label}: efficiency.${element} present (=${efficiency[element]}) for non-routed element (mg=0)`);
       }
     }
     return out;

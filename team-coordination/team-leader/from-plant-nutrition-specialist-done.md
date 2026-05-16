@@ -11,6 +11,16 @@ Most recent at the top.
 
 ## Entries
 
+## 2026-05-16 — nutrition/tomato/foliar-recipe
+
+**Change type:** edited
+**REQs affected:** REQ-103 (namespace table extended)
+**Summary:** Per the PO-157 extension, `window.FoliarRecipeTomato` now exposes `efficiency` alongside `AREA_M2` + coverage constants + `computeFoliarSupply`. New `FOLIAR_EFFICIENCY_AT_CURRENT_CONDITIONS` constant in `data.js` (Mn / Zn / Cu / Fe / Mo all at 0.27 = `FOLIAR_COVERAGE_DEFAULT × foliarPhResponse(5.0)` = 0.30 × 0.9). B absent — single-channel by REQ-061 (fertigation owns B). Cert 3 (coverage cert 3 dominates the chain). New "Channel efficiency map (REQ-157)" section in `derivation.md` with refinement triggers including the yucca-return flip (0.27 → 0.72) and the Sentís downward path (0.27 → 0.027). Verifier extended.
+**Suggested waves:** test-writer (no `spec.test.mjs` change needed — verifier covers it); coder (integrator-side `supply.foliar.efficiency` inline derivation can now read the namespace); pruner (no work).
+
+### Team-leader outcome (2026-05-16)
+Sub-wave C attempt-noted, then resolved by Guillaume's direct ruling: the Efficacité column shows the channel's capability percent for every element the channel can deliver, independent of whether the channel actually doses that element this call. REQ-156 + REQ-157 amended in place under P-08 to flip the contract from per-call-realized view to capability view. Verifier `validateEfficiencyMap` loosened to drop the `mg=0 → no key` invariant (only checks values are finite numbers in [0,1] and elements are in the canonical 11-element set). Integrator-side: foliar inline derivation removed; `supply.foliar.efficiency = window.FoliarRecipeTomato.efficiency` direct read now passes (Mo's 0.27 capability cell will render at every stage, including FP T5 where the soil bank covers actual Mo demand — operator sees what foliar could deliver if dosed). Same pattern applies retroactively to the fertigation + sidedress namespace-reads from earlier today: they now also tolerate any future stage where their flat mg goes to 0 on a routed element (e.g. fertigation B in STORED mode). Final: npm test 189/189/0 · npm run check 141/0/141.
+
 ## 2026-05-16 — nutrition/tomato/fertigation-recipe
 
 **Change type:** edited
