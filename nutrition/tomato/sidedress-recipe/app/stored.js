@@ -1,0 +1,16 @@
+// Hand-stored sidedress recipe (granular N-source — Actisol 5-3-2 + farine
+// de plumes 13-0-0). Per-planche g/wk; total across 7 planches = stored × 7.
+// Side-dress effective N at T5 ≈ 2.88 g N/m²/wk (Actisol 5%×60% efficiency
+// + Farine 13%×75% efficiency) vs Tier B demand 4.05 g N/m²/wk at peak
+// 1.5 kg/m²/wk yield — soil organic-matter mineralization buffers the
+// remainder.
+//
+// EDITS REQUIRE /retire-recipe SKILL FIRST. Path `STORED_RECIPE.tomato.sidedress`
+// preserved verbatim; the skill greps for this identifier.
+window.STORED_RECIPE.tomato.sidedress = {
+  T1: { actisol_g: 57,  farine_g:  84  },  // sem 51-2 (4 sem)
+  T2: { actisol_g: 180, farine_g:  267 },  // sem 3-6 (4 sem)
+  T3: { actisol_g: 467, farine_g:  695 },  // sem 7-9 (3 sem)
+  T4: { actisol_g: 755, farine_g: 1125 },  // sem 10-18 (9 sem)
+  T5: { actisol_g: 900, farine_g: 1341 },  // sem 19+ (runs to crop-out, typically ~8-10 sem) — pleine production
+};
