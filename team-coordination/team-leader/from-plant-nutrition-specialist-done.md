@@ -11,6 +11,26 @@ Most recent at the top.
 
 ## Entries
 
+## 2026-05-16 — nutrition/tomato/fertigation-recipe (Mo move cascade — code green, STORED awaits /retire-recipe)
+
+**Change type:** edited
+**REQs affected:** REQ-061 amended (Mo carve-out); REQ-099 contract gains Mo via the channel-side delivery efficiency map
+**Summary:** Per Guillaume's "ship it" on the Mo move (2026-05-16): cation-micro cascade rule (REQ-061) carved out for Mo on anion-chemistry grounds — molybdate is fully plant-available at our soil pH 7.4, so the foliar-bypass argument that keeps Mn / Zn / Cu / Fe on foliar doesn't apply. Fertigation channel's delivery efficiency map gains `Mo: 1.00` (from `PH_RESPONSE['molybdate'](7.4)`). Derivation note documents the carve-out + the team's 0.5 g/week sodium molybdate target (≈ 0.5 mg Mo/m²/sem ≈ 7× peak demand, within Mo's wide tolerance band). **Implementation cascade still owed:** (a) `computeFertigationSupply` should read `naMolybdate_g` from the recipe and route Mo via `PRODUCT_PCT.NaMolybdate_Mo` (currently returns hardcoded `Mo: 0`); (b) `computeStageRecipe` may gain a Mo branch if first-principles should size the Mo dose by stage rather than hold it flat at 0.5 g; (c) `FIRST_PRINCIPLES_T5_FERTIGATION` shape grows a `NaMolybdate` entry once the calc is wired; (d) `STORED_RECIPE.tomato.fertigation` per-stage entries need the new `naMolybdate` slot — **gated on Guillaume invoking `/retire-recipe`** because STORED is an audit-trail channel.
+**Suggested waves:** coder (items a-d above; `/retire-recipe` invocation precedes the STORED edits per project convention); test-writer (extend REQ-098 + REQ-151 assertions to cover Mo where appropriate); pruner (no work this entry).
+
+### Team-leader outcome (2026-05-16)
+Coder landed all three model-side cascade items. `computeFertigationSupply` now routes Mo (reads `naMolybdate_g` from canonical recipe + `stored.naMolybdate` in default-reshape branch, returns `Mo = naMolybdate_g × PRODUCT_PCT.NaMoO4_Mo × 1000 / area` instead of hardcoded `0`). `computeStageRecipe` gains a Mo branch — flat `naMolybdate = 0.5 g/wk` across T1-T5 per specialist's "smallest reliable barrel weight ≈ 7× peak demand within Mo's wide tolerance band" call. Return shape grew to `{ kSulfate, mgSulfate, solubore, naMolybdate }`. `FIRST_PRINCIPLES_T5_FERTIGATION` gains `NaMolybdate: 0.5` slot; `wireFpFertigation` IIFE propagates it into `FP_RECIPE_T5.fertigation` at boot. Item (d) STORED edits remain gated on `/retire-recipe`: STORED fert per-stage `naMolybdate` slot is absent today, so the drift gauge will read fertigation Mo `0g stored vs 0.5g target` until Guillaume invokes `/retire-recipe`. Final: npm test 189/189/0 · npm run check 153/0.
+
+## 2026-05-16 — nutrition/tomato/foliar-recipe (Mo move cascade — code green, STORED awaits /retire-recipe)
+
+**Change type:** edited
+**REQs affected:** REQ-103 contract drops Mo from the channel-side delivery efficiency map
+**Summary:** Per Guillaume's "ship it" on the Mo move (2026-05-16): foliar's delivery efficiency map retires Mo (was 0.27 alongside Mn / Zn / Cu / Fe; now only the four cation micros remain). REQ-061 Mo carve-out moved Mo to the fertigation channel; foliar no longer routes Mo. Derivation note + cascade-rule rationale updated. **Implementation cascade still owed:** (a) `computeFoliarSupply` should set `Mo: 0` in its return regardless of recipe contents (or the verifier needs to allow the recipe's NaMolybdate to round to 0 mg delivered if the team's stored entry hasn't been retired yet); (b) `computeFoliarRecipeForGap` should drop Mo from the iterated element set so the gap calc no longer tries to size a NaMolybdate dose; (c) `STORED_RECIPE.tomato.foliaire` needs the 0.5 g NaMolybdate retired from all stages — **gated on Guillaume invoking `/retire-recipe`**.
+**Suggested waves:** coder (items a-c above; `/retire-recipe` invocation precedes the STORED edits per project convention); test-writer (drop Mo from foliar REQ-115 / REQ-116 fixtures); pruner (sweep any remaining "six oligo elements" references that should now say "four cation-micro oligos").
+
+### Team-leader outcome (2026-05-16)
+Coder landed both production-code cascade items. `computeFoliarSupply` now hard-codes `Mo: 0` in its return regardless of recipe contents (protecting against the STORED foliaire entry that still has NaMolybdate until `/retire-recipe`). `computeFoliarRecipeForGap` PRODUCTS list dropped from `Mn/Zn/Cu/Fe/Mo/B` to `Mn/Zn/Cu/Fe/B` (five elements); `NaMoO4_g: 0` stays in return shape so `FP_RECIPE_T5.foliar.NaMolybdate` consumers keep reading numerically. Cascading test edits in `spec.test.mjs` REQ-115 fixture: "huge gap" PAIRS minus Mo; "surfactant=true reduces ideal_g" midGap reshaped to `{ Mn:1, Zn:1, Cu:0.5, Fe:1, B:1 }`. Item (c) STORED edits remain gated on `/retire-recipe`: STORED foliaire still carries NaMolybdate per spray, so drift gauge will read foliar Mo `<stored>g vs 0g target` until Guillaume invokes `/retire-recipe`. Final: npm test 189/189/0 · npm run check 153/0.
+
 ## 2026-05-16 — nutrition/tomato/foliar-recipe
 
 **Change type:** edited

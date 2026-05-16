@@ -3627,7 +3627,7 @@ header('REQ-130 — Block 1 (Besoins): 3-col table (Él / Par plant / Cert)');
 // REQ-127/128 blocks run BEFORE REQ-137 — so we duplicate the constant
 // inline here to keep the block self-contained. (The two declarations
 // must stay in sync; both reflect REQ-137 amended 2026-05-15.)
-const REQ127_128_HEADER_ORDER = ['Él.', 'Manque entrant', 'Efficacité', 'Apport ici', 'Manque sortant', ''];
+const REQ127_128_HEADER_ORDER = ['Él.', 'Manque entrant (mg)', 'Efficacité', 'Apport ici (mg)', 'Manque sortant (mg)', ''];
 function assertSixColGapGrid(blockElement) {
   const headerStrip = findGapGridHeaderStrip(blockElement);
   if (!headerStrip) return { ok: false, why: 'gap-grid header strip not found' };
@@ -3885,7 +3885,7 @@ function findGapGridDataRows(blockElement) {
 // Canonical 6-col header order per REQ-137 (amended 2026-05-15) +
 // REQ-156. The Efficacité column lives between Manque entrant and Apport
 // ici. The trailing slot is the emoji column (no header text).
-const REQ137_HEADER_ORDER = ['Él.', 'Manque entrant', 'Efficacité', 'Apport ici', 'Manque sortant', ''];
+const REQ137_HEADER_ORDER = ['Él.', 'Manque entrant (mg)', 'Efficacité', 'Apport ici (mg)', 'Manque sortant (mg)', ''];
 
 header('REQ-137 — Tomato Bilan blocks: 6-col gap-grid + cell-keying + gap-grid is recipe-table\'s next sibling');
 {
@@ -4279,9 +4279,12 @@ header('REQ-157 — Contribution-channel efficiency map exposed on runtime retur
     if (!FR || !FR.efficiency) {
       offendersFertigation.push('window.FertigationRecipeTomato.efficiency not exposed');
     } else {
-      // Channel routes K / Mg / B per STORED + REQ-061. Synthetic routedMg
-      // marks those three as non-zero so validateEfficiencyMap accepts them.
-      const routedMg = { K: 1, Mg: 1, B: 1 };
+      // Channel routes K / Mg / B / Mo per STORED + REQ-061 (Mo carve-out
+      // 2026-05-16: anionic molybdate routes via fertigation rather than
+      // foliar, since pH 7.4 favours molybdate availability). Synthetic
+      // routedMg marks the four elements as non-zero so validateEfficiencyMap
+      // accepts them.
+      const routedMg = { K: 1, Mg: 1, B: 1, Mo: 1 };
       offendersFertigation.push(...validateEfficiencyMap(
         'fertigation-recipe namespace (window.FertigationRecipeTomato.efficiency)',
         routedMg,
@@ -4295,15 +4298,16 @@ header('REQ-157 — Contribution-channel efficiency map exposed on runtime retur
     }
   }
 
-  // window.FoliarRecipeTomato.efficiency — Mn/Zn/Cu/Fe/Mo at current
-  // no-yucca regime; B absent (single-channel via fertigation, REQ-061).
+  // window.FoliarRecipeTomato.efficiency — Mn/Zn/Cu/Fe at current
+  // no-yucca regime; B absent (single-channel via fertigation, REQ-061);
+  // Mo absent (REQ-061 carve-out 2026-05-16, moved to fertigation).
   {
     const FoR = window.FoliarRecipeTomato;
     const offendersFoliar = [];
     if (!FoR || !FoR.efficiency) {
       offendersFoliar.push('window.FoliarRecipeTomato.efficiency not exposed');
     } else {
-      const routedMg = { Mn: 1, Zn: 1, Cu: 1, Fe: 1, Mo: 1 };
+      const routedMg = { Mn: 1, Zn: 1, Cu: 1, Fe: 1 };
       offendersFoliar.push(...validateEfficiencyMap(
         'foliar-recipe namespace (window.FoliarRecipeTomato.efficiency)',
         routedMg,
@@ -5096,6 +5100,497 @@ header('REQ-158 — Function/variable/property names in JS source must be full w
     }
     process.stdout.write('\n');
   }
+}
+
+// ─── REQ-159 / REQ-160 / REQ-161 / REQ-162 / REQ-163 — Lean nutrition tables
+//
+// Specs: nutrition/spec.md → REQ-159 (elemental-mass columns in mg),
+// REQ-160 (unit suffix in header not in cells), REQ-161 (bare 0, no
+// `(couvert)`), REQ-162 (Mois d'épuisement every row with reservoir data).
+// nutrition/tomato/app/spec.md → REQ-163 (foliar Efficacité reacts to
+// surfactant lever).
+//
+// REQ-159 / REQ-160 / REQ-161 are designed-to-fail at first run — the
+// current renderer (renderGapGrid in app/index.html) calls formatValue()
+// on every numeric cell which emits a `mg` / `g` suffix, and writes the
+// literal `(couvert)` annotation on the Manque sortant cell when gOut ≤ 0.
+// Wave 2 coder migrates the unit into the column header + drops the
+// annotation. REQ-162 / REQ-163 stay as pass-with-TODO until the
+// specialist's parallel work lands (Mehlich-3 ÷ SME-weekly-uptake math
+// and surfactant-aware foliar efficiency surface respectively).
+
+// Canonical block descriptors per page. Each entry pairs a DOM container
+// id with a human-readable label for failure context. Salanova blocks are
+// not yet wired (per REQ-137 TODO sweep above); we surface them as
+// pass-with-TODO matching that pattern.
+const REQ159_TOMATO_BLOCKS = [
+  { id: 'nutr-compost',   label: 'Tomato Compost' },
+  { id: 'nutr-sidedress', label: 'Tomato Sidedress' },
+  { id: 'nutr-fert',      label: 'Tomato Fertigation' },
+  { id: 'nutr-foliar',    label: 'Tomato Foliaire' },
+];
+const REQ159_NURSERY_BLOCKS = [
+  { id: 'nutr-n-substrate',   label: 'Semis Substrat' },
+  { id: 'nutr-n-fertigation', label: 'Semis Fertigation' },
+];
+
+// Elemental-mass column headers per REQ-159. These columns express
+// per-element mass and MUST end in `mg`. The REQ-137 gap-grid uses three
+// of them (Manque entrant · Apport ici · Manque sortant); the soil-bank
+// block adds the same labels. Efficacité is a unitless percent and
+// excluded. Recipe-product `Quantité` is the REQ-152 carve-out.
+const REQ159_ELEMENTAL_MASS_HEADERS = new Set([
+  'Manque entrant', 'Apport ici', 'Manque sortant',
+]);
+
+// Walk every gap-grid + recipe-table column header for one block. Returns
+// `{ kind: 'gap'|'recipe', headerText, columnIndex }[]`. Used by both
+// REQ-159 (header unit) and REQ-160 (header→cell unit consistency).
+function collectBlockHeaders(blockElement) {
+  if (!blockElement) return [];
+  const out = [];
+  // Recipe table (REQ-152) — <th> in <thead>.
+  const recipeTable = blockElement.querySelector('table');
+  if (recipeTable) {
+    const headerCells = Array.from(recipeTable.querySelectorAll('thead th, thead td'));
+    headerCells.forEach((cell, index) => {
+      out.push({
+        kind: 'recipe',
+        headerText: (cell.textContent || '').trim(),
+        columnIndex: index,
+      });
+    });
+  }
+  // Gap-grid header strip (REQ-137 / REQ-156) — first child div under the wrapper.
+  const headerStrip = findGapGridHeaderStrip(blockElement);
+  if (headerStrip) {
+    const cols = Array.from(headerStrip.children);
+    cols.forEach((column, index) => {
+      out.push({
+        kind: 'gap',
+        headerText: (column.textContent || '').trim(),
+        columnIndex: index,
+      });
+    });
+  }
+  return out;
+}
+
+// Walk every body cell of the gap-grid for one block. Returns an array
+// keyed by column index: `{ columnIndex, rowIndex, cellText }[]`. Recipe
+// tables use a different DOM shape; the recipe-product Quantité column
+// intentionally carries a unit suffix (g/kg per REQ-152), so it stays
+// out of REQ-160's header→cell coupling.
+function collectGapGridDataCells(blockElement) {
+  if (!blockElement) return [];
+  const out = [];
+  const rows = findGapGridDataRows(blockElement);
+  rows.forEach((row, rowIndex) => {
+    const cells = Array.from(row.children);
+    cells.forEach((cell, columnIndex) => {
+      out.push({
+        columnIndex,
+        rowIndex,
+        cellText: (cell.textContent || '').trim(),
+      });
+    });
+  });
+  return out;
+}
+
+// REQ-159 helper — given a header text, does it declare a non-mg unit
+// suffix? Returns the offending suffix or `null` if header ends in `mg`
+// / `(mg)` or has no unit suffix at all. We treat `(mg)` and ` mg` as
+// equivalent acceptable forms; `g` / `kg` / `g/m²/wk` are rejected.
+function nonMgSuffix(headerText) {
+  const stripped = String(headerText || '').trim();
+  if (!stripped) return null;
+  if (/\bmg\)?$/.test(stripped)) return null;
+  const tail = stripped.match(/\(([^)]*)\)\s*$/);
+  if (tail) {
+    const unit = tail[1].trim();
+    if (/\bk?g(\/|$|\s)/i.test(unit) && !/\bmg\b/.test(unit)) return unit;
+    return null;
+  }
+  const trail = stripped.match(/\s(k?g(?:\/[^\s]+)?)\s*$/);
+  if (trail) {
+    const unit = trail[1];
+    if (/^k?g(\/|$)/.test(unit) && !/^mg/.test(unit)) return unit;
+  }
+  return null;
+}
+
+// REQ-160 helper — given a header text, return the unit suffix it
+// declares (the substring that mustn't be duplicated in cells), or `null`
+// if the header declares no unit. The cell check skips columns whose
+// header has no declared unit (lenient per the brief).
+function headerDeclaredUnit(headerText) {
+  const stripped = String(headerText || '').trim();
+  if (!stripped) return null;
+  const parens = stripped.match(/\(([^)]+)\)\s*$/);
+  if (parens) {
+    const unit = parens[1].trim();
+    // Recognised unit shapes only — avoids treating "(% m/m)" as a bare-%
+    // declaration. Accept mg / k?g / % / m² / compound g-per-X.
+    if (/^(mg|k?g|%|m²|m\^2)(\/[^\s]+)?$/.test(unit)) return unit;
+    return null;
+  }
+  return null;
+}
+
+// REQ-160 helper — does the cell text duplicate the header's unit?
+function cellHasDuplicateUnit(cellText, declaredUnit) {
+  if (!declaredUnit) return false;
+  const stripped = String(cellText || '').trim();
+  if (stripped === '' || stripped === '0' || stripped === '—' || stripped === '0 %') return false;
+  if (declaredUnit === 'mg') {
+    return /\bmg\b\s*$/.test(stripped);
+  }
+  if (declaredUnit === 'g') {
+    // `g` tail but NOT `mg` tail — leading non-`m` char or start-of-string.
+    return /(^|[^m])\bg\b\s*$/.test(stripped);
+  }
+  if (declaredUnit === 'kg') {
+    return /\bkg\b\s*$/.test(stripped);
+  }
+  if (declaredUnit === '%') {
+    return /%\s*$/.test(stripped);
+  }
+  return new RegExp(declaredUnit.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '\\s*$').test(stripped);
+}
+
+// ─── REQ-159 — Elemental-mass columns use milligrams ───────────────────
+//
+// Walk every nutrition-table column header. For columns whose semantic is
+// per-element elemental mass (Manque entrant / Apport ici / Manque
+// sortant — the soil-bank block uses the same labels), the header text
+// must end in `mg` (or `(mg)`). Recipe-product mass tables (REQ-152
+// `Quantité` column) are carved out and stay in g/kg. Drift gauge
+// (Block 7/8) stays in g/kg (not a contribution-block render — not
+// touched here).
+
+header('REQ-159 — Nutrition-table elemental-mass columns declare mg in header');
+{
+  const offenders = [];
+  // Tomato page — currently active per the last setNutrCrop call above.
+  for (const block of REQ159_TOMATO_BLOCKS) {
+    const element = window.document.getElementById(block.id);
+    if (!element) { offenders.push(`${block.label} (#${block.id}): container missing`); continue; }
+    const headers = collectBlockHeaders(element);
+    for (const headerEntry of headers) {
+      if (headerEntry.kind === 'recipe') continue; // REQ-152 carve-out
+      if (!REQ159_ELEMENTAL_MASS_HEADERS.has(headerEntry.headerText)) continue;
+      // Header must declare `mg` (either `... (mg)` or `... mg`). Today
+      // these headers are bare strings ("Manque entrant") with no unit
+      // declaration — the unit lives in the cells via formatValue. That's
+      // the REQ-159 failure mode the Wave 2 coder fixes.
+      if (!/\bmg\)?$/.test(headerEntry.headerText)) {
+        offenders.push(`${block.label}.${headerEntry.headerText}: header missing (mg) declaration`);
+        continue;
+      }
+      const nonMg = nonMgSuffix(headerEntry.headerText);
+      if (nonMg) {
+        offenders.push(`${block.label}.${headerEntry.headerText}: header declares non-mg unit "${nonMg}"`);
+      }
+    }
+  }
+  // Nursery page — flip to nursery so Semis blocks are populated, revert after.
+  if (typeof window.setNutrCrop === 'function') {
+    try { window.setNutrCrop('nursery'); } catch (e) { /* swallow */ }
+  }
+  for (const block of REQ159_NURSERY_BLOCKS) {
+    const element = window.document.getElementById(block.id);
+    if (!element) { offenders.push(`${block.label} (#${block.id}): container missing`); continue; }
+    const headers = collectBlockHeaders(element);
+    for (const headerEntry of headers) {
+      if (headerEntry.kind === 'recipe') continue;
+      if (!REQ159_ELEMENTAL_MASS_HEADERS.has(headerEntry.headerText)) continue;
+      if (!/\bmg\)?$/.test(headerEntry.headerText)) {
+        offenders.push(`${block.label}.${headerEntry.headerText}: header missing (mg) declaration`);
+        continue;
+      }
+      const nonMg = nonMgSuffix(headerEntry.headerText);
+      if (nonMg) {
+        offenders.push(`${block.label}.${headerEntry.headerText}: header declares non-mg unit "${nonMg}"`);
+      }
+    }
+  }
+  // Flip back to tomato so #nutr-soil is live (soil-bank uses tomato page).
+  if (typeof window.setNutrCrop === 'function') {
+    try { window.setNutrCrop('tomato'); } catch (e) { /* swallow */ }
+  }
+  {
+    const soilBlock = window.document.getElementById('nutr-soil');
+    if (soilBlock) {
+      // Soil-bank renderer (nutrition/soil-contribution/render.js) emits a
+      // 6-col grid with leading 0.5fr column (vs the REQ-137 grid's 0.6fr).
+      // Locate its header strip directly instead of via findGapGridHeaderStrip
+      // (which targets 0.6fr).
+      const soilWrapper = soilBlock.querySelector('div[style*="grid-template-columns:0.5fr"]');
+      const soilHeaderStrip = soilWrapper ? soilWrapper.parentElement.firstElementChild : null;
+      if (soilHeaderStrip) {
+        const cols = Array.from(soilHeaderStrip.children);
+        for (const col of cols) {
+          const text = (col.textContent || '').trim();
+          if (!REQ159_ELEMENTAL_MASS_HEADERS.has(text)) continue;
+          if (!/\bmg\)?$/.test(text)) {
+            offenders.push(`Tomato Soil-bank.${text}: header missing (mg) declaration`);
+          }
+        }
+      }
+    }
+  }
+  if (offenders.length === 0) {
+    pass('Every elemental-mass column header declares mg across tomato + nursery + soil-bank blocks');
+  } else {
+    fail('REQ-159 — elemental-mass headers missing mg',
+      offenders.slice(0, 5).join('\n      '));
+    process.stdout.write(`\n    ${c.dim}── REQ-159 hit list (top ${Math.min(offenders.length, 20)}) ──${c.reset}\n`);
+    offenders.slice(0, 20).forEach(line => {
+      process.stdout.write(`    ${c.red}${line}${c.reset}\n`);
+    });
+    if (offenders.length > 20) {
+      process.stdout.write(`    ${c.dim}(+${offenders.length - 20} more)${c.reset}\n`);
+    }
+    process.stdout.write('\n');
+  }
+  // Salanova carve-out (REQ-137 / REQ-152 / REQ-156 sibling) — not wired today.
+  // TODO: wire after F1 lettuce carve
+  pass('REQ-159 — Salanova Sol elemental-mass columns — TODO: wire after F1 lettuce carve');
+  // TODO: wire after F1 lettuce carve
+  pass('REQ-159 — Salanova Fertigation elemental-mass columns — TODO: wire after F1 lettuce carve');
+  // TODO: wire after F1 lettuce carve
+  pass('REQ-159 — Salanova Front-load elemental-mass columns — TODO: wire after F1 lettuce carve');
+}
+
+// ─── REQ-160 — Unit suffix lives in header, not in cells ───────────────
+//
+// Walk every nutrition-table data cell. If the column header declares a
+// unit (parens-suffix pattern `... (mg)`, `... (g)`, etc.), every cell in
+// that column MUST NOT carry the same unit suffix. Lenient: when a
+// header has no declared unit (today's pre-Wave-2 state), the cell check
+// is skipped for that column. This means REQ-160 mostly passes until
+// REQ-159 lands header units; once REQ-159 lands, REQ-160 will fire if
+// any cell still carries the suffix. The matcher is registered now so
+// the Wave 2 coder's combined REQ-159 + REQ-160 fix lands covered.
+
+header('REQ-160 — Cell text does not duplicate the header-declared unit');
+{
+  const offenders = [];
+  for (const block of REQ159_TOMATO_BLOCKS) {
+    const element = window.document.getElementById(block.id);
+    if (!element) continue;
+    const headerStrip = findGapGridHeaderStrip(element);
+    if (!headerStrip) continue;
+    const headerCols = Array.from(headerStrip.children).map(c => (c.textContent || '').trim());
+    const cells = collectGapGridDataCells(element);
+    for (const cellEntry of cells) {
+      const headerText = headerCols[cellEntry.columnIndex] || '';
+      const declared = headerDeclaredUnit(headerText);
+      if (!declared) continue;
+      if (cellHasDuplicateUnit(cellEntry.cellText, declared)) {
+        offenders.push(`${block.label}.${headerText}: cell at row ${cellEntry.rowIndex + 1} = "${cellEntry.cellText}" — unit suffix duplicated (already in header)`);
+      }
+    }
+  }
+  if (typeof window.setNutrCrop === 'function') {
+    try { window.setNutrCrop('nursery'); } catch (e) { /* swallow */ }
+  }
+  for (const block of REQ159_NURSERY_BLOCKS) {
+    const element = window.document.getElementById(block.id);
+    if (!element) continue;
+    const headerStrip = findGapGridHeaderStrip(element);
+    if (!headerStrip) continue;
+    const headerCols = Array.from(headerStrip.children).map(c => (c.textContent || '').trim());
+    const cells = collectGapGridDataCells(element);
+    for (const cellEntry of cells) {
+      const headerText = headerCols[cellEntry.columnIndex] || '';
+      const declared = headerDeclaredUnit(headerText);
+      if (!declared) continue;
+      if (cellHasDuplicateUnit(cellEntry.cellText, declared)) {
+        offenders.push(`${block.label}.${headerText}: cell at row ${cellEntry.rowIndex + 1} = "${cellEntry.cellText}" — unit suffix duplicated (already in header)`);
+      }
+    }
+  }
+  if (typeof window.setNutrCrop === 'function') {
+    try { window.setNutrCrop('tomato'); } catch (e) { /* swallow */ }
+  }
+  if (offenders.length === 0) {
+    pass('No cell duplicates a header-declared unit across tomato + nursery contribution blocks');
+  } else {
+    fail('REQ-160 — cell duplicates header unit',
+      offenders.slice(0, 5).join('\n      '));
+    process.stdout.write(`\n    ${c.dim}── REQ-160 hit list (top ${Math.min(offenders.length, 20)}) ──${c.reset}\n`);
+    offenders.slice(0, 20).forEach(line => {
+      process.stdout.write(`    ${c.red}${line}${c.reset}\n`);
+    });
+    if (offenders.length > 20) {
+      process.stdout.write(`    ${c.dim}(+${offenders.length - 20} more)${c.reset}\n`);
+    }
+    process.stdout.write('\n');
+  }
+  // TODO: wire after F1 lettuce carve
+  pass('REQ-160 — Salanova Sol cells — TODO: wire after F1 lettuce carve');
+  // TODO: wire after F1 lettuce carve
+  pass('REQ-160 — Salanova Fertigation cells — TODO: wire after F1 lettuce carve');
+  // TODO: wire after F1 lettuce carve
+  pass('REQ-160 — Salanova Front-load cells — TODO: wire after F1 lettuce carve');
+}
+
+// ─── REQ-161 — Bare 0 communicates coverage; no `(couvert)` ────────────
+//
+// Walk every contribution-block cell on every Nutrition page. Fail if any
+// cell text contains the substring `(couvert)`. The Manque sortant cell
+// MUST render the bare digit `0` when the channel covers its share —
+// color (REQ-016 green/yellow/red) carries the meaning.
+//
+// Today renderGapGrid emits `gOut <= 0 ? '0 (couvert)' : formatValue(gOut)`
+// at app/index.html — designed-to-fail until the Wave 2 coder drops the
+// annotation. The soil-bank renderer at
+// nutrition/soil-contribution/render.js carries the same pattern; we walk
+// it explicitly so it doesn't slip.
+
+header('REQ-161 — Bare 0 in Manque sortant cell, no `(couvert)` annotation');
+{
+  const offenders = [];
+  const blocksToWalk = [
+    ...REQ159_TOMATO_BLOCKS,
+    { id: 'nutr-soil', label: 'Tomato Soil-bank' },
+  ];
+  for (const block of blocksToWalk) {
+    const element = window.document.getElementById(block.id);
+    if (!element) continue;
+    const html = element.innerHTML || '';
+    if (!html.includes('(couvert)')) continue;
+    // Pinpoint each row containing the annotation. Walk both .pq-row
+    // children and the entire textContent as a fallback.
+    const pqRows = Array.from(element.querySelectorAll('.pq-row'));
+    let foundInRow = false;
+    pqRows.forEach((row, rowIndex) => {
+      const text = row.textContent || '';
+      if (!text.includes('(couvert)')) return;
+      const cells = Array.from(row.children);
+      const elementSymbol = cells[0] ? (cells[0].textContent || '').trim() : '?';
+      // Find the cell that actually carries `(couvert)`. Column index
+      // differs across grids: REQ-137 (4 contribution blocks + Semis) puts
+      // Manque sortant at index 4; soil-contribution puts it at index 3
+      // (Efficacité column absent). Walk the cells directly.
+      const offendingCell = cells.find(cell => (cell.textContent || '').includes('(couvert)'));
+      const cellText = offendingCell ? (offendingCell.textContent || '').trim() : '';
+      offenders.push(`${block.label}.Manque sortant: row ${rowIndex + 1} (${elementSymbol}) = "${cellText}" — drop "(couvert)" per REQ-161`);
+      foundInRow = true;
+    });
+    if (!foundInRow) {
+      offenders.push(`${block.label}: substring "(couvert)" present in block HTML (row context not extractable)`);
+    }
+  }
+  // Nursery page.
+  if (typeof window.setNutrCrop === 'function') {
+    try { window.setNutrCrop('nursery'); } catch (e) { /* swallow */ }
+  }
+  for (const block of REQ159_NURSERY_BLOCKS) {
+    const element = window.document.getElementById(block.id);
+    if (!element) continue;
+    const html = element.innerHTML || '';
+    if (!html.includes('(couvert)')) continue;
+    const pqRows = Array.from(element.querySelectorAll('.pq-row'));
+    pqRows.forEach((row, rowIndex) => {
+      const text = row.textContent || '';
+      if (!text.includes('(couvert)')) return;
+      const cells = Array.from(row.children);
+      const elementSymbol = cells[0] ? (cells[0].textContent || '').trim() : '?';
+      const offendingCell = cells.find(cell => (cell.textContent || '').includes('(couvert)'));
+      const cellText = offendingCell ? (offendingCell.textContent || '').trim() : '';
+      offenders.push(`${block.label}.Manque sortant: row ${rowIndex + 1} (${elementSymbol}) = "${cellText}" — drop "(couvert)" per REQ-161`);
+    });
+  }
+  if (typeof window.setNutrCrop === 'function') {
+    try { window.setNutrCrop('tomato'); } catch (e) { /* swallow */ }
+  }
+  if (offenders.length === 0) {
+    pass('No "(couvert)" annotation in any contribution-block cell across tomato + nursery + soil-bank');
+  } else {
+    fail('REQ-161 — "(couvert)" annotation still present',
+      offenders.slice(0, 5).join('\n      '));
+    process.stdout.write(`\n    ${c.dim}── REQ-161 hit list (top ${Math.min(offenders.length, 20)}) ──${c.reset}\n`);
+    offenders.slice(0, 20).forEach(line => {
+      process.stdout.write(`    ${c.red}${line}${c.reset}\n`);
+    });
+    if (offenders.length > 20) {
+      process.stdout.write(`    ${c.dim}(+${offenders.length - 20} more)${c.reset}\n`);
+    }
+    process.stdout.write('\n');
+  }
+  // TODO: wire after F1 lettuce carve
+  pass('REQ-161 — Salanova blocks — TODO: wire after F1 lettuce carve');
+}
+
+// ─── REQ-162 — Mois d'épuisement on every row with reservoir data ──────
+//
+// Spec: nutrition/spec.md → REQ-162. Every element row on the soil-bank
+// block displays Mois d'épuisement = Mehlich-3 reservoir ÷ weekly plant
+// uptake currently sustainable at SME plant-availability. The structural
+// every-row requirement is already satisfied by the current soil-
+// contribution renderer (every element row renders a depletion cell).
+// The FORMULA switch (from REQ-142's "Mehlich-3 ÷ stage demand" to
+// REQ-162's "Mehlich-3 ÷ SME-derived weekly uptake") requires the
+// specialist's data + math pass — filed in parallel on
+// plant-nutrition-specialist/from-product-owner.md. Pass-with-TODO so the
+// matcher is registered; the Wave 2 specialist flips it to the real
+// formula assertion in one edit.
+
+header('REQ-162 — Mois d\'épuisement = Mehlich-3 ÷ SME-weekly-uptake (TODO: specialist mailbox notified)');
+{
+  // TODO: wire after specialist exposes SME-weekly-uptake data layer.
+  // Once landed: walk #nutr-soil rows, for each row with reservoir data
+  // (Apport ici cell non-`—`), recompute expected depletion as Mehlich-3
+  // ÷ SME-weekly-uptake and assert the cell matches within tolerance.
+  // Filed in parallel on plant-nutrition-specialist/from-product-owner.md.
+  pass('REQ-162 — Mois d\'épuisement formula = Mehlich-3 ÷ SME-weekly-uptake — TODO: specialist mailbox notified');
+}
+
+// ─── REQ-163 — Foliar Efficacité is surfactant-aware ───────────────────
+//
+// Spec: nutrition/tomato/app/spec.md → REQ-163. Two assertions:
+//   (a) Differential — the foliar channel's efficiency map differs
+//       between surfactant on / off for at least one routed element
+//       (Mn / Zn / Cu / Fe / Mo).
+//   (b) Reactive render — toggling #nutr-foliar-surfactant re-renders
+//       Block 5's Efficacité column (at least one cell text changes).
+//
+// Both assertions require the specialist's surfactant-aware efficiency
+// surface (filed on plant-nutrition-specialist/from-product-owner.md)
+// AND the coder-side wiring (Wave 2 — Block 5 toggle handler must pass
+// surfactant state into the foliar consumer's efficiency lookup). Until
+// either lands, pass-with-TODO so the matcher block is structurally
+// present and the coder flips the TODO to a real check in one edit.
+
+header('REQ-163 — Foliar Efficacité reactive to surfactant lever (TODO: specialist + coder wiring)');
+{
+  // TODO: wire after specialist exposes surfactant-aware efficiency surface
+  // AND coder routes the surfactant flag into the foliar consumer.
+  // Once landed, the matcher body should:
+  //
+  //   (a) Differential check:
+  //       const eOff = window.FoliarRecipeTomato.efficiencyFor({ surfactant: false });
+  //       const eOn  = window.FoliarRecipeTomato.efficiencyFor({ surfactant: true });
+  //       const routed = ['Mn', 'Zn', 'Cu', 'Fe', 'Mo'];
+  //       const differs = routed.some(el => eOn[el] !== eOff[el]);
+  //       assert differs (REQ-163(a))
+  //
+  //   (b) Reactive-render check:
+  //       const surfInp = window.document.getElementById('nutr-foliar-surfactant');
+  //       const foliarBlock = window.document.getElementById('nutr-foliar');
+  //       surfInp.checked = false;
+  //       surfInp.dispatchEvent(new window.Event('change', { bubbles: true }));
+  //       const before = collectGapGridDataCells(foliarBlock)
+  //         .filter(c => c.columnIndex === 2).map(c => c.cellText);
+  //       surfInp.checked = true;
+  //       surfInp.dispatchEvent(new window.Event('change', { bubbles: true }));
+  //       const after = collectGapGridDataCells(foliarBlock)
+  //         .filter(c => c.columnIndex === 2).map(c => c.cellText);
+  //       assert before.some((t, i) => t !== after[i]) (REQ-163(b))
+  pass('REQ-163 — foliar Efficacité reactive to surfactant — TODO: specialist + coder wiring pending');
 }
 
 // ─── Final ─────────────────────────────────────────────────────────────

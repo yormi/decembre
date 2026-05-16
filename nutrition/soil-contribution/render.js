@@ -22,9 +22,9 @@ function soilRenderGrid(gapsIn, soilMg, gapsOut, monthsToDepletion) {
   let html = `<div style="font-size:11.5px; margin-top:8px;">
     <div style="display:grid; grid-template-columns:0.5fr 0.9fr 0.9fr 0.9fr 0.9fr 0.4fr; gap:4px 8px;">
       <div style="font-weight:700; color:var(--text-muted); font-size:10px; text-transform:uppercase; letter-spacing:1px;">Él.</div>
-      <div style="font-weight:700; color:var(--text-muted); font-size:10px; text-transform:uppercase; letter-spacing:1px;">Manque entrant</div>
-      <div style="font-weight:700; color:var(--text-muted); font-size:10px; text-transform:uppercase; letter-spacing:1px;">Apport ici</div>
-      <div style="font-weight:700; color:var(--text-muted); font-size:10px; text-transform:uppercase; letter-spacing:1px;">Manque sortant</div>
+      <div style="font-weight:700; color:var(--text-muted); font-size:10px; text-transform:uppercase; letter-spacing:1px;">Manque entrant (mg)</div>
+      <div style="font-weight:700; color:var(--text-muted); font-size:10px; text-transform:uppercase; letter-spacing:1px;">Apport ici (mg)</div>
+      <div style="font-weight:700; color:var(--text-muted); font-size:10px; text-transform:uppercase; letter-spacing:1px;">Manque sortant (mg)</div>
       <div style="font-weight:700; color:var(--text-muted); font-size:10px; text-transform:uppercase; letter-spacing:1px;">Mois épuisement</div>
       <div></div>
     </div>`;
@@ -35,7 +35,7 @@ function soilRenderGrid(gapsIn, soilMg, gapsOut, monthsToDepletion) {
     const contributing = c > 0;
     const opacity = contributing ? 1 : 0.42;
     const apportColor = contributing ? 'var(--text)' : 'var(--text-muted)';
-    const apportString = contributing ? '−' + formatValue(c) : '—';
+    const apportString = contributing ? '−' + formatMg(c) : '—';
     let icon;
     if (!contributing) {
       icon = '○';
@@ -49,15 +49,15 @@ function soilRenderGrid(gapsIn, soilMg, gapsOut, monthsToDepletion) {
       icon = '🔴';
     }
     const gOutString = !contributing
-      ? formatValue(gIn)
-      : (gOut <= 0 ? '0 (couvert)' : formatValue(gOut));
+      ? formatMg(gIn)
+      : formatMg(gOut);
     const gOutColor = !contributing
       ? 'var(--text-muted)'
       : (gOut <= 0 ? '#1e6b2d' : (gOut < gIn * 0.3 ? '#5a6b1e' : 'var(--text)'));
     const depletionString = fmtMonths(monthsToDepletion[element]);
     html += `<div class="pq-row" onclick="showPourquoi('soil.${element}')" style="display:grid; grid-template-columns:0.5fr 0.9fr 0.9fr 0.9fr 0.9fr 0.4fr; gap:4px 8px; padding:2px 4px; border-radius:3px; opacity:${opacity};">
       <div style="font-weight:600;">${element}</div>
-      <div style="font-family:'DM Mono',monospace; color:var(--text-muted);">${formatValue(gIn)}</div>
+      <div style="font-family:'DM Mono',monospace; color:var(--text-muted);">${formatMg(gIn)}</div>
       <div style="font-family:'DM Mono',monospace; color:${apportColor};">${apportString}</div>
       <div style="font-family:'DM Mono',monospace; font-weight:600; color:${gOutColor};">${gOutString}</div>
       <div style="font-family:'DM Mono',monospace; color:var(--text-muted);">${depletionString}</div>

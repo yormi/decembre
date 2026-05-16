@@ -42,10 +42,17 @@ const FOLIAR_COVERAGE_WITH_YUCCA = 0.80;
 //                  peak is pH 5.5-6.0; spray pH 5.0 is ~0.9 of peak)
 //   = 0.27
 //
-// Uniform across the 6 oligo elements (Mn / Zn / Cu / Fe / Mo) — the
+// Uniform across the 4 cation-micro oligos (Mn / Zn / Cu / Fe) — the
 // cuticle-uptake mechanism doesn't differentiate by sulfate cation at
-// this resolution; B (Solubore) is single-channel via fertigation
-// (REQ-061), not in the foliar STORED recipe currently → absent here.
+// this resolution.
+//
+// Elements absent from this map:
+//   B  — single-channel via fertigation (REQ-061; Solubore in the barrel).
+//   Mo — retired from foliar 2026-05-16 (REQ-061 Mo carve-out). Molybdate
+//        is anionic and fully available at our soil pH 7.4, so the foliar-
+//        bypass argument that keeps cation micros here doesn't apply. Mo
+//        moved to fertigation; the foliar spray no longer carries sodium
+//        molybdate.
 //
 // Cert 3 — `FOLIAR_COVERAGE_DEFAULT` is cert 3 (B2 downgrade, no Décembre
 // tissue correlation yet); `foliarPhResponse` curve is cert 4. Effective
@@ -57,7 +64,6 @@ const FOLIAR_EFFICIENCY_AT_CURRENT_CONDITIONS = {
   Zn: 0.27,
   Cu: 0.27,
   Fe: 0.27,
-  Mo: 0.27,
 };
 
 // Tomato bed area in m². Derived from TOMATO_NUMBER_BEDS × TOMATO_BED_AREA

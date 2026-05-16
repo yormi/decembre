@@ -41,8 +41,11 @@
 // uniformly to all bed sources (compost, sidedress, fertigation), so it
 // pulls out as a division on demand alone. See data.js and derivation.md.
 //
-// Returns { kSulfate, mgSulfate, solubore } in grams (rounded). Total
-// weekly dose for the 7-bed × 54.7 m² tomato area.
+// Returns { kSulfate, mgSulfate, solubore, naMolybdate } in grams (rounded).
+// Total weekly dose for the 7-bed × 54.7 m² tomato area. Mo holds flat at
+// 0.5 g/wk across all stages — smallest reliable barrel weight ≈ 7× peak
+// demand, within Mo's wide tolerance band (REQ-061 Mo carve-out 2026-05-16,
+// derivation.md).
 function computeStageRecipe(stage) {
   const y = RECIPE_INPUTS.stageYield[stage] || 0;
   const totalArea = TOMATO_NUMBER_BEDS * TOMATO_BED_AREA;
@@ -76,7 +79,10 @@ function computeStageRecipe(stage) {
   const b_fert_mg_per_m2 = Math.max(0, b_demand_to_bed - b_compost_mg);
   const solubore = Math.round((b_fert_mg_per_m2 / 1000 / PRODUCT_PCT.Solubore_B) * totalArea);
 
-  return { mgSulfate, kSulfate, solubore };
+  // ── Mo (sodium molybdate) — flat 0.5 g/wk across stages, REQ-061 Mo carve-out ──
+  const naMolybdate = 0.5;
+
+  return { mgSulfate, kSulfate, solubore, naMolybdate };
 }
 
 // computeFertigationSupply(stage, opts, recipe) — per-element delivered
@@ -95,14 +101,16 @@ function computeFertigationSupply(stage, opts, recipe) {
   if (!canonical) {
     const stored = (STORED_RECIPE.tomato.fertigation || {})[stage] || {};
     canonical = {
-      kSulfate_g:  stored.kSulfate  || 0,
-      mgSulfate_g: stored.mgSulfate || 0,
-      solubore_g:  0,
+      kSulfate_g:    stored.kSulfate    || 0,
+      mgSulfate_g:   stored.mgSulfate   || 0,
+      solubore_g:    0,
+      naMolybdate_g: stored.naMolybdate || 0,
     };
   }
-  const kSulfate_g  = Number(canonical.kSulfate_g)  || 0;
-  const mgSulfate_g = Number(canonical.mgSulfate_g) || 0;
-  const solubore_g  = Number(canonical.solubore_g)  || 0;
+  const kSulfate_g    = Number(canonical.kSulfate_g)    || 0;
+  const mgSulfate_g   = Number(canonical.mgSulfate_g)   || 0;
+  const solubore_g    = Number(canonical.solubore_g)    || 0;
+  const naMolybdate_g = Number(canonical.naMolybdate_g) || 0;
   const deliver = function(grams, pct) {
     if (!grams || !pct || !area) return 0;
     return (grams * pct * 1000) / area;
@@ -110,15 +118,15 @@ function computeFertigationSupply(stage, opts, recipe) {
   return {
     N: 0,
     P: 0,
-    K:  deliver(kSulfate_g,  PRODUCT_PCT.K2SO4_K),
+    K:  deliver(kSulfate_g,    PRODUCT_PCT.K2SO4_K),
     Ca: 0,
-    Mg: deliver(mgSulfate_g, PRODUCT_PCT.MgSO4_Mg),
+    Mg: deliver(mgSulfate_g,   PRODUCT_PCT.MgSO4_Mg),
     Fe: 0,
     Mn: 0,
     Zn: 0,
     Cu: 0,
-    B:  deliver(solubore_g,  PRODUCT_PCT.Solubore_B),
-    Mo: 0,
+    B:  deliver(solubore_g,    PRODUCT_PCT.Solubore_B),
+    Mo: deliver(naMolybdate_g, PRODUCT_PCT.NaMoO4_Mo),
   };
 }
 
@@ -145,14 +153,16 @@ function computeFertigationSupply(stage, opts, recipe) {
 // Block 7/8 until the team's weighed-out stored recipe follows.
 (function wireFpFertigation() {
   const t5 = computeStageRecipe('T5') || {};
-  FIRST_PRINCIPLES_T5_FERTIGATION['K2SO4']      = t5.kSulfate  || 0;
-  FIRST_PRINCIPLES_T5_FERTIGATION['MgSO4-7H2O'] = t5.mgSulfate || 0;
-  FIRST_PRINCIPLES_T5_FERTIGATION['Solubore']   = t5.solubore  || 0;
+  FIRST_PRINCIPLES_T5_FERTIGATION['K2SO4']       = t5.kSulfate    || 0;
+  FIRST_PRINCIPLES_T5_FERTIGATION['MgSO4-7H2O']  = t5.mgSulfate   || 0;
+  FIRST_PRINCIPLES_T5_FERTIGATION['Solubore']    = t5.solubore    || 0;
+  FIRST_PRINCIPLES_T5_FERTIGATION['NaMolybdate'] = t5.naMolybdate || 0;
   if (typeof FP_RECIPE_T5 !== 'undefined' && FP_RECIPE_T5) {
     FP_RECIPE_T5.fertigation = {
-      'K2SO4':       FIRST_PRINCIPLES_T5_FERTIGATION['K2SO4'],
-      'MgSO4-7H2O':  FIRST_PRINCIPLES_T5_FERTIGATION['MgSO4-7H2O'],
-      'Solubore':    FIRST_PRINCIPLES_T5_FERTIGATION['Solubore'],
+      'K2SO4':        FIRST_PRINCIPLES_T5_FERTIGATION['K2SO4'],
+      'MgSO4-7H2O':   FIRST_PRINCIPLES_T5_FERTIGATION['MgSO4-7H2O'],
+      'Solubore':     FIRST_PRINCIPLES_T5_FERTIGATION['Solubore'],
+      'NaMolybdate':  FIRST_PRINCIPLES_T5_FERTIGATION['NaMolybdate'],
     };
   }
 })();

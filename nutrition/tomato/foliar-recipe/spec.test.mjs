@@ -287,14 +287,15 @@ describe('REQ-115 — computeFoliarRecipeForGap (min-dose clamp + burn cap + CE 
 
   test('REQ-115 — huge gap → every element clipped at burnCapG(el)', () => {
     const FRT = win.FoliarRecipeTomato;
-    const hugeGap = { Mn: 1000, Zn: 1000, Cu: 1000, Fe: 1000, Mo: 1000, B: 1000 };
+    // Mo dropped from iterated set 2026-05-16 (REQ-061 carve-out — Mo routes
+    // via fertigation). NaMoO4_g stays in the return shape but always 0.
+    const hugeGap = { Mn: 1000, Zn: 1000, Cu: 1000, Fe: 1000, B: 1000 };
     const recipe = FRT.computeFoliarRecipeForGap(hugeGap, { surfactant: false });
     const PAIRS = [
       { el: 'Mn', key: 'MnSO4_g' },
       { el: 'Zn', key: 'ZnSO4_g' },
       { el: 'Cu', key: 'CuSO4_g' },
       { el: 'Fe', key: 'FeSO4_g' },
-      { el: 'Mo', key: 'NaMoO4_g' },
       { el: 'B',  key: 'Solubore_g' },
     ];
     for (const p of PAIRS) {
@@ -324,10 +325,12 @@ describe('REQ-115 — computeFoliarRecipeForGap (min-dose clamp + burn cap + CE 
 
   test('REQ-115 — surfactant=true reduces ideal_g (coverage axis only, burn cap unchanged)', () => {
     const FRT = win.FoliarRecipeTomato;
-    // Mid-sized gap so neither min-dose clamp nor burn cap binds: surfactant
-    // should shrink the recipe ~ratioYucca× because higher coverage closes
-    // the gap with less product.
-    const midGap = { Mn: 50, Zn: 50, Cu: 5, Fe: 200, Mo: 1, B: 20 };
+    // Small gap so neither min-dose clamp nor burn cap binds across the
+    // active iterated elements (Mn / Zn / Cu / Fe / B): surfactant should
+    // shrink the recipe ~ratioYucca× because higher coverage closes the
+    // gap with less product. Mo no longer iterated (REQ-061 carve-out
+    // 2026-05-16 — Mo routes via fertigation).
+    const midGap = { Mn: 1, Zn: 1, Cu: 0.5, Fe: 1, B: 1 };
     const noSurf = FRT.computeFoliarRecipeForGap(midGap, { surfactant: false });
     const yucca  = FRT.computeFoliarRecipeForGap(midGap, { surfactant: true });
     // For at least one element the with-surfactant dose should be strictly

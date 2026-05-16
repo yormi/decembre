@@ -4955,6 +4955,17 @@ function formatValue(mg) {
   return mg.toFixed(2) + ' mg';
 }
 
+// REQ-159 — bare-numeric mg renderer for gap-grid cells. Header carries (mg);
+// cells must not duplicate the unit (REQ-160). Stays in mg across the full
+// range (no g-promotion) so the column reads consistently.
+function formatMg(mg) {
+  if (mg <= 0) return '0';
+  if (mg >= 1000) return Math.round(mg).toLocaleString('fr-CA');
+  if (mg >= 10)   return Math.round(mg).toString();
+  if (mg >= 1)    return mg.toFixed(1);
+  return mg.toFixed(2);
+}
+
 // Render a per-element grid showing demand / contribution / running gap.
 // Used inside each channel block.
 //
@@ -4982,10 +4993,10 @@ function renderGapGrid(gapsIn, contrib, gapsOut, pqKeyPrefix, details, blockId, 
   let html = `<div style="font-size:11.5px; margin-top:8px;">
     <div style="display:grid; grid-template-columns:${GRID_COLUMNS}; gap:4px 8px;">
       <div style="font-weight:700; color:var(--text-muted); font-size:10px; text-transform:uppercase; letter-spacing:1px;">Él.</div>
-      <div style="font-weight:700; color:var(--text-muted); font-size:10px; text-transform:uppercase; letter-spacing:1px;">Manque entrant</div>
+      <div style="font-weight:700; color:var(--text-muted); font-size:10px; text-transform:uppercase; letter-spacing:1px;">Manque entrant (mg)</div>
       <div style="font-weight:700; color:var(--text-muted); font-size:10px; text-transform:uppercase; letter-spacing:1px;">Efficacité</div>
-      <div style="font-weight:700; color:var(--text-muted); font-size:10px; text-transform:uppercase; letter-spacing:1px;">Apport ici</div>
-      <div style="font-weight:700; color:var(--text-muted); font-size:10px; text-transform:uppercase; letter-spacing:1px;">Manque sortant</div>
+      <div style="font-weight:700; color:var(--text-muted); font-size:10px; text-transform:uppercase; letter-spacing:1px;">Apport ici (mg)</div>
+      <div style="font-weight:700; color:var(--text-muted); font-size:10px; text-transform:uppercase; letter-spacing:1px;">Manque sortant (mg)</div>
       <div></div>
     </div>`;
   order.forEach(element => {
@@ -5048,7 +5059,7 @@ function renderGapGrid(gapsIn, contrib, gapsOut, pqKeyPrefix, details, blockId, 
       capEmoji = ` <span style="cursor:pointer;" title="${tooltipAttr}" `
         + `onclick="event.stopPropagation(); showCapReason('${blockId}', '${element}', '${k}')">${emoji}</span>`;
     }
-    const contributionValueString = c > 0 ? '−' + formatValue(c) : '—';
+    const contributionValueString = c > 0 ? '−' + formatMg(c) : '—';
     const cellInner = `<span style="${cellCursor}font-family:'DM Mono',monospace; color:${c>0?'var(--text)':'var(--text-muted)'};">${contributionValueString}</span>${capEmoji}`;
     const efficiencyValue = efficiencyMap[element];
     const efficiencyCellText = (typeof efficiencyValue === 'number' && isFinite(efficiencyValue))
@@ -5056,10 +5067,10 @@ function renderGapGrid(gapsIn, contrib, gapsOut, pqKeyPrefix, details, blockId, 
       : '—';
     html += `<div ${rowClickable} style="display:grid; grid-template-columns:${GRID_COLUMNS}; gap:4px 8px; padding:2px 4px; border-radius:3px;">
       <div style="font-weight:600;">${element}</div>
-      <div style="font-family:'DM Mono',monospace; color:var(--text-muted);">${formatValue(gIn)}</div>
+      <div style="font-family:'DM Mono',monospace; color:var(--text-muted);">${formatMg(gIn)}</div>
       <div style="font-family:'DM Mono',monospace; color:var(--text-muted);">${efficiencyCellText}</div>
       <div ${cellOnclick} data-cell-key="${blockId || ''}.cell.${element}" style="${cellCursor}">${cellInner}</div>
-      <div style="font-family:'DM Mono',monospace; font-weight:600; color:${gOut<=0?'#1e6b2d':(gOut<gIn*0.3?'#5a6b1e':'var(--text)')};">${gOut <= 0 ? '0 (couvert)' : formatValue(gOut)}</div>
+      <div style="font-family:'DM Mono',monospace; font-weight:600; color:${gOut<=0?'#1e6b2d':(gOut<gIn*0.3?'#5a6b1e':'var(--text)')};">${formatMg(gOut)}</div>
       <div style="text-align:center;">${icon}</div>
     </div>`;
   });

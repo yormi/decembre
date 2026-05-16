@@ -40,9 +40,10 @@
 // REQ-154 pins the invariant: this constant's K2SO4 / MgSO4-7H2O values
 // equal computeStageRecipe('T5') output by construction at boot.
 const FIRST_PRINCIPLES_T5_FERTIGATION = {
-  'K2SO4':       0,   // populated at boot from computeStageRecipe('T5').kSulfate
-  'MgSO4-7H2O':  0,   // populated at boot from computeStageRecipe('T5').mgSulfate
-  'Solubore':    0,   // populated at boot from computeStageRecipe('T5').solubore
+  'K2SO4':       0,    // populated at boot from computeStageRecipe('T5').kSulfate
+  'MgSO4-7H2O':  0,    // populated at boot from computeStageRecipe('T5').mgSulfate
+  'Solubore':    0,    // populated at boot from computeStageRecipe('T5').solubore
+  'NaMolybdate': 0.5,  // populated at boot from computeStageRecipe('T5').naMolybdate (REQ-061 Mo carve-out 2026-05-16, flat 0.5 g/wk)
 };
 
 // ─── PH_UPTAKE_FACTOR_AT_CURRENT_SOIL — bed → plant transfer efficiency ──
@@ -76,17 +77,23 @@ const PH_UPTAKE_FACTOR_AT_CURRENT_SOIL = {
 //   K  (K2SO4 → 'soluble-cation' class): 1.0 − 0.15 × (7.4 − 7.0) = 0.94
 //   Mg (MgSO4-7H2O → 'soluble-cation' class):                       0.94
 //   B  (Solubore / boric acid → 'borate' class, non-ionic):         1.00
+//   Mo (sodium molybdate → 'molybdate' class, anion):               1.00
+//      (REQ-061 carve-out 2026-05-16: Mo is anion, fully available at
+//       pH ≥ 7.0; routed via fertigation rather than foliar because the
+//       pH-lockout argument that keeps cation micros on foliar doesn't
+//       apply to anionic molybdate.)
 //
 // Cert 4 — pH curves are well-characterized (`soluble-cation` curve at
 // cert 4 in PH_RESPONSE source); current soil pH itself is cert 5 (Berger
 // April 2026 lab reading). Refinement triggers in derivation.md.
 //
-// Elements absent from the map (N / P / Ca / Fe / Mn / Zn / Cu / Mo) are
+// Elements absent from the map (N / P / Ca / Fe / Mn / Zn / Cu) are
 // not routed by the fertigation channel under STORED at current pH —
-// REQ-061 cascade order locks the micros to foliar, N to sidedress, Ca
-// not fertigated, P drawn down via soil bank.
+// REQ-061 cascade order locks the cation micros to foliar, N to sidedress,
+// Ca not fertigated, P drawn down via soil bank.
 const FERTIGATION_EFFICIENCY_AT_CURRENT_SOIL = {
   K:  0.94,
   Mg: 0.94,
   B:  1.00,
+  Mo: 1.00,
 };

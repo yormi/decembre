@@ -23,4 +23,4 @@ A single turn that touches multiple subprojects writes one entry per subproject.
 
 ## Entries
 
-_(empty — foliar entry resolved 2026-05-16 by Guillaume's ruling on the capability-vs-realized framing; archived to `from-plant-nutrition-specialist-done.md`)_
+_(empty — both 2026-05-16 Mo-move entries archived to `from-plant-nutrition-specialist-done.md` after the model-side cascade landed green; STORED edits await Guillaume's `/retire-recipe` invocation)_

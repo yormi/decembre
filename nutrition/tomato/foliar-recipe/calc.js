@@ -58,8 +58,10 @@ function computeFoliarSupply(stage, opts, recipe) {
   const znSO4_g = findG('ZnSO₄');
   const sb_g    = findG('Solubore');     // boric acid; non-ionic
   const cuSO4_g = findG('CuSO₄');
-  const moNa_g  = findG('Molybdate');
   const feSO4_g = findG('FeSO₄');         // FeSO₄·7H₂O
+  // Mo retired from foliar 2026-05-16 (REQ-061 Mo carve-out — molybdate is
+  // anionic, fully available at soil pH 7.4; routes via fertigation instead).
+  // Foliar supply returns Mo: 0 regardless of recipe contents.
 
   // Per-element delivered mg/m²/wk = (g × element_pct × 1000) / area × coverage.
   // PRODUCT_PCT lives upstream (declared in app/index.html alongside STORED_RECIPE).
@@ -81,7 +83,7 @@ function computeFoliarSupply(stage, opts, recipe) {
     Zn: deliver(znSO4_g, PRODUCT_PCT.ZnSO4_Zn),         // 35.5 % Zn
     B:  deliver(sb_g,    PRODUCT_PCT.Solubore_B),       // 20.5 % B (boric acid)
     Cu: deliver(cuSO4_g, PRODUCT_PCT.CuSO4_Cu),         // 25 % Cu
-    Mo: deliver(moNa_g,  PRODUCT_PCT.NaMoO4_Mo),        // 39.6 % Mo
+    Mo: 0,                                              // Mo retired from foliar (REQ-061 carve-out 2026-05-16) — routes via fertigation
   };
 }
 
@@ -105,13 +107,14 @@ function computeFoliarRecipeForGap(gap, opts) {
   const coverage = surfactant ? FOLIAR_COVERAGE_WITH_YUCCA : FOLIAR_COVERAGE_DEFAULT;
   const area = TOMATO_NUMBER_BEDS * TOMATO_BED_AREA;
 
-  // Foliar elements + product / pct table.
+  // Foliar elements + product / pct table. Mo dropped 2026-05-16 (REQ-061
+  // carve-out — Mo routes via fertigation now). NaMoO4_g stays in the return
+  // shape (always 0) for downstream consumer compatibility (FP_RECIPE_T5.foliar).
   const PRODUCTS = [
     { element: 'Mn', key: 'MnSO4_g',    pct: PRODUCT_PCT.MnSO4_Mn },
     { element: 'Zn', key: 'ZnSO4_g',    pct: PRODUCT_PCT.ZnSO4_Zn },
     { element: 'Cu', key: 'CuSO4_g',    pct: PRODUCT_PCT.CuSO4_Cu },
     { element: 'Fe', key: 'FeSO4_g',    pct: PRODUCT_PCT.FeSO4_Fe },
-    { element: 'Mo', key: 'NaMoO4_g',   pct: PRODUCT_PCT.NaMoO4_Mo },
     { element: 'B',  key: 'Solubore_g', pct: PRODUCT_PCT.Solubore_B },
   ];
   const MIN_DOSE_G = 0.5;

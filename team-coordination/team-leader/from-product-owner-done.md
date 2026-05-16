@@ -11,6 +11,15 @@ Most recent at the top.
 
 ## Entries
 
+## 2026-05-16 — nutrition (REQ-159/160/161 fully landed; REQ-162 pass-with-TODO)
+
+**Change type:** added
+**REQs affected:** REQ-159 (added), REQ-160 (added), REQ-161 (added), REQ-162 (added)
+**Summary:** Lean-table sweep across every nutrition table. REQ-159 pins elemental-mass columns to milligrams (mg) — recipe-product mass tables in g/kg, including Block 7/8 « Recette stockée vs calculée (drift) », are carved out and stay as-is. REQ-160 moves the unit out of every cell into the column header once; cells carry only the numeric value (or `0`, `—`, `0 %`). REQ-161 drops the `(couvert)` annotation from the contribution-block gap-grid: the `Manque sortant` cell renders the bare digit `0`, color carrying the meaning per REQ-016. REQ-162 reframes the soil-bank block's Mois d'épuisement column as the Mehlich-3 reservoir divided by the weekly plant uptake currently sustainable at the measured SME plant-availability — every element row, not just the CONTRIBUTING ones. Note: REQ-162 is operator-facing only; the model-side switch from "Mehlich-3 ÷ stage demand" (REQ-142 today) to "Mehlich-3 ÷ SME-derived weekly uptake" requires a specialist data + math pass — filed in parallel on `plant-nutrition-specialist/from-product-owner.md`.
+
+### Team-leader outcome (2026-05-16)
+Wave 1 test-writer added 5 matchers in `scripts/check-recipes.mjs` (REQ-159 through REQ-163, the last spanning the sibling `nutrition/tomato/app` PO entry). Wave 2 coder landed REQ-159 + REQ-160 + REQ-161 in `app/index.html` (renderGapGrid: 3 elemental-mass column headers now suffixed `(mg)`, new `formatMg(mg)` helper for bare-numeric cells, `(couvert)` parenthetical dropped — bare `0` with REQ-016 green color carries the covered meaning) and `nutrition/soil-contribution/render.js` (mirror edits on the soil-bank block). REQ-162 stays pass-with-TODO matching the Salanova/Semis pattern — awaits specialist's Mehlich-3 ÷ SME-weekly-uptake math + data pass (filed in parallel on `plant-nutrition-specialist/from-product-owner.md`). Final: npm test 189/189/0 · npm run check 153/0 (REQs wired 101/104, +5 from this wave). Will re-fire once REQ-162's model-side data lands so the structural every-row-with-reservoir-data check can flip from TODO-pass to a real formula-source assertion.
+
 ## 2026-05-15 15:42 — requirements.md
 
 **Change type:** added
