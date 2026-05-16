@@ -1,0 +1,18 @@
+  /* Crop Toggle */
+  .crop-toggle { display: flex; background: var(--card); border-radius: var(--radius); padding: 4px; box-shadow: var(--shadow); margin-bottom: 8px; border: 1px solid var(--border); }
+  .crop-btn { flex: 1; padding: 12px 8px; border: none; border-radius: 7px; font-family: inherit; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.2s ease; background: transparent; color: var(--text-muted); display: flex; align-items: center; justify-content: center; gap: 6px; }
+  .crop-btn.active-tomato { background: var(--accent-tomato); color: white; box-shadow: 0 2px 8px rgba(192,57,43,0.25); }
+  .crop-btn.active-lettuce { background: var(--accent-lettuce); color: white; box-shadow: 0 2px 8px rgba(39,135,74,0.25); }
+  .crop-btn.active-nursery { background: var(--accent-nursery); color: white; box-shadow: 0 2px 8px rgba(107,143,58,0.25); }
+  .crop-btn.active { background: var(--text); color: white; box-shadow: 0 2px 8px rgba(0,0,0,0.15); }
+  .crop-icon { font-size: 16px; }
+
+  /* Page Toggle */
+  .page-toggle { display: flex; background: var(--card); border-radius: var(--radius); padding: 4px; box-shadow: var(--shadow); margin-bottom: 16px; border: 1px solid var(--border); }
+  .page-btn { flex: 1; padding: 10px 8px; border: none; border-radius: 7px; font-family: inherit; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s ease; background: transparent; color: var(--text-muted); display: flex; align-items: center; justify-content: center; gap: 6px; }
+  .page-btn.active { background: var(--input-bg); color: var(--text); border: 1.5px solid var(--border); }
+
+  /* Subtle admin toggle: barely visible by default, tinted when active. */
+  .admin-toggle { background: none; border: none; padding: 4px 8px; margin-left: 6px; font-family: inherit; font-size: 11px; letter-spacing: 0.5px; color: var(--border); cursor: pointer; transition: color 0.2s; }
+  .admin-toggle:hover { color: var(--text-muted); }
+  .admin-toggle.is-admin { color: var(--accent-tomato); }
