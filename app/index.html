@@ -151,346 +151,101 @@
 <!-- @include lib/spec-strings.js -->
 </script>
 <script>
-const TOMATO_BED_AREA = 54.7;
-const TOMATO_NUMBER_BEDS = 7;
-const LETTUCE_BED_AREA = 30.4;
-const LETTUCE_NUMBER_BEDS = 4.5;
+// ─────────────────────────────────────────────────────────────────────────
+// Décembre — Système d'opération · main script chain
+//
+// Authoring source = @include directives only. Every function definition,
+// constant, and state binding lives in a subproject partial under
+// app/operator/, nutrition/, yield-range/, or lib/. Build pipeline
+// (scripts/build.mjs) inlines partials into dist/index.html in the order
+// below; classic-script function hoisting + textual ordering preserves the
+// pre-carve runtime behavior.
+//
+// Order is dependency-driven:
+//   1. State bindings (currentCrop / area constants / LETTUCE recipe)
+//   2. Independent libs (sun, spec-strings already in scope from preceding
+//      <script>, week/logic.js)
+//   3. Page-recalc helpers (recalc, getSolarRad, autoStage, recalcNursery)
+//   4. Per-page operator renderers (irrigation, fertigation, foliar)
+//   5. Diagnostic logic
+//   6. Model layer — plant-needs, PRODUCT_PCT, STORED_RECIPE, FP_RECIPE_T5,
+//      RECIPE_INPUTS, ACCEPTED_DEFICITS / EXCESSES, fertigation-recipe (calc
+//      mutates FP_RECIPE_T5 at boot), sidedress-recipe, foliar-recipe,
+//      nursery + compost + soil-contribution subprojects, soil integrator
+//   7. Tomato chemistry library (PRODUCT / PH_RESPONSE / computeRecipe …)
+//   8. Plant-needs calc/model + yield-range
+//   9. Bilan supply orchestrator + Block 7 drift renderer
+//   10. UI helpers (pourquoi modal, format, render-gap-grid)
+//   11. Per-crop nutriment builders (tomato → lettuce → yield-range → nursery)
+//   12. Cross-crop nutriment dispatcher + listener wiring + footer init
+//   13. Operator chrome (routing, hash, init) — MUST be last, reads every
+//       setter/handler defined above
 
-// computeStageRecipe(stage) is declared LATER in this file, after all its
-// dependencies (TOMATO_FRUIT_EXPORT, BIOMASS_DEMAND, STORED_RECIPE,
-// PRODUCT_PCT, SIDEDRESS_MINIMUM_EFFICIENCY, SIDEDRESS_AREA_PER_PLANCHE). It returns the
-// FP-target fertigation per stage (mass-balance from RECIPE_INPUTS), used by
-// the Block 7 stored-vs-FP drift gauge. The team-facing fertigation values are
-// the locked STORED_RECIPE.tomato.fertigation — what gets weighed at the
-// goutteur each week.
+// Source-of-truth anchors (REQ-004 / REQ-106 / REQ-113 / REQ-139). Identifiers
+// below are wired in the partials this file @includes — supply orchestrator reads
+//   computeStageRecipe(stage), STORED_RECIPE.tomato.foliaire.A,
+//   STORED_RECIPE.tomato.sidedress[stage], BIOMASS_DEMAND[stage],
+//   TOMATO_FRUIT_EXPORT[element]
+// FP gap chain routes through
+//   window.FoliarRecipeTomato.computeFoliarRecipeForGap
+//   window.FoliarRecipeTomato.computeFoliarSupply
+// Nutrition page listener wiring binds 'nutr-foliar-spray-count' and
+// 'nutr-foliar-surfactant'. The default Bilan recipe-mode is
+//   let nutrRecipeMode = 'fp'
+// Source-grep tests at the integrator boundary (REQ-004 / REQ-106 / REQ-113 /
+// REQ-139) pin these identifiers — live definitions live in
+// app/operator/nutriment.js, nutrition/tomato/app/supply.js, and
+// nutrition/tomato/app/logic.js.
 
-// FERTIGATION OLIGOS REMOVED (April 26, 2026)
-// Reasoning: At soil pH 7.4 (calcium-saturated), most sulfate-form oligos
-// precipitate before reaching plants:
-//   - FeSO4: Fe2+ oxidizes to Fe3+ and forms iron hydroxide/phosphate precipitates
-//   - MnSO4: oxidizes to MnO2 (unavailable form)
-//   - ZnSO4: forms zinc hydroxide and phosphate precipitates
-//   - CuSO4: partial availability, but mostly bound by soil
-// Boron (borax) and molybdenum (Na molybdate) DO work at high pH, but kept out
-// for workflow simplification — Option C from the cost-benefit analysis.
-// Foliar program bypasses soil chemistry entirely. Current state (2026-05-06):
-//   - Tomato Spray (single weekly): Mn, Zn, B, Cu, Mo, Fe (FeSO₄·7H₂O 80 g)
-//   - Tomato Spray B (CaCl₂ anti-BER): REMOVED — Teris industrial grade
-//     Ecocert listing was unverified; BER prevention now via ventilation +
-//     humidity management.
-//   - Lettuce foliar: REMOVED — Fe moved to nursery fertigation + production
-//     fertigation (more efficient than foliar bypass on locked-out beds).
-// References on foliar at high pH:
-//   - Mosaic Crop Nutrition: foliar recommended for Fe at any pH
-//   - Pioneer Seeds agronomy: foliar for elements not efficiently used in soil
-//   - Iranian olive research on calcareous soils: foliar > soil for alkaline
-// Reintroduce sulfate oligos in fertigation when soil pH drops below 6.5.
-// Reference rates per 100 m² (1× multiplier, before MgSO4 multiplier):
-// const TOMATO_MICROS = { feSulfate: 20, znSulfate: 4, mnSulfate: 7, cuSulfate: 1, borax: 9, moSodium: 1 };
-// LETTUCE production fertigation (per 100 m² per week, dissolved in stock barrel).
-// feSulfate 7.5 g/100 m² added 2026-04-29 as supplement for stretched cycles
-// (stunted lettuce taking 4-6 weeks). Nursery Fe loading covers ~3 weeks of
-// production demand; this fertigation adds maintenance Fe for the rest.
-//   Math: target 1.5 ppm Fe in irrigation water at root zone.
-//     Stock conc Fe = 1.5 / 0.02 (Dosatron 2%) = 75 ppm = 75 mg/L stock.
-//     FeSO₄·7H₂O at 20% Fe → 75/0.20 = 375 mg/L stock = ~0.4 g/L stock (May).
-//     Per 100 m² weekly stock vol varies 6-19 L by season; constant g per 100 m²
-//     (matching K₂SO₄/MgSO₄ pattern) → stock conc varies 0.4-1.2 g/L FeSO₄.
-//   Lockout caveat: at production bed pH 7.4, Fe²⁺ oxidizes to Fe³⁺ within hours
-//     and precipitates as Fe(OH)₃. Effective root absorption ~10-20%. Per cycle
-//     (6 weeks at 7.5 g/100 m²/week) = 45 g FeSO₄ = 9 g Fe applied per 100 m²,
-//     of which ~1-2 g Fe absorbed by ~2500 plants = 0.4-0.8 mg Fe per plant.
-//     Closes the ~0.5 mg/plant deficit between nursery loading and 6-week harvest.
-//   Stability in stock: keep barrel sealed, mix Fe last (just before closing),
-//     don't worry about ~10-20% loss to oxidation by end of week.
-const LETTUCE = { mgSulfate: 467, kSulfate: 2996, feSulfate: 7.5 };
-// PLANTIFUL REMOVED (April 26, 2026)
-// Reasoning: Plantiful (BioSun) was originally added as a fulvic acid replacement,
-// but contains fermented kelp + Bacillus + yucca, NOT fulvic/humic acid.
-// For our specific bottleneck (calcium-saturated alkaline soil pH 7.4, micronutrient
-// lockout), the biostimulant mechanisms (hormone signaling, microbial activity)
-// don't address the actual constraint. ~$900-1500/year saved.
-// Reference rate (in case of reintroduction): 180 mL per 100 m², 4% dilution
-// const PLANTIFUL_ML_PER_100M2 = 180;
+// ── 1. State (TDZ-mandatory FIRST) ────────────────────────────────────────
+<!-- @include app/operator/state.js -->
 
+// ── 2. Independent libs ───────────────────────────────────────────────────
 // Sun-time helpers (getSunTimes / addHours / getCurrentTimeString / SUN_TABLE)
 // live in lib/sun.js — Quebec City mid-month sunrise/sunset table + interp +
 // formatting. Consumers: buildTensio below, app/week/logic.js,
 // nutrition/tomato/foliar-recipe/app/logic.js.
 <!-- @include lib/sun.js -->
 
-let currentCrop = 'tomato';
-let currentStage = 'T1';
-let currentPage = 'fertigation';
-let currentVigor = 'low';
-
-// Operator chrome (setCrop, setCropBtn, setVigor, setPage, syncHash, cropFor,
-// toggleAdmin + PAGES/CROP_PAGES/hash routing + init) is included near the
-// bottom of this script as `app/operator/logic.js`. Function declarations are
-// hoisted across the whole <script> block, so inline `onclick=` handlers and
-// other module-level code can call setPage/setCrop without ordering concerns.
-
 <!-- @include app/week/logic.js -->
 
-function recalc() {
-  buildTensio();
-  autoStage();
-  buildSteps();
-}
+// ── 3. Page-recalc helpers + per-crop accessors ───────────────────────────
+<!-- @include app/operator/recalc.js -->
 
-// Fixed parameters — kept as functions for consistency
-// Dosatron ratio: 2% (D25 series, read on silver ring)
-//
-// Multipliers reverted to 1.0× on 2026-05-07 per first-principles audit:
-// At 1.0×, fertigation T5 delivers 3.78 g K/m²/wk and 0.36 g Mg/m²/wk.
-// Soil mass-flow at SME K 292 ppm × ~28 L/m²/wk × ~0.7 uptake fraction ≈
-// 4.9 g K/m²/wk passive; combined with side-dress 0.23 g K/m²/wk and
-// fertigation 1.0×, total K supply ≈ 8.9 g K/m²/wk = 148% of 6.0 g/m²/wk
-// peak demand. Same logic for Mg: soil + 1.0× fertigation ≈ 1.26 g Mg/m²/wk
-// = 147% of 0.86 g/m²/wk demand. Multipliers >1.0× ignored soil contribution
-// and double-counted toward channel role; pushed total supply >180% of demand.
-// Re-evaluate per element if next SSE shows soil contribution dropping (rare —
-// soil bank is loading, not depleting).
-function getRatio() { return 2; }
-function getMultK() { return 1.0; }
-function getMultMg() { return 1.0; }
-function getTotalArea() { return (currentCrop === 'tomato' ? TOMATO_NUMBER_BEDS * TOMATO_BED_AREA : LETTUCE_NUMBER_BEDS * LETTUCE_BED_AREA); }
-function getBedArea() { return currentCrop === 'tomato' ? TOMATO_BED_AREA : LETTUCE_BED_AREA; }
-
-// 20-year average solar radiation by ISO week — Quebec City greenhouse,
-// J/cm²/week (inside-greenhouse, glazing transmission applied).
-// Source: 20-year Quebec City weekly averages (provided by Guillaume 2026-05).
-// Cert 5 — these are the reference values; all weekly solar calcs derive from
-// here. Validated by REQ-009 in requirements.md.
-//
-// Weeks 19-52 not yet provided → fall back to SOLAR_BY_MONTH below until the
-// array is extended.
-const SOLAR_BY_WEEK = [
-  null,    // week 0 (placeholder — ISO weeks start at 1)
-  2695,    // week 1
-  2940,    // week 2
-  3430,    // week 3
-  3920,    // week 4
-  4655,    // week 5
-  5390,    // week 6
-  6125,    // week 7
-  6860,    // week 8
-  7595,    // week 9
-  8330,    // week 10
-  9065,    // week 11
-  9660,    // week 12
-  10290,   // week 13
-  10780,   // week 14
-  11270,   // week 15
-  11760,   // week 16
-  12250,   // week 17
-  12740,   // week 18
-];
-
-// Monthly fallback — used for weeks 19-52 until the weekly array is extended.
-// Calibrated against Agrométéo Québec data (kept for traceability):
-//   Week of April 17-24, 2026: 11,989 J/cm²/week = 1,713/day
-//   Same week 2025: 11,391 J/cm²/week = 1,627/day
-const SOLAR_BY_MONTH = [
-  600,   // Jan
-  900,   // Feb
-  1300,  // Mar
-  1700,  // Apr
-  2000,  // May
-  2200,  // Jun
-  2200,  // Jul
-  1900,  // Aug
-  1500,  // Sep
-  1000,  // Oct
-  650,   // Nov
-  500,   // Dec
-];
-
-// Returns daily J/cm² for the current week. Prefers the 20-year weekly array
-// (weeks 1-18 today), falls back to monthly average otherwise.
-function getSolarRad() {
-  const wk = getWeekNumber();
-  const wkly = SOLAR_BY_WEEK[wk];
-  if (wkly != null) return wkly / 7;
-  const month = new Date().getMonth();
-  return SOLAR_BY_MONTH[month];
-}
-
-// Auto-calculate current week number (ISO: week 1 contains Jan 4)
-// and map to tomato growth stage
-// Transplanted mid-December = week 51
-// T1: weeks 51-2 (4 weeks), T2: 3-6, T3: 7-9, T4: 10-18, T5: 19+ (pleine production jusqu'à crop-out ~sem 28)
-function getWeekNumber() {
-  // ISO 8601 week number. Algorithm: jump to the Thursday of the current
-  // ISO week, then count weeks since Jan 1 of that Thursday's year.
-  // Why this shape: ISO weeks start Monday and the year-rollover week
-  // (e.g. Dec 29 2025) belongs to week 1 of the *next* year. Using the
-  // Thursday pivot handles both rules in one step.
-  // Why not the previous formula: it added jan4.getDay() with Sun=0,
-  // which silently shifted the result by one week whenever Jan 4 fell
-  // on a Sunday (e.g. 2026 → returned 17 on Sat May 2 instead of 18).
-  const d = new Date();
-  d.setHours(0, 0, 0, 0);
-  const dayNumber = d.getDay() || 7; // Sun=0 → treat as 7 so Mon..Sun maps to 1..7
-  d.setDate(d.getDate() + 4 - dayNumber); // pivot to Thursday of current ISO week
-  const yearStart = new Date(d.getFullYear(), 0, 1);
-  return Math.ceil(((d - yearStart) / 86400000 + 1) / 7);
-}
-
-function getStageFromWeek(week) {
-  if (week >= 51 || week <= 2) return 'T1';
-  if (week <= 6) return 'T2';
-  if (week <= 9) return 'T3';
-  if (week <= 18) return 'T4';
-  return 'T5'; // T5: weeks 19+ (runs to crop-out — variable end, no fixed week)
-}
-
-function autoStage() {
-  if (currentCrop !== 'tomato') return;
-  const week = getWeekNumber();
-  currentStage = getStageFromWeek(week);
-  document.querySelectorAll('[data-stage]').forEach(b => b.classList.toggle('active', b.dataset.stage === currentStage));
-  document.getElementById('stage-auto-label').innerHTML =
-    `Semaine <strong style="color:var(--text);">${week}</strong> → stade <strong style="color:var(--text);">${currentStage}</strong> (automatique)`;
-
-  // Show radiation
-  document.getElementById('param-radiation').textContent = getSolarRad() + ' J/cm²/jour';
-}
-
+// ── 4. Per-page operator renderers ────────────────────────────────────────
 // Tensiometer config + buildTensio renderer live in
 // nutrition/tomato/app/irrigation/logic.js — DOM targets (#tensio-params /
 // #tensio-success / #vigor-note) are declared in the tomato irrigation
-// page partial. Reads `currentCrop` / `currentVigor` (declared above) plus
+// page partial. Reads `currentCrop` / `currentVigor` plus
 // lib/sun.js helpers (getSunTimes / addHours / getCurrentTimeString).
 <!-- @include nutrition/tomato/app/irrigation/logic.js -->
-
 
 // Fertigation page renderer (getStockVol, getNutrients, buildSteps) lives in
 // the fertigation-recipe subproject. Reads STORED_RECIPE.tomato.fertigation
 // + shared helpers (getSolarRad, getTotalArea, getMult*, currentCrop,
-// currentStage, LETTUCE) defined above.
+// currentStage, LETTUCE).
 <!-- @include nutrition/tomato/fertigation-recipe/app/logic.js -->
 
-// ── Foliar Spray ──
-// Renderer moved to nutrition/tomato/foliar-recipe/app/logic.js. Recipe data
-// lives in STORED_RECIPE.tomato.foliaire (window-global, defined in that
-// subproject's stored.js). Single weekly spray since 2026-05-06.
+// Foliar page renderer (buildFoliar, toggleMissedWindow) lives in
+// nutrition/tomato/foliar-recipe/app/logic.js. Recipe data lives in
+// STORED_RECIPE.tomato.foliaire (window-global, defined in that subproject's
+// stored.js). Single weekly spray since 2026-05-06.
 <!-- @include nutrition/tomato/foliar-recipe/app/logic.js -->
 
-// Nursery
-// Fish dose: 13 mL/L (April 26, 2026 — bumped from 10 mL/L to push tray-finishing
-// strategy). Reasoning: 10 mL/L delivers ~200 ppm N pulse but effective continuous
-// N is much lower due to leaching → undersized for finished lettuce in trays.
-// Target N production range is 150-200 ppm continuous; 13 mL/L moves us closer
-// without crossing into salt-burn risk zone.
-//
-// EC MEASUREMENT STRATEGY (using Bluelab pen):
-//   - Solution EC (in bucket): target 1.9-2.6 mS/cm. Verification step to catch
-//     mixing errors. Keep this check while validating the 13 mL/L recipe over
-//     a few cycles, then can be dropped once consistent.
-//   - Substrate EC (in cell, 30-60 min after watering): target 1.5-2.5 mS/cm.
-//     This is what plants actually experience. Should be slightly lower than
-//     solution EC due to plant uptake and dilution in substrate.
-//   - With top-watering (current practice), salts accumulate at cell BOTTOM
-//     over time. Substrate EC trending up cycle-after-cycle = needs flush.
-//   - Probe insertion: into wet (not saturated) substrate, push firmly,
-//     wait 30-60s for stable reading. Average 2-3 cells per tray.
-//
-// Kelp stays at 2 mL/L — biostimulant, not primary nutrient source.
-// Water: 1.25 L/tray = ~25 mL/cell for 50-cell trays.
-//
-// FeSO₄·7H₂O 15 mg/L = ~3 ppm Fe in fertigation solution (added 2026-04-29):
-// Source: Alpha Chemicals (Amazon B007ODUI76), 20% Fe by mass. Organic-allowed
-// per CAN/CGSB-32.311 (ferrous sulphate is on the permitted iron sources list).
-//   Reason for adding here vs production foliar:
-//   - Nursery substrate is acidic (peat-based, pH ~5.5-6.0) — Fe²⁺ stays
-//     bioavailable to roots. Production beds at pH 7.4 lock out Fe immediately.
-//   - Root uptake at acidic pH is 60-80% efficient vs ~10-15% for foliar
-//     cuticle absorption. Same gram of Fe delivers 4-8× more usable Fe via
-//     nursery fertigation than via production foliar spray.
-//   - Loads seedlings with tissue Fe before transplant — plants enter
-//     production with reserves, coast through 2-week lettuce cycle even with
-//     locked-out beds.
-//   - Eliminates lettuce production foliar spray entirely (no PHI, no residue
-//     wash, no Cu cumulative concern, less labor).
-//   Target: 3 ppm Fe in solution (standard hydroponic Fe range).
-//   FeSO₄·7H₂O at 20% Fe → 3 / 0.20 = 15 mg product per L water.
-//   For 75 trays × 1.25 L = 93.75 L → 1406 mg = 1.41 g of FeSO₄·7H₂O.
-//   Stability: dissolved FeSO₄ oxidizes Fe²⁺ → Fe³⁺ over hours and precipitates
-//   if pH drifts above ~5.5. Mix and apply same day; the team's water has low
-//   alkalinity (Berger 39086, 25 ppm CaCO₃) and the FeSO₄ self-acidifies the
-//   bucket to pH ~5, so no separate acid step needed.
-//   EC contribution at 15 mg/L is negligible (~0.015 mS/cm) — EC targets unchanged.
-function recalcNursery() {
-  const element = document.getElementById('tray-count');
-  if (!element) return;
-  const trays = parseInt(element.value) || 1;
-  const water = trays * 1.25;
-  document.getElementById('out-water').textContent = water % 1 === 0 ? water : water.toFixed(1);
-  document.getElementById('out-fish').textContent = Math.round(water * 13);
-  document.getElementById('out-kelp').textContent = Math.round(water * 2);
-  // FeSO₄·7H₂O dose: 15 mg/L → display in g (typical batch is 1-2 g)
-  const feG = (water * 15) / 1000;
-  document.getElementById('out-fe').textContent = feG.toFixed(2);
-}
-
+// ── 5. Diagnostic page logic ──────────────────────────────────────────────
 <!-- @include app/diagnostic/logic.js -->
 
-// ═══════════════ BILAN NUTRIMENTS (admin) ═══════════════
-// Mass-balance bilan for tomato production. Inputs (cible, stade, pH lockout)
-// drive demand-vs-effective-supply per element with flags.
+// ── 6. Model layer (data / calc / model partials) ─────────────────────────
 //
-// SINGLE-SOURCE-OF-TRUTH RULE (per CLAUDE.md, REQ-004):
-//   Supply numbers MUST be read from the same constants that drive the
-//   team-facing pages. Today:
-//     - Fertigation: STORED_RECIPE.tomato.fertigation[stage] × getMultK() × getMultMg()  ✅
-//     - Foliaire:    STORED_RECIPE.tomato.foliaire.A (label strings) ✅ (B removed 2026-05-06)
-//     - Sol (engrais sol tomate, Plan A+): STORED_RECIPE.tomato.sidedress[stage]  ✅
-//                       The Sol page HTML still hardcodes the same numbers —
-//                       hand-synced. Future state: render the Sol page from
-//                       STORED_RECIPE.tomato.sidedress so there's truly ONE
-//                       source-of-truth. See requirements.md REQ-004.
-//     - Sol (soufre):  not consumed by the Bilan — pH is a checkbox input
-//                       (nutr-phlocked), not a nutrient flux.
-//   No duplicated dose tables. If you're typing a number here that exists on
-//   another page, you're violating the rule — re-read instead.
-//
-// SOURCES & ASSUMPTIONS (cert in parens):
-//   Tomato WHOLE-PLANT UPTAKE per kg fresh fruit produced (macros g/kg,
-//   micros mg/kg) — validated 2026-05-02 against:
-//     - Yara: N 2.27-2.40 · P 0.18-0.36 · K 2.36-3.27 · Ca 1.54 · Mg 0.27-0.54 g/kg
-//       (5.0/0.4-0.8/5.2-7.2/3.4/0.6-1.2 lb/ton fresh fruit; Yara notes 5% of
-//        Ca and 60% of N/P/K end up in fruit, rest in vegetative parts — so
-//        these are WHOLE-PLANT uptake, not fruit-only export)
-//     - Sonneveld-derived (12/1.25/7/4.5/1.875 mmol/L solution × 3 L/m²/day
-//       × 70% uptake at 1 kg/m²/wk yield): N 2.5 / P 0.57 / K 4.0 / Ca 2.65 /
-//       Mg 0.67 g/kg
-//     Adopted (midpoints, cert 4): N 2.5 / P 0.4 / K 3.5 / Ca 1.5 / Mg 0.4 g/kg
-//   Micros (cert 2): Fe 10 / Mn 5 / Zn 3 / B 3 / Cu 1 / Mo 0.05 mg/kg.
-//     Estimated from fruit DM composition (Fe 19-27, Mn 10-23, Zn 16-25,
-//     B 18-28, Cu 4.6-9.5 mg/kg DM at ~5.5% DM) × leaf-accumulation factor
-//     (Fe/Mn 5-10×, Zn/B/Cu 2-5×). No Yara/Sonneveld whole-plant micro data.
-//   Biomass overhead 1.0 (cert 5): the values above ARE whole-plant uptake
-//     already, so no further biomass multiplication. Earlier model (May
-//     2026) used "fruit removal × 1.4" but that conflated removal with
-//     uptake — corrected after validation.
-//   Foliar coverage (cert 4): 30% — operating without yucca surfactant
-//     (decision 2026-05-05, not on order). Droplet beading + runoff at this
-//     coverage; recipe doses already account for this.
-//   Lockout pH 7.4 (cert 5 from your SME): root Fe/Mn/Zn ≈ 0% (below detection
-//     in SME); root P ≈ 5% of Mehlich reserve (SME 0.8-1.1 ppm vs 5-50 spec).
-//   Soil (Berger Labs April 2026, Mehlich-3): P 558 / K 2118 / Ca 10989 /
-//     Mg 1646 kg/ha = mg/kg × 0.01 × bulk density × depth. We treat these as
-//     reservoirs — weekly bioavailable flow is bounded by SME, not Mehlich.
-//   N: not on the soil test directly. Mineralized from compost + organic
-//     amendments. Conservative weekly N flux from compost ≈ 1.5 g/m²/week
-//     during May (Berger ORGANIMIX 4-2-2 + warming soil). Cert 2 — refine
-//     when leaf tissue or KCl-extractable N data arrives.
-//   Surface tomate: 7 × 54.7 m² = 382.9 m² (TOMATO_NUMBER_BEDS × TOMATO_BED_AREA).
-//
-// DESIGN CHOICE: All "supply" numbers are EFFECTIVE (post-coverage, post-lockout)
-// to make the bilan honest. Raw recipe doses are visible in Détail des apports
-// for traceability.
+// SINGLE-SOURCE-OF-TRUTH RULE (REQ-004): Bilan supply numbers MUST be read
+// from the same constants that drive the team-facing pages.
+//   - Fertigation: STORED_RECIPE.tomato.fertigation[stage] × getMultK() × getMultMg()
+//   - Foliaire:    STORED_RECIPE.tomato.foliaire.A (label strings) (B removed 2026-05-06)
+//   - Sol (engrais sol tomate, Plan A+): STORED_RECIPE.tomato.sidedress[stage]
+//   - Sol (soufre):  not consumed by the Bilan — pH is a checkbox input
+//                    (nutr-phlocked), not a nutrient flux.
+// No duplicated dose tables. If you're typing a number here that exists on
+// another page, you're violating the rule — re-read instead.
 
 <!-- @include nutrition/tomato/plant-needs/data.js -->
 
@@ -529,6 +284,7 @@ window.STORED_RECIPE = { tomato: {} };
 <!-- @include nutrition/tomato/fertigation-recipe/app/stored.js -->
 <!-- @include nutrition/tomato/sidedress-recipe/app/stored.js -->
 <!-- @include nutrition/tomato/foliar-recipe/app/stored.js -->
+
 // FP recipe (T5 only — refined 2026-05-08 to mass-balance pure, no soil credit).
 // Single source of truth for the Phase 1 comparison (Block 6) and the bank-
 // trajectory view on the Banque sol page. Recette proposée (renderProposedRecipe)
@@ -604,16 +360,7 @@ const FP_RECIPE_T5 = {
 // over the cycle (default 35 d / 5 wk). Demand = mass × DM × tissue conc.,
 // expressed per-plant and per-tray (operational unit).
 //
-// Seedlings differ from mature heads on two axes:
-//   - DW fraction higher (~7% vs 5%) — younger tissue, more leaf:water ratio
-//     while in active growth. Cert 3.
-//   - Tissue concentrations slightly skewed: N higher (rapid protein
-//     synthesis), Ca higher (active cell-wall building), K slightly lower
-//     (less storage tissue). Cert 3 — seedling-specific norms less
-//     precisely documented than mature.
-
 // Refactored 2026-05-09 into 3 subprojects under nutrition/nursery/.
-// Each owns its data.js + calc.js + model.js + spec.md + derivation.md.
 // Public APIs at runtime:
 //   window.PlantNeedsNursery            — demand model (calculateNurseryDemand)
 //   window.SubstrateContributionNursery — OM2 + feather meal release
@@ -638,16 +385,19 @@ const FP_RECIPE_T5 = {
 <!-- @include nutrition/soil-contribution/render.js -->
 <!-- @include nutrition/soil-contribution/model.js -->
 
+// Soil-contribution integrator-side mass-flow helpers — SME_TOMATO_PPM,
+// weeklyMassFlowL, transpirationFactor, nMineralizationFactor,
+// soilWeeklyAvailable. Reads getSolarRad from app/operator/recalc.js.
+<!-- @include nutrition/soil-contribution/integrator.js -->
+
 <!-- @include nutrition/render.js -->
 
 // ─── RECIPE_INPUTS — first-principles inputs for fertigation recipe sizing ──
 //
 // Recipe values returned by computeStageRecipe(stage) are DERIVED from these
 // inputs. Change an input here → recipes recompute on the next call. No
-// magic numbers.
-//
-// Assumption certainty levels noted per field. Refine when better data lands
-// (tissue tests for uptake fractions; per-stage SME for soil concentration).
+// magic numbers. Cert per field. Refine when better data lands (tissue tests
+// for uptake fractions; per-stage SME for soil concentration).
 const RECIPE_INPUTS = {
   // Expected fruit yield per stage (kg/m²/wk). T1-T2 vegetative, T3 first fruit
   // set, T4 ramping, T5 peak target maintained through end of cycle. Cert 3.
@@ -788,1062 +538,17 @@ const ACCEPTED_EXCESSES = [
 <!-- @include nutrition/tomato/foliar-recipe/calc.js -->
 <!-- @include nutrition/tomato/foliar-recipe/model.js -->
 
-// TOMATO_STAGES const removed 2026-05-08 — was a memoized snapshot of
-// computeStageRecipe(). Call computeStageRecipe(stage) directly. See
-// RECIPE_HISTORY for the prior shape.
-
 <!-- @include app/historique-nutriments/history.js -->
 
-// captureCurrentSnapshot() — workflow helper, call from the browser console:
-//   copy(JSON.stringify(captureCurrentSnapshot(), null, 2))
-// Captures the live applied recipe across all 3 channels — all three are now
-// hand-stored constants under STORED_RECIPE.tomato:
-//   - fertigation: STORED_RECIPE.tomato.fertigation (hand-stored current values; PA Taillon = FP target, not STORED)
-//   - sidedress:   STORED_RECIPE.tomato.sidedress
-//   - foliaire:    STORED_RECIPE.tomato.foliaire
-// Returns a deep clone via structuredClone so subsequent edits to the live
-// constant don't mutate the snapshot. Paste into a new RECIPE_HISTORY entry's
-// `fullSnapshot` BEFORE editing any of the three. Not auto-invoked —
-// future-maintainer convenience.
-function captureCurrentSnapshot() {
-  return structuredClone(STORED_RECIPE.tomato);
-}
+// ── 7. Tomato chemistry library ───────────────────────────────────────────
+// Phase 1 recipe model: PRODUCT catalog + CHANNEL_ROLE splits + PH_RESPONSE +
+// foliarPhResponse + Ksp/tag tables + MIX_ORDER + effectiveEfficiency +
+// predictedCE + predictedTankPh + passiveSupplyMassFlow + computeRecipe +
+// the validatePhase1ModelCoverage IIFE (sanity-check at script load).
+<!-- @include nutrition/tomato/lib/recipe-math.js -->
 
-// Soil weekly contribution — direct mass-flow model from SME data.
-//
-// SME (Saturated Media Extract, Berger sample 596614, tomato bed, 2026-04-10)
-// reports the actual ion concentrations the plant root sees in the soil paste.
-// Multiplying by weekly transpiration gives mass-flow uptake — the dominant
-// nutrient delivery mechanism for ions already in solution.
-//
-// This replaces the earlier Mehlich-3 × annual-fraction approximation, which
-// was conservative for B/Cu/Mo (treated them as 0) and overstated K demand
-// gaps. SME is more honest because it captures BOTH the reservoir effect AND
-// the chemistry that limits availability (lockout already shows up as low SME).
-//
-// Source: farm info/SME - 2026-04-10.pdf
-const SME_TOMATO_PPM = {
-  N:  45.4,    // NO₃ 45.0 + NH₄ 0.4 (in spec range 35-180 / 0-20)
-  P:   1.1,    // ↓ below norm 5-50 (lockout confirmed)
-  K:  292.3,   // in spec, near top
-  Ca: 238.8,   // ↑ above norm 40-200 (Ca-saturated, root cause of crisis)
-  Mg:  79.3,   // in spec
-  B:    0.18,  // in spec 0.05-0.5 — neutral boric acid, not pH-locked
-  Cu:   0.04,  // in spec 0.01-0.5
-  Fe:   0.86,  // in spec 0.30-3 (BUT calcareous lockout suppresses real uptake; see discount)
-  Mn:   0,     // < 0.03 below detection — locked
-  Mo:   0.02,  // in spec 0.01-0.05 — anion, MORE available at high pH
-  Zn:   0,     // < 0.03 below detection — locked
-};
-
-// Soil bank (Mehlich-3) — source-of-truth lives in nutrition/soil-contribution/.
-// Read via window.SoilContribution.BANK_MG_M2[crop][element] (REQ-143).
-
-// SME lettuce bed (Berger sample 596616, laitue 1, 2026-04-10) — moved
-// 2026-05-16 into nutrition/lettuce/plant-needs/data.js. Top-level const
-// SME_LETTUCE_PPM declared by the lettuce data.js partial above remains
-// in scope for downstream callsites (SME tab, etc.) without a re-alias.
-
-// Weekly water flow through the root zone, per m².
-// SAME FORMULA as the fertigation page's irrigation calculation (see line ~280
-// HTML comment + getStockVol()): 2 mL/(J/cm²)/m² × solar radiation × 7 days.
-// Mass-flow uptake = this volume × SME concentration to a reasonable
-// approximation (drip system, minor leaching loss, mature canopy where
-// transpiration ≈ irrigation). Cert 3 — uncertainty in the 2 mL/J coefficient
-// is within ±20%.
-//
-// Why this matters: soil supply scales with the season. In May (~2000 J/cm²/day)
-// the flow is ~28 L/m²/wk; in December (~500 J/cm²/day) it drops to ~7 L/m²/wk.
-// The Bilan now correctly shows B/Mo/Cu coverage tightening in winter even
-// though the SME concentrations are unchanged.
-function weeklyMassFlowL() {
-  return (2 * getSolarRad() * 7) / 1000;
-}
-
-// Transpiration factor — corrects mass-flow for canopy size. Cert 3.
-//
-// `weeklyMassFlowL()` returns IRRIGATION volume (the formula is fertigation-
-// driven). For a mature, healthy plant with full canopy, transpiration ≈ irrigation
-// minus a small leaching fraction. But for a stunted plant at, say, 30% target
-// yield, the canopy is much smaller and real transpiration is materially less —
-// often 50-70% of irrigation. Most of the surplus water leaches past the roots
-// without contributing to mass-flow uptake.
-//
-// Without this correction, the Bilan would systematically overstate soil supply
-// for stunted plants — exactly the failure mode that perpetuates stunting (the
-// model says "you have plenty of N from soil", user under-fertigates, plants
-// stay stunted, model still says "you have plenty"...).
-//
-// Approximation: transpiration scales roughly with canopy area, which scales
-// roughly with yield achievement at production stages. Floor at 0.4 because
-// even tiny seedlings transpire some. Cap at 1.0 (can't exceed irrigation).
-//
-// More precise alternatives we're NOT using yet (cost > value at current state):
-//   - Direct LAI measurement (would need leaf-area meter)
-//   - Penman-Monteith from VPD + canopy resistance (overengineered for our context)
-//   - Drainage-fraction monitoring on a sample bed (good idea, separate operational
-//     decision — see issue R3 in the audit notes)
-function transpirationFactor(currentKgM2Wk, targetKgM2Wk) {
-  if (!targetKgM2Wk || targetKgM2Wk <= 0) return 1.0;
-  const ratio = currentKgM2Wk / targetKgM2Wk;
-  return Math.max(0.4, Math.min(1.0, ratio));
-}
-
-// Seasonal mineralization multiplier for organic N specifically. Cert 3.
-//
-// The SME N reading (April 2026) is a snapshot. But soil microbial N
-// mineralization rate roughly doubles for every 10°C rise (Q10 ≈ 2,
-// Stanford & Smith 1972). Greenhouse soil temperature swings ~12-22°C
-// across the year (warmer than outside but not isothermal). Without
-// scaling, we'd assume April-rate mineralization continues all summer
-// (understating supply when demand is highest) and all winter
-// (overstating when soil cools and microbes slow).
-//
-// Calibration: April = 1.0 baseline (the test month). Other months scale
-// relative to it based on greenhouse soil temperature curves and Q10.
-// Range 0.6 (deep winter) to 2.0 (peak summer).
-//
-// This applies ONLY to the N branch in soilWeeklyAvailable. Other elements
-// (P, K, Ca, Mg, micros) are dissolved ions in SME — their availability
-// scales with transpiration (already in weeklyMassFlowL), not with
-// microbial activity.
-const N_MINERALIZATION_BY_MONTH = [
-  0.6,   // Jan — soil cold, microbes slow
-  0.6,   // Feb
-  0.8,   // Mar
-  1.0,   // Apr — SME baseline (test month)
-  1.3,   // May
-  1.7,   // Jun
-  2.0,   // Jul — peak microbial activity
-  2.0,   // Aug
-  1.5,   // Sep
-  1.1,   // Oct
-  0.8,   // Nov
-  0.6,   // Dec
-];
-
-function nMineralizationFactor() {
-  return N_MINERALIZATION_BY_MONTH[new Date().getMonth()];
-}
-
-// Bioavailability efficiency from SME concentration to actual root uptake.
-// For ions where mass-flow is the dominant uptake mechanism (most macros + B,
-// Cu, Mo at this pH), efficiency is ~100%. For Fe specifically, even when
-// in solution at SME concentration, calcareous-rhizosphere chemistry suppresses
-// root reductase activity and real uptake is much lower than mass-flow predicts.
-// Cert 3-4. Confirmed empirically: SME shows Fe in spec (0.86 ppm) but plants
-// display Fe deficiency symptoms — so the discount is real.
-//
-// N also gets the seasonal mineralization multiplier (above) on top of the
-// base 0.85 efficiency — soil microbial activity is rate-limiting for organic
-// N supply, and that activity is strongly temperature-dependent.
-function soilWeeklyAvailable(elem, phLocked, transpFactor) {
-  const sme_ppm = SME_TOMATO_PPM[elem] || 0;
-  const tf = transpFactor || 1.0;
-  // `transpFactor` (0,4-1,0) corrects mass-flow for canopy size — see
-  // transpirationFactor() comment. Applies to ALL elements because they all
-  // arrive at roots via the same water flow.
-  const massFlow_mg = sme_ppm * weeklyMassFlowL() * tf;
-  let efficiency = 1.0;
-  // Fe lockout — 0,15 = midpoint of the Cadre framework page's 10-20% bypass
-  // efficiency at pH 7,4. Aligned 2026-05-05; previously 0,30 was too generous
-  // and contradicted both the Cadre page narrative AND field observation
-  // (visible Fe chlorosis on apex despite SME Fe in spec). Cert 4.
-  if (elem === 'Fe' && phLocked) efficiency = 0.15;
-  else if (elem === 'N')         efficiency = 0.85 * nMineralizationFactor();
-  return massFlow_mg * efficiency;
-}
-
-// Note: an earlier model used COMPOST_N_MG_M2_WK = 1500 mg/m²/wk as a placeholder
-// for soil N. With the SME-based model (above), the N supply now comes directly
-// from SME NO₃ + NH₄ × transpiration × 0.85 efficiency ≈ 965 mg/m²/wk for the
-// April 2026 reading. The placeholder is retired. Side-dressing N is now
-// extracted to STORED_RECIPE.tomato.sidedress (per REQ-004).
-
-let nutrStage = 'T5';
-
-// Page-local recipe-source state for Nutrition Block 1-5. 'stored' = read the
-// locked STORED_RECIPE.tomato.{fertigation, sidedress, foliaire} — what Jordane
-// weighs out this week. 'fp' = read computeStageRecipe(stage) for fertigation
-// + FP_RECIPE_T5 for sidedress/foliar (T5 only) — the first-principles target.
-// Default 'fp' so reviewers land on the model view; team-facing pages always
-// show the locked stored recipe regardless.
-// Toggle in Cible & contexte. FP only defined for T5; switching to FP snaps
-// nutrStage to T5, and switching nutrStage off T5 snaps mode back to 'stored'.
-// Persisted in the URL hash (see parseHash/syncHash) so reload survives the choice.
-let nutrRecipeMode = 'fp';
-
-// Page-local crop state for the Nutrition page (independent of currentCrop —
-// like diagCrop on the Diagnostic page). Drives which sub-content (tomato vs
-// salanova) renders. Routed via CROP_PAGES['nutriment'].
-let nutrCrop = 'tomato';
-
-// ═══ PHASE 1 RECIPE MODEL — derived from data tables ═══
-//
-// Status: SCAFFOLD. Runs alongside the hardcoded recipes (STORED_RECIPE.tomato.
-// {fertigation, sidedress, foliaire}) and computes what those recipes "should"
-// look like from first principles (demand − passive supply, divided by
-// efficiency × analysis). Output renders in an admin-only block in the
-// Bilan as stored-vs-computed deltas. Does NOT replace any team-facing
-// recipe. Drift detection only.
-//
-// REQs covered (in part): REQ-010 (mode flux/conc), REQ-011 (CHANNEL_ROLE),
-// REQ-012 (sum-to-1), REQ-017 (pH-aware efficiency), REQ-019 (phClass coverage),
-// REQ-022 (organicAllowed), REQ-023 (ecFactor), REQ-028 (cert annotations),
-// REQ-029 / 029a/b/c (Ksp + ions + tags), REQ-032 (maximumStableHours),
-// REQ-053 (predictedTankPh), REQ-054 (chelate stablePhRange), REQ-055
-// (foliar pH curve).
-//
-// Coverage scoped to TOMATO only. Lettuce demand model deferred per
-// coherence-audit Finding 5 — `computeRecipe('lettuce', ...)` returns null.
-//
-// Cert legend: each numeric carries an inline cert 0-5. cert 3 = engineered
-// estimate from product class / Sonneveld / Yara / Hoagland conventions
-// where exact data isn't on hand. cert 4-5 = label-stated or lab-measured.
-
-// REQ-010, REQ-019, REQ-022, REQ-023, REQ-029a, REQ-053, REQ-054
-//
-// Per-product schema:
-//   mode: 'flux' | 'concentration'
-//   ch:   'fertigation' | 'sidedress' | 'frontload' | 'foliar' | 'nursery'
-//   base: { Element: massFraction }                — g element per g product
-//   phClass: string | { El: string }                — soil channels only
-//   ions: { cation/anion: massFraction }            — REQ-029a
-//   chemistryTags: [...]                            — REQ-029a/c
-//   organicAllowed: boolean                         — REQ-022
-//   ecFactor: number                                — mS/cm per g/L (REQ-023)
-//   solubilityCap_g_per_L: number                   — cold water (REQ-021)
-//   phContribution: number                          — pH shift per g/L in clean water (REQ-053)
-//   stablePhRange: [min, max]                       — chelates only (REQ-054)
-//   maximumStableHours: number                          — REQ-032
-//   cert: number                                    — overall cert
-//
-// Notes on shortcut data:
-//   - ecFactor for sulfate salts ≈ 1.3 mS/cm per g/L (Sonneveld appendix). cert 3.
-//   - phContribution: K2SO4/MgSO4 ≈ neutral (small drift); transition-metal
-//     sulfates (FeSO4/MnSO4/ZnSO4/CuSO4) all acidify by hydrolysis ≈ −0.2 to
-//     −0.5 pH/(g/L). cert 2-3. CaCl2 mildly acidic by Ca²⁺ hydrolysis
-//     ≈ −0.05/(g/L). cert 2.
-//   - solubilityCap at 5°C from CRC handbook order-of-magnitude. cert 3.
-const PRODUCT = {
-  // ─── Pure mineral salts (fertigation + foliar) ───
-  'K2SO4': {
-    mode: 'flux', ch: 'fertigation',
-    base: { K: 0.415 },                   // 50% K₂O × 78/94.2 = 41.5%; cert 5 (label)
-    phClass: { K: 'soluble-cation' },
-    ions: { 'K+': 0.448, 'SO4-2': 0.551 },// 2× 39.1/174.3 + 96/174.3; cert 4
-    chemistryTags: ['sulfate', 'free-K+'],
-    organicAllowed: true,                  // CAN/CGSB-32.311 §4.1; cert 5
-    ecFactor: 1.34,                        // Sonneveld; cert 3
-    solubilityCap_g_per_L: 100,            // cold-water binding; cert 4
-    phContribution: -0.05,                 // near-neutral salt; cert 2
-    maximumStableHours: 168,                   // sulfate stable in clean water; cert 4
-    cert: 4,
-  },
-  'MgSO4-7H2O': {
-    mode: 'flux', ch: 'fertigation',
-    base: { Mg: 0.0986 },                  // 24.3/246.5; cert 5
-    phClass: { Mg: 'soluble-cation' },
-    ions: { 'Mg2+': 0.099, 'SO4-2': 0.39 },// cert 4
-    chemistryTags: ['sulfate', 'free-Mg2+'],
-    organicAllowed: true,                  // permitted as Epsom salt; cert 5
-    ecFactor: 0.95,                        // Sonneveld; cert 3
-    solubilityCap_g_per_L: 700,            // very soluble; cert 5
-    phContribution: -0.02,                 // near-neutral; cert 2
-    maximumStableHours: 168,                   // cert 4
-    cert: 4,
-  },
-  'FeSO4-7H2O': {
-    mode: 'flux', ch: 'fertigation',
-    base: { Fe: 0.20 },                    // label; cert 5
-    phClass: { Fe: 'sulfate-metal' },      // soil application is the path that matters
-    ions: { 'Fe2+': 0.20, 'SO4-2': 0.345 },// cert 4
-    chemistryTags: ['sulfate', 'free-Fe2+', 'transition-metal-sulfate'],
-    organicAllowed: true,                  // ferrous sulphate on permitted list; cert 5
-    ecFactor: 1.0,                         // sulfate salt; cert 3
-    solubilityCap_g_per_L: 290,            // CRC; cert 4
-    phContribution: -0.30,                 // strong acidification by Fe²⁺ hydrolysis (linear approx; real curve flattens at high conc); cert 2
-    maximumStableHours: 4,                     // air oxidation Fe²⁺→Fe³⁺ (REQ-032); cert 4
-    cert: 4,
-  },
-  'MnSO4': {
-    mode: 'flux', ch: 'foliar',
-    base: { Mn: 0.315 },                   // label; cert 5
-    phClass: { Mn: 'sulfate-metal' },
-    ions: { 'Mn2+': 0.36, 'SO4-2': 0.64 }, // anhydrous; cert 4
-    chemistryTags: ['sulfate', 'free-Mn2+', 'transition-metal-sulfate'],
-    organicAllowed: true,                  // sulfate metals on permitted list (oligo); cert 4
-    ecFactor: 1.2,                         // cert 3
-    solubilityCap_g_per_L: 520,            // very soluble; cert 4
-    phContribution: -0.25,                 // mild acidification; cert 3
-    maximumStableHours: 168,                   // cert 3
-    cert: 4,
-  },
-  'ZnSO4': {
-    mode: 'flux', ch: 'foliar',
-    base: { Zn: 0.355 },                   // label; cert 5
-    phClass: { Zn: 'sulfate-metal' },
-    ions: { 'Zn2+': 0.40, 'SO4-2': 0.60 },
-    chemistryTags: ['sulfate', 'free-Zn2+', 'transition-metal-sulfate'],
-    organicAllowed: true,                  // cert 4
-    ecFactor: 1.2,                         // cert 3
-    solubilityCap_g_per_L: 580,            // cert 4
-    phContribution: -0.30,                 // cert 3
-    maximumStableHours: 168,                   // cert 3
-    cert: 4,
-  },
-  'CuSO4': {
-    mode: 'flux', ch: 'foliar',
-    base: { Cu: 0.25 },                    // CuSO₄·5H₂O label; cert 5
-    phClass: { Cu: 'sulfate-metal' },
-    ions: { 'Cu2+': 0.255, 'SO4-2': 0.385 },// pentahydrate; cert 4
-    chemistryTags: ['sulfate', 'free-Cu2+', 'transition-metal-sulfate'],
-    organicAllowed: true,                  // capped at 4 kg/ha/yr; cert 4
-    ecFactor: 1.1,                         // cert 3
-    solubilityCap_g_per_L: 320,            // cert 4
-    phContribution: -0.35,                 // strongest hydrolysis acidifier; cert 3
-    maximumStableHours: 168,                   // cert 3
-    cert: 4,
-  },
-  'Solubore': {
-    mode: 'flux', ch: 'foliar',
-    base: { B: 0.205 },                    // label; cert 5
-    phClass: { B: 'borate' },
-    ions: { 'Na+': 0.164, 'B(OH)4-': 0.836 },// approximated as Na+ + borate ion; cert 3
-    chemistryTags: ['borate', 'non-ionic-soil'],  // boric acid is non-ionic in soil; cert 4
-    organicAllowed: true,                  // cert 4
-    ecFactor: 0.7,                         // weakly ionizing; cert 3
-    solubilityCap_g_per_L: 60,             // borax cold-water cap; cert 4
-    phContribution: 0.10,                  // mild alkalinizer; cert 3
-    maximumStableHours: 168,                   // cert 3
-    cert: 3,
-  },
-  'NaMolybdate': {
-    mode: 'flux', ch: 'foliar',
-    base: { Mo: 0.396 },                   // label Na₂MoO₄·2H₂O; cert 5
-    phClass: { Mo: 'molybdate' },
-    ions: { 'Na+': 0.19, 'MoO4-2': 0.66 }, // cert 4
-    chemistryTags: ['molybdate', 'free-Na+'],
-    organicAllowed: true,                  // cert 3 — conventionally listed as oligo
-    ecFactor: 0.8,                         // cert 3
-    solubilityCap_g_per_L: 840,            // cert 4
-    phContribution: 0.05,                  // slightly basic; cert 3
-    maximumStableHours: 168,                   // cert 3
-    cert: 3,
-  },
-  // CaCl2-2H2O entry removed 2026-05-06 (Spray B retired — Teris grade
-  // Ecocert listing was unverified; BER prevention now via ventilation +
-  // humidity, not foliar Ca). If a confirmed-organic CaCl₂ source is
-  // sourced later, restore the entry with the same shape (mode:
-  // 'concentration', ch: 'foliar', ions: Ca2+/Cl-, ecFactor 2.4, cert 4).
-
-  // ─── Granular / organic side-dress and frontload products ───
-  'Actisol-5-3-2': {
-    mode: 'flux', ch: 'sidedress',
-    base: { N: 0.05, P: 0.03 * 62/142, K: 0.02 * 78/94.2 },// label 5-3-2 elemental; cert 4
-    phClass: { N: 'organic-N', P: 'organic-P', K: 'soluble-cation' },
-    ions: { 'NH4+': 0.05, 'organic-matrix': 0.95 },// rough placeholder for chemistry table; cert 2
-    chemistryTags: ['organic-matrix', 'live-microbial', 'solid-granular'],
-    organicAllowed: true,                  // cert 3 — vérifier liste à jour
-    ecFactor: 0.0,                         // not in tank; cert 5
-    solubilityCap_g_per_L: 0,              // not water-mixed; cert 5
-    phContribution: 0.0,                   // not in tank; cert 5
-    maximumStableHours: Infinity,              // dry granular; cert 5
-    cert: 3,
-  },
-  'FarinePlumes': {
-    mode: 'flux', ch: 'sidedress',
-    base: { N: 0.13 },                     // label 13-0-0; cert 4
-    phClass: { N: 'organic-N' },
-    ions: { 'NH4+': 0.13, 'organic-matrix': 0.87 },// rough; cert 2
-    chemistryTags: ['organic-matrix', 'protein-hydrolysate', 'solid-granular'],
-    organicAllowed: true,                  // animal byproduct; cert 4
-    ecFactor: 0.0,                         // cert 5
-    solubilityCap_g_per_L: 0,              // cert 5
-    phContribution: 0.0,                   // cert 5
-    maximumStableHours: Infinity,              // dry; cert 5
-    cert: 4,
-  },
-  'AcadiePoissonHydrolyse': {
-    mode: 'flux', ch: 'nursery',
-    base: { N: 0.02, P: 0.04 * 62/142, K: 0.005 * 78/94.2 },// label 2-4-0.5; cert 4
-    phClass: { N: 'organic-N', P: 'organic-P', K: 'soluble-cation' },
-    ions: { 'NH4+': 0.02, 'organic-matrix': 0.98 },// liquid hydrolysate, mostly amino-N; cert 2
-    chemistryTags: ['organic-matrix', 'protein-hydrolysate', 'live-microbial'],
-    organicAllowed: true,                  // Acadie Ecocert-listed; cert 4
-    ecFactor: 0.5,                         // mostly organic; some salt content; cert 2
-    solubilityCap_g_per_L: 1000,           // miscible liquid; cert 4
-    phContribution: -0.1,                  // mildly acidic; cert 2
-    maximumStableHours: 24,                    // microbial degradation (REQ-032); cert 3
-    cert: 3,
-  },
-  'AcadieAlguesLiquides': {
-    mode: 'concentration', ch: 'nursery',
-    base: { K: 0.01 },                     // ~1% K typical kelp; cert 2
-    phClass: { K: 'soluble-cation' },
-    ions: { 'K+': 0.01, 'organic-matrix': 0.99 },// cert 2
-    chemistryTags: ['organic-matrix', 'biostimulant'],
-    organicAllowed: true,                  // Acadie Ecocert; cert 4
-    ecFactor: 0.3,                         // low salt; cert 2
-    solubilityCap_g_per_L: 1000,           // miscible; cert 4
-    phContribution: -0.05,                 // ~neutral; cert 2
-    maximumStableHours: 24,                    // cert 3
-    cert: 3,
-  },
-  'EZGRO-Ocean-15-1-1': {
-    mode: 'flux', ch: 'nursery',
-    base: { N: 0.15, P: 0.01 * 62/142, K: 0.01 * 78/94.2 },// label 15-1-1; cert 4
-    phClass: { N: 'organic-N', P: 'organic-P', K: 'soluble-cation' },
-    ions: { 'NH4+': 0.15, 'organic-matrix': 0.85 },// fish-derived liquid; cert 2
-    chemistryTags: ['organic-matrix', 'protein-hydrolysate'],
-    organicAllowed: true,                  // product label confirmed; cert 3
-    ecFactor: 0.8,                         // higher salt than Acadie; cert 2
-    solubilityCap_g_per_L: 1000,           // miscible; cert 4
-    phContribution: -0.15,                 // acidic; cert 2
-    maximumStableHours: 24,                    // cert 3
-    cert: 3,
-  },
-
-  // ─── Soil amendment (not in any tank) ───
-  'SoufreElementaire': {
-    mode: 'flux', ch: 'sidedress',
-    base: { S: 0.90 },                     // ~90% S typical; cert 4 (label varies)
-    phClass: { S: 'soluble-cation' },      // not really applicable; placeholder
-    ions: { 'H+': 0.0001, 'SO4-2': 0.001 },// post-oxidation tokens; cert 2
-    chemistryTags: ['solid-granular', 'pH-amendment'],
-    organicAllowed: true,                  // unrestricted; cert 5
-    ecFactor: 0.0,                         // not in tank; cert 5
-    solubilityCap_g_per_L: 0,              // insoluble in water; cert 5
-    phContribution: 0.0,                   // not in tank; cert 5
-    maximumStableHours: Infinity,              // cert 5
-    cert: 4,
-  },
-};
-
-// REQ-011, REQ-012 — Channel ownership per element.
-// Tomato-only for Phase 1. Sums must hit 1.0 ± 0.05 per flux element.
-// Cert 2-3 across the board: these splits are the model's editorial decisions
-// about who owns delivery, not measurements. Source of opinion: the existing
-// recipe shape (e.g., side-dress carries N, fertigation carries K/Mg, foliar
-// carries micros) plus the organic-greenhouse pH-7.4 reality (Fe/Mn/Zn moved
-// foliar; P delegated to passive but tagged decorative per audit Finding 7).
-const CHANNEL_ROLE = {
-  N:  { fertigation: 0.0, sidedress: 0.7, frontload: 0.3 },           // sidedress + nursery loading; cert 3
-  P:  { sidedress: 1.0 },                                              // decorative at pH 7.4 (REQ-018); cert 3
-  K:  { fertigation: 0.7, sidedress: 0.3 },                            // K₂SO₄ + Actisol K residual; cert 3
-  Mg: { fertigation: 1.0 },                                            // MgSO₄ only; cert 4
-  Ca: { passive: 1.0 },                                                // soil saturated; foliar is concentration-driven (REQ-015); cert 4
-  S:  { fertigation: 1.0 },                                            // sulfate side-product; cert 3
-  Fe: { foliar: 1.0 },                                                 // pH 7.4 lockout — foliar bypass; cert 4
-  Mn: { foliar: 1.0 },                                                 // cert 4
-  Zn: { foliar: 1.0 },                                                 // cert 4
-  Cu: { foliar: 1.0 },                                                 // cert 4
-  B:  { foliar: 0.5, passive: 0.5 },                                   // boric acid non-ionic, soil works; cert 3
-  Mo: { foliar: 1.0 },                                                 // cert 3
-};
-
-// REQ-017 — pH-aware effective efficiency curves.
-// Each function takes soilPh and returns a multiplier 0..1.
-// Source: Cadre framework table (see nutrient-model-reference.md §3.4) +
-// Marschner soil-chemistry curves. Cert 3-4.
-const PH_RESPONSE = {
-  // Cation exchange + soluble salt: K, Mg, Ca all flat across agronomic pH.
-  // Tiny drop above 7.5 reflects competition with Ca-saturation. cert 4
-  'soluble-cation': function(ph) {
-    if (ph <= 7.0) return 1.0;
-    if (ph >= 8.0) return 0.85;
-    return 1.0 - 0.15 * (ph - 7.0);
-  },
-  // Sulfate-form transition metals (Fe, Mn, Zn, Cu): sigmoid drop.
-  // 1.0 at pH 6.0; 0.50 at pH 7.0; 0.10 at pH 7.4; 0.05 at pH 7.8+. cert 4
-  'sulfate-metal': function(ph) {
-    if (ph <= 6.0) return 1.0;
-    if (ph >= 7.8) return 0.05;
-    // Logistic-shaped piecewise
-    if (ph <= 7.0) return 1.0 - 0.50 * (ph - 6.0);
-    if (ph <= 7.4) return 0.50 - 1.00 * (ph - 7.0);    // 0.50 → 0.10
-    return 0.10 - 0.125 * (ph - 7.4);                   // 0.10 → 0.05
-  },
-  // EDTA: stable to pH ~6.5 then collapses. cert 4
-  'chelate-edta': function(ph) {
-    if (ph <= 6.5) return 1.0;
-    if (ph >= 7.5) return 0.10;
-    return 1.0 - 0.90 * (ph - 6.5);
-  },
-  // EDDHA: flat across full agronomic pH. cert 5
-  'chelate-eddha': function(ph) {
-    return (ph >= 4.0 && ph <= 9.0) ? 1.0 : 0.5;
-  },
-  // DTPA: stable to ~7.5. cert 4
-  'chelate-dtpa': function(ph) {
-    if (ph <= 7.5) return 1.0;
-    if (ph >= 8.5) return 0.20;
-    return 1.0 - 0.80 * (ph - 7.5);
-  },
-  // Organic N mineralization: temperature-dependent, pH less so but mild
-  // suppression > 7.5 from Ca saturation slowing microbes. cert 3
-  'organic-N': function(ph) {
-    if (ph <= 7.5) return 1.0;
-    if (ph >= 8.5) return 0.7;
-    return 1.0 - 0.30 * (ph - 7.5);
-  },
-  // Organic P mineralization × Ca-P precipitation. cert 4 (matches Cadre 5-15%).
-  'organic-P': function(ph) {
-    if (ph <= 6.0) return 1.0;
-    if (ph >= 7.4) return 0.10;
-    return 1.0 - 0.643 * (ph - 6.0);
-  },
-  // Borate: flat, slight rise in availability with pH up to 8 (boric acid → B(OH)4⁻). cert 3
-  'borate': function(ph) {
-    return 1.0;
-  },
-  // Molybdate: prefers alkaline (anion). cert 4
-  'molybdate': function(ph) {
-    if (ph <= 5.5) return 0.30;
-    if (ph >= 7.0) return 1.0;
-    return 0.30 + 0.467 * (ph - 5.5);
-  },
-  // Foliar bypass — soil pH irrelevant (different curve = foliarPhResponse for spray pH). cert 5
-  'foliar-bypass': function(ph) {
-    return 1.0;
-  },
-};
-
-// REQ-055 — Foliar uptake pH multiplier (cuticle absorption window).
-// Curve from REQ-055 table; linear interpolation between anchors. cert 3.
-function foliarPhResponse(ph) {
-  if (ph <= 4.0) return 0.5;
-  if (ph <= 4.5) return 0.5 + (0.7 - 0.5) * (ph - 4.0) / 0.5;
-  if (ph <= 5.0) return 0.7 + (0.9 - 0.7) * (ph - 4.5) / 0.5;
-  if (ph <= 5.5) return 0.9 + (1.0 - 0.9) * (ph - 5.0) / 0.5;
-  if (ph <= 6.0) return 1.0;
-  if (ph <= 6.5) return 1.0 + (0.95 - 1.0) * (ph - 6.0) / 0.5;
-  if (ph <= 7.0) return 0.95 + (0.85 - 0.95) * (ph - 6.5) / 0.5;
-  if (ph <= 7.5) return 0.85 + (0.70 - 0.85) * (ph - 7.0) / 0.5;
-  if (ph <= 8.0) return 0.70 + (0.50 - 0.70) * (ph - 7.5) / 0.5;
-  return 0.5;
-}
-
-// REQ-029 — Cation × anion precipitation pairs.
-// Threshold = combined ion mass (g/L) above which gypsum/phosphate/etc forms.
-// Note: most pairs we list here involve PO4-3 and OH- which don't appear in
-// our active product `ions` decls — they're documented as guidance for future
-// products that introduce them. Coverage check (REQ-029b) only enumerates
-// pairs from product-declared ions.
-const KSP_PAIRS = [
-  { cation: 'Ca2+', anion: 'PO4-3', threshold_g_per_L_combined: 0.001, cert: 5,
-    note: 'precipitates near zero; never co-mix Ca + foliar P' },
-  { cation: 'Ca2+', anion: 'SO4-2', threshold_g_per_L_combined: 2.4, cert: 4,
-    note: 'gypsum at high concentration; relevant Spray A × Spray B if mixed' },
-  { cation: 'Mg2+', anion: 'PO4-3', threshold_g_per_L_combined: 0.5, cert: 3,
-    note: 'rare in our recipes' },
-  { cation: 'Fe2+', anion: 'PO4-3', threshold_g_per_L_combined: 0.01, cert: 4,
-    note: 'low Ksp → most fertigated FeSO₄ + P → FePO₄' },
-  { cation: 'Fe2+', anion: 'OH-', threshold_function_of_pH: function(ph) { return ph > 6.5 ? 0 : Infinity; }, cert: 4,
-    note: 'Fe(OH)₂ above pH 6.5; stock barrel pH drift, foliar tank pH' },
-  { cation: 'Mn2+', anion: 'OH-', threshold_function_of_pH: function(ph) { return ph > 8.0 ? 0 : Infinity; }, cert: 3,
-    note: 'Mn(OH)₂ above pH 8; rare in tanks, relevant in soil' },
-];
-
-// REQ-029b — Pairs from product-declared ions explicitly known not to
-// precipitate in our tank conditions. Coverage requirement: every cation ×
-// anion combination from the union of PRODUCT[*].ions must appear here OR
-// in KSP_PAIRS. Generated from the cartesian product enumerated below.
-//
-// Cations declared: K+, Mg2+, Fe2+, Mn2+, Zn2+, Cu2+, Ca2+, Na+, NH4+, H+
-// Anions declared:  SO4-2, Cl-, B(OH)4-, MoO4-2, organic-matrix
-const KSP_SAFE = [
-  // K+ × all
-  { cation: 'K+', anion: 'SO4-2', reason: 'highly soluble (K₂SO₄ to ~120 g/L)' },
-  { cation: 'K+', anion: 'Cl-', reason: 'KCl highly soluble' },
-  { cation: 'K+', anion: 'B(OH)4-', reason: 'K-borate soluble' },
-  { cation: 'K+', anion: 'MoO4-2', reason: 'K-molybdate soluble' },
-  { cation: 'K+', anion: 'organic-matrix', reason: 'organic carrier, no co-dissolution mineral chemistry' },
-  // Mg2+ × all
-  { cation: 'Mg2+', anion: 'SO4-2', reason: 'MgSO₄ soluble to ~700 g/L' },
-  { cation: 'Mg2+', anion: 'Cl-', reason: 'MgCl₂ very soluble' },
-  { cation: 'Mg2+', anion: 'B(OH)4-', reason: 'Mg-borate soluble at low conc' },
-  { cation: 'Mg2+', anion: 'MoO4-2', reason: 'Mg-molybdate soluble' },
-  { cation: 'Mg2+', anion: 'organic-matrix', reason: 'organic carrier inert' },
-  // Fe2+ × all (excluding OH-/PO4-3 which are in KSP_PAIRS but not declared in ions)
-  { cation: 'Fe2+', anion: 'SO4-2', reason: 'FeSO₄ soluble to ~290 g/L; Fe²⁺ oxidation is the failure mode (REQ-032), not precipitation' },
-  { cation: 'Fe2+', anion: 'Cl-', reason: 'FeCl₂ soluble' },
-  { cation: 'Fe2+', anion: 'B(OH)4-', reason: 'low risk at our concs' },
-  { cation: 'Fe2+', anion: 'MoO4-2', reason: 'low risk at trace Mo' },
-  { cation: 'Fe2+', anion: 'organic-matrix', reason: 'organic carrier inert' },
-  // Mn2+ × all
-  { cation: 'Mn2+', anion: 'SO4-2', reason: 'MnSO₄ soluble to ~520 g/L' },
-  { cation: 'Mn2+', anion: 'Cl-', reason: 'MnCl₂ soluble' },
-  { cation: 'Mn2+', anion: 'B(OH)4-', reason: 'low risk at our concs' },
-  { cation: 'Mn2+', anion: 'MoO4-2', reason: 'low risk at trace Mo' },
-  { cation: 'Mn2+', anion: 'organic-matrix', reason: 'inert' },
-  // Zn2+ × all
-  { cation: 'Zn2+', anion: 'SO4-2', reason: 'ZnSO₄ soluble to ~580 g/L' },
-  { cation: 'Zn2+', anion: 'Cl-', reason: 'ZnCl₂ very soluble' },
-  { cation: 'Zn2+', anion: 'B(OH)4-', reason: 'low risk' },
-  { cation: 'Zn2+', anion: 'MoO4-2', reason: 'low risk' },
-  { cation: 'Zn2+', anion: 'organic-matrix', reason: 'inert' },
-  // Cu2+ × all (KSP_PAIRS handles Cu-protein-gel via tags, not Ksp)
-  { cation: 'Cu2+', anion: 'SO4-2', reason: 'CuSO₄ soluble to ~320 g/L' },
-  { cation: 'Cu2+', anion: 'Cl-', reason: 'CuCl₂ soluble' },
-  { cation: 'Cu2+', anion: 'B(OH)4-', reason: 'low risk' },
-  { cation: 'Cu2+', anion: 'MoO4-2', reason: 'low risk' },
-  { cation: 'Cu2+', anion: 'organic-matrix', reason: 'inert; Cu-protein gel handled by TAG_INCOMPATIBILITIES' },
-  // Ca2+ × all (Ca × SO4-2 listed in KSP_PAIRS; Ca × PO4-3 not in our product ions)
-  { cation: 'Ca2+', anion: 'Cl-', reason: 'CaCl₂ soluble to ~740 g/L' },
-  { cation: 'Ca2+', anion: 'B(OH)4-', reason: 'low risk at trace B' },
-  { cation: 'Ca2+', anion: 'MoO4-2', reason: 'CaMoO₄ low solubility but trace Mo levels keep us safe' },
-  { cation: 'Ca2+', anion: 'organic-matrix', reason: 'inert' },
-  // (Ca2+ × SO4-2 in KSP_PAIRS — gypsum)
-  // Na+ × all
-  { cation: 'Na+', anion: 'SO4-2', reason: 'Na₂SO₄ soluble' },
-  { cation: 'Na+', anion: 'Cl-', reason: 'NaCl soluble' },
-  { cation: 'Na+', anion: 'B(OH)4-', reason: 'Na-borate (Solubore source) soluble' },
-  { cation: 'Na+', anion: 'MoO4-2', reason: 'Na-molybdate soluble' },
-  { cation: 'Na+', anion: 'organic-matrix', reason: 'inert' },
-  // NH4+ × all
-  { cation: 'NH4+', anion: 'SO4-2', reason: '(NH₄)₂SO₄ soluble' },
-  { cation: 'NH4+', anion: 'Cl-', reason: 'NH₄Cl soluble' },
-  { cation: 'NH4+', anion: 'B(OH)4-', reason: 'soluble' },
-  { cation: 'NH4+', anion: 'MoO4-2', reason: 'soluble' },
-  { cation: 'NH4+', anion: 'organic-matrix', reason: 'inert (organic-N carriers)' },
-  // H+ × all (only from elemental sulfur token; trace)
-  { cation: 'H+', anion: 'SO4-2', reason: 'H₂SO₄ fully dissociated' },
-  { cation: 'H+', anion: 'Cl-', reason: 'HCl fully dissociated' },
-  { cation: 'H+', anion: 'B(OH)4-', reason: 'boric acid stable' },
-  { cation: 'H+', anion: 'MoO4-2', reason: 'molybdic acid stable at trace' },
-  { cation: 'H+', anion: 'organic-matrix', reason: 'inert' },
-];
-
-// REQ-029c — Tag interaction rules.
-// Forbidden combinations + reasons (cert per row).
-const TAG_INCOMPATIBILITIES = [
-  { tags: ['free-Cu2+', 'protein-hydrolysate'], severity: 'forbidden',
-    reason: 'Cu-protein gel — bouchage de buse', cert: 4 },
-  { tags: ['chelate-Fe', 'free-Cu2+'], severity: 'forbidden',
-    reason: 'ligand swap — Fe falls out of chelate', cert: 4 },
-  { tags: ['chelate-Fe', 'chelate-Cu'], severity: 'caution',
-    reason: 'ligand competition between chelates; separate barrels preferred', cert: 3 },
-  { tags: ['live-microbial', 'transition-metal-sulfate'], severity: 'caution',
-    reason: 'high metal sulfate concentration may suppress microbes', cert: 2 },
-];
-
-// REQ-029c — Tags with no known incompatibility, classified as inert.
-// Every distinct tag in any PRODUCT[*].chemistryTags must appear here or in
-// TAG_INCOMPATIBILITIES.
-const TAGS_INERT = {
-  'sulfate':                   'no known interaction with anions in our recipes; gypsum/Fe-PO₄ etc are pair-level (Ksp) not tag-level',
-  'chloride':                  'soluble with all our cations',
-  'free-K+':                   'no precipitation pairs in our recipes',
-  'free-Mg2+':                 'no precipitation pairs in our recipes',
-  'free-Fe2+':                 'oxidation handled by maximumStableHours; precipitation by Ksp pairs',
-  'free-Mn2+':                 'no precipitation pairs in our active recipes',
-  'free-Zn2+':                 'no precipitation pairs in our active recipes',
-  'free-Cu2+':                 'precipitation pairs handled by TAG_INCOMPATIBILITIES (Cu-protein) and separate-spray rules',
-  'free-Ca2+':                 'Ca×SO₄ handled by Ksp; Ca×Cl is soluble',
-  'free-Na+':                  'soluble with everything',
-  'transition-metal-sulfate':  'class label; per-metal interactions covered by sulfate-metal phClass and Ksp',
-  'borate':                    'B(OH)₄⁻ fully soluble; non-ionic in soil',
-  'non-ionic-soil':            'soil pH does not gate availability',
-  'molybdate':                 'soluble; trace amounts keep Ksp safe',
-  'organic-matrix':            'organic carrier; not in mineral Ksp chemistry',
-  'protein-hydrolysate':       'incompatibility handled by TAG_INCOMPATIBILITIES (Cu)',
-  'live-microbial':            'caution combo with high metal sulfates handled in TAG_INCOMPATIBILITIES',
-  'biostimulant':              'no known mineral interaction',
-  'solid-granular':            'not in tank; bypasses all tank chemistry checks',
-  'pH-amendment':              'used standalone in soil; no tank chemistry',
-};
-
-// ─── INCOMPATIBLE_RECIPES — recipes that must never be mixed in the same tank ──
-//
-// REQ-030. Audit-trail for known incompatibilities. Empty in current state
-// because Spray B (CaCl₂) was retired 2026-05-06 — that was the only
-// incompatibility in active use (CaCl₂ + Fe-EDDHA → Fe-Cl precipitation /
-// ligand swap; CaCl₂ + Spray A sulfates → CaSO₄ gypsum at high conc).
-//
-// If a future recipe is added that conflicts with an existing one, append
-// here with the failure mode. The verifier (REQ-030) asserts this constant
-// is declared and that each entry has {recipes: [≥2], reason: string}.
-// Day-to-day enforcement is by the team reading this list.
-const INCOMPATIBLE_RECIPES = [
-  // Historical example (kept as documentation, commented out — does not count
-  // toward verifier coverage since Spray B is retired):
-  // {
-  //   recipes: ['STORED_RECIPE.tomato.foliaire.A', 'STORED_RECIPE.tomato.foliaire.B (retired)'],
-  //   reason: 'Fe-EDDHA in Spray A + CaCl₂ in Spray B → Ca-Fe precipitation, Fe-Cl insoluble compounds. Spray B retired 2026-05-06.',
-  // },
-];
-
-// ─── MIX_ORDER — order to add products to each multi-product recipe ─────
-//
-// REQ-031. Order matters for two reasons:
-//   1. Solubility: K₂SO₄ has low cold solubility (~120 g/L). Add first to
-//      hot water; adding it after other salts can drop tank pH or cause
-//      precipitation of K-containing complexes.
-//   2. Stability: FeSO₄ oxidizes quickly in air (Fe²⁺ → Fe³⁺ within hours
-//      — see PRODUCT['FeSO4-7H2O'].maximumStableHours = 4). Add LAST, just
-//      before sealing the spray container.
-//
-// Verifier schema (REQ-031): array of { recipe: string, order: [productName, ...] }.
-// Product names match PRODUCT keys.
-const MIX_ORDER = [
-  { recipe: 'fertigation.tomato',
-    order: ['K2SO4', 'MgSO4-7H2O'] },
-  // Spray A (Mn/Zn/B/Cu/Mo/Fe — no surfactant since 2026-05-06 yucca drop).
-  // FeSO₄-7H₂O added last (oxidation) per maximumStableHours=4 on the product.
-  { recipe: 'foliar.tomato.A',
-    order: ['MnSO4', 'ZnSO4', 'Solubore', 'CuSO4', 'NaMolybdate', 'FeSO4-7H2O'] },
-  // Lettuce production fertigation (K + Mg + Fe maintenance).
-  { recipe: 'fertigation.lettuce',
-    order: ['K2SO4', 'MgSO4-7H2O', 'FeSO4-7H2O'] },
-];
-
-// REQ-017, REQ-018, REQ-055 — Effective efficiency for a (product, element).
-// Returns 0..1 representing fraction of label-stated mass that reaches plant.
-//
-// Routing rule (REQ-018):
-//   - Soil/fertigation channels: apply PH_RESPONSE[phClass](soilPh).
-//     Soil pH gates rhizosphere availability via Ksp / chelate stability.
-//   - Foliar channel: SKIP soil-pH penalty entirely. Cuticle uptake is
-//     governed by the spray tank pH (foliarPhResponse) + coverage factor.
-//     Mn/Zn/Cu sulfates carry phClass:'sulfate-metal' for documentation
-//     consistency, but in the foliar context that curve is irrelevant —
-//     soil pH never touches the leaf surface.
-//   - Verifier note: REQ-018 should pass sprayPh (or rely on the foliar
-//     branch below) when checking foliar products. Calling
-//     effectiveEfficiency('MnSO4','Mn', soilPh) without a foliar context would
-//     STILL bypass soil-pH for foliar products by design here.
-function effectiveEfficiency(productName, element, soilPh, sprayPh) {
-  if (sprayPh === undefined) sprayPh = null;
-  const p = PRODUCT[productName];
-  if (!p || !p.base || !p.base[element]) return 0;
-  const cls = (typeof p.phClass === 'string') ? p.phClass : (p.phClass || {})[element];
-  const base = 1.0;                                  // efficiency, not mass fraction (mass fraction handled by p.base[element])
-  let phMod = 1.0;
-  let fieldMod = 1.0;
-  if (p.ch === 'foliar') {
-    // Foliar: soil pH irrelevant by definition (cuticle uptake bypasses
-    // rhizosphere). Use foliarPhResponse(tankPh) + coverage factor only.
-    fieldMod *= foliarPhResponse(sprayPh != null ? sprayPh : 5.5);
-    fieldMod *= 0.30;                                // coverage factor — fixed 0.30 (no yucca per 2026-05-05 decision)
-  } else {
-    // Soil/fertigation: apply rhizosphere pH curve.
-    if (cls && PH_RESPONSE[cls]) phMod = PH_RESPONSE[cls](soilPh);
-  }
-  return base * phMod * fieldMod;
-}
-
-// REQ-024 — Predicted irrigation CE at the dripper.
-// recipe = { productName: gPerL_in_tank }; dilution = Dosatron ratio (e.g. 0.02).
-// Returns mS/cm at 20°C reference.
-function predictedCE(recipe, dilution, waterCE) {
-  if (dilution === undefined) dilution = 1.0;
-  if (waterCE === undefined) waterCE = 0.10;
-  let CE = waterCE;
-  for (const name in recipe) {
-    if (!Object.prototype.hasOwnProperty.call(recipe, name)) continue;
-    const p = PRODUCT[name];
-    if (!p) continue;
-    const gPerL = recipe[name];
-    CE += (p.ecFactor || 0) * gPerL * dilution;
-  }
-  return CE;
-}
-
-// REQ-053 — Predicted tank pH (linear sum of phContributions × g/L).
-// Rough first-pass; assumes no buffering. cert 2-3.
-function predictedTankPh(recipe, waterPh) {
-  if (waterPh === undefined) waterPh = 7.0;
-  let pH = waterPh;
-  for (const name in recipe) {
-    if (!Object.prototype.hasOwnProperty.call(recipe, name)) continue;
-    const p = PRODUCT[name];
-    if (!p) continue;
-    pH += (p.phContribution || 0) * recipe[name];
-  }
-  return Math.max(2.0, Math.min(12.0, pH));
-}
-
-// REQ-020 — Passive supply mass-flow (SME ppm × transpiration L/m²/wk).
-// Apply LOCKOUT_GATE for P/Mn/Zn at pH > 6.8: cap at 100 mg/m²/wk for P,
-// at SME-derived value (which is ~0 for Mn/Zn anyway). cert 4.
-function passiveSupplyMassFlow(crop, element, week) {
-  const sme = (crop === 'tomato') ? SME_TOMATO_PPM : SME_LETTUCE_PPM;
-  const ppm = (sme && sme[element]) || 0;
-  const flowL = weeklyMassFlowL();
-  let mass = ppm * flowL;                            // mg/m²/wk
-  // Lockout gate: when pH > 6.8, P passive supply capped at 100 mg/m²/wk
-  // even if Mehlich-3 bank suggests more. Mn/Zn already ~0 in SME so cap is moot.
-  // Source: REQ-020 + audit Finding 7 (pH 7.4 effectively gates Ca-P precip).
-  const phLocked = true;                              // Phase 1 assumption — wired to checkbox in next phase
-  if (phLocked && (element === 'P' || element === 'Mn' || element === 'Zn')) {
-    mass = Math.min(mass, 100);
-  }
-  return mass;
-}
-
-// Compute the recipe a channel SHOULD use, from first principles.
-// For each element where CHANNEL_ROLE assigns this channel a fraction:
-//   target_mass = (demand[stage,element] − passive[element]) × CHANNEL_ROLE[element][channel]
-//   product_mass = target_mass / (efficiency × analysis)
-// Output: { productName: gramsPerWeekPerArea }
-//
-// Phase 1 scope: tomato only. computeRecipe('lettuce', ...) → null until
-// LETTUCE_BIOMASS_DEMAND lands (audit Finding 5).
-// TODO: lettuce demand model
-function computeRecipe(crop, stage, channel) {
-  if (crop !== 'tomato') return null;
-  const bio = BIOMASS_DEMAND[stage] || {};
-  const fruitYield = 1.5;                             // target kg/m²/wk; Phase 1 fixed
-  const demand = {};
-  Object.keys(TOMATO_FRUIT_EXPORT).forEach(function(element) {
-    demand[element] = (TOMATO_FRUIT_EXPORT[element].g * fruitYield * 1000) + (bio[element] || 0);
-  });
-  const soilPh = 7.4;                                 // Phase 1 assumption
-  const sprayPh = 5.0;                                // typical sulfate-heavy Spray A
-  const out = {};
-
-  // Pick representative product per channel × element
-  // Mapping (cert 3-4 — editorial choice based on the existing recipe):
-  //   fertigation  K → K2SO4
-  //   fertigation  Mg → MgSO4-7H2O
-  //   sidedress    N → split between Actisol-5-3-2 and FarinePlumes (~40/60 by N mass)
-  //   sidedress    P → Actisol-5-3-2
-  //   sidedress    K → Actisol-5-3-2
-  //   foliar       Mn → MnSO4
-  //   foliar       Zn → ZnSO4
-  //   foliar       Cu → CuSO4
-  //   foliar       B → Solubore
-  //   foliar       Mo → NaMolybdate
-  //   foliar       Fe → FeSO4-7H2O (bridge while Iron DL pending)
-  //   foliar       Ca → CaCl2-2H2O (concentration mode — not flux-computed)
-  const mapping = {
-    fertigation: { K: ['K2SO4'], Mg: ['MgSO4-7H2O'] },
-    sidedress: {
-      N: ['Actisol-5-3-2', 'FarinePlumes'],
-      P: ['Actisol-5-3-2'],
-      K: ['Actisol-5-3-2'],
-    },
-    foliar: {
-      Mn: ['MnSO4'], Zn: ['ZnSO4'], Cu: ['CuSO4'],
-      B:  ['Solubore'], Mo: ['NaMolybdate'], Fe: ['FeSO4-7H2O'],
-    },
-  };
-  const channelMap = mapping[channel] || {};
-  const area = TOMATO_NUMBER_BEDS * TOMATO_BED_AREA;     // 382.9 m²
-
-  Object.keys(channelMap).forEach(function(element) {
-    const role = (CHANNEL_ROLE[element] || {})[channel] || 0;
-    if (role <= 0) return;
-    // Subtract passive supply for elements where passive is in CHANNEL_ROLE
-    const passiveRole = (CHANNEL_ROLE[element] || {}).passive || 0;
-    const passive_mg_m2 = passiveRole > 0 ? passiveSupplyMassFlow('tomato', element) * passiveRole : 0;
-    const need_mg_m2 = Math.max(0, demand[element] - passive_mg_m2) * role;
-    if (need_mg_m2 <= 0) return;
-    const products = channelMap[element];
-    // Split evenly across the listed products by mass fraction
-    products.forEach(function(productName) {
-      const p = PRODUCT[productName];
-      if (!p) return;
-      const analysis = p.base[element] || 0;
-      if (analysis <= 0) return;
-      // Sidedress: factor in mineralization efficiency (SIDEDRESS_MINIMUM_EFFICIENCY)
-      // Foliar: foliarPhResponse + 30% coverage already in effectiveEfficiency
-      // Fertigation: pH response on phClass
-      let efficiency;
-      if (channel === 'sidedress') {
-        const minimumEfficiencyKey = (productName === 'Actisol-5-3-2')
-          ? (element === 'N' ? 'Actisol_N' : element === 'P' ? 'Actisol_P' : 'Actisol_K')
-          : 'FarinePlumes_N';
-        efficiency = (SIDEDRESS_MINIMUM_EFFICIENCY[minimumEfficiencyKey] || 0.5);     // mineralization efficiency; pH lockout for P captured separately
-        if (channel === 'sidedress' && element === 'P') {
-          // REQ-018: at pH 7.4 P is decorative — multiply by Cadre 0.10
-          efficiency *= PH_RESPONSE['organic-P'](7.4);
-        }
-      } else if (channel === 'foliar') {
-        efficiency = effectiveEfficiency(productName, element, soilPh, sprayPh);
-        // effectiveEfficiency returns 0..1 already including coverage; that's the multiplier
-        // applied to mass arriving at leaf. Divide need by it to get applied mass.
-        if (efficiency <= 0) efficiency = 0.30;                     // floor — don't divide by 0
-      } else if (channel === 'fertigation') {
-        const cls = (typeof p.phClass === 'string') ? p.phClass : (p.phClass || {})[element];
-        efficiency = cls && PH_RESPONSE[cls] ? PH_RESPONSE[cls](soilPh) : 1.0;
-      } else {
-        efficiency = 1.0;
-      }
-      // mass per m²/wk → grams across whole tomato area / share
-      const share = 1.0 / products.length;
-      const mass_mg_m2_wk = (need_mg_m2 * share) / Math.max(efficiency, 0.001) / analysis;
-      // Convert to per-area total: for fertigation/foliar that's grams over the
-      // whole tomato area; for sidedress it's grams per planche.
-      let g_total;
-      if (channel === 'sidedress') {
-        g_total = mass_mg_m2_wk * SIDEDRESS_AREA_PER_PLANCHE / 1000;  // g/planche/wk
-      } else {
-        g_total = mass_mg_m2_wk * area / 1000;        // g/wk over tomato area
-      }
-      out[productName] = (out[productName] || 0) + g_total;
-    });
-  });
-  return out;
-}
-
-// ─── Coverage / sanity checks for REQ-029a/b/c ───
-// These run at script load time and console.warn if any product in PRODUCT
-// has missing ions/tags, or any ion pair / tag is unclassified.
-(function validatePhase1ModelCoverage() {
-  try {
-    const cations = new Set();
-    const anions = new Set();
-    const tags = new Set();
-    const cationList = ['K+', 'Mg2+', 'Fe2+', 'Mn2+', 'Zn2+', 'Cu2+', 'Ca2+', 'Na+', 'NH4+', 'H+'];
-    const anionList = ['SO4-2', 'Cl-', 'B(OH)4-', 'MoO4-2', 'organic-matrix', 'PO4-3', 'OH-', 'NO3-'];
-    Object.keys(PRODUCT).forEach(function(name) {
-      const p = PRODUCT[name];
-      if (!p.ions || Object.keys(p.ions).length === 0) console.warn('[Phase1] missing ions:', name);
-      if (!p.chemistryTags || p.chemistryTags.length === 0) console.warn('[Phase1] missing tags:', name);
-      Object.keys(p.ions || {}).forEach(function(ion) {
-        if (cationList.indexOf(ion) >= 0) cations.add(ion);
-        else if (anionList.indexOf(ion) >= 0) anions.add(ion);
-      });
-      (p.chemistryTags || []).forEach(function(t) { tags.add(t); });
-    });
-    // REQ-029b: every cation × anion pair from declared ions must appear in KSP_PAIRS or KSP_SAFE
-    const safeKey = function(c, a) { return c + '|' + a; };
-    const safeSet = new Set();
-    KSP_SAFE.forEach(function(s) { safeSet.add(safeKey(s.cation, s.anion)); });
-    KSP_PAIRS.forEach(function(s) { safeSet.add(safeKey(s.cation, s.anion)); });
-    cations.forEach(function(c) {
-      anions.forEach(function(a) {
-        if (!safeSet.has(safeKey(c, a))) console.warn('[Phase1] unclassified pair:', c, '×', a);
-      });
-    });
-    // REQ-029c: every tag must appear in TAG_INCOMPATIBILITIES or TAGS_INERT
-    const tagsInIncomp = new Set();
-    TAG_INCOMPATIBILITIES.forEach(function(r) { (r.tags || []).forEach(function(t) { tagsInIncomp.add(t); }); });
-    tags.forEach(function(t) {
-      if (!tagsInIncomp.has(t) && !TAGS_INERT[t]) console.warn('[Phase1] unclassified tag:', t);
-    });
-  } catch (e) { console.warn('[Phase1] coverage check failed:', e); }
-})();
-
-// Stored recipe vs first-principles target (Block 7 — admin diagnostic).
-// Pulls stored doses from STORED_RECIPE.tomato.{fertigation, sidedress, foliaire}
-// (live operational state — what the team weighs) and FP target from
-// FP_RECIPE_T5 + computeStageRecipe (mass-balance derivation). Color-codes
-// 5% / 30% / >30%. T5 only — other stages render a placeholder pointing at
-// Recette proposée. The drift is genuine: STORED_RECIPE.tomato.fertigation is
-// hand-stored at its current weighed values (Haifa-heritage at kSulfate /
-// mgSulfate; PA Taillon recommendation anchors the FP target, not STORED),
-// while computeStageRecipe is derived from RECIPE_INPUTS via mass-balance.
-function renderPhase1Comparison() {
-  const stage = nutrStage;
-  // Stored recipes summarized as { productName: gramsPerWeekTotal }
-  const storedFert = STORED_RECIPE.tomato.fertigation[stage] || { mgSulfate: 0, kSulfate: 0 };
-  const fertStored = {
-    'K2SO4':       storedFert.kSulfate * getMultK(),
-    'MgSO4-7H2O':  storedFert.mgSulfate * getMultMg(),
-  };
-  const sd = STORED_RECIPE.tomato.sidedress[stage];
-  // Side-dress is g/planche/wk (NOT total area)
-  const sidedressStored = {
-    'Actisol-5-3-2': sd.actisol_g,
-    'FarinePlumes':  sd.farine_g,
-  };
-  // Foliar parsed from STORED_RECIPE.tomato.foliaire.A label strings (g per 15 L master tank)
-  const A = STORED_RECIPE.tomato.foliaire.A;
-  const parseG = function(s) { return parseFloat(String(s).replace(',', '.')) || 0; };
-  const find = function(sub) { return A.find(function(x) { return x.name.indexOf(sub) >= 0; }); };
-  const foliarStored = {
-    'MnSO4':        parseG((find('MnSO₄') || {}).master),
-    'ZnSO4':        parseG((find('ZnSO₄') || {}).master),
-    'CuSO4':        parseG((find('CuSO₄') || {}).master),
-    'Solubore':     parseG((find('Solubore') || {}).master),
-    'NaMolybdate':  parseG((find('Molybdate') || {}).master),
-    'FeSO4-7H2O':   parseG((find('FeSO₄') || {}).master),
-  };
-
-  // stable — framing copy (intro + tier thresholds + table headers) is invariant
-  // domain context. Numbers below come from constants (FP_RECIPE_T5 + stored).
-  let html = '<div style="font-size:12px; color:var(--text-muted); line-height:1.5; margin-bottom:8px;">'
-    + 'Recette stockée actuelle (ce que l\'équipe pèse cette semaine) vs cible premiers principes (Recette proposée — sidedress reframe + plafond demande + contraintes sans yucca). '
-    + '<strong>Vert</strong> ≤5 % · <strong>jaune</strong> ≤30 % · <strong>rouge</strong> &gt;30 %. Stade <strong>' + stage + '</strong>.'
-    + '</div>';
-
-  // FP recipe is only derived for T5. Other stages get a placeholder.
-  if (stage !== 'T5') {
-    html += '<div style="padding:10px 12px; background:var(--input-bg); border-radius:var(--radius-sm); font-size:11.5px; color:var(--text-muted); line-height:1.5;">'
-      + 'FP non dérivé pour ce stade — voir <strong style="color:var(--text);">Recette proposée</strong> pour T5.'
-      + '</div>';
-    return html;
-  }
-
-  // FP fertigation: prefer FP_RECIPE_T5 override when set; otherwise fall back
-  // to computeStageRecipe(stage) (mass-balance derivation from RECIPE_INPUTS).
-  // Mirrors the precedence in calculateNutritionSupply's FP branch.
-  const fpStage = computeStageRecipe(stage) || { mgSulfate: 0, kSulfate: 0 };
-  const fertFp      = {
-    'K2SO4':      (FP_RECIPE_T5.fertigation['K2SO4']      != null) ? FP_RECIPE_T5.fertigation['K2SO4']      : fpStage.kSulfate,
-    'MgSO4-7H2O': (FP_RECIPE_T5.fertigation['MgSO4-7H2O'] != null) ? FP_RECIPE_T5.fertigation['MgSO4-7H2O'] : fpStage.mgSulfate,
-  };
-  const sidedressFp = FP_RECIPE_T5.sidedress;
-  const foliarFp    = FP_RECIPE_T5.foliar;
-
-  const colorOf = function(stored, fp) {
-    if (stored === 0 && fp === 0) return '#9aa3ad';
-    if (stored === 0) return '#b03030';
-    const ratio = fp / stored;
-    const dev = Math.abs(ratio - 1.0);
-    if (dev <= 0.05) return '#1e6b2d';
-    if (dev <= 0.30) return '#a08020';
-    return '#b03030';
-  };
-  const fmtG = function(g) {
-    if (g === 0) return '0 g';
-    if (g >= 100) return Math.round(g) + ' g';
-    if (g >= 1)   return g.toFixed(1) + ' g';
-    return g.toFixed(2) + ' g';
-  };
-  const row = function(name, stored, fp, unit) {
-    let ratioStr;
-    if (stored === 0 && fp === 0) ratioStr = '—';
-    else if (stored === 0)        ratioStr = '∞';
-    else if (fp === 0)            ratioStr = '0 %';
-    else                          ratioStr = (fp / stored * 100).toFixed(0) + ' %';
-    return '<tr style="border-bottom:1px solid var(--border);">'
-      + '<td style="padding:4px 8px; font-weight:600;">' + name + '</td>'
-      + '<td style="padding:4px 8px; font-family:\'DM Mono\',monospace; text-align:right;">' + fmtG(stored) + ' ' + unit + '</td>'
-      + '<td style="padding:4px 8px; font-family:\'DM Mono\',monospace; text-align:right;">' + fmtG(fp) + ' ' + unit + '</td>'
-      + '<td style="padding:4px 8px; font-family:\'DM Mono\',monospace; text-align:right; color:' + colorOf(stored, fp) + '; font-weight:600;">' + ratioStr + '</td>'
-      + '</tr>';
-  };
-  const section = function(title, stored, fp, unit) {
-    let h = '<div style="margin-top:14px; font-weight:700; font-size:12.5px;">' + title + '</div>'
-      + '<table style="width:100%; border-collapse:collapse; font-size:12px; margin-top:4px;">'
-      + '<thead><tr style="text-align:left; color:var(--text-muted); font-size:10px; text-transform:uppercase; letter-spacing:1px;">'
-      + '<th style="padding:4px 8px;">Produit</th>'
-      + '<th style="padding:4px 8px; text-align:right;">Stocké</th>'
-      + '<th style="padding:4px 8px; text-align:right;">FP</th>'
-      + '<th style="padding:4px 8px; text-align:right;">Ratio</th>'
-      + '</tr></thead><tbody>';
-    const all = new Set(Object.keys(stored).concat(Object.keys(fp)));
-    all.forEach(function(name) {
-      h += row(name, stored[name] || 0, fp[name] || 0, unit);
-    });
-    h += '</tbody></table>';
-    return h;
-  };
-
-  html += section('Fertigation (g/sem · ' + (TOMATO_NUMBER_BEDS * TOMATO_BED_AREA).toFixed(0) + ' m²)', fertStored, fertFp, '');
-  html += section('Engrais sol granulaire (g/planche/sem · 54,7 m²)', sidedressStored, sidedressFp, '');
-  html += section('Foliaire (g par 15 L master)', foliarStored, foliarFp, '');
-  return html;
-}
-
-// ═══ END PHASE 1 RECIPE MODEL ═══
-
+// ── 8. Plant-needs calc/model + yield-range ───────────────────────────────
 <!-- @include nutrition/tomato/plant-needs/calc.js -->
-
 <!-- @include nutrition/tomato/plant-needs/model.js -->
 
 // ─── Yield Range (Salanova nursery time-to-canopy-cap model) ────────────────
@@ -1851,387 +556,22 @@ function renderPhase1Comparison() {
 <!-- @include yield-range/calc.js -->
 <!-- @include yield-range/model.js -->
 
-// SUPPLY MODEL (revised 2026-05-10):
-//   supply.soil   = SME × transpiration  (single source of "this week's soil access")
-//   supply.fert   = barrel-loaded mass per m²/sem  (full delivery, no mixing-factor discount)
-//   supply.foliar = (existing model)     (independent of soil chemistry)
-//   supply.sidedress is computed but NOT in the supply sum. It feeds the
-//   Block 3 bank-maintenance view: comparing weekly sidedress addition
-//   to weekly plant drawdown from soil determines whether SME trends
-//   up, holds, or depletes. Past sidedress contribution is already
-//   captured in the SME measurement; double-counting was the bug fixed
-//   here. See working files/coherence-audit.md Finding 14.
-//
-// Mixing factor retired 2026-05-10: prior to this date, stored-mode
-// fertigation was multiplied by 0.5 (REQ-100, "rest joins SME pool"
-// double-count framing). Concept dropped — fertigation is reported at
-// full barrel mass; SME is a separate channel.
+// ── 9. Bilan supply orchestrator + Block 7 drift renderer ─────────────────
+// nutrStage + nutrRecipeMode page-local state + LUXURY_FACTOR demand cap +
+// calculateNutritionSupply (FP gap chain, channel-by-channel ledger) +
+// statusFor. Consumers: nutrition/tomato/app/logic.js → buildNutrimentTomato.
+<!-- @include nutrition/tomato/app/supply.js -->
 
-// LUXURY_FACTOR — cap on supply.soil per element, applied as
-//   supply.soil[element] = min(SME[element] × transpiration, demand[element] × LUXURY_FACTOR[element])
-// Mechanism: HAK/HKT transporter saturation + demand-driven feedback.
-// Real uptake at saturating SME ≈ demand × small luxury fraction (vacuolar storage).
-// Excess in solution stays on CEC, leaches, or remains in solution.
-// References: Barber 1995, Marschner's Mineral Nutrition.
-// Cert 3 mechanism. Cert 2-3 specific factor values.
-//
-// Effect today (April 2026 SME):
-//   - K SME 292 ppm × ~28 L/m²/wk × tf ≈ 6 800-7 500 mg/m²/wk mass-flow potential,
-//     but T5 demand × 1.15 ≈ 6 037 → cap binds → real uptake ≈ 6 037.
-//   - Mg SME 79 ppm: similar story, cap binds.
-//   - P SME 1.1 ppm: mass-flow ≈ 25-30 mg/m²/wk; demand × 1.0 ≈ 1 500 mg → cap doesn't bind.
-//   - Fe/Mn/Zn at high pH: mass-flow already bottlenecks; cap inert.
-const LUXURY_FACTOR = {
-  N:  1.10,  // NO3 luxury uptake small; cert 3
-  P:  1.00,  // closely demand-regulated; lockout usually binds first; cert 4
-  K:  1.15,  // largest vacuolar K storage; cert 3
-  Ca: 1.10,  // mass-flow + xylem; cert 3
-  Mg: 1.10,  // similar to Ca; cert 3
-  S:  1.00,  // closely demand-regulated; cert 3
-  Fe: 1.00,  // micros: no significant luxury; cert 3
-  Mn: 1.00,
-  Zn: 1.00,
-  B:  1.00,
-  Cu: 1.00,
-  Mo: 1.00,
-};
+// renderPhase1Comparison — stored-vs-FP drift table renderer for the Bilan's
+// Block 7 admin panel. Reads nutrStage + STORED_RECIPE + FP_RECIPE_T5 +
+// computeStageRecipe. Consumer: nutrition/tomato/app/logic.js.
+<!-- @include nutrition/tomato/fertigation-recipe/app/drift.js -->
 
-function calculateNutritionSupply(stage, phLocked, transpFactor, targetYield, recipeMode) {
-  const mode = recipeMode === 'fp' ? 'fp' : 'stored';
-  const area = TOMATO_NUMBER_BEDS * TOMATO_BED_AREA; // 382.9 m²
-  // Recipe source: stored = STORED_RECIPE.tomato.{fertigation,sidedress,foliaire}
-  // (live operational state — what the team weighs). fp = FP_RECIPE_T5 +
-  // computeStageRecipe (mass-balance target, T5 only — caller is responsible
-  // for snapping nutrStage to T5 when mode='fp').
-  // FP fertigation skips multipliers (FP is the absolute target, not user-tuned).
-  const storedFert = STORED_RECIPE.tomato.fertigation[stage] || { mgSulfate: 0, kSulfate: 0 };
-  let k_g_total, mg_g_total;
-  if (mode === 'fp') {
-    // FP fertigation: computeStageRecipe(stage) is the mass-balance derivation
-    // from RECIPE_INPUTS. FP_RECIPE_T5.fertigation is the T5-only refined
-    // override (currently zeroed — bank meets demand passively at T5). When
-    // FP_RECIPE_T5 has a non-zero override for stage T5, prefer it; otherwise
-    // fall back to computeStageRecipe so other stages get a meaningful FP value.
-    const fpStage = computeStageRecipe(stage) || { mgSulfate: 0, kSulfate: 0 };
-    if (stage === 'T5') {
-      k_g_total  = (FP_RECIPE_T5.fertigation['K2SO4']      != null) ? FP_RECIPE_T5.fertigation['K2SO4']      : fpStage.kSulfate;
-      mg_g_total = (FP_RECIPE_T5.fertigation['MgSO4-7H2O'] != null) ? FP_RECIPE_T5.fertigation['MgSO4-7H2O'] : fpStage.mgSulfate;
-    } else {
-      k_g_total  = fpStage.kSulfate;
-      mg_g_total = fpStage.mgSulfate;
-    }
-  } else {
-    const mK = getMultK(), mM = getMultMg();
-    k_g_total  = storedFert.kSulfate * mK;
-    mg_g_total = storedFert.mgSulfate * mM;
-  }
-  // Fertigation per m²/week, mg — barrel-loaded mass per m²/sem, full
-  // delivery, no mixing-factor discount. Mode-aware mixing factor retired
-  // 2026-05-10 (was 0.5 stored / 1.0 FP).
-  const fertK  = (k_g_total  * PRODUCT_PCT.K2SO4_K)  / area * 1000;
-  const fertMg = (mg_g_total * PRODUCT_PCT.MgSO4_Mg) / area * 1000;
-  // Boric acid (Solubore) in fertigation — FP only, single-channel for B.
-  // Non-ionic: 100% efficiency at pH 7,4 (REQ-018 OK), no Ksp pair, no chelate.
-  const sb_fert_g = (mode === 'fp') ? (FP_RECIPE_T5.fertigation['Solubore'] || 0) : 0;
-  const fertB  = (sb_fert_g * PRODUCT_PCT.Solubore_B) / area * 1000;
-
-  // ─── REQ-116 — FP foliar recipe is live-derived from the pre-foliar gap.
-  // In FP mode, BEFORE building the foliar branch, compute the residual gap
-  // after compost + sidedress + fertigation, then call
-  // computeFoliarRecipeForGap(gap, opts) and mutate FP_RECIPE_T5.foliar so
-  // the existing FP foliar branch (which reads FP_RECIPE_T5.foliar) and all
-  // downstream readers (renderPhase1Comparison Block 7 drift gauge,
-  // "Recette proposée" admin card) see the live values.
-  //
-  // Stored mode is untouched — STORED_RECIPE.tomato.foliaire.A is
-  // /retire-recipe-governed and not derived. Spec:
-  // nutrition/tomato/foliar-recipe/spec.md → REQ-116. Implementation in
-  // nutrition/tomato/foliar-recipe/calc.js → computeFoliarRecipeForGap.
-  if (mode === 'fp') {
-    // Pre-foliar fertigation supply per-element (mg/m²/wk).
-    const fertPre = { K: fertK, Mg: fertMg };
-    if (fertB > 0) fertPre.B = fertB;
-    // Pre-foliar FP sidedress doses (mirrors the sidedress block below for
-    // the FP branch only — duplicated minimally to keep the gap computation
-    // inline; the canonical sidedress object is rebuilt below for the
-    // returned `supply.sidedress` so admin views read identical values).
-    const sdFp = {
-      actisol_g: FP_RECIPE_T5.sidedress['Actisol-5-3-2'] || 0,
-      farine_g:  FP_RECIPE_T5.sidedress['FarinePlumes']  || 0,
-    };
-    const sdAreaFactor_pre = 1000 / SIDEDRESS_AREA_PER_PLANCHE;
-    const phLockoutFactor_P_pre = phLocked ? 0.10 : 0.50;
-    const sidedressPre = {
-      N: (sdFp.actisol_g * PRODUCT_PCT.Actisol_N    * SIDEDRESS_MINIMUM_EFFICIENCY.Actisol_N
-        + sdFp.farine_g  * PRODUCT_PCT.FarinePlumes_N * SIDEDRESS_MINIMUM_EFFICIENCY.FarinePlumes_N
-         ) * sdAreaFactor_pre,
-      P: sdFp.actisol_g * PRODUCT_PCT.Actisol_P * phLockoutFactor_P_pre * sdAreaFactor_pre,
-      K: sdFp.actisol_g * PRODUCT_PCT.Actisol_K * SIDEDRESS_MINIMUM_EFFICIENCY.Actisol_K * sdAreaFactor_pre,
-    };
-    // Compost release (g/m²/wk → mg/m²/wk). Source: window.CompostContribution
-    // (REQ-080) — single source of truth, mirrors the gap chain in
-    // nutrition/tomato/app/logic.js → buildNutriment.
-    const CC_pre = (typeof window !== 'undefined' && window.CompostContribution) ? window.CompostContribution : null;
-    const tf_pre = transpFactor || 1.0;
-    const ty_pre = (typeof targetYield === 'number' && targetYield > 0) ? targetYield : 1.5;
-    const demandPre = calculateNutritionDemand(ty_pre, stage, tf_pre);
-    // Per-element pre-foliar gap = max(0, demand − compost − sidedress − fert).
-    // Only foliar-relevant elements (Mn/Zn/Cu/Fe/Mo/B) need to be in the gap;
-    // computeFoliarRecipeForGap ignores keys it doesn't recognize.
-    const FOLIAR_ELS = ['Mn', 'Zn', 'Cu', 'Fe', 'Mo', 'B'];
-    const gapPre = {};
-    FOLIAR_ELS.forEach(function(element) {
-      const dem = (demandPre[element] && demandPre[element].total) || 0;
-      const compostMg_el = (CC_pre && CC_pre.releasePerWeek[element] != null) ? CC_pre.releasePerWeek[element] * 1000 : 0;
-      const sdMg_el = sidedressPre[element] || 0;
-      const fertMg_el = fertPre[element] || 0;
-      gapPre[element] = Math.max(0, dem - compostMg_el - sdMg_el - fertMg_el);
-    });
-    // Operator levers — same DOM inputs the stored-mode foliar path reads
-    // (REQ-112). Defaults match the function's declared defaults.
-    const sprayCountInpFp = document.getElementById('nutr-foliar-spray-count');
-    const surfactantInpFp = document.getElementById('nutr-foliar-surfactant');
-    const foliarOptsFp = {
-      sprayCount: sprayCountInpFp ? parseFloat(sprayCountInpFp.value) : 1,
-      surfactant: surfactantInpFp ? surfactantInpFp.checked : false,
-    };
-    // Derive the gap-maximizing recipe and mutate FP_RECIPE_T5.foliar in-place.
-    // Defensive: fall back to the existing literal if the call throws or
-    // returns malformed (e.g., predictedCE not yet defined). Verifier guards
-    // against this with a try/catch.
-    try {
-      const derived = window.FoliarRecipeTomato.computeFoliarRecipeForGap(gapPre, foliarOptsFp);
-      if (derived && typeof derived === 'object') {
-        FP_RECIPE_T5.foliar['MnSO4']        = derived.MnSO4_g    || 0;
-        FP_RECIPE_T5.foliar['ZnSO4']        = derived.ZnSO4_g    || 0;
-        FP_RECIPE_T5.foliar['CuSO4']        = derived.CuSO4_g    || 0;
-        FP_RECIPE_T5.foliar['FeSO4-7H2O']   = derived.FeSO4_g    || 0;
-        FP_RECIPE_T5.foliar['NaMolybdate']  = derived.NaMoO4_g   || 0;
-        FP_RECIPE_T5.foliar['Solubore']     = derived.Solubore_g || 0;
-      }
-    } catch (e) {
-      // Leave FP_RECIPE_T5.foliar at its prior value — the existing FP foliar
-      // branch below reads it as a fallback. Logged to console so a real
-      // breakage surfaces in dev.
-      if (typeof console !== 'undefined') console.warn('[REQ-116] computeFoliarRecipeForGap failed; falling back to FP_RECIPE_T5.foliar literal:', e);
-    }
-  }
-
-  // Foliar Spray A (weekly): delivered per-element mg/m²/wk under cuticle
-  // coverage discount. Both modes route through
-  // window.FoliarRecipeTomato.computeFoliarSupply — single source of
-  // truth for the delivery formula (recipe_g × element_pct × 1000 / area
-  // × coverage × sprayCount). REQ-101 (coverage) + REQ-103 (namespace) +
-  // REQ-112 (sprayCount + surfactant + optional `recipe` arg) live in
-  // nutrition/tomato/foliar-recipe/spec.md.
-  // - Stored mode: no recipe arg → defaults to STORED_RECIPE.tomato.foliaire.A.
-  // - FP mode: FP_RECIPE_T5.foliar (REQ-116-derived above from the live
-  //   pre-foliar gap chain) is reshaped as a label-string array and
-  //   passed as the third arg.
-  const parseG = (s) => parseFloat(String(s).replace(',', '.')) || 0;
-  const A = STORED_RECIPE.tomato.foliaire.A;
-  const get = (substr) => A.find(x => x.name.includes(substr));
-
-  // Per-product gram doses by mode — kept for raw{} traceability + the
-  // "Recette proposée" Fe display label. NOT used to compute supply
-  // anymore; supply flows through computeFoliarSupply for both modes.
-  let mnSO4_g, znSO4_g, sb_g, cuSO4_g, moNa_g, feSO4_g;
-  if (mode === 'fp') {
-    const fp = FP_RECIPE_T5.foliar;
-    mnSO4_g = fp['MnSO4']        || 0;
-    znSO4_g = fp['ZnSO4']        || 0;
-    sb_g    = fp['Solubore']     || 0;
-    cuSO4_g = fp['CuSO4']        || 0;
-    moNa_g  = fp['NaMolybdate']  || 0;
-    feSO4_g = fp['FeSO4-7H2O']   || 0;
-  } else {
-    mnSO4_g = parseG(get('MnSO₄').master);
-    znSO4_g = parseG(get('ZnSO₄').master);
-    sb_g    = parseG(get('Solubore').master);
-    cuSO4_g = parseG(get('CuSO₄').master);
-    moNa_g  = parseG(get('Molybdate').master);
-    const feSO4_entry = A.find(x => x.name.includes('FeSO₄'));
-    feSO4_g = feSO4_entry ? parseG(feSO4_entry.master) : 0;
-  }
-  const feApplied_g = feSO4_g * PRODUCT_PCT.FeSO4_Fe;
-
-  // Foliar mg/m²/week (effective after coverage × spray count).
-  let foliar;
-  if (mode === 'fp') {
-    // FP mode: route the gap-derived FP_RECIPE_T5.foliar object through
-    // computeFoliarSupply by reshaping it as a label-string array. The
-    // substring-matched names below align with the `findG` searches in
-    // calc.js ('MnSO₄', 'ZnSO₄', 'Solubore', 'CuSO₄', 'Molybdate',
-    // 'FeSO₄'). Spray count + surfactant read from the same operator
-    // inputs as stored-mode (foliarOptsFp built above is block-scoped to
-    // the REQ-116 derivation block; re-read here to keep this branch
-    // self-contained).
-    const sprayCountInpFp2 = document.getElementById('nutr-foliar-spray-count');
-    const surfactantInpFp2 = document.getElementById('nutr-foliar-surfactant');
-    const foliarOptsFp2 = {
-      sprayCount: sprayCountInpFp2 ? parseFloat(sprayCountInpFp2.value) : 1,
-      surfactant: surfactantInpFp2 ? surfactantInpFp2.checked : false,
-    };
-    const fpFoliarArray = [
-      { name: 'MnSO₄ (31,5 % Mn)',     master: (FP_RECIPE_T5.foliar['MnSO4']       || 0) + ' g' },
-      { name: 'ZnSO₄ (35,5 % Zn)',     master: (FP_RECIPE_T5.foliar['ZnSO4']       || 0) + ' g' },
-      { name: 'Solubore (20,5 % B)',   master: (FP_RECIPE_T5.foliar['Solubore']    || 0) + ' g' },
-      { name: 'CuSO₄ (25 % Cu)',       master: (FP_RECIPE_T5.foliar['CuSO4']       || 0) + ' g' },
-      { name: 'Molybdate (39,6 % Mo)', master: (FP_RECIPE_T5.foliar['NaMolybdate'] || 0) + ' g' },
-      { name: 'FeSO₄·7H₂O (20 % Fe)',  master: (FP_RECIPE_T5.foliar['FeSO4-7H2O']  || 0) + ' g' },
-    ];
-    const supply = window.FoliarRecipeTomato.computeFoliarSupply(stage, foliarOptsFp2, fpFoliarArray);
-    foliar = {
-      Mn: supply.Mn, Zn: supply.Zn, B: supply.B,
-      Cu: supply.Cu, Mo: supply.Mo, Fe: supply.Fe,
-    };
-  } else {
-    // Stored mode: defaults read STORED_RECIPE.tomato.foliaire.A.
-    // REQ-112: spray count + surfactant from the operator inputs in
-    // Block 5; the function multiplies delivery accordingly.
-    const sprayCountInp = document.getElementById('nutr-foliar-spray-count');
-    const surfactantInp = document.getElementById('nutr-foliar-surfactant');
-    const foliarOpts = {
-      sprayCount: sprayCountInp ? parseFloat(sprayCountInp.value) : 1,
-      surfactant: surfactantInp ? surfactantInp.checked : false,
-    };
-    const supply = window.FoliarRecipeTomato.computeFoliarSupply(stage, foliarOpts);
-    foliar = {
-      Mn: supply.Mn, Zn: supply.Zn, B: supply.B,
-      Cu: supply.Cu, Mo: supply.Mo, Fe: supply.Fe,
-    };
-  }
-
-  // Spray B (CaCl₂ anti-BER) removed 2026-05-06 — no foliar Ca contribution.
-  // BER risk is addressed via ventilation + humidity control on the operations
-  // side, not on the supply ledger. Block 5 lever for Ca reflects this.
-  foliar.Ca = 0;
-
-  // Soil contributions — direct mass-flow from SME × transpiration × canopy factor.
-  // Lockout shows up automatically in the SME data (P 1.1 ppm, Mn/Zn below detection).
-  // Fe gets a calcareous-chemistry discount inside soilWeeklyAvailable.
-  // transpFactor (0,4-1,0) scales mass-flow down for stunted plants; full canopy = 1,0.
-  //
-  // Demand-bounding cap (LUXURY_FACTOR): mass-flow potential overstates real
-  // uptake at high SME for transporter-saturating elements (K, Ca, Mg, partially
-  // N). At saturating concentrations, real uptake ≈ demand × small luxury
-  // fraction; the rest stays on CEC, in solution, or leaches. The cap is taken
-  // against demand_total (fruit + biomass per stage at target yield) — same
-  // number Block 1 of the Nutrition page renders. For solution-limited elements
-  // (P at SME 1.1 ppm, Fe/Mn/Zn under detection), mass-flow IS the bottleneck
-  // and the cap doesn't bind.
-  const tf = transpFactor || 1.0;
-  const ty = (typeof targetYield === 'number' && targetYield > 0) ? targetYield : 1.5;
-  // REQ-081: pass tf so Ca/Mg biomass terms scale with canopy transpiration.
-  const demandBreakdown = calculateNutritionDemand(ty, stage, tf);
-  const soil = {};
-  // FP mode (2026-05-08): drop SME credit for everything fertigation/foliar can
-  // deliver (K, Mg, N, Fe, Mn, Zn, B, Cu, Mo). Keep SME for Ca (saturated, can't
-  // add) and P (pH-locked, banque scavenging is the accepted strategy via
-  // ACCEPTED_DEFICITS). Stored mode unchanged — SME-based supply for all elements.
-  const FP_SOIL_KEEP = { Ca: true, P: true };
-  ['N','P','K','Ca','Mg','Fe','Mn','Zn','B','Cu','Mo'].forEach(element => {
-    if (mode === 'fp' && !FP_SOIL_KEEP[element]) {
-      soil[element] = 0;
-      return;
-    }
-    const massFlowPotential = soilWeeklyAvailable(element, phLocked, tf);
-    const demandTotal_element = (demandBreakdown[element] && demandBreakdown[element].total) || 0;
-    const luxury = (LUXURY_FACTOR[element] != null) ? LUXURY_FACTOR[element] : 1.0;
-    const demandCap = demandTotal_element * luxury;
-    soil[element] = Math.min(massFlowPotential, demandCap);
-  });
-
-  // Side-dressing contributions (granular, weekly, per stage). Reads from
-  // STORED_RECIPE.tomato.sidedress source-of-truth constant. Per-element delivery:
-  //   element_mg/m²/wk = (g/planche × pct × min_eff × phFactor) / planche_area × 1000
-  // Mineralization steady-state: weekly application = weekly available release.
-  //
-  // P pH-lockout factor (audit Finding 7, cert 3): at pH ≥ 7, freshly
-  // mineralized phosphate from Actisol meets Ca²⁺ in solution and precipitates
-  // as Ca-phosphate before plant uptake. Cadre framework gives 5-15% effective
-  // (midpoint ~10%); we apply 0.10 when phLocked, 0.50 (full mineralization
-  // efficiency) when pH drops. This stays honest under the new model since
-  // sidedress no longer claims this-week supply — only bank-maintenance addition.
-  // Sidedress source: stored = STORED_RECIPE.tomato.sidedress[stage],
-  // fp = FP_RECIPE_T5.sidedress (FP_RECIPE_T5 is T5-only; same g/planche unit).
-  const sd = mode === 'fp'
-    ? {
-        actisol_g: FP_RECIPE_T5.sidedress['Actisol-5-3-2'] || 0,
-        farine_g:  FP_RECIPE_T5.sidedress['FarinePlumes']  || 0,
-      }
-    : STORED_RECIPE.tomato.sidedress[stage];
-  const sdAreaFactor = 1000 / SIDEDRESS_AREA_PER_PLANCHE; // → mg/m²/wk per gram of product
-  const phLockoutFactor_P = phLocked ? 0.10 : 0.50;
-  const sidedress = {
-    N: (sd.actisol_g * PRODUCT_PCT.Actisol_N    * SIDEDRESS_MINIMUM_EFFICIENCY.Actisol_N
-      + sd.farine_g  * PRODUCT_PCT.FarinePlumes_N * SIDEDRESS_MINIMUM_EFFICIENCY.FarinePlumes_N
-       ) * sdAreaFactor,
-    P: sd.actisol_g * PRODUCT_PCT.Actisol_P * phLockoutFactor_P * sdAreaFactor,
-    K: sd.actisol_g * PRODUCT_PCT.Actisol_K * SIDEDRESS_MINIMUM_EFFICIENCY.Actisol_K * sdAreaFactor,
-  };
-  sidedress.efficiency = window.SidedressRecipeTomato.efficiency;
-
-  // Fertigation contributions — barrel-loaded mass per m²/sem, full
-  // delivery (no mixing-factor discount; concept retired 2026-05-10).
-  // B only present in FP mode (Solubore added 2026-05-08, single-channel for B).
-  const fert = { K: fertK, Mg: fertMg };
-  if (fertB > 0) fert.B = fertB;
-  fert.efficiency = window.FertigationRecipeTomato.efficiency;
-
-  // REQ-157 (amended 2026-05-16) — capability map for the foliar channel
-  // sourced from window.FoliarRecipeTomato. Declares per-element coverage
-  // regardless of whether the channel doses the element this call.
-  // REQ-163 — surfactant-aware: thread the Block 5 surfactant lever through
-  // efficiencyFor(surfactant) so the Efficacité column updates on toggle.
-  const surfactantInputForEfficiency = document.getElementById('nutr-foliar-surfactant');
-  const surfactantOnForEfficiency = surfactantInputForEfficiency ? surfactantInputForEfficiency.checked : false;
-  foliar.efficiency = window.FoliarRecipeTomato.efficiencyFor(surfactantOnForEfficiency);
-
-  // Total effective supply per element.
-  // NOTE: sidedress is NOT summed here — past sidedress mineralization is
-  // already captured in the SME reading (supply.soil). Adding it again would
-  // double-count. Sidedress.* still computed; rendered in Block 3 as a bank-
-  // maintenance view (drawdown vs. addition determines SME trajectory).
-  const total = {};
-  Object.keys(TOMATO_FRUIT_EXPORT).forEach(element => {
-    total[element] = (fert[element] || 0) + (foliar[element] || 0) + (soil[element] || 0);
-  });
-
-  // Fe display label — uses the active recipe source (stored or fp).
-  const feSourceLabel = feSO4_g > 0 ? `FeSO₄ ${feSO4_g} g` : '—';
-
-  return {
-    total, fert, foliar, soil, sidedress,
-    raw: {
-      mnSO4_g, znSO4_g, sb_g, cuSO4_g, moNa_g, feApplied_g, feSO4_g,
-      k_g_total, mg_g_total, feSourceLabel, area,
-      sd_actisol_g: sd.actisol_g, sd_farine_g: sd.farine_g,
-    }
-  };
-}
-
-function statusFor(supply, demand) {
-  if (demand <= 0) return { icon: '—', cls: '', ratio: 1 };
-  const ratio = supply / demand;
-  if (ratio >= 1.0)  return { icon: '✅', cls: 'cert-5', ratio };
-  if (ratio >= 0.7)  return { icon: '⚠',  cls: 'cert-3', ratio };
-  return                    { icon: '❌', cls: 'cert-2', ratio };
-}
-
+// ── 10. UI helpers (modal, format, gap-grid) ──────────────────────────────
 // "Pourquoi cette dose" modal + expander + cell/cap modal helpers live in
 // nutrition/lib/pourquoi.js. Shared by the Bilan tables across crops + the
 // soil-contribution render + inline onclick attributes in partial pages.
 <!-- @include nutrition/lib/pourquoi.js -->
-
-
-function fmtMg(v) {
-  if (v === 0) return '0';
-  if (v >= 1000) return (v / 1000).toFixed(2) + ' g';
-  if (v >= 10)   return Math.round(v).toString();
-  if (v >= 1)    return v.toFixed(1);
-  return v.toFixed(2);
-}
 
 // formatValue + formatMg live in nutrition/lib/format.js — consumed by
 // renderGapGrid below, nutrition/tomato/app/logic.js, and
@@ -2243,84 +583,28 @@ function fmtMg(v) {
 // tomato + lettuce + nursery + soil-contribution.
 <!-- @include nutrition/lib/render-gap-grid.js -->
 
+// ── 11. Per-crop nutriment builders ───────────────────────────────────────
 <!-- @include nutrition/tomato/app/logic.js -->
 
 <!-- @include nutrition/lettuce/app/logic.js -->
 
 <!-- @include yield-range/app/logic.js -->
 
-// Top-level Nutrition page dispatch. Picks the crop-specific page builder
-// based on the current `nutrCrop` toggle. Tomato uses the stage-driven Bilan
-// (nutrition/tomato/app/logic.js); Salanova uses the continuous post-transplant
-// model (nutrition/lettuce/app/logic.js); Semis uses the per-tray nursery
-// model (defined below). Each crop's logic.js is single-purpose — the
-// dispatch lives here at the integrator boundary.
-function buildNutriment() {
-  if (nutrCrop === 'lettuce') {
-    buildNutrimentLettuce();
-    return;
-  }
-  if (nutrCrop === 'nursery') {
-    buildNutrimentNursery();
-    return;
-  }
-  buildNutrimentTomato();
-}
-
-// Switch between Tomate / Salanova / Semis laitue on the Nutrition page.
-function setNutrCrop(crop) {
-  nutrCrop = crop;
-  const tomBtn = document.getElementById('nutr-crop-tomato');
-  const letBtn = document.getElementById('nutr-crop-lettuce');
-  const nurBtn = document.getElementById('nutr-crop-nursery');
-  if (tomBtn) tomBtn.className = crop === 'tomato'  ? 'crop-btn active-tomato'  : 'crop-btn';
-  if (letBtn) letBtn.className = crop === 'lettuce' ? 'crop-btn active-lettuce' : 'crop-btn';
-  if (nurBtn) nurBtn.className = crop === 'nursery' ? 'crop-btn active-lettuce' : 'crop-btn';
-  const tomDiv = document.getElementById('nutr-tomato-content');
-  const letDiv = document.getElementById('nutr-lettuce-content');
-  const nurDiv = document.getElementById('nutr-nursery-content');
-  if (tomDiv) tomDiv.style.display = crop === 'tomato'  ? 'block' : 'none';
-  if (letDiv) letDiv.style.display = crop === 'lettuce' ? 'block' : 'none';
-  if (nurDiv) nurDiv.style.display = crop === 'nursery' ? 'block' : 'none';
-  if (typeof syncHash === 'function') syncHash();
-  syncNutrRecipeModeUI();
-  buildNutriment();
-}
-
 <!-- @include nutrition/nursery/app/logic.js -->
 
 <!-- @include app/historique-nutriments/logic.js -->
 
-// Wire Bilan inputs (page is hidden by default; listeners are cheap to attach)
-['nutr-target','nutr-solar-per-gram','nutr-phlocked',
- 'nutr-foliar-spray-count','nutr-foliar-surfactant',
- 'nutr-l-transplant','nutr-l-target','nutr-l-days','nutr-l-density',
- 'nutr-l-frontload','nutr-l-phlocked',
- 'nutr-n-target','nutr-n-days','nutr-n-cells','nutr-n-trays','nutr-n-applications'].forEach(id => {
-  const element = document.getElementById(id);
-  if (element) element.addEventListener('input', buildNutriment);
-});
-// Checkbox elements only fire 'change' reliably on toggle, not 'input',
-// in some older WebKit paths. Wire 'change' too for the surfactant box.
-const surfBox = document.getElementById('nutr-foliar-surfactant');
-if (surfBox) surfBox.addEventListener('change', buildNutriment);
-document.querySelectorAll('[data-nstage]').forEach(b => {
-  b.addEventListener('click', () => setNutrStage(b.dataset.nstage));
-});
+// ── 12. Cross-crop dispatcher + listener wiring + footer + snapshot helper ─
+// nutrCrop state + buildNutriment dispatcher + setNutrCrop handler +
+// captureCurrentSnapshot (browser-console helper for /retire-recipe) +
+// listener wiring on Bilan inputs + footer history.json fetch.
+<!-- @include app/operator/nutriment.js -->
 
-// Operator chrome — top-nav routing, page-toggle, hash sync, admin mode, init.
+// ── 13. Operator chrome — top-nav routing, page-toggle, hash sync, admin, init ─
+// MUST be last. Reads every setter/handler defined above (setNutrCrop,
+// setNutrRecipeMode, setDiagCrop, buildNutriment, buildWeek, buildFoliar,
+// buildHistoriqueNutriments, buildYieldRange, renderDiag, etc.).
 <!-- @include app/operator/logic.js -->
-
-// Footer: show last published update date from history.json
-fetch('history.json?_=' + Date.now())
-  .then(r => r.ok ? r.json() : [])
-  .then(h => {
-    if (h.length > 0) {
-      const element = document.getElementById('last-update');
-      if (element) element.textContent = 'Mis à jour le ' + (h[0].date_fr || h[0].date) + ' · ';
-    }
-  })
-  .catch(() => {});
 </script>
 
 <!-- "Pourquoi cette dose" modal — opened by clicking a row in Bilan tables.
