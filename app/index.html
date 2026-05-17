@@ -297,26 +297,7 @@
 
 <!-- @spec-strings -->
 <script>
-// renderSpec(requirementId, key, interpolation) — operator-facing strings whose bytes the
-// spec owns. See requirements.md REQ-144 + the per-domain spec entries that
-// declare `Renders:` blocks. The build step parses those blocks across the
-// spec tree into window.SPEC_STRINGS; this helper resolves the lookup +
-// optional ${var} substitution.
-function renderSpec(requirementId, key, interpolation) {
-  const bucket = (window.SPEC_STRINGS && window.SPEC_STRINGS[requirementId]) || null;
-  if (!bucket) throw new Error(`renderSpec: ${requirementId} has no Renders: block in any spec.md`);
-  if (!Object.prototype.hasOwnProperty.call(bucket, key)) {
-    throw new Error(`renderSpec: ${requirementId} has no render key "${key}" (available: ${Object.keys(bucket).join(', ')})`);
-  }
-  let text = bucket[key];
-  if (interpolation) {
-    text = text.replace(/\$\{(\w+)\}/g, (m, name) => {
-      if (Object.prototype.hasOwnProperty.call(interpolation, name)) return String(interpolation[name]);
-      return m;
-    });
-  }
-  return text;
-}
+<!-- @include lib/spec-strings.js -->
 </script>
 <script>
 const TOMATO_BED_AREA = 54.7;
@@ -381,91 +362,11 @@ const LETTUCE = { mgSulfate: 467, kSulfate: 2996, feSulfate: 7.5 };
 // Reference rate (in case of reintroduction): 180 mL per 100 m², 4% dilution
 // const PLANTIFUL_ML_PER_100M2 = 180;
 
-// Sunrise/sunset for Quebec City (46.8°N, -71.2°W)
-// Monthly lookup table (mid-month values, EDT)
-// Source: timeanddate.com data for Quebec City
-const SUN_TABLE = [
-  // [sunrise_h, sunrise_m, sunset_h, sunset_m]
-  [7, 30, 16, 30],  // Jan
-  [7, 0,  17, 15],  // Feb
-  [6, 15, 18, 0],   // Mar (post DST)
-  [6, 10, 19, 15],  // Apr
-  [5, 25, 20, 0],   // May
-  [5, 5,  20, 30],  // Jun
-  [5, 20, 20, 20],  // Jul
-  [5, 55, 19, 40],  // Aug
-  [6, 35, 18, 45],  // Sep
-  [7, 15, 17, 45],  // Oct
-  [6, 55, 16, 30],  // Nov (post DST end)
-  [7, 30, 16, 15],  // Dec
-];
-
-function getSunTimes() {
-  const now = new Date();
-  const month = now.getMonth(); // 0-11
-  const day = now.getDate();
-
-  // Interpolate between current and next month for smoother transitions
-  const current = SUN_TABLE[month];
-  const next = SUN_TABLE[(month + 1) % 12];
-  const frac = day / 30; // approximate fraction through month
-
-  function interpolation(a, b, t) { return a + (b - a) * t; }
-
-  const sunriseH = interpolation(current[0] + current[1] / 60, next[0] + next[1] / 60, frac);
-  const sunsetH = interpolation(current[2] + current[3] / 60, next[2] + next[3] / 60, frac);
-
-  function hToTime(h) {
-    const hr = Math.floor(h);
-    const mn = Math.round((h - hr) * 60);
-    return `${String(hr).padStart(2, '0')}:${String(mn < 0 ? 0 : mn).padStart(2, '0')}`;
-  }
-
-  return { sunrise: sunriseH, sunset: sunsetH, sunriseString: hToTime(sunriseH), sunsetString: hToTime(sunsetH) };
-}
-
-function addHours(baseH, offset) {
-  const h = baseH + offset;
-  const hr = Math.floor(h);
-  const mn = Math.round((h - hr) * 60);
-  return `${String(hr).padStart(2, '0')}:${String(mn < 0 ? 0 : mn).padStart(2, '0')}`;
-}
-
-function getCurrentTimeString() {
-  const now = new Date();
-  return `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
-}
-
-// Tensiometer config: offsets from sunrise/sunset
-// morningStart: hours after sunrise to begin irrigation
-// pmStart: hours after sunrise to switch to PM threshold  
-// stopBeforeSunset: hours before sunset when we check if surface is dry
-// lastIrrigationBeforeSunset is per vigor level:
-//   Low: 3h (minimize afternoon stress on weak plants)
-//   Normal: 4h (standard — 2-3h drying time for sandy soil + margin)
-//   High: 5h (aggressive dryback — push roots, control vigor)
-const TENSIO_CONFIG = {
-  tomato: {
-    morningStart: 2,
-    pmStart: 5,
-    stopBeforeSunset: 4,
-    shotDuration: '3 min',
-    shotPause: '45 min',
-    low:    { am: 10, pm: 12, lastStop: 3, sunrise_kpa: '18–22', note: 'Garder le sol humide — les racines affaiblies ne vont pas chercher l\'eau en profondeur. Pas d\'assèchement.' },
-    normal: { am: 15, pm: 20, lastStop: 4, sunrise_kpa: '22–25', note: 'Léger assèchement l\'après-midi — encourage l\'enracinement sans stresser les plants.' },
-    high:   { am: 20, pm: 25, lastStop: 5, sunrise_kpa: '25–30', note: 'Assèchement marqué — freine la végétation et dirige l\'énergie vers les fruits.' },
-  },
-  lettuce: {
-    morningStart: 1,
-    pmStart: 4.5,
-    stopBeforeSunset: 3,
-    shotDuration: '3 min',
-    shotPause: '30 min',
-    low:    { am: 8,  pm: 10, lastStop: 2, sunrise_kpa: '12–15', note: 'Racines superficielles — garder très humide pour éviter le flétrissement.' },
-    normal: { am: 10, pm: 15, lastStop: 3, sunrise_kpa: '15–18', note: 'Maintenir l\'humidité sans saturer. Léger assèchement en PM acceptable.' },
-    high:   { am: 12, pm: 18, lastStop: 4, sunrise_kpa: '18–22', note: 'Assèchement modéré. Ne jamais dépasser 20 kPa — la laitue flétrit irréversiblement dans le sable.' },
-  }
-};
+// Sun-time helpers (getSunTimes / addHours / getCurrentTimeString / SUN_TABLE)
+// live in lib/sun.js — Quebec City mid-month sunrise/sunset table + interp +
+// formatting. Consumers: buildTensio below, app/week/logic.js,
+// nutrition/tomato/foliar-recipe/app/logic.js.
+<!-- @include lib/sun.js -->
 
 let currentCrop = 'tomato';
 let currentStage = 'T1';
@@ -605,78 +506,13 @@ function autoStage() {
   document.getElementById('param-radiation').textContent = getSolarRad() + ' J/cm²/jour';
 }
 
-function buildTensio() {
-  const crop = currentCrop === 'tomato' ? 'tomato' : 'lettuce';
-  const config = TENSIO_CONFIG[crop];
-  const v = config[currentVigor];
-  const sun = getSunTimes();
-  const now = getCurrentTimeString();
+// Tensiometer config + buildTensio renderer live in
+// nutrition/tomato/app/irrigation/logic.js — DOM targets (#tensio-params /
+// #tensio-success / #vigor-note) are declared in the tomato irrigation
+// page partial. Reads `currentCrop` / `currentVigor` (declared above) plus
+// lib/sun.js helpers (getSunTimes / addHours / getCurrentTimeString).
+<!-- @include nutrition/tomato/app/irrigation/logic.js -->
 
-  const amStart = addHours(sun.sunrise, config.morningStart);
-  const pmStart = addHours(sun.sunrise, config.pmStart);
-  const lastShot = addHours(sun.sunset, -v.lastStop);
-  const eveningCheck = addHours(sun.sunset, -config.stopBeforeSunset);
-
-  let html = '';
-  // Sun-times + current-time bar removed by user request (info available elsewhere).
-
-  // Shot config — outside the table
-  html += `<div style="font-size:12px; color:var(--text-muted); margin-bottom:14px;">
-    Shots de <strong style="color:var(--text);">${config.shotDuration}</strong> · pause <strong style="color:var(--text);">${config.shotPause}</strong> entre chaque
-  </div>`;
-
-  // 3 periods — midnight to midnight
-  const periods = [
-    { icon: '🌙', label: 'Nuit', time: `00:00 → ${amStart}`, kpa: 'Stop', active: false },
-    { icon: '☀️', label: 'Matin', time: `${amStart} → ${pmStart}`, kpa: `${v.am} kPa`, active: true },
-    { icon: '🌤', label: 'Après-midi', time: `${pmStart} → ${lastShot}`, kpa: `${v.pm} kPa`, active: true },
-    { icon: '🌅', label: 'Soir', time: `${lastShot} → 00:00`, kpa: 'Stop', active: false },
-  ];
-
-  periods.forEach(p => {
-    html += `<div style="display:flex; align-items:center; padding:10px 0; border-bottom:1px solid var(--border);">
-      <span style="font-size:16px; width:28px;">${p.icon}</span>
-      <div style="flex:1;">
-        <div style="font-size:13px; font-weight:600;">${p.label}</div>
-        <div style="font-size:11px; color:var(--text-muted);">${p.time}</div>
-      </div>
-      <span style="font-family:'DM Mono',monospace; font-size:13px; font-weight:600; color:${p.active ? 'var(--text)' : 'var(--text-muted)'};">${p.kpa}</span>
-    </div>`;
-  });
-
-  // Why block
-  html += `<div style="font-size:11px; color:var(--text-muted); line-height:1.6; margin:12px 0;">
-    <div style="margin-bottom:3px;">☀️ Début ${config.morningStart}h après le lever — laisser les racines s'activer.</div>
-    <div style="margin-bottom:3px;">🌤 Seuil plus sec — préparer l'assèchement.</div>
-    <div style="margin-bottom:3px;">🌙 Dernier shot ${v.lastStop}h avant le coucher — le 1er cm doit être sec au coucher du soleil.</div>
-  </div>`;
-
-  document.getElementById('tensio-params').innerHTML = html;
-
-  // Success criteria — separate card
-  let successHTML = `<div style="font-size:12px; color:var(--text-muted); line-height:1.7;">
-      <div style="padding:3px 0;">🌅 Au lever : tensiomètre <strong style="color:var(--text);">${v.sunrise_kpa} kPa</strong></div>
-      <div style="padding:3px 0;">🌿 À ${eveningCheck} : surface sèche au toucher sur 1 cm</div>
-      <div style="padding:3px 0;">💧 Guttation à l'aube : feuilles sèches = ✓ · perles d'eau = trop humide</div>
-      ${currentCrop === 'tomato' ?
-        '<div style="padding:3px 0;">🍅 Chancres botrytis : secs/durs = ✓ · mous/suintants = trop humide</div>' :
-        '<div style="padding:3px 0;">🥬 Tipburn : marges brunes = pas assez d\'eau → baisser kPa</div>'
-      }
-    </div>`;
-  document.getElementById('tensio-success').innerHTML = successHTML;
-
-  // Vigor note — merged into vigor card (tomato only)
-  if (currentCrop === 'tomato') {
-    document.getElementById('vigor-note').innerHTML =
-      `<div style="font-size:12px; color:#8a5a1e; background:var(--warning-bg); border:1.5px solid #f0c899; border-radius:var(--radius-sm); padding:10px 12px; line-height:1.4;">${v.note}</div>`;
-  }
-}
-
-
-// Generic g/mL formatters used by the per-channel page renderers (fertigation
-// step list, etc.). Stay at top-level — multiple consumers.
-function fmt(g) { if (g >= 1000) return (g / 1000).toFixed(2) + ' kg'; if (g < 10 && g > 0) return g.toFixed(1) + ' g'; return Math.round(g) + ' g'; }
-function fmtML(ml) { if (ml >= 1000) return (ml / 1000).toFixed(2) + ' L'; return Math.round(ml) + ' mL'; }
 
 // Fertigation page renderer (getStockVol, getNutrients, buildSteps) lives in
 // the fertigation-recipe subproject. Reads STORED_RECIPE.tomato.fertigation
@@ -807,23 +643,11 @@ function recalcNursery() {
 
 <!-- @include nutrition/tomato/plant-needs/data.js -->
 
-// Element % by mass for each product (label-stated)
-const PRODUCT_PCT = {
-  K2SO4_K:    0.415,  // 50% K2O = 41.5% K
-  MgSO4_Mg:   0.0986, // MgSO4·7H2O
-  MnSO4_Mn:   0.315,
-  ZnSO4_Zn:   0.355,
-  Solubore_B: 0.205,
-  CuSO4_Cu:   0.25,
-  NaMoO4_Mo:  0.396,
-  FeSO4_Fe:   0.20,   // FeSO4·7H2O 20% Fe (foliar active source)
-  // CaCl2_Ca removed 2026-05-06 (Spray B retired)
-  // Side-dressing products (granular, applied weekly to soil between rows)
-  Actisol_N:      0.05,                  // 5% N (label 5-3-2)
-  Actisol_P:      0.03 * 62/142,         // 3% P₂O₅ × 62/142 = 1.31% P (elemental)
-  Actisol_K:      0.02 * 78/94.2,        // 2% K₂O × 78/94.2 = 1.66% K (elemental)
-  FarinePlumes_N: 0.13,                  // 13% N (label 13-0-0)
-};
+// PRODUCT_PCT lives in nutrition/lib/product-pct.js — cross-crop element %
+// by mass (consumed by tomato fertigation/foliar/sidedress recipes, lettuce
+// app/plant-needs, and the verifier). Loaded before
+// nutrition/tomato/sidedress-recipe/data.js below (reads PRODUCT_PCT keys).
+<!-- @include nutrition/lib/product-pct.js -->
 
 // ─── STORED_RECIPE — single source of truth for recettes appliquées ─────
 //
@@ -2544,69 +2368,10 @@ function statusFor(supply, demand) {
   return                    { icon: '❌', cls: 'cert-2', ratio };
 }
 
-// REQ-003 — "Pourquoi cette dose?" expander. Admin-only.
-// Collapsed <details> block showing the equation, values plugged for the
-// current stage, and a one-line interpretation. Still used by the Banque
-// sol page; the Bilan now surfaces this content via a row-click modal
-// (registerPourquoi / showPourquoi below).
-function pourquoiExpander(equationHtml, pluggedHtml, interpretationHtml) {
-  return '<details style="margin-top:6px; font-size:11px; color:var(--text-muted); line-height:1.5;">'
-    + '<summary style="cursor:pointer; user-select:none; padding:2px 0; color:var(--text-muted); font-size:10.5px; text-transform:uppercase; letter-spacing:1px; font-weight:600;">Pourquoi cette dose?</summary>'
-    + '<div style="padding:6px 10px; margin-top:4px; background:var(--input-bg); border-left:2px solid var(--border); border-radius:0 var(--radius-sm) var(--radius-sm) 0;">'
-    +   '<div style="font-family:\'DM Mono\',monospace; font-size:10.5px; color:var(--text); margin-bottom:4px;">' + equationHtml + '</div>'
-    +   '<div style="font-family:\'DM Mono\',monospace; font-size:10.5px; color:var(--text-muted); margin-bottom:4px;">' + pluggedHtml + '</div>'
-    +   '<div style="font-size:11px; color:var(--text-muted); font-style:italic;">' + interpretationHtml + '</div>'
-    + '</div>'
-    + '</details>';
-}
-
-// "Pourquoi cette dose" modal helpers — used by Bilan tables (Block 1 needs,
-// Block 2 soil, Block 3 fert, Block 4 foliar). Registry repopulated each
-// buildNutriment() render. Keys: `${blockId}.${element}` (e.g. `foliar.Mn`).
-// Defined alongside pourquoiExpander so buildNutriment can register entries
-// during the initial setPage() call at page load.
-window.currentPourquoi = window.currentPourquoi || {};
-function registerPourquoi(key, data) { window.currentPourquoi[key] = data; }
-function showPourquoi(key) {
-  const d = window.currentPourquoi[key];
-  if (!d) return;
-  const certHtml = (d.cert != null) ? `<span class="diag-cert diag-cert-${d.cert}">cert ${d.cert}/5</span>` : '';
-  document.getElementById('pq-modal-title').innerHTML = `${d.title}${certHtml}`;
-  document.getElementById('pq-modal-eq').innerHTML = d.equation || '';
-  document.getElementById('pq-modal-plugged').innerHTML = d.plugged || '';
-
-  // Interpretation: REQ-144 — must be a deterministic render of spec.
-  // Accepted shapes:
-  //   { req: 'REQ-NNN', key: 'name', interpolation?: { ... } } — spec-anchored prose
-  //                                                       (REQ owns the bytes)
-  //   undefined / null / ''                            — empty interpretation
-  // Plain-string form is deprecated (REQ-144). Pass it through with a
-  // console warning so legacy registrations don't break, but new code
-  // MUST use the { requirementId, key } shape.
-  const interpretationElement = document.getElementById('pq-modal-interpolation');
-  if (!d.interpretation) {
-    interpretationElement.innerHTML = '';
-    interpretationElement.removeAttribute('data-prose-source');
-  } else if (typeof d.interpretation === 'object' && d.interpretation.requirementId) {
-    const text = renderSpec(d.interpretation.requirementId, d.interpretation.key, d.interpretation.interpolation);
-    interpretationElement.innerHTML = text;
-    interpretationElement.setAttribute('data-prose-source', d.interpretation.requirementId);
-  } else {
-    console.warn('showPourquoi: legacy string interpretation for key', key, '— migrate to { requirementId, key } per REQ-144');
-    interpretationElement.innerHTML = String(d.interpretation);
-    interpretationElement.removeAttribute('data-prose-source');
-  }
-
-  document.getElementById('pq-modal').classList.add('open');
-}
-function closePourquoi() {
-  document.getElementById('pq-modal').classList.remove('open');
-}
-// Close modal on Escape key.
-document.addEventListener('keydown', (e) => {
-  if (e.key === 'Escape') closePourquoi();
-});
-// ─── END pourquoi helper ─────────────────────────────────────────────────────
+// "Pourquoi cette dose" modal + expander + cell/cap modal helpers live in
+// nutrition/lib/pourquoi.js. Shared by the Bilan tables across crops + the
+// soil-contribution render + inline onclick attributes in partial pages.
+<!-- @include nutrition/lib/pourquoi.js -->
 
 
 function fmtMg(v) {
@@ -2617,179 +2382,15 @@ function fmtMg(v) {
   return v.toFixed(2);
 }
 
-// Format a value as g if >= 1000 mg, else mg.
-function formatValue(mg) {
-  if (mg <= 0) return '0';
-  if (mg >= 1000) return (mg / 1000).toFixed(2).replace(/\.?0+$/, '') + ' g';
-  if (mg >= 10)   return Math.round(mg) + ' mg';
-  if (mg >= 1)    return mg.toFixed(1) + ' mg';
-  return mg.toFixed(2) + ' mg';
-}
+// formatValue + formatMg live in nutrition/lib/format.js — consumed by
+// renderGapGrid below, nutrition/tomato/app/logic.js, and
+// nutrition/soil-contribution/render.js.
+<!-- @include nutrition/lib/format.js -->
 
-// REQ-159 — bare-numeric mg renderer for gap-grid cells. Header carries (mg);
-// cells must not duplicate the unit (REQ-160). Stays in mg across the full
-// range (no g-promotion) so the column reads consistently.
-function formatMg(mg) {
-  if (mg <= 0) return '0';
-  if (mg >= 1000) return Math.round(mg).toLocaleString('fr-CA');
-  if (mg >= 10)   return Math.round(mg).toString();
-  if (mg >= 1)    return mg.toFixed(1);
-  return mg.toFixed(2);
-}
-
-// Render a per-element grid showing demand / contribution / running gap.
-// Used inside each channel block.
-//
-// `pqKeyPrefix` (optional): when provided, every row becomes clickable and
-// opens the "Pourquoi cette dose" modal keyed by `${pqKeyPrefix}.${element}`.
-// The block populates that registry inside buildNutriment via
-// registerPourquoi(). If a key isn't registered, the row is still rendered
-// but the click is a no-op.
-// renderGapGrid — 6-col gap-chain grid. Cross-app contribution-block layout
-// per REQ-137 (nutrition/spec.md, amended 2026-05-15 to add Efficacité).
-// Optional `details` (REQ-136) carries per-element {cert, cap}; when
-// present, the Apport ici cell becomes clickable (REQ-138) and renders
-// cap emojis (🔥 damage / 💧 precipitation / ❗ other). `blockId` keys the
-// per-cell + per-emoji modals so Block 2's K cell opens a different modal
-// than Block 3's K cell. `efficiency` (REQ-157) is a per-element map
-// [0, 1]; rendered as integer % in column 3 (REQ-156), em-dash when absent.
-//
-// Backwards compat: details + blockId + efficiency optional. When details
-// omitted, falls back to the legacy row-level pq-row click behavior.
-function renderGapGrid(gapsIn, contrib, gapsOut, pqKeyPrefix, details, blockId, efficiency) {
-  const order = ['N','P','K','Ca','Mg','Fe','Mn','Zn','B','Cu','Mo'];
-  const CAP_EMOJI = { damage: '🔥', precipitation: '💧', other: '❗' };
-  const efficiencyMap = efficiency || {};
-  const GRID_COLUMNS = '0.6fr 1fr 0.7fr 1fr 1fr 0.4fr';
-  let html = `<div style="font-size:11.5px; margin-top:8px;">
-    <div style="display:grid; grid-template-columns:${GRID_COLUMNS}; gap:4px 8px;">
-      <div style="font-weight:700; color:var(--text-muted); font-size:10px; text-transform:uppercase; letter-spacing:1px;">Él.</div>
-      <div style="font-weight:700; color:var(--text-muted); font-size:10px; text-transform:uppercase; letter-spacing:1px;">Manque entrant (mg)</div>
-      <div style="font-weight:700; color:var(--text-muted); font-size:10px; text-transform:uppercase; letter-spacing:1px;">Efficacité</div>
-      <div style="font-weight:700; color:var(--text-muted); font-size:10px; text-transform:uppercase; letter-spacing:1px;">Apport ici (mg)</div>
-      <div style="font-weight:700; color:var(--text-muted); font-size:10px; text-transform:uppercase; letter-spacing:1px;">Manque sortant (mg)</div>
-      <div></div>
-    </div>`;
-  order.forEach(element => {
-    const gIn = gapsIn[element] || 0;
-    const c = contrib[element] || 0;
-    const gOut = gapsOut[element] || 0;
-    if (gIn <= 0 && c <= 0) return; // hide rows where there's nothing to show
-    const icon = gOut <= 0 ? '✅' : (gOut < gIn * 0.3 ? '🟢' : (gOut < gIn * 0.7 ? '🟡' : '🔴'));
-    // Row-level click only when details NOT provided (legacy path). pq-row
-    // class kept either way for the hover style.
-    const rowClickable = (pqKeyPrefix && !details)
-      ? `class="pq-row" onclick="showPourquoi('${pqKeyPrefix}.${element}')"`
-      : `class="pq-row"`;
-    // Apport ici cell — clickable per (block, element) when details + blockId given (REQ-138).
-    const det = (details || {})[element];
-    const cellOnclick = (blockId && det) ? `onclick="showCellCert('${blockId}', '${element}')"` : '';
-    const cellCursor = cellOnclick ? 'cursor:pointer; ' : '';
-    // REQ-138 (revised 2026-05-11): emoji renders only when this channel
-    // under-delivered for this element (gOut > 0). When fully covered, no
-    // emoji even if a cap kind would in principle apply. The cap payload
-    // has 4 short labelled fields (constraint, limit, lever, uncappedMg) —
-    // no prose. Hover tooltip = "constraint · limit"; modal renders three
-    // labelled rows + a number-delta line.
-    let capEmoji = '';
-    if (blockId && det && det.cap && gOut > 0) {
-      const k = det.cap.kind;
-      const emoji = CAP_EMOJI[k] || '';
-      const constraint = det.cap.constraint || '';
-      const limit = det.cap.limit || '';
-      const lever = det.cap.lever || '';
-      const tooltip = (constraint && limit) ? (constraint + ' · ' + limit) : (constraint || limit);
-      const tooltipAttr = tooltip.replace(/"/g, '&quot;');
-      const kindLabel = k === 'damage'        ? '🔥 Plafond plante'
-                      : k === 'precipitation' ? '💧 Précipitation'
-                                              : '❗ Autre plafond';
-      const uncapped = Number(det.cap.uncappedMg) || 0;
-      const supplied = c;
-      const showDelta = (uncapped > supplied && supplied > 0);
-      const deltaLine = showDelta
-        ? `<div style="font-family:'DM Mono',monospace; font-size:14px; margin-bottom:10px;">`
-            + `<span style="color:var(--text-muted);">${formatValue(supplied)}</span>`
-            + ` <span style="color:var(--text-muted);">→</span> `
-            + `<strong>${formatValue(uncapped)}</strong>`
-            + ` <span style="color:var(--text-muted);">(+${formatValue(uncapped - supplied)})</span>`
-          + `</div>`
-        : '';
-      const rowsHtml = `<div style="display:grid; grid-template-columns:auto 1fr; column-gap:14px; row-gap:6px; font-size:12.5px;">`
-        + `<div style="color:var(--text-muted);">Contrainte</div><div style="font-weight:600;">${constraint}</div>`
-        + `<div style="color:var(--text-muted);">Limite</div><div style="font-family:'DM Mono',monospace;">${limit}</div>`
-        + `<div style="color:var(--text-muted);">Levier</div><div>${lever}</div>`
-      + `</div>`;
-      const subtitleHtml = `<div style="font-size:12px; color:var(--text-muted); margin-top:-4px; margin-bottom:8px;">${kindLabel}</div>`;
-      registerPourquoi(blockId + '.cap.' + element + '.' + k, {
-        title: element + ' — ' + blockId,
-        cert: det.cert != null ? det.cert : null,
-        equation: subtitleHtml,                  // kind badge under the title
-        plugged: deltaLine + rowsHtml,
-        interpretation: '',
-      });
-      capEmoji = ` <span style="cursor:pointer;" title="${tooltipAttr}" `
-        + `onclick="event.stopPropagation(); showCapReason('${blockId}', '${element}', '${k}')">${emoji}</span>`;
-    }
-    const contributionValueString = c > 0 ? '−' + formatMg(c) : '—';
-    const cellInner = `<span style="${cellCursor}font-family:'DM Mono',monospace; color:${c>0?'var(--text)':'var(--text-muted)'};">${contributionValueString}</span>${capEmoji}`;
-    const efficiencyValue = efficiencyMap[element];
-    const efficiencyCellText = (typeof efficiencyValue === 'number' && isFinite(efficiencyValue))
-      ? Math.round(efficiencyValue * 100) + ' %'
-      : '—';
-    html += `<div ${rowClickable} style="display:grid; grid-template-columns:${GRID_COLUMNS}; gap:4px 8px; padding:2px 4px; border-radius:3px;">
-      <div style="font-weight:600;">${element}</div>
-      <div style="font-family:'DM Mono',monospace; color:var(--text-muted);">${formatMg(gIn)}</div>
-      <div style="font-family:'DM Mono',monospace; color:var(--text-muted);">${efficiencyCellText}</div>
-      <div ${cellOnclick} data-cell-key="${blockId || ''}.cell.${element}" style="${cellCursor}">${cellInner}</div>
-      <div style="font-family:'DM Mono',monospace; font-weight:600; color:${gOut<=0?'#1e6b2d':(gOut<gIn*0.3?'#5a6b1e':'var(--text)')};">${formatMg(gOut)}</div>
-      <div style="text-align:center;">${icon}</div>
-    </div>`;
-  });
-  html += `</div>`;
-  return html;
-}
-
-// REQ-138 — Per-(block, element) modal for cell clicks. Reuses showPourquoi
-// modal markup; the key shape is `${blockId}.cell.${element}` so each block keeps
-// its own modal entry per element (no aggregation across elements/blocks).
-// Falls back to legacy `${blockId}.${element}` key for tomato blocks that
-// pre-date REQ-138 (compost.N, sidedress.K, fert.Mg, foliar.Mn, etc.).
-function showCellCert(blockId, element) {
-  const newKey = blockId + '.cell.' + element;
-  const legacyKey = blockId + '.' + element;
-  if (window.currentPourquoi) {
-    if (window.currentPourquoi[newKey]) { showPourquoi(newKey); return; }
-    if (window.currentPourquoi[legacyKey]) { showPourquoi(legacyKey); return; }
-  }
-  // Last-resort fallback so a click never feels dead.
-  registerPourquoi(newKey, {
-    title: element + ' — ' + blockId,
-    cert: null,
-    equation: '',
-    plugged: 'Aucun détail enregistré pour cette cellule.',
-    interpretation: '',
-  });
-  showPourquoi(newKey);
-}
-
-// REQ-138 — Per-(block, element, capKind) modal for cap-emoji clicks. Distinct
-// key shape from cell modals (`${blockId}.cap.${element}.${kind}`) so cell-click
-// and emoji-click never collide.
-function showCapReason(blockId, element, kind) {
-  const key = blockId + '.cap.' + element + '.' + kind;
-  if (window.currentPourquoi && window.currentPourquoi[key]) {
-    showPourquoi(key);
-    return;
-  }
-  registerPourquoi(key, {
-    title: element + ' — plafond ' + kind,
-    cert: null,
-    equation: '',
-    plugged: 'Aucune raison de plafond enregistrée.',
-    interpretation: '',
-  });
-  showPourquoi(key);
-}
+// renderGapGrid lives in nutrition/lib/render-gap-grid.js — REQ-137 6-col
+// gap-chain layout consumed by every per-channel contribution block across
+// tomato + lettuce + nursery + soil-contribution.
+<!-- @include nutrition/lib/render-gap-grid.js -->
 
 <!-- @include nutrition/tomato/app/logic.js -->
 

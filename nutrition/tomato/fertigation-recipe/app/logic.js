@@ -9,6 +9,10 @@
 //
 // Functions: getStockVol(), getNutrients(), buildSteps().
 
+// Local g formatter for the step-list amount column (kg threshold at 1000 g,
+// 1 decimal between 1-10 g, integer above 10 g). Sole consumer of this shape.
+function fmt(g) { if (g >= 1000) return (g / 1000).toFixed(2) + ' kg'; if (g < 10 && g > 0) return g.toFixed(1) + ' g'; return Math.round(g) + ' g'; }
+
 // updateStockVol() removed April 26, 2026 — stock volume now displayed inline in step 2
 // Formula preserved in getStockVol(): weeklyL = (2 mL/J/cm²/m² × radiation × area × 7 days) / 1000
 // Stock = (weeklyL / 3) × (Dosatron ratio / 100)
