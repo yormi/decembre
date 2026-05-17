@@ -581,8 +581,9 @@ function predictedTankPh(recipe, waterPh) {
 // Apply LOCKOUT_GATE for P/Mn/Zn at pH > 6.8: cap at 100 mg/m²/wk for P,
 // at SME-derived value (which is ~0 for Mn/Zn anyway). cert 4.
 function passiveSupplyMassFlow(crop, element, week) {
-  const sme = (crop === 'tomato') ? SME_TOMATO_PPM : SME_LETTUCE_PPM;
-  const ppm = (sme && sme[element]) || 0;
+  const ppm = (crop === 'tomato')
+    ? smePpmForSupply('tomato', element)
+    : (SME_LETTUCE_PPM && SME_LETTUCE_PPM[element]) || 0;
   const flowL = weeklyMassFlowL();
   let mass = ppm * flowL;                            // mg/m²/wk
   // Lockout gate: when pH > 6.8, P passive supply capped at 100 mg/m²/wk

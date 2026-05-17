@@ -23,4 +23,4 @@ A single turn that touches multiple subprojects writes one entry per subproject.
 
 ## Entries
 
-_(Inbox empty. 2026-05-16 STORED-vs-anchor + 2026-05-16 nutrition/soil-contribution REQ-162 follow-up archived to `from-plant-nutrition-specialist-done.md` after sub-wave H. Prior 2026-05-16 entries — foliar-recipe (G), lettuce/plant-needs + soil-contribution (F), Mo-move (E) — also archived.)_
+_(Inbox empty. 2026-05-17 entries archived after sub-wave I: REQ-062 retirement follow-up (I.A), soil-contribution REQ-141/142/145 routing (I.B), foliar-recipe REQ-115 cap pin (I.C), fertigation-recipe inherited-specs note (no action needed — verifier expectations unchanged), nutrition/spec.md PO-action note (superseded by REQ-062 retirement follow-up). Plus team-leader-initiated I.D test-helper refactor + I.E SME convention dedup, both shipped. Prior 2026-05-16 entries — STORED-vs-anchor + soil-contribution REQ-162 follow-up (H), foliar-recipe (G), lettuce/plant-needs + soil-contribution (F), Mo-move (E) — also archived.)_

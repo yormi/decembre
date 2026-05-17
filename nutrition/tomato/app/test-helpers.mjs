@@ -67,11 +67,15 @@ export function readLogicJs() {
   return readFileSync(join(HERE, 'logic.js'), 'utf8');
 }
 
-// Read app/index.html source for cross-file REQs (REQ-106 default-mode
-// declaration, REQ-113 listener wiring array, REQ-004 source-of-truth
-// references in calculateNutritionSupply).
+// Read dist/index.html (the assembled artifact) for cross-file REQs
+// (REQ-106 default-mode declaration, REQ-113 listener wiring array,
+// REQ-004 source-of-truth references in calculateNutritionSupply).
+// After the Stage 7 carve, those identifiers live in partials that
+// app/index.html @includes — the assembled dist file is the single
+// concatenated text where the source-grep patterns resolve.
 export function readAppIndexHtml() {
-  return readFileSync(join(REPO_ROOT, 'app', 'index.html'), 'utf8');
+  ensureBuilt();
+  return readFileSync(DIST_INDEX, 'utf8');
 }
 
 // Override one element of FP_RECIPE_T5.fertigation at runtime and force a

@@ -198,12 +198,16 @@ function buildNutrimentTomato() {
     // nutrition/soil-contribution/spec.md). Each branch selects a render
     // key; renderSpec() resolves at runtime against window.SPEC_STRINGS.
     let interpretationKey;
-    if (contributing) {
+    if (element === 'N') {
+      interpretationKey = 'N-not-mehlich';
+    } else if (contributing) {
       interpretationKey = element === 'Ca' ? 'Ca' : 'P';
-    } else if (bankMg > 0) {
-      interpretationKey = element === 'K' ? 'K-fert-routed' : 'Mg-fert-routed';
+    } else if (element === 'K') {
+      interpretationKey = 'K-fert-routed';
+    } else if (element === 'Mg') {
+      interpretationKey = 'Mg-fert-routed';
     } else {
-      interpretationKey = (element === 'N') ? 'N-not-mehlich' : 'default-not-mehlich';
+      interpretationKey = 'default-not-mehlich';
     }
     const interpretation = { requirementId: 'REQ-145', key: interpretationKey, interp: { element } };
     const eq = contributing

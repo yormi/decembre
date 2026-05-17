@@ -171,6 +171,37 @@ describe('REQ-112 — computeFoliarSupply(stage, opts, recipe) — sprayCount + 
     }
   });
 
+  test('REQ-112 — sprayCount: 2 yields 2× single-spray delivery (linear scaling)', () => {
+    // REQ-062 retired the foliar-singleton clause 2026-05-17; sprayCount > 1
+    // is now load-bearing (previously operationally inert by REQ-062
+    // construction). Pin the linear-scaling formula
+    //   delivered = recipe_g × pct × 1000 / area × coverage × sprayCount
+    // directly from STORED_RECIPE values for Mn (routed, single-channel
+    // under pH ≥ 7 — load-bearing for lockout-regime multi-spray weeks).
+    const FRT = win.FoliarRecipeTomato;
+    const A = win.STORED_RECIPE.tomato.foliaire.A;
+    const area = win.TOMATO_NUMBER_BEDS * win.TOMATO_BED_AREA;
+    const cov = FRT.FOLIAR_COVERAGE_DEFAULT;
+    const mnEntry = A.find(x => (x.name || '').includes('MnSO₄'));
+    const mnG = parseFloat(String(mnEntry.master).replace(',', '.'));
+    const singleSprayExpected = (mnG * win.PRODUCT_PCT.MnSO4_Mn * 1000) / area * cov;
+    const twoSprayExpected = 2 * singleSprayExpected;
+    const singleSpray = FRT.computeFoliarSupply('T5', { sprayCount: 1 }).Mn;
+    const twoSpray    = FRT.computeFoliarSupply('T5', { sprayCount: 2 }).Mn;
+    assert.ok(
+      Math.abs(singleSpray - singleSprayExpected) <= Math.max(0.01, singleSprayExpected * 0.01),
+      `Mn sprayCount=1: expected ${singleSprayExpected.toFixed(3)} mg/m²/wk, got ${singleSpray.toFixed(3)}`
+    );
+    assert.ok(
+      Math.abs(twoSpray - twoSprayExpected) <= Math.max(0.01, twoSprayExpected * 0.01),
+      `Mn sprayCount=2: expected ${twoSprayExpected.toFixed(3)} mg/m²/wk (2× single-spray ${singleSprayExpected.toFixed(3)}), got ${twoSpray.toFixed(3)}`
+    );
+    assert.ok(
+      Math.abs(twoSpray - 2 * singleSpray) <= Math.max(0.001, singleSpray * 0.01),
+      `Mn linear scaling broken: sprayCount=2 (${twoSpray}) should equal 2× sprayCount=1 (${2 * singleSpray})`
+    );
+  });
+
   test('REQ-112 — surfactant=true multiplies by FOLIAR_COVERAGE_WITH_YUCCA / DEFAULT', () => {
     const FRT = win.FoliarRecipeTomato;
     const ratio = FRT.FOLIAR_COVERAGE_WITH_YUCCA / FRT.FOLIAR_COVERAGE_DEFAULT;
@@ -348,6 +379,23 @@ describe('REQ-115 — computeFoliarRecipeForGap (min-dose clamp + burn cap + CE 
     for (const el of ['Mn', 'Zn', 'Cu', 'Fe', 'Mo', 'B']) {
       assert.equal(FRT.burnCapG(el), FRT.BURN_CAP_BASE_G[el],
         `burnCapG(${el}) must equal BURN_CAP_BASE_G[${el}]`);
+    }
+  });
+
+  test('REQ-115 — BURN_CAP_BASE_G values pinned (Mn 22 / Zn 22 / Cu 2 / Fe 80 / Mo 2 / B 9)', () => {
+    // Static-value regression. The other REQ-115 tests use dynamic
+    // FRT.burnCapG(el) lookups so silent cap drift (e.g. Mn / Zn drifting
+    // back to 18 / 16 extension mid-band, or any cap edit not paired with
+    // STORED foliaire) would pass them. This test pins each cap to the
+    // 2026-05-17 reconciled values — Mn / Zn raised 18 → 22 / 16 → 22 to
+    // match live STORED at cert 2 (Décembre-internal observation, parallel
+    // to Cu cert-2 carve-out); Cu / Fe / Mo / B at extension mid-band cert 3.
+    // Any cap change must explicitly retire this pin.
+    const FRT = win.FoliarRecipeTomato;
+    const EXPECTED = { Mn: 22, Zn: 22, Cu: 2, Fe: 80, Mo: 2, B: 9 };
+    for (const el of Object.keys(EXPECTED)) {
+      assert.equal(FRT.BURN_CAP_BASE_G[el], EXPECTED[el],
+        `BURN_CAP_BASE_G.${el} must be ${EXPECTED[el]} g (2026-05-17 reconciled), got ${FRT.BURN_CAP_BASE_G[el]}`);
     }
   });
 

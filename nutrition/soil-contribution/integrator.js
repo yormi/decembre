@@ -7,36 +7,24 @@
 // app/operator/state.js + app/operator/recalc.js, so it sits at the
 // integrator boundary rather than in the pure calc.js layer.
 //
-// Note: SME_TOMATO_PPM kept here in its legacy shape (Mn=0, Zn=0 — flat below
-// detection) for byte-identical behavior of the supply orchestrator. The
-// per-crop SME_SOIL_SOLUTION_PPM table in data.js uses a different convention
-// (detection-limit ceiling 0.03 for Mn/Zn) — runway math reads that table,
-// supply math reads this one. Refactor candidate when next Berger SME lands.
+// SME source-of-truth: the per-crop SME_SOIL_SOLUTION_PPM table in data.js.
+// Supply read is conservative — below-detection-limit elements zero out at
+// the boundary (SME_BELOW_DETECTION_ELEMENTS). Runway math reads the canonical
+// table directly so the DL-ceiling convention (cert 2 per REQ-164) stays.
 
-// SME (Saturated Media Extract, Berger sample 596614, tomato bed, 2026-04-10)
-// reports the actual ion concentrations the plant root sees in the soil paste.
-// Multiplying by weekly transpiration gives mass-flow uptake — the dominant
-// nutrient delivery mechanism for ions already in solution.
-//
-// This replaces the earlier Mehlich-3 × annual-fraction approximation, which
-// was conservative for B/Cu/Mo (treated them as 0) and overstated K demand
-// gaps. SME is more honest because it captures BOTH the reservoir effect AND
-// the chemistry that limits availability (lockout already shows up as low SME).
-//
-// Source: farm info/SME - 2026-04-10.pdf
-const SME_TOMATO_PPM = {
-  N:  45.4,    // NO₃ 45.0 + NH₄ 0.4 (in spec range 35-180 / 0-20)
-  P:   1.1,    // ↓ below norm 5-50 (lockout confirmed)
-  K:  292.3,   // in spec, near top
-  Ca: 238.8,   // ↑ above norm 40-200 (Ca-saturated, root cause of crisis)
-  Mg:  79.3,   // in spec
-  B:    0.18,  // in spec 0.05-0.5 — neutral boric acid, not pH-locked
-  Cu:   0.04,  // in spec 0.01-0.5
-  Fe:   0.86,  // in spec 0.30-3 (BUT calcareous lockout suppresses real uptake; see discount)
-  Mn:   0,     // < 0.03 below detection — locked
-  Mo:   0.02,  // in spec 0.01-0.05 — anion, MORE available at high pH
-  Zn:   0,     // < 0.03 below detection — locked
-};
+// Below-detection-limit elements zeroed for supply mass-flow. At pH 7.4 the
+// lab reports < 0.03 ppm for Mn / Zn on both beds; treating the DL ceiling
+// as actual supply would credit ~0.45 mg/m²/wk that the plant cannot count
+// on. Runway column keeps the DL ceiling (REQ-164 cert 2) so the operator
+// still sees a finite — if optimistic — runway for context.
+const SME_BELOW_DETECTION_ELEMENTS = new Set(['Mn', 'Zn']);
+
+function smePpmForSupply(crop, element) {
+  if (SME_BELOW_DETECTION_ELEMENTS.has(element)) return 0;
+  const cropPpm = SME_SOIL_SOLUTION_PPM[crop];
+  if (!cropPpm) return 0;
+  return cropPpm[element] || 0;
+}
 
 // Weekly water flow through the root zone, per m².
 // SAME FORMULA as the fertigation page's irrigation calculation (see line ~280
@@ -132,7 +120,7 @@ function nMineralizationFactor() {
 // base 0.85 efficiency — soil microbial activity is rate-limiting for organic
 // N supply, and that activity is strongly temperature-dependent.
 function soilWeeklyAvailable(elem, phLocked, transpFactor) {
-  const sme_ppm = SME_TOMATO_PPM[elem] || 0;
+  const sme_ppm = smePpmForSupply('tomato', elem);
   const tf = transpFactor || 1.0;
   // `transpFactor` (0,4-1,0) corrects mass-flow for canopy size — see
   // transpirationFactor() comment. Applies to ALL elements because they all

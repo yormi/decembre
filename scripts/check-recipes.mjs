@@ -3423,10 +3423,9 @@ header('REQ-106 — FP mode locks stage to T5 (auto-revert + default fp)');
   } catch (e) { /* */ }
   let indexHtmlBody = '';
   try {
-    indexHtmlBody = readFileSync(
-      join(REPO_ROOT, 'app', 'index.html'),
-      'utf8'
-    );
+    // Read the assembled artifact — post-Stage 7 the `let nutrRecipeMode =
+    // 'fp'` declaration lives in an @included partial, not app/index.html.
+    indexHtmlBody = readFileSync(INDEX_HTML_PATH, 'utf8');
   } catch (e) { /* */ }
   const autoRevert = /s !== 'T5' && nutrRecipeMode === 'fp'/.test(logicJsBody);
   const fpSnapsT5 = /nutrRecipeMode === 'fp' && nutrStage !== 'T5'/.test(logicJsBody);
@@ -3436,7 +3435,7 @@ header('REQ-106 — FP mode locks stage to T5 (auto-revert + default fp)');
   } else if (!fpSnapsT5) {
     fail('FP mode snaps stage to T5', 'pattern not found in logic.js');
   } else if (!defaultFp) {
-    fail("Default `let nutrRecipeMode = 'fp'`", 'pattern not found in index.html');
+    fail("Default `let nutrRecipeMode = 'fp'`", 'pattern not found in dist/index.html');
   } else {
     pass('FP mode coordonné avec stage T5 (auto-revert, snap, default fp)');
   }
@@ -3836,7 +3835,9 @@ header('REQ-113 — Block 5 inputs: nutr-foliar-spray-count + nutr-foliar-surfac
   const surfInp  = window.document.getElementById('nutr-foliar-surfactant');
   let indexHtmlBody = '';
   try {
-    indexHtmlBody = readFileSync(join(REPO_ROOT, 'app', 'index.html'), 'utf8');
+    // Read the assembled artifact — the listener-wiring array lives in an
+    // @included partial post-Stage 7, not in app/index.html.
+    indexHtmlBody = readFileSync(INDEX_HTML_PATH, 'utf8');
   } catch (e) { /* */ }
   const offenders = [];
   if (!sprayInp) {
@@ -3854,10 +3855,10 @@ header('REQ-113 — Block 5 inputs: nutr-foliar-spray-count + nutr-foliar-surfac
   }
   // Listener wiring: both ids must appear inside the input-listener array.
   if (!/['"]nutr-foliar-spray-count['"]/.test(indexHtmlBody)) {
-    offenders.push('nutr-foliar-spray-count not wired in app/index.html input-listener array');
+    offenders.push('nutr-foliar-spray-count not wired in dist/index.html input-listener array');
   }
   if (!/['"]nutr-foliar-surfactant['"]/.test(indexHtmlBody)) {
-    offenders.push('nutr-foliar-surfactant not wired in app/index.html input-listener array');
+    offenders.push('nutr-foliar-surfactant not wired in dist/index.html input-listener array');
   }
   if (offenders.length === 0) {
     pass('Block 5 expose nutr-foliar-spray-count (1, 1-3) + nutr-foliar-surfactant (checkbox, unchecked) ; listeners cabls');
@@ -4907,22 +4908,26 @@ header('REQ-139 — App must call subproject namespace (no inline reimplementati
 {
   let consumerSrc = '';
   try {
-    consumerSrc = readFileSync(join(REPO_ROOT, 'app', 'index.html'), 'utf8');
+    // Read the assembled artifact — namespace calls + any reinlined drift
+    // live in @included partials post-Stage 7. The assembled dist is the
+    // single concatenated text the browser executes; source-grepping it
+    // catches the same regressions without depending on partial layout.
+    consumerSrc = readFileSync(INDEX_HTML_PATH, 'utf8');
   } catch (e) { /* fall through — registry check will surface as misses */ }
 
   // Registry: every public namespace function with a known consumer
   // today. Add a row here whenever a new model.js function gets wired
   // into the app.
   const REGISTRY = [
-    { ns: 'FoliarRecipeTomato',  handler: 'computeFoliarSupply',         consumer: 'app/index.html' },
-    { ns: 'FoliarRecipeTomato',  handler: 'computeFoliarRecipeForGap',   consumer: 'app/index.html' },
-    { ns: 'CompostContribution', handler: 'releasePerWeek',              consumer: 'app/index.html' },
+    { ns: 'FoliarRecipeTomato',  handler: 'computeFoliarSupply',         consumer: 'dist/index.html' },
+    { ns: 'FoliarRecipeTomato',  handler: 'computeFoliarRecipeForGap',   consumer: 'dist/index.html' },
+    { ns: 'CompostContribution', handler: 'releasePerWeek',              consumer: 'dist/index.html' },
   ];
 
   // Inline-formula blacklist: per-element foliar-supply shape.
   // Pattern matches `PRODUCT_PCT.<elemKey>) / area * 1000 * cov` (with
   // any whitespace). This is the exact arithmetic that lives in
-  // computeFoliarSupply — anyone re-typing it in app/index.html is
+  // computeFoliarSupply — anyone re-typing it in the assembled dist is
   // recreating the 2026-05-10 drift.
   const INLINE_BLACKLIST = [
     { name: 'foliar Mn supply', re: /PRODUCT_PCT\.MnSO4_Mn\s*\)\s*\/\s*area\s*\*\s*1000\s*\*\s*cov/ },
@@ -4946,12 +4951,12 @@ header('REQ-139 — App must call subproject namespace (no inline reimplementati
   // Layer 2 — inline-formula blacklist.
   for (const entry of INLINE_BLACKLIST) {
     if (entry.re.test(consumerSrc)) {
-      offenders.push(`inline reimplementation detected: ${entry.name} (pattern ${entry.re} matched in app/index.html — call window.FoliarRecipeTomato.computeFoliarSupply instead)`);
+      offenders.push(`inline reimplementation detected: ${entry.name} (pattern ${entry.re} matched in dist/index.html — call window.FoliarRecipeTomato.computeFoliarSupply instead)`);
     }
   }
 
   if (offenders.length === 0) {
-    pass(`Registry: ${REGISTRY.length} namespace fns wired in app/index.html · Blacklist: ${INLINE_BLACKLIST.length} foliar-supply shapes absent`);
+    pass(`Registry: ${REGISTRY.length} namespace fns wired in dist/index.html · Blacklist: ${INLINE_BLACKLIST.length} foliar-supply shapes absent`);
   } else {
     fail('REQ-139 — namespace usage / inline drift', offenders.map(o => `  ${o}`).join('\n'));
   }

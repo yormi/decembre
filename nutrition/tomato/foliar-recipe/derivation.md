@@ -14,7 +14,8 @@ Foliar dose is pinned from above by three constraints, not by demand:
 2. **Local-pool toxicity without surfactant** (audit, 2026-05-05).
    Without yucca, droplets bead; runoff concentrates in leaf axils. Cu
    axil-pool reached ~150-200 ppm → 4 → 2 g cut. Mn / Zn capped at
-   18-22 g/15 L by toxicity headroom.
+   22 g/15 L by Décembre-internal observation (no burn at this dose
+   under Wednesday-AM operator timing since the 2026-04-29 restructure).
 3. **Cuticle absorption ceiling**. Uptake plateaus once leaf surface
    saturates; REQ-101's 30 % coverage already accounts for it.
 
@@ -23,8 +24,11 @@ subproject *models the delivery* under coverage, doesn't *derive the
 dose* from demand.
 
 Model validates: delivered mg/m²/wk per element sits inside REQ-013/014
-demand band (`nutrition/tomato/spec.md`). Mn ~60 %, Zn ~100 %, Fe ~95 %,
-Cu ~25 % (Cu toxicity-capped; gap accepted until yucca returns).
+demand band. Mn ~72 %, Fe ~84 %, Cu ~26 % (Cu toxicity-capped at 2 g; gap
+is structural and accepted — the narrow Cu²⁺ enzyme-damage threshold
+binds), Zn ~136 % (over the 1.3× luxury cap on the foliar channel alone
+— see "Per-element delivered vs demand at T5" table below for the
+reconciled math).
 
 ---
 
@@ -48,13 +52,19 @@ to ~0.03. Hold at 0.30 per `learnings.md` (single-cultivar study;
 25-40 % mid-band defensible without contrary measurement). Downward
 trigger named in refinement triggers below.
 
-With yucca: 70-85 % literature; would pin
-`FOLIAR_COVERAGE_WITH_YUCCA = 0.80` if surfactant returns. Same evidence
-base; B2' downgrade pending in parallel.
+With yucca: 70-85 % literature; pinned at
+`FOLIAR_COVERAGE_WITH_YUCCA = 0.80` as working assumption, **cert 3** —
+same evidence base as the no-yucca default: no direct Décembre
+measurement at a surfactant-on regime; the historical 22/22/4 Cu/Mn/Zn
+dosing under yucca didn't generate tissue-correlated retention data;
+Sentís et al. 2017 surfactant-assisted Mn cuticle penetration ~20 % is
+absorption, not retention. 0.80 blends both axes inside the 70-85 %
+literature mid-band. Bump to cert 4 when tissue panel correlates
+predicted vs measured under a surfactant-on regime.
 
 ```js
 const FOLIAR_COVERAGE_DEFAULT     = 0.30;  // no yucca; cert 3
-const FOLIAR_COVERAGE_WITH_YUCCA  = 0.80;  // surfactant-assisted; cert 4 (B2' downgrade pending)
+const FOLIAR_COVERAGE_WITH_YUCCA  = 0.80;  // surfactant-assisted; cert 3
 ```
 
 `computeFoliarSupply(stage)` reads `FOLIAR_COVERAGE_DEFAULT`; with-yucca
@@ -62,85 +72,295 @@ constant exposed for future toggle, not currently consumed.
 
 ---
 
-## Channel efficiency map (REQ-157)
+## Per-element burn cap — `BURN_CAP_BASE_G`
+
+Maximum cuticle-safe per-element load per 15 L master tank, used by
+`computeFoliarRecipeForGap` (REQ-115) to clip the per-element ideal
+gram. Sourced from extension mid-band guidance (Sonneveld 2009, Yara
+crop-nutrition foliar tables, Cornell / U. Delaware / U. Missouri
+extension publications): 0.1-0.3 % MnSO₄, 0.05-0.1 % CuSO₄, etc.
+
+| Element | g / 15 L | Source                                                  | Cert |
+|---------|---------:|---------------------------------------------------------|-----:|
+| Mn      | 22       | Décembre-internal observation (held at 22 g post-restructure, no burn) | 2 |
+| Zn      | 22       | Décembre-internal observation (held at 22 g post-restructure, no burn) | 2 |
+| Cu      | 2        | Décembre-internal observation 2026-05-06 (axil-pool toxicity image) | 2 |
+| Fe      | 80       | Extension mid-band; high-mass dose, well below tank-CE bound | 3 |
+| Mo      | 2        | Sonneveld 50-200 mg/L band; seldom binding              | 3    |
+| B       | 9        | Solubore (Na₂B₈O₁₃·4H₂O, 20.5 % B); non-ionic           | 3    |
+
+**Cu certainty exception (cert 2, divergence BELOW extension mid-band).**
+The 2 g/15 L Cu value didn't come from extension mid-band — extension
+guidance supports 0.05-0.1 % Cu solutions, i.e. 7.5-15 g CuSO₄/15 L,
+several × Décembre's 2 g. The 2 g value came from a Décembre-internal
+observation on 2026-05-06: with yucca dropped, the axil-pool image
+showed Cu concentrating to ~150-200 ppm in leaf axil runoff; the
+original 4 g was halved to 2 g in response. Cu has a narrow toxicity
+threshold (Cu²⁺ enzyme damage); the lower local value is defensible by
+Décembre observation (cert 3 within Décembre) but transferability to
+other ops is unproven without multi-season tissue+lesion data (cert 2
+in general).
+
+**Mn / Zn certainty exception (cert 2, divergence ABOVE extension mid-
+band).** Extension mid-band sits at Mn 18 / Zn 16 g per 15 L (the value
+this table carried before 2026-05-17). STORED foliaire has carried
+22 / 22 g since the 2026-04-29 45 L → 15 L volume restructure with no
+burn observed under Wednesday-AM operator timing. The cap was lagging
+STORED reality; pinning the cap at 22 g matches live empirical practice.
+Cert 2 for transferability — the no-burn observation depends on the
+Décembre operator window (early-AM, post-fog, low leaf temperature),
+the post-restructure tank concentration regime, and Ca-saturated soil
+context; not portable without an independent observation period.
+
+**Refinement triggers.** (a) Once tissue + lesion data across multiple
+seasons stabilizes any cap as a Décembre-empirical transferable value
+for similar Ca-saturated soil ops, bump cert 3. (b) If any operator-
+timing-window shift (afternoon spray, post-irrigation high-leaf-
+moisture) or tank-volume shift (return to 45 L or other) introduces
+burn at 22 g Mn / Zn, drop the cap to the extension mid-band (18 / 16)
+and re-source. Fe / Mo / B stay at cert 3 unless tissue panel surfaces
+drift outside the extension mid-band.
+
+Surfactant has no published effect on the burn-cap axis — yucca acts on
+coverage, not on max safe tank concentration. See `learnings.md` for
+the rejected surfactant-multiplier on burn cap.
+
+---
+
+## Per-element min-dose floor — `MIN_DOSE_G_PER_ELEMENT`
+
+The uniform 0.5 g floor that lived in `computeFoliarRecipeForGap` until
+2026-05-16 was element-blind. For elements where ideal_g lands in the
+0.2-0.5 g band (small-demand cation micros like Cu), the floor forced
+a 2-4× luxury feed: round up to 0.5 g delivered, multiply by element_pct
+and coverage to get delivered mg/m²/wk, divide by gap → 2.5× to 4× the
+demand. Cu is the load-bearing case: narrow Cu²⁺ toxicity threshold
+(the same threshold that drove the 2026-05-06 axil-pool-image halving
+from 4 g to 2 g/15 L). Mo at 1 g/15 L (~7× demand on its wide tolerance
+band) was acceptable when Mo was on foliar; post-Mo-carve-out
+(REQ-061 2026-05-16) it is no longer iterated, but the per-element
+floor entry stays as a "if Mo returns" placeholder.
+
+| Element | Floor (g) | Rationale                                                         | Cert |
+|---------|----------:|-------------------------------------------------------------------|-----:|
+| Mn      | 0.5       | Burn cap binding, not luxury; 0.5 g delivered ≈ 0.12 mg/m²/wk    | 3    |
+| Zn      | 0.5       | Burn cap binding; over-luxury already a known issue (Zn 136 %)   | 3    |
+| Cu      | 0.2       | Narrow toxicity threshold — load-bearing case                    | 3    |
+| Fe      | 0.5       | High-mass dose; floor never binds in practice (ideal_g large)    | 3    |
+| Mo      | 0.1       | Wide Sonneveld 50-200 mg/L tolerance; placeholder if Mo returns  | 3    |
+| B       | 0.5       | Single-channel via fertigation (REQ-061); placeholder for foliar fallback | 3 |
+
+Operator weigh-scale resolution is the floor on Cu (0.2 g) — `±0.1 g` on
+the team's scales is the practical limit; below that we'd round to
+nothing. 0.5 g for the others reflects the same scale resolution plus
+no toxicity argument to push lower.
+
+**Luxury-cap guard.** The per-element floor catches the "too small to
+measure" case (clamp to 0). The 0.5 g rounding grid catches the
+"weigh-scale resolution" case (round up the dose). But a residual edge
+case survives: ideal_g ≥ floor, ceiling-to-0.5 over-shoots 1.3× of gap.
+Worked example with Cu (0.2 g floor, 25 % Cu, 382.9 m², 0.30 coverage):
+
+| Cu gap (mg/m²/wk) | ideal_g | rounded | delivered | over-luxury? |
+|------------------:|--------:|--------:|----------:|--------------|
+| 0.03              | 0.15    | —       | 0         | no (below floor → clamp 0) |
+| 0.039             | 0.20    | 0.5 g   | 0.098     | yes — 2.5× → guard fires → 0 |
+| 0.10              | 0.51    | 1.0 g   | 0.196     | yes — 1.96× → guard fires → 0 |
+| 0.20              | 1.02    | 1.5 g   | 0.293     | yes — 1.47× → guard fires → 0 |
+| 0.30              | 1.53    | 2.0 g   | 0.392     | no — 1.30× exactly at cap |
+| 0.40              | 2.04    | burn cap = 2.0 g | 0.392 | no — 0.98× under demand |
+
+The guard fires for any Cu gap below ~0.31 mg/m²/wk; the channel
+returns 0 for Cu rather than over-shooting. This trades coverage for
+toxicity safety on Cu — defensible by the narrow Cu²⁺ threshold. For
+other elements (wider tolerance bands), the guard rarely fires:
+0.5 g floor on Mn at gap 0.05 mg/m²/wk → ideal_g 0.21 g → above floor →
+0.5 g → delivered 0.123 / 0.05 = 2.5× → guard fires too. Net effect:
+the algorithm refuses to dose at all when it cannot dose without
+significant luxury, on any element.
+
+---
+
+## CE-cap algorithm — drop highest-CE-contributor first (was: proportional scaling)
+
+When predicted tank CE exceeds REQ-025's 10 mS/cm burn cap × 0.95 safety
+margin, the recipe needs reducing. The 2026-05-16 algorithm change
+replaces "scale all non-zero doses proportionally" with "drop the
+highest-CE-contributor first."
+
+**Why this matters.** FeSO₄·7H₂O (80 g/15 L max) is mass-dominant in
+the foliar recipe; any CE-cap event traces back to Fe in practice.
+Proportional scaling penalizes all elements by the same ratio, which
+strips the small-demand cation micros (Mn, Cu) first — those are
+precisely the elements with no alternative channel under REQ-061
+cascade order at current pH 7.4 lockout. Cu at 2 g already at the
+toxicity-cap floor: a 0.95× scaling pushes it to 1.9 g; the next
+0.5 g rounding drops it to 1.5 g; a third iteration zeros it via the
+min-dose floor. Net effect: a CE-cap event preferentially strips the
+pH-locked micros the foliar channel exists to deliver.
+
+**Drop-highest-first** preserves the pH-locked micros while reducing
+the mass-dominant element first. Algorithm: per iteration, identify
+the element whose contribution to predicted CE is largest, halve its
+dose (or drop to 0 if already below the per-element floor after the
+halving). Loop until predicted CE ≤ target or all doses are at floor
+/ 0. Bound at 4 iterations to guarantee termination.
+
+**Why halve, not just zero.** Halving keeps Fe in play for cases where
+Fe alone over-shoots CE only slightly. Zeroing-on-first-hit would
+collapse the channel for moderate CE excess.
+
+**CE contribution per element.** Estimated from
+`predictedCE(recipeAsLabelArray(recipeWithOnlyEl), 1.0)` — re-runs the
+tank CE function with one element at a time non-zero, then ranks by
+the per-element CE. Same `predictedCE` function used for the bound
+check, so this stays consistent with REQ-025's tank-CE model.
+
+---
+
+## Channel efficiency map (REQ-157 + REQ-170 surfactant-aware)
 
 `window.FoliarRecipeTomato.efficiency` (REQ-157) declares the per-element
-delivery fraction at current no-yucca regime and default spray tank pH.
+delivery fraction at the default no-surfactant regime and default spray
+tank pH. `window.FoliarRecipeTomato.efficiencyFor(surfactant)` (REQ-170)
+declares the same shape but reactive to the surfactant lever — the
+Block 5 toggle that the page-side REQ-163 reads.
 
-Formula: `efficiency = FOLIAR_COVERAGE_DEFAULT × foliarPhResponse(sprayPh)`
-= `0.30 × foliarPhResponse(5.0)`
-= `0.30 × 0.9`
-= `0.27` uniform across Mn / Zn / Cu / Fe / Mo.
+Formula: `efficiency(surfactant) = coverage × foliarPhResponse(sprayPh)`
+
+| Surfactant | Coverage | spray-pH factor | Per-element value |
+|------------|---------:|----------------:|------------------:|
+| false      | 0.30     | 0.9             | 0.27              |
+| true       | 0.80     | 0.9             | 0.72              |
 
 Sulfate-based oligo sprays land near pH 5.0 (cuticle-uptake peak is pH
 5.5-6.0 per the `foliarPhResponse` curve); spray pH 5.0 sits at ~0.9 of
-the peak. The cuticle-uptake mechanism doesn't differentiate by sulfate
-cation at this resolution, so a single 0.27 value covers the six oligo
-elements.
+the peak. The spray-pH factor is invariant under the surfactant lever —
+surfactant acts on coverage (droplet retention × spread × cuticle
+penetration), not on the spray-pH chemistry. The cuticle-uptake
+mechanism doesn't differentiate by sulfate cation at this resolution,
+so a single uniform value covers all four cation-micro oligos
+(Mn / Zn / Cu / Fe).
 
-B (Solubore) is absent from the map — REQ-061 single-channel design
-routes B via fertigation, not foliar. If foliar B returns (yucca-back
-or spray-B-back scenarios), add `B: 0.27` to the map.
+Multiplier check: 0.72 / 0.27 = 2.67×. Cuticle penetration with
+surfactant literature mid-band is 1.3-2× for non-systemic micros; our
+ratio is above that band because yucca acts on both axes (retention +
+penetration), not just penetration. Sentís et al. 2017 absorption-only
+ratio 20 / 3 = 6.7× — our 2.67× is conservative against that absorption
+ratio because we blend it with retention (which is a smaller ratio
+under wet-film conditions, ~2× retention bump). The 2.67× sits inside
+the combined-axes literature band 2-4×.
+
+Elements absent from the map:
+
+- **B (Solubore)** — REQ-061 single-channel design routes B via
+  fertigation, not foliar. If foliar B is reinstated for a future
+  spray-B-back scenario, add `B: 0.27` to the map.
+- **Mo (sodium molybdate)** — retired from foliar 2026-05-16 (REQ-061
+  Mo carve-out). Molybdate is anionic and fully plant-available at our
+  pH 7.4, so the foliar-bypass argument that keeps cation micros here
+  doesn't apply. Mo moved to the fertigation barrel at the team's
+  smallest reliable weight; the foliar spray no longer carries sodium
+  molybdate. The stored-recipe edit on this channel is gated on
+  `/retire-recipe` audit.
 
 **Cert 3** — `FOLIAR_COVERAGE_DEFAULT` is cert 3 (B2 downgrade 2026-05-12,
-no Décembre tissue correlation yet); `foliarPhResponse` curve is cert 4.
-Effective cert min = 3. Refinement triggers:
+no Décembre tissue correlation yet); `FOLIAR_COVERAGE_WITH_YUCCA` is
+cert 3 (YUCCA-CERT downgrade 2026-05-16); `foliarPhResponse` curve is
+cert 4. Effective cert min = 3 across both regimes. Refinement triggers:
 
-- **Tissue panel ±20 % correlation** → cert 3 → 4 per element.
-- **Yucca returns** → coverage flips 0.30 → 0.80, efficiency map updates
-  to 0.72 in lockstep.
+- **Tissue panel ±20 % correlation (no-surfactant)** → cert 3 → 4 for the
+  no-surfactant value (0.27).
+- **Yucca returns + tissue panel ±20 % correlation** → cert 3 → 4 for the
+  with-surfactant value (0.72). Separate trigger — surfactant-on regime
+  needs its own correlation since 0.80 isn't measured at Décembre.
 - **Sentís ceiling regime** (downward, ×0.10 ratio in tissue) → coverage
   collapses to ~0.03; efficiency drops to ~0.027 (channel becomes
-  insurance-only pending soil-pH drop).
+  insurance-only pending soil-pH drop). Applies to the no-surfactant
+  regime; with-surfactant Sentís ceiling 20 % would collapse 0.72 to
+  ~0.06.
 
 ---
 
 ## What dropping yucca cost — historical context
 
-Decision 2026-05-05: yucca dropped (supply-chain). Spray rebalanced for
-burn safety at lower dispersion:
+Decision 2026-05-05: yucca dropped (supply-chain). Cu cut for burn safety
+at lower dispersion (axil-pool toxicity image triggered the halving).
+Mn / Zn held at post-restructure values (the 2026-04-29 45 L → 15 L
+restructure kept 22 g for both); Fe / Solubore / Mo also held.
 
-| Element | Before yucca dropped | After   | Cut       | Reason                                                    |
-|---------|----------------------|---------|-----------|-----------------------------------------------------------|
-| Cu      | 4 g/15 L             | 2 g/15 L | -50 %    | Cu local-pool toxicity image (dark spots in axils)        |
-| Mn      | 22 g/15 L            | 18 g/15 L | -18 %   | Burn-cap headroom                                         |
-| Zn      | 22 g/15 L            | 16 g/15 L | -27 %   | Burn-cap headroom                                         |
-| Fe      | 80 g/15 L (FeSO₄)    | 80 g/15 L | =       | Held — Fe headroom large, no toxicity signal              |
-| Solubore| 7 g/15 L             | 7 g/15 L  | =       | Held; later moved fully to fertigation 2026-05-08         |
-| Mo Na   | 1 g/15 L             | 1 g/15 L  | =       | Held; wide tolerance                                      |
+| Element | Before yucca dropped | After    | Action     | Reason                                                    |
+|---------|----------------------|----------|------------|-----------------------------------------------------------|
+| Cu      | 4 g/15 L             | 2 g/15 L | Cut -50 %  | Cu local-pool toxicity image (dark spots in axils)        |
+| Mn      | 22 g/15 L            | 22 g/15 L | Held      | No burn observed at 22 g post-restructure                 |
+| Zn      | 22 g/15 L            | 22 g/15 L | Held      | No burn observed at 22 g post-restructure                 |
+| Fe      | 80 g/15 L (FeSO₄)    | 80 g/15 L | Held      | Fe headroom large, no toxicity signal                     |
+| Solubore| 7 g/15 L             | 7 g/15 L  | Held      | Later moved fully to fertigation 2026-05-08               |
+| Mo Na   | 1 g/15 L             | 1 g/15 L  | Held      | Wide tolerance band                                       |
 
-Net effect at dose level: ~30 % Cu, ~20 % Mn, ~25 % Zn — on top of
-0.80 → 0.30 coverage drop. Combined: Mn / Zn / Cu effective uptake
-~25-30 % of with-yucca + original-dose regime. RECIPE_HISTORY captures
-the 2026-05-05 retirement entry verbatim.
+Net effect at dose level: Cu -50 %, Mn / Zn / Fe / Solubore / Mo
+unchanged. Coverage axis: 0.80 → 0.30 (the dominant delivery hit).
+Combined effective uptake hit: ~63 % of with-yucca regime on Mn / Zn /
+Fe (coverage-only drop, dose held); ~19 % on Cu (coverage + half-dose).
+RECIPE_HISTORY captures the 2026-05-06 Cu 4 → 2 g retirement entry
+verbatim (the Mn / Zn dose hold is not a retirement event — no
+RECIPE_HISTORY entry needed).
+
+**Correction history (2026-05-17).** An earlier draft of this table
+reported Mn 22 → 18 g and Zn 22 → 16 g as cuts applied at the yucca
+drop. That was fabricated — no such cuts landed; STORED foliaire
+carried 22 g for both continuously since the 2026-04-29 restructure
+(verified by `git log -S '22' app/index.html` against the STORED
+foliaire range, plus the absence of any Mn / Zn RECIPE_HISTORY entry).
+The cap values (`BURN_CAP_BASE_G`) were set at extension mid-band
+18 / 16 in the model layer while STORED ran 22 / 22 in the field — a
+cap-vs-empirical gap reconciled 2026-05-17 by raising the cap to match
+empirical reality and dropping the cert from 3 to 2 (per § "Mn / Zn
+certainty exception" above). See `learnings.md` § "Mn / Zn burn caps
+held at extension mid-band 18 / 16 (pre-2026-05-17)".
 
 ---
 
 ## Per-element delivered mg/m²/wk vs demand at T5
 
 `computeFoliarSupply('T5')`, current STORED (post-2026-05-05),
-area = 382.9 m², coverage = 0.30:
+area = 382.9 m², coverage = 0.30. Demand from `BIOMASS_DEMAND.T5[el] +
+TOMATO_FRUIT_EXPORT[el].g × 1500` (live data in
+`nutrition/tomato/plant-needs/data.js`).
+
+Active foliar elements only (Mo retired to fertigation 2026-05-16 per
+REQ-061 carve-out; B single-channel via fertigation per REQ-061):
 
 | Element | Recipe g | Element % | Raw mg/m²/wk | × Coverage | Delivered mg/m²/wk | Demand T5 mg/m²/wk | % demand |
 |---------|---------:|----------:|-------------:|-----------:|-------------------:|-------------------:|---------:|
-| Mn      | 22       | 31.5 %    | 18.1         | × 0.30     | 5.4                | ~9                 | ~60 %    |
-| Zn      | 22       | 35.5 %    | 20.4         | × 0.30     | 6.1                | ~6                 | ~100 %   |
-| Cu      | 2        | 25.0 %    | 1.31         | × 0.30     | 0.39               | ~1.6               | ~25 %    |
-| Mo      | 1        | 39.6 %    | 1.03         | × 0.30     | 0.31               | ~0.3               | ~100 %   |
-| Fe      | 80       | 20.0 %    | 41.8         | × 0.30     | 12.5               | ~13                | ~95 %    |
-| B       | 7        | 20.5 %    | 3.74         | × 0.30     | 1.12               | (in fertigation)   | n/a      |
+| Mn      | 22       | 31.5 %    | 18.1         | × 0.30     | 5.43               | 7.5                | 72 %     |
+| Zn      | 22       | 35.5 %    | 20.4         | × 0.30     | 6.12               | 4.5                | **136 %** |
+| Cu      | 2        | 25.0 %    | 1.31         | × 0.30     | 0.39               | 1.5                | 26 %     |
+| Fe      | 80       | 20.0 %    | 41.8         | × 0.30     | 12.54              | 15.0               | 84 %     |
 
-(Demand from `BIOMASS_DEMAND.T5` + `TOMATO_FRUIT_EXPORT × 1.5 kg/m²/wk` —
-see `nutrition/tomato/plant-needs/derivation.md`.)
+Mn + Cu + Fe are the standing under-fert calls (foliar is the only
+channel for these four cation micros under current pH 7.4 lockout per
+REQ-061). Coverage 0.30 (no yucca) is the steady-state delivery regime;
+yucca is not on order and is not tracked as a refinement-trigger return
+path (see `learnings.md` § "Yucca return as a refinement trigger" for
+the rejected dose-restoration projection).
 
-Mn + Cu are the standing under-fert calls. Yucca restoration: Mn
-5.4 → ~14 mg/m²/wk (~155 % demand), Cu 0.4 → ~1.0 (~65 %, still
-toxicity-bound). Zn / Fe / Mo over-supply slightly, all under REQ-014's
-1.3× luxury cap.
+**Zn over-luxury (136 % of demand)** is over REQ-014's 1.3× cap on the
+foliar channel alone (foliar is the only Zn channel). Three options
+discussed; choice = "hold, document, refine on tissue data" per P-11
+(don't over-precise; soil/tissue refinement). Cutting Zn from the spray
+preemptively without tissue evidence risks pushing the plant into
+deficit on the one available channel; the over-luxury is a foliar
+cuticle-surface phenomenon, not a soil-bank accumulation (foliar Zn
+doesn't compound week-over-week the way soil-applied does). Refinement
+trigger named below ("Tissue Zn signals luxury / toxicity").
 
-Solubore in foliar = 0 in `FP_RECIPE_T5` — fertigation owns B since
-2026-05-08 (REQ-061 single-channel). STORED still carries 7 g for legacy;
-next `/retire-recipe` can zero (fertigation 9 g Solubore covers demand).
+Solubore in foliar = 0 (B single-channel via fertigation since
+2026-05-08, REQ-061). STORED still carries 7 g for legacy; next
+`/retire-recipe` can zero it (fertigation 11 g Solubore covers demand).
+Sodium molybdate STORED still 1 g for legacy (Mo retired from foliar
+2026-05-16; gated on `/retire-recipe`; the model returns Mo: 0
+regardless of recipe contents per REQ-061 carve-out).
 
 ---
 
@@ -189,10 +409,6 @@ chain stays uniform.
 
 ## Refinement triggers
 
-- **Yucca decision flips.** `FOLIAR_COVERAGE_DEFAULT` 0.30 → 0.80; STORED
-  rebalanced via `/retire-recipe` (Cu 2 → 4 g, Mn 18 → 22 g, Zn 16 → 22 g
-  back to pre-2026-05-05). REQ-101 still passes (formula unchanged);
-  REQ-025 re-check at higher Mn / Zn / Cu doses.
 - **Tissue test reveals per-element drift.** Petiole panel (NO₃-N + Mg +
   Cu/Mn/Zn) sampled 2026-05-11. Cu toxicity-bound (less coverage-sensitive);
   Mn cleanest signal. Three paths, paired per P-03:
@@ -211,10 +427,18 @@ chain stays uniform.
 
   Until panel lands, REQ-101 stays cert 3 (B2 downgrade, 2026-05-12);
   hold rationale in `learnings.md`.
-- **Solubore moved fully to fertigation.** Already conceptual
+- **Solubor moved fully to fertigation.** Already conceptual
   (`FP_RECIPE_T5.foliar.Solubore = 0`); STORED still carries 7 g. Next
   `/retire-recipe` zeros it — delivers ~1.1 mg B/m²/wk today; fertigation
-  9 g delivers ~4.8 mg/m²/wk (full demand alone).
+  11 g delivers ~5.89 mg/m²/wk to bed (covers T5 demand 5.625 mg/m²/wk).
+- **Tissue Zn signals luxury / toxicity.** Foliar Zn delivered ~6.1 mg/m²/wk
+  vs T5 demand 4.5 = 136 %, over REQ-014's 1.3× cap on the foliar channel
+  alone. No soil-bank concern (foliar Zn doesn't compound week-over-week
+  the way soil-applied does), no observed leaf-tip Zn-toxicity symptom to
+  date, no Zn-fertigation channel available at pH 7.4. Holding 22 g/15 L
+  ZnSO₄ pending: petiole-tissue Zn out of range (>120 ppm Zn DW Sonneveld
+  guideline) OR leaf-tip phytotoxicity image. On either trigger, cut Zn to
+  ~16 g/15 L (≈ 99 % demand) via `/retire-recipe`.
 - **Soil pH drops below 7.0.** Sulfate-metal fertigation (FeSO₄, MnSO₄,
   ZnSO₄) viable. Foliar → insurance, loads can cut 50-70 %. Verifier
   surfaces it: `effectiveEff(MnSO4, fertigation, currentSoilPh) ≥ 0.05`

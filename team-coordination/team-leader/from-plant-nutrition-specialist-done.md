@@ -11,6 +11,38 @@ Most recent at the top.
 
 ## Entries
 
+## 2026-05-17 (follow-up) — nutrition/spec.md (REQ-062 retired in place — PO action delivered)
+
+Specialist filed REQ-062 retirement: title + body rewritten to "Single fertigation tank per week"; foliar-singleton clause dropped; sprayCount 1-3 lever in REQ-112 now load-bearing.
+
+### Team-leader outcome (2026-05-17)
+Sub-wave I.A combined coder + test-writer + pruner. Coder traced sprayCount threading end-to-end: UI lever `#nutr-foliar-spray-count` → handler in `app/operator/nutriment.js:69` → reads in `nutrition/tomato/app/supply.js:165/242/265` (FP REQ-116 + FP foliar + stored foliar branches) → `computeFoliarSupply(stage, { sprayCount })` → clamp + linear multiplier in `nutrition/tomato/foliar-recipe/calc.js:37,70`. Already wired correctly — no code change needed. Test-writer added value-pinned `test('REQ-112 — sprayCount: 2 yields 2× single-spray delivery (linear scaling)', …)` at `nutrition/tomato/foliar-recipe/spec.test.mjs:174` pinning the formula via STORED Mn (22 g, single-channel under pH ≥ 7). Pruner swept the retirement; no stragglers needed update. 2 borderline kept (stored.js comment + tomato/app/spec.md source-of-truth table — describe recipe shape, not cadence; cert ≤ 3 KEEP).
+
+## 2026-05-17 — nutrition/soil-contribution
+
+Specialist amended REQ-142 (`bank ÷ min(mass-flow, peak demand) × WEEKS_PER_MONTH`; N turnover-bound returns null both crops), REQ-141 (Ca + P via bank; K + Mg via fertigation; bank K + Mg outside sizer scope), REQ-145 N-not-mehlich render bytes.
+
+### Team-leader outcome (2026-05-17)
+Sub-wave I.B coder + pruner. Coder fixed REQ-145 routing dead-code in `nutrition/tomato/app/logic.js:200-211` — rewrote nested else-branch as explicit per-element dispatch. Before: `else if (bankMg > 0) interpretationKey = element === 'K' ? 'K-fert-routed' : 'Mg-fert-routed'` (N silently routed to Mg-fert-routed once bank N became > 0 post-REQ-162 10-element extension). After: explicit `if (element === 'N') key = 'N-not-mehlich'; else if (contributing) key = element === 'Ca' ? 'Ca' : 'P'; else if (element === 'K') key = 'K-fert-routed'; else if (element === 'Mg') key = 'Mg-fert-routed'; else key = 'default-not-mehlich'`. Pruner verified all `monthsToDepletion` consumers handle `null` cleanly: `nutrition/tomato/app/logic.js:212-214` (`months != null` guard); `nutrition/soil-contribution/render.js:17-21` (`fmtMonths` returns `—`); `scripts/check-recipes.mjs:5972` REQ-162 verifier. **Spec gap surfaced for PO/specialist:** REQ-145's declared key set covers `Ca/P/K-fert-routed/Mg-fert-routed/N-not-mehlich/default-not-mehlich`. Fe/Mn/Zn/B/Cu have measured Mehlich-3 banks (tomato: 62180/10140/2300/60/920 mg/m²) but no contributing/fert-routed key — fall through to `default-not-mehlich` whose declared prose "${el} n'est pas mesuré sur le test Mehlich-3 actuel" is factually wrong. Slip's suggested `micros-foliar-routed` key parallel to K/Mg-fert-routed is the right shape; one-line addition once spec declares it.
+
+## 2026-05-17 — nutrition/tomato/foliar-recipe
+
+Specialist raised `BURN_CAP_BASE_G.Mn` 18 → 22 and `.Zn` 16 → 22 to match live STORED.foliaire 22/22; cert dropped 3 → 2 for both with Décembre-internal-observation framing (parallel to Cu cert-2). REQ-115 cert annotation extended; "Pending — yucca-coverage refinement trigger" dropped; historical "What dropping yucca cost" derivation table corrected.
+
+### Team-leader outcome (2026-05-17)
+Sub-wave I.C test-writer + pruner. Test-writer added value-pinned `test('REQ-115 — BURN_CAP_BASE_G values pinned (Mn 22 / Zn 22 / Cu 2 / Fe 80 / Mo 2 / B 9)', …)` at `nutrition/tomato/foliar-recipe/spec.test.mjs:385` — sibling to the pre-existing dynamic-lookup test that would pass vacuously on silent cap drift. Pruner edit at `nutrition/tomato/foliar-recipe/derivation.md:14-18` (cert 3) — framing block updated from "Mn / Zn capped at 18-22 g/15 L by toxicity headroom" to the post-reconciliation 22-only cap with Décembre-internal-observation rationale. Other 18/16 mentions across derivation.md and learnings.md are intentional historical / counterfactual framing (audit trail + refinement triggers) — kept. Code-path check: no fallback math or hardcoded 18/16 assumptions anywhere; all consumers read dynamically through `burnCapG(el)`.
+
+## 2026-05-17 — nutrition/spec.md (PO-owned, specialist note appended) — SUPERSEDED
+
+This entry was a specialist-note flag pending PO action on REQ-062 single-foliar-spray retirement. Superseded by the same-day follow-up entry above ("REQ-062 retired in place — PO action delivered") which closes the escalation. No separate team-leader outcome — closed-by-supersession.
+
+## 2026-05-17 — nutrition/tomato/fertigation-recipe
+
+Specialist added clarifying note to inherited-specs section: REQ-013 / REQ-014 supply chain bounds evaluate against active channels only (compost + sidedress + fertigation + foliar); bank K + Mg mass-flow delivery declared in REQ-141 sits outside sizer scope by architectural choice.
+
+### Team-leader outcome (2026-05-17)
+Pruner-only ask. Slip explicitly stated "verifier expectations on REQ-013 / REQ-014 are unchanged — the channel-supply sum already excludes the bank; the spec text now matches what the code does." Pruner ran in sub-waves I.A/I.B/I.C/I.D/I.E (specialist work scattered across owned-glob files); no fertigation-specific stale prose surfaced. Closed without dedicated action.
+
 ## 2026-05-16 — STORED-vs-anchor audit-trail repair (coder-lane sites only)
 
 **Change type:** doc / prose correction; specialist scope closed (spec.md preamble + data.js comment + learnings.md anchor entry amended); these sites remain.

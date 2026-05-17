@@ -181,22 +181,6 @@
 //   13. Operator chrome (routing, hash, init) — MUST be last, reads every
 //       setter/handler defined above
 
-// Source-of-truth anchors (REQ-004 / REQ-106 / REQ-113 / REQ-139). Identifiers
-// below are wired in the partials this file @includes — supply orchestrator reads
-//   computeStageRecipe(stage), STORED_RECIPE.tomato.foliaire.A,
-//   STORED_RECIPE.tomato.sidedress[stage], BIOMASS_DEMAND[stage],
-//   TOMATO_FRUIT_EXPORT[element]
-// FP gap chain routes through
-//   window.FoliarRecipeTomato.computeFoliarRecipeForGap
-//   window.FoliarRecipeTomato.computeFoliarSupply
-// Nutrition page listener wiring binds 'nutr-foliar-spray-count' and
-// 'nutr-foliar-surfactant'. The default Bilan recipe-mode is
-//   let nutrRecipeMode = 'fp'
-// Source-grep tests at the integrator boundary (REQ-004 / REQ-106 / REQ-113 /
-// REQ-139) pin these identifiers — live definitions live in
-// app/operator/nutriment.js, nutrition/tomato/app/supply.js, and
-// nutrition/tomato/app/logic.js.
-
 // ── 1. State (TDZ-mandatory FIRST) ────────────────────────────────────────
 <!-- @include app/operator/state.js -->
 
