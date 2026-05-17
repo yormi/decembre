@@ -106,42 +106,76 @@ arithmetic = 5; DL-ceiling values cert 2.
 
 ---
 
-## REQ-141 — Only `CONTRIBUTING` elements participate in the gap chain
+## REQ-141 — Only Ca + P from the soil bank participate in the gap chain (active-channels-only K + Mg)
 
 **Statement:** `weeklyContribution(crop, el, demand_mg)` returns non-zero
 **only** when `SOIL_CONTRIBUTING[el] === true`. Otherwise returns `0` and
 the gap chain passes input → output unchanged.
 
-`SOIL_CONTRIBUTING` initial state: `{ P: true, Ca: true }` — both reservoirs
-carry weekly demand for years/decades without external resupply, no operator
-lever toggles them.
+`SOIL_CONTRIBUTING` is fixed at `{ P: true, Ca: true }`. The choice is
+architectural, not a defect in the bank-routing model:
 
-**Rationale (short):** K bank is large but K is delivered via fertigation
-(K₂SO₄) — counting twice would inflate coverage. N has no Mehlich-3
-measurement. Micros not on Berger test.
+- **Ca + P route via the soil bank.** Banks are large (Ca 11 000 kg/ha,
+  P 558 kg/ha on the tomato bed) and carry weekly plant demand for
+  years/decades without external resupply. Both surface in the gap-grid
+  `Apport ici` column on the soil-bank contribution block.
+- **K + Mg route via fertigation (K₂SO₄ + MgSO₄).** Their soil banks are
+  also measured (K 2 118 kg/ha, Mg 1 646 kg/ha on the tomato bed) and
+  deliver via mass-flow to the root surface (K ~4 385 mg/m²/wk, Mg
+  ~1 190 mg/m²/wk at current SME × transpiration). That bank-via-mass-
+  flow delivery is **not subtracted from the fertigation sizer**. The
+  fertigation channel sizes against `demand − compost − sidedress`;
+  soil-bank K + Mg sit outside that calculation by design. Operator-side
+  headroom from bank K + Mg explains real-world tolerance to fertigation
+  output that reads under REQ-013's 0.9× floor — the model is honest
+  that it's sizing for the active channels only and that bank K + Mg are
+  a real-but-unmodelled buffer.
+- **N has no Mehlich-3 measurement of a depleting reservoir.** Bank N
+  exists in the data (NO₃ + NH₄ pool) but is turnover-bound; routing N
+  through the gap chain via the bank would falsely treat a quasi-steady-
+  state pool as a depleting credit. N supply routes through compost
+  mineralization + sidedress; tissue is the monitoring surface.
+- **Micros (Fe / Mn / Zn / B / Cu / Mo) are not bank-routed.** Mehlich-3
+  banks are large in mg/m² terms (Fe 62 g/m², Mn 10 g/m²) but the plant-
+  available fraction is throttled by soil pH 7.4 lockout — mass-flow
+  capacity sits at fractions of a mg/m²/wk for most. Foliar carries the
+  active-delivery share per REQ-061 cascade (foliar bypasses root-zone
+  lockout). Bank micros surface in the soil-bank gap-grid's runway
+  column for context but contribute 0 to the gap chain.
 
-**Cert:** 4 (revisit if pH drops below 6.5 and SME P climbs into spec — P
-might exit CONTRIBUTING if active channels can carry it).
+**Cert:** 4 architectural choice; revisit if pH drops below 6.5 and SME
+P climbs into spec (5-50 ppm) — P might exit CONTRIBUTING if active
+channels (compost + sidedress + fertigation) can carry the full P
+demand. Rejected alternative (subtract bank K + Mg from the fertigation
+sizer; "path 1") archived in `learnings.md`.
 
 ---
 
-## REQ-142 — Months-to-depletion is the SME-derived runway, not demand-derived
+## REQ-142 — Months-to-depletion = bank ÷ min(mass-flow, plant peak demand)
 
-**Statement:** `monthsToDepletion(crop, el)` returns
-`BANK_MG_M2[crop][el] / (SME_SOIL_SOLUTION_PPM[crop][el] ×
-TRANSPIRATION_L_PER_M2_PER_WEEK[crop] × WEEKS_PER_MONTH)` when all three
-operands are positive, `null` otherwise. The runway answers "how many
-months until the reservoir is empty if zero replenishment occurs and weekly
-draw stays throttled by current soil-solution availability" — not "until
-empty at current weekly demand". Defined for any element with bank + SME
-data **regardless of `CONTRIBUTING`** — disabled rows surface reservoir
-runway for context. Demand is intentionally not in the denominator: a
-locked-out element (P at pH 7.4) draws far less than demand because the
-SME pool throttles uptake, and that's what the runway must reflect.
+**Statement:** `monthsToDepletion(crop, el)` returns `null` when
+`el ∈ TURNOVER_BOUND_ELEMENTS` (N today — the Mehlich-3 pool is
+replenished by mineralization at quasi-steady-state; bank ÷ uptake is
+a counterfactual). Otherwise returns `BANK_MG_M2[crop][el] /
+(min(SME_SOIL_SOLUTION_PPM[crop][el] × TRANSPIRATION_L_PER_M2_PER_WEEK[crop],
+PLANT_PEAK_WEEKLY_DEMAND_MG_PER_M2[crop][el]) × WEEKS_PER_MONTH)` when
+bank + SME + transpiration are all positive, `null` otherwise.
 
-**Cert:** 5 structural; runway values inherit the source cert of
+The denominator clamps weekly uptake at the lower of (i) mass-flow
+capacity — SME ppm × transpiration L/m²/wk delivered to the root surface
+— and (ii) plant peak weekly demand. For lockout elements (P / Mn / Zn /
+B / Cu / Fe at pH 7.4) mass-flow is below peak demand and the clamp is a
+no-op; runway reads the SME-throttled form. For over-supplied elements
+(Ca / Mg on the tomato bed) peak demand binds and the runway reflects the
+true drain rate, not the mass-flow ceiling. Defined for any non-turnover
+element with bank + SME data **regardless of `CONTRIBUTING`** — disabled
+rows (K / Mg) surface reservoir runway for context.
+
+**Cert:** 5 structural; runway values inherit the minimum cert of
 `SME_SOIL_SOLUTION_PPM` (cert 4 for direct measurements, cert 2 for
-<DL ceilings) × `TRANSPIRATION_L_PER_M2_PER_WEEK` (cert 2 cycle-mid).
+<DL ceilings), `TRANSPIRATION_L_PER_M2_PER_WEEK` (cert 2 cycle-mid), and
+`PLANT_PEAK_WEEKLY_DEMAND_MG_PER_M2` (cert 3 macros tomato, cert 4 macros
+lettuce, cert 1-2 micros — inherits from plant-needs).
 
 ---
 
@@ -183,7 +217,7 @@ those elements climb back into measurable range).
 **Statement:** Soil-bank pourquoi modal prose (one per element row in
 Block 2) is **owned by this spec entry**. Code calls
 `renderSpec('REQ-145', '<key>', { el })`; MUST NOT inline prose at call
-site. Six keys below, one per branch of per-element interpretation logic
+site. Eight keys below, one per branch of per-element interpretation logic
 in `nutrition/tomato/app/logic.js` `buildNutrimentTomato` ↔ soil block.
 REQ-144 forbids hand-written stable strings; bytes injected via
 `window.SPEC_STRINGS`.
@@ -209,7 +243,15 @@ Mg banque mesurée, SME en spec. Pas routé par ce bloc — la fertigation (MgSO
 ```
 
 ```render N-not-mehlich
-N n'est pas mesuré par Mehlich-3. La disponibilité vient de la minéralisation de la matière organique (compost + sidedress) — pas un stock fixe.
+Banque N mesurée (NO₃ + NH₄) mais le réservoir est renouvelé en continu par la minéralisation de la matière organique (compost + sidedress) — quasi-équilibre, pas un stock épuisable. Le mois d'épuisement ne s'affiche pas : c'est un contre-factuel ("si la minéralisation s'arrêtait") sans réalité opérationnelle. Le suivi N passe par tissu + bilan compost / sidedress, pas par le mois d'épuisement.
+```
+
+```render micros-foliar-routed
+${el} banque mesurée (Mehlich-3), mais le verrouillage pH du sol (≥ 7) bloque la disponibilité racinaire pour les cations micros. Livraison via le canal foliaire (cascade REQ-061) qui contourne la rhizosphère ; la banque sert d'indicateur de tendance, pas de canal d'apport hebdomadaire.
+```
+
+```render B-fert-routed
+B banque mesurée (Mehlich-3), mais la livraison passe par la fertigation (Solubore / octaborate de sodium) — non-ionique en solution, contourne le verrouillage pH. La banque suit la tendance ; l'apport hebdomadaire vient du canal actif.
 ```
 
 ```render default-not-mehlich

@@ -206,6 +206,10 @@ function buildNutrimentTomato() {
       interpretationKey = 'K-fert-routed';
     } else if (element === 'Mg') {
       interpretationKey = 'Mg-fert-routed';
+    } else if (element === 'B') {
+      interpretationKey = 'B-fert-routed';
+    } else if (element === 'Fe' || element === 'Mn' || element === 'Zn' || element === 'Cu') {
+      interpretationKey = 'micros-foliar-routed';
     } else {
       interpretationKey = 'default-not-mehlich';
     }
