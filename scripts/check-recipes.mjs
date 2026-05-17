@@ -711,6 +711,42 @@ if (!CC) {
   }
 }
 
+// ─── INV-1 (compost-contribution) — Element coverage closed across 4 maps ───
+//
+// Spec: nutrition/compost-contribution/spec.md → INV-1.
+// Asserts: keys(releasePerWeek) === keys(LABEL_PCT) === keys(MINERALIZATION_YEAR1)
+// === keys(efficiency). Adding a sixth element must touch all four maps in lockstep.
+
+header('Compost INV-1 — Element coverage closed across 4 maps');
+{
+  const CC = window.CompostContribution;
+  if (!CC || !CC.LABEL_PCT || !CC.MINERALIZATION_YEAR1
+      || !CC.releasePerWeek || !CC.efficiency) {
+    fail('Compost INV-1 prerequisites', 'window.CompostContribution.{LABEL_PCT, MINERALIZATION_YEAR1, releasePerWeek, efficiency} not all exposed');
+  } else {
+    const releaseKeys        = Object.keys(CC.releasePerWeek).sort();
+    const labelKeys          = Object.keys(CC.LABEL_PCT).sort();
+    const mineralizationKeys = Object.keys(CC.MINERALIZATION_YEAR1).sort();
+    const efficiencyKeys     = Object.keys(CC.efficiency).sort();
+    const reference          = JSON.stringify(releaseKeys);
+    const mismatches = [];
+    if (JSON.stringify(labelKeys) !== reference) {
+      mismatches.push(`LABEL_PCT [${labelKeys.join(',')}] ≠ releasePerWeek [${releaseKeys.join(',')}]`);
+    }
+    if (JSON.stringify(mineralizationKeys) !== reference) {
+      mismatches.push(`MINERALIZATION_YEAR1 [${mineralizationKeys.join(',')}] ≠ releasePerWeek [${releaseKeys.join(',')}]`);
+    }
+    if (JSON.stringify(efficiencyKeys) !== reference) {
+      mismatches.push(`efficiency [${efficiencyKeys.join(',')}] ≠ releasePerWeek [${releaseKeys.join(',')}]`);
+    }
+    if (mismatches.length === 0) {
+      pass(`Compost INV-1 — 4 maps closed on ${releaseKeys.length} éléments (${releaseKeys.join(', ')})`);
+    } else {
+      fail('Compost INV-1 — Element coverage closure', mismatches.join(' · '));
+    }
+  }
+}
+
 // ─── REQ-140..143 — SoilContribution subproject ─────────────────────────
 //
 // Spec: nutrition/soil-contribution/spec.md → REQ-140 (bank shape), REQ-141
@@ -1235,15 +1271,18 @@ if (!FIRST_PRINCIPLES_T5_FERTIGATION || !computeStageRecipe || !FP_RECIPE_T5) {
   if (FIRST_PRINCIPLES_T5_FERTIGATION['Solubore'] !== t5.solubore) {
     offenders.push(`FIRST_PRINCIPLES.Solubore=${FIRST_PRINCIPLES_T5_FERTIGATION['Solubore']} vs computeStageRecipe('T5').solubore=${t5.solubore}`);
   }
-  // Propagation: FP_RECIPE_T5.fertigation mirrors the same three values
+  if (FIRST_PRINCIPLES_T5_FERTIGATION['NaMolybdate'] !== t5.naMolybdate) {
+    offenders.push(`FIRST_PRINCIPLES.NaMolybdate=${FIRST_PRINCIPLES_T5_FERTIGATION['NaMolybdate']} vs computeStageRecipe('T5').naMolybdate=${t5.naMolybdate}`);
+  }
+  // Propagation: FP_RECIPE_T5.fertigation mirrors the same four values
   const fp = FP_RECIPE_T5.fertigation || {};
-  for (const key of ['K2SO4', 'MgSO4-7H2O', 'Solubore']) {
+  for (const key of ['K2SO4', 'MgSO4-7H2O', 'Solubore', 'NaMolybdate']) {
     if (fp[key] !== FIRST_PRINCIPLES_T5_FERTIGATION[key]) {
       offenders.push(`FP_RECIPE_T5.fertigation['${key}']=${fp[key]} vs FIRST_PRINCIPLES['${key}']=${FIRST_PRINCIPLES_T5_FERTIGATION[key]}`);
     }
   }
   if (offenders.length === 0) {
-    pass(`K2SO4 ${t5.kSulfate} · MgSO4-7H2O ${t5.mgSulfate} · Solubore ${t5.solubore} — all three propagated FIRST_PRINCIPLES → FP_RECIPE_T5`);
+    pass(`K2SO4 ${t5.kSulfate} · MgSO4-7H2O ${t5.mgSulfate} · Solubore ${t5.solubore} · NaMolybdate ${t5.naMolybdate} — all four propagated FIRST_PRINCIPLES → FP_RECIPE_T5`);
   } else {
     fail('REQ-154 — FP target pinned to computeStageRecipe(T5)', offenders.map(o => `  ${o}`).join('\n'));
   }
@@ -5126,10 +5165,10 @@ header('REQ-144 — Operator-facing prose is a deterministic render of spec (opt
 
 // ─── REQ-145 — Pourquoi modal interpretation strings owned by spec ─────
 //
-// REQ-145 lives in nutrition/soil-contribution/spec.md and declares 6
+// REQ-145 lives in nutrition/soil-contribution/spec.md and declares 7
 // Renders: blocks (Ca, P, K-fert-routed, Mg-fert-routed, N-not-mehlich,
-// default-not-mehlich). The build pipeline parses them into
-// window.SPEC_STRINGS. Checks:
+// micros-foliar-routed, default-not-mehlich). The build pipeline parses
+// them into window.SPEC_STRINGS. Checks:
 //   (a) every key declared in the spec must be reachable via SPEC_STRINGS
 //       (the build picked them up)
 //   (b) every renderSpec('REQ-145', '<key>', …) call in consumer source
@@ -5138,7 +5177,7 @@ header('REQ-144 — Operator-facing prose is a deterministic render of spec (opt
 header('REQ-145 — Pourquoi modal interpretation strings (renderSpec call sites match Renders: keys)');
 
 {
-  const expectedKeys = ['Ca', 'P', 'K-fert-routed', 'Mg-fert-routed', 'N-not-mehlich', 'default-not-mehlich'];
+  const expectedKeys = ['Ca', 'P', 'K-fert-routed', 'Mg-fert-routed', 'N-not-mehlich', 'micros-foliar-routed', 'default-not-mehlich'];
   const specStrings = window.SPEC_STRINGS && window.SPEC_STRINGS['REQ-145'];
   const offenders = [];
 

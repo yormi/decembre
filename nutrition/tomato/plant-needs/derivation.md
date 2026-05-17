@@ -128,6 +128,37 @@ all stages (estimated `TOMATO_REMOVAL` micros + default 60 % split).
 
 Surfaced per (stage, element) via `PN.certFor(stage, el)` on row click.
 
+### Cert-floor source per (stage, element)
+
+Every cert-1 cell traces to one of three named gaps. When refining, target
+the named source — don't bump cert without addressing it.
+
+| Cert-1 cell                                     | Source-of-cert-floor                                                                  |
+|-------------------------------------------------|---------------------------------------------------------------------------------------|
+| T4 macros (N / P / K / Ca / Mg)                 | T5 × 0.85 extrapolation — no independent stage-stratified data for T4                 |
+| T1-T5 micros (Fe / Mn / Zn / B / Cu / Mo) — fruit term | `TOMATO_FRUIT_EXPORT` 60 % default split (Yara fruit-vs-canopy data gap for micros)   |
+| T1-T5 micros — biomass term                     | `TOMATO_REMOVAL` micros are extrapolated whole-plant estimates (no peer-reviewed source) |
+| Ca / Mg biomass (any stage)                     | `transpFactor` coupling cert ceiling — REQ-081 is cert 4 mechanism, but the input `transpFactor` itself is operator-supplied (cert 2-3 transpiration-to-yield ratio) |
+
+### T4 cert-1 — load-bearing for the Bilan modal
+
+`PN.certFor(stage, element)` is consumed by `nutrition/tomato/app/logic.js`
+to stamp the per-element cert badge on the Bilan modal Pourquoi row (see
+`registerPourquoi('demand.<element>', { cert: dCert, … })` at logic.js:172).
+Operator sees cert 1 explicitly when reviewing T4 demand rows. This is
+**acceptable** today: T4 spans weeks ~10-18 (production montante), and
+the operator-visible decisions at that stage (recipe selection, ramping
+fertigation CE, sidedress timing) are not cert-1-sensitive — they hinge on
+fruit export which scales linearly with measured yield (cert 3, anchored
+to `TOMATO_REMOVAL`), not on the cert-1 biomass extrapolation. The
+biomass term at T4 is ~30-40 % of total demand at target yield, so a
+±15 % T4-vs-T5 extrapolation error moves total demand by ≤6 %.
+
+Bumping T4 to cert 2 requires either (a) independent T4 stage-stratified
+data (no peer-reviewed source yet — see refinement trigger below) or
+(b) a Décembre tissue panel separating T4 vs T5 tissue. Until then,
+cert 1 with transparent operator surfacing is the right floor.
+
 ---
 
 ## Edge cases
@@ -157,15 +188,77 @@ Surfaced per (stage, element) via `PN.certFor(stage, el)` on row click.
 
 ## Refinement triggers
 
-- **Tissue test results.** Petiole NO₃-N + Mg + Cu/Mn/Zn ordered
-  2026-05-05; expected ~2026-05-12. If measured diverges >25 % from
-  cert-3+ assumed values, refine `TOMATO_REMOVAL` and re-derive T5 → T4.
-- **Yield ceiling shifts.** Sustained >1.5 kg/m²/wk for >3 weeks → T5
-  may underestimate; re-derive at new target.
-- **Stage-stratified data.** T4 with independent measurement graduates
-  off `T5 × 0.85`.
-- **Per-element micro splits.** Replace 60 % default for Fe/Mn/Zn/B/Cu/Mo
-  when Yara or peer-reviewed data lands.
+Each trigger names the **observable** (number / event that fires the
+refinement), the **action** (what changes), and the **target** (file +
+identifier to edit). Triggers fire on Guillaume's surfacing per
+`feedback_no_polling_external_signals` — this section is the playbook,
+not a polling queue.
+
+- **Tissue panel back-test — macros.** *Observable:* petiole NO₃-N / P /
+  K / Ca / Mg tissue results land (sampled 2026-05-11, regardless of
+  report date). *Action:* compute `predicted_annual = TOMATO_REMOVAL ×
+  measured_yield_kg_per_m²` vs measured uptake; if |Δ| ≤ 25 % per macro,
+  bump T1-T3 + T5 macro cert 2 → 3 in `TOMATO_DEMAND_CERT`. If |Δ| > 25
+  %, refit `TOMATO_REMOVAL[macro].g` in `data.js` (REQ-033 Tier-B floor
+  binds — stay at or above {Yara, Sonneveld, Koller} mean), then
+  re-derive `BIOMASS_DEMAND[T5]` per the top-down formula and
+  `BIOMASS_DEMAND[T4] = T5 × 0.85`.
+- **Tissue panel back-test — micros.** *Observable:* leaf-tissue Fe / Mn
+  / Zn / B / Cu / Mo concentrations land. *Action:* if |Δ| ≤ 50 % per
+  micro, bump cert 1 → 2 across all stages for that element in
+  `TOMATO_DEMAND_CERT`. If |Δ| > 50 %, refit `TOMATO_REMOVAL[micro].g` in
+  `data.js` AND replace the 60 % fruit-share default for that element in
+  `TOMATO_FRUIT_EXPORT` (use measured fruit / leaf tissue ratio).
+- **Yield ceiling shifts.** *Observable:* sustained measured yield >
+  1.5 kg/m²/wk for ≥ 3 consecutive weeks at T5. *Action:* re-anchor T5
+  derivation at new target yield by updating the `× 1500` constant in
+  the `BIOMASS_DEMAND[T5]` derivation formula (header comment in
+  `data.js` ~line 147) to `× new_target_mg_per_m²_per_wk`, then
+  recompute every T5 cell and recompute T4 = T5 × 0.85.
+- **Stage-stratified T4 data.** *Observable:* an independent T4 (weeks
+  10-18 post-transplant) tissue / uptake measurement lands — Décembre
+  panel split by stage, or peer-reviewed source with T4-equivalent
+  resolution. *Action:* drop the `× 0.85` extrapolation; rewrite
+  `BIOMASS_DEMAND.T4` directly from the measurement in `data.js`. Bump
+  T4 macro cert 1 → 2 (or 3 if Décembre-measured) in
+  `TOMATO_DEMAND_CERT.T4`.
+- **Per-element micro splits — Sonneveld micros table.** *Observable:*
+  Sonneveld 2009 § "tomato micro fruit-vs-canopy partitioning" or
+  equivalent peer-reviewed split lands (currently default 60 % per micro
+  — see "Refinement priority — micros gap" below). *Action:* replace per
+  -micro fruit fraction in `TOMATO_FRUIT_EXPORT` (currently `× 0.60`),
+  bump micro fruit-term cert 1 → 2 in `TOMATO_DEMAND_CERT`.
+
+## Refinement priority — micros gap (long-standing TBD)
+
+The cert-1 micro cells in `TOMATO_DEMAND_CERT` are the largest single
+cert deficit in this subproject. Per P-07 (decide-and-ship on low
+yield-impact) and P-08 (no PA-asks): default plan, no fork to Guillaume.
+
+**Yield-impact assessment.** Micros are foliar-channel routed per
+`CHANNEL_ROLE` (Fe / Mn / Zn / B / Cu / Mo all foliar-only at Décembre's
+current high-pH lockout regime). Foliar dose is capped by burn ceiling
+(REQ-115 in `nutrition/tomato/foliar-recipe/spec.md`), not by
+plant-demand readout. So cert-1 micros in `BIOMASS_DEMAND` drive the
+Bilan delivered-vs-demand gap visualization but do NOT drive operator
+weighing — the foliar recipe is independently capped. **Low yield-impact**
+for cert-1 micros today.
+
+**Defensible default sources** (ranked by transferability cert that would
+land if the source were wired in):
+
+| Source                                                     | Would deliver                                       | Cert if wired |
+|------------------------------------------------------------|-----------------------------------------------------|---------------|
+| Sonneveld & Voogt 2009 § tomato micros (whole-plant g/yr)  | Whole-plant micros / yr → per-stage prorated split  | 2             |
+| Yara tomato micros table (if published per-element fruit fraction) | Direct fruit / canopy ratio per micro       | 2-3           |
+| Décembre leaf + fruit tissue panel separated by stage      | Direct measurement                                  | 3-4           |
+
+**Default plan.** Hold cert 1 with documented data gap. Replacement
+fires on tissue-panel back-test (above). If tissue panel does not
+disambiguate fruit-vs-canopy micro split (typical — most labs return
+whole-leaf only), pursue Sonneveld micros table refit as the next
+defensible step. Not gated on Guillaume's review — this is the
+defensible default per P-07.
 
 ---
 

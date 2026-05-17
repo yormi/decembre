@@ -217,10 +217,23 @@ those elements climb back into measurable range).
 **Statement:** Soil-bank pourquoi modal prose (one per element row in
 Block 2) is **owned by this spec entry**. Code calls
 `renderSpec('REQ-145', '<key>', { el })`; MUST NOT inline prose at call
-site. Eight keys below, one per branch of per-element interpretation logic
-in `nutrition/tomato/app/logic.js` `buildNutrimentTomato` ↔ soil block.
-REQ-144 forbids hand-written stable strings; bytes injected via
+site. Seven keys below, one per branch of per-element interpretation
+logic in `nutrition/tomato/app/logic.js` `buildNutrimentTomato` ↔ soil
+block. REQ-144 forbids hand-written stable strings; bytes injected via
 `window.SPEC_STRINGS`.
+
+Element-to-key dispatcher mapping (consumer-side, mirrored here so the
+spec stands alone without grepping `logic.js`):
+
+| Element | Key | Routing rationale |
+|---|---|---|
+| Ca | `Ca` | CONTRIBUTING; bank-routed (REQ-141) |
+| P  | `P`  | CONTRIBUTING; bank-routed despite pH-lockout (only viable channel) |
+| K  | `K-fert-routed`  | measured bank; active channel = fertigation K₂SO₄ |
+| Mg | `Mg-fert-routed` | measured bank; active channel = fertigation MgSO₄ |
+| N  | `N-not-mehlich`  | turnover-bound; runway null (REQ-142) |
+| Fe, Mn, Zn, B, Cu | `micros-foliar-routed` | measured bank, plant-available fraction throttled by pH 7.4; active channel = foliar (REQ-061 cascade; CHANNEL_ROLE in `nutrition/tomato/lib/recipe-math.js` routes Fe/Mn/Zn/Cu = `{foliar:1.0}` and B = `{foliar:0.5, passive:0.5}`) |
+| Mo | `default-not-mehlich` | not on Mehlich-3 panel; active channel = fertigation Na molybdate (REQ-061 anion carve-out) |
 
 **Cert:** 5 — bytes are spec-declared; render is deterministic.
 
@@ -247,11 +260,7 @@ Banque N mesurée (NO₃ + NH₄) mais le réservoir est renouvelé en continu p
 ```
 
 ```render micros-foliar-routed
-${el} banque mesurée (Mehlich-3), mais le verrouillage pH du sol (≥ 7) bloque la disponibilité racinaire pour les cations micros. Livraison via le canal foliaire (cascade REQ-061) qui contourne la rhizosphère ; la banque sert d'indicateur de tendance, pas de canal d'apport hebdomadaire.
-```
-
-```render B-fert-routed
-B banque mesurée (Mehlich-3), mais la livraison passe par la fertigation (Solubore / octaborate de sodium) — non-ionique en solution, contourne le verrouillage pH. La banque suit la tendance ; l'apport hebdomadaire vient du canal actif.
+${el} mesuré sur Mehlich-3 — banque importante en mg/m², mais la fraction biodisponible est limitée par le verrouillage pH 7,4 racinaire (cations Fe/Mn/Zn/Cu : courbe sulfate-métal ; B : adsorption sur oxydes Fe/Al + complexes Ca-borate). Apport hebdomadaire actif via le foliaire (cascade REQ-061 — contourne le verrouillage racinaire) ; la banque sert de réserve long-terme et alimente la trajectoire d'épuisement informationnelle, pas la contribution hebdo.
 ```
 
 ```render default-not-mehlich

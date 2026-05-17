@@ -1,0 +1,46 @@
+# Todo — nutrition/soil-contribution
+
+## Commander's intent
+
+PURPOSE
+
+Soil-contribution took the heaviest 2026-05-17 work: depletion-runway clamp landed (REQ-142), N turnover-bound carve-out landed (REQ-142 + pourquoi modal `N-not-mehlich`), REQ-141 active-channels-only commitment formalized (path-2 vs rejected path-1 archived in learnings.md). Spec carries 7 REQs (140, 141, 142, 143, 145, 164) + INV-1 at 263 lines; derivation has the most live worked-example blocks (Ca / Mg / K / P / lettuce-clamp-inert) of any subproject. This round: walk the REQ-145 pourquoi modal bytes (6 keys: Ca, P, K-fert-routed, Mg-fert-routed, N-not-mehlich, default-not-mehlich) against the dispatcher logic gap surfaced in changelog 2026-05-17 — Fe/Mn/Zn/B/Cu have measured banks but no declared REQ-145 key beyond `default-not-mehlich`, whose prose "${el} n'est pas mesuré sur le test Mehlich-3 actuel" is factually wrong for those rows. PO/specialist follow-up suggests a `micros-foliar-routed` key parallel to `K-fert-routed` / `Mg-fert-routed`. This is in-scope specialist work (spec REQ-145 prose owns the bytes). Also verify the path-2 framing in REQ-141 holds against fertigation-recipe spec cross-reference (already verified once in Phase A, but spec edits could drift independently).
+
+KEY TASKS
+
+1. REQ-145 missing pourquoi keys for micros: spec.md:215-252 declares 6 keys. Fe/Mn/Zn/B/Cu/Mo all have measured banks (per SOIL_BANK_MG_M2 read-only check in data.js); their pourquoi dispatch currently falls through to `default-not-mehlich` whose prose "${el} n'est pas mesuré sur le test Mehlich-3 actuel" is FALSE for those rows. Author a new `render micros-foliar-routed` block (or per-element keys if the framing diverges per element) explaining: "${el} mesuré sur Mehlich-3, banque importante mais disponibilité plante limitée par verrouillage pH 7.4 — apport actif via canal foliaire (REQ-061 cascade); banque sert de réserve long-terme, pas de contribution semaine-à-semaine." Mo is the exception (not on Mehlich-3 panel, routes via fertigation 2026-05-16 carve-out) — Mo stays on `default-not-mehlich` OR gets its own key `Mo-fert-routed` parallel to K/Mg fertigation-routed. Allocate a new REQ for this if the new keys constitute a normative claim distinct from REQ-145's "bytes owned" claim; more likely, extend REQ-145's `Renders` block in place. Pruner check — confirm no PO-level REQ collision before extending.
+2. Path-2 active-channels-only framing residual: spec.md REQ-141:115-150 carries the active-channels-only commitment (specialist-edited 2026-05-17 in the SME-bank archive). Walk for any internal contradiction: bullets at line 118-145 describe Ca/P bank route + K/Mg/N/micros active-channel route + bank-as-headroom framing. Verify the "K + Mg headroom" prose doesn't read as "STORED-vs-FP drift gauge actionable" (P-13 violation). Currently informational; confirm.
+3. Detection-limit DL handling cross-reference: REQ-140 + REQ-164 both mention DL handling at cert 2 (Mn/Zn on both crops; P-04 entry in principles). Derivation.md:71-76 + 197-199 carry the DL handling worked detail. Verify consistency — both spec entries name the same DL set + same cert downstep. Per P-04: "preserve numeric value, tag reduced cert, name refinement trigger."
+4. Refinement-trigger walk: derivation.md carries multiple refinement triggers (line 49-53 transpiration log, 78-79 next Berger reading, 101-102 S turnover-bound, 213-216 P-exit-CONTRIBUTING if pH drops). All condition-based (good per `feedback_no_polling_external_signals`). Walk to confirm none fire on STORED-vs-FP deltas (P-13). Should be clean post Umbrella scrub.
+5. Lettuce coverage walk: REQ-164 says "Tomato and lettuce both wired today." Walk derivation.md `lettuce row` references — current state at lines 171-176 says "All wired lettuce elements sit in the lockout / mass-flow-binds regime at the current SME × 4 L/m²/wk water uptake; the lettuce row runways are unaffected by the clamp." Verify: is lettuce N turnover-bound carve-out documented at the lettuce-row level (REQ-142 + REQ-145 pourquoi `N-not-mehlich` covers both crops)? Confirm cross-crop applicability is named once + cross-referenced rather than duplicated.
+6. PLANT_PEAK_WEEKLY_DEMAND_MG_PER_M2 cert defense: derivation.md examples (Ca 2 250 mg/m²/wk T5 whole-plant, Mg 855 mg/m²/wk, K 6 000 mg/m²/wk T5) name "T5 whole-plant, plant-needs". The cert annotation at spec.md:177-179 says "cert 3 macros tomato, cert 4 macros lettuce, cert 1-2 micros — inherits from plant-needs." Walk to confirm: spec cites cert inheritance correctly; derivation cites the source (plant-needs/data.js BIOMASS_DEMAND + TOMATO_FRUIT_EXPORT) without re-deriving.
+7. Render block bytes count: REQ-145 renders 6 keys. Pourquoi-modal dispatcher logic (per changelog 2026-05-17 REQ-145 fix) maps element → key. Confirm spec block has exactly 6 keys + element-to-key mapping is implicit in the dispatcher (or explicit in spec — verify). Adding micros-foliar-routed key would bump count to 7.
+
+END STATE
+
+- REQ-145 (or new REQ-NNN) declares pourquoi bytes for the Fe/Mn/Zn/B/Cu micros gap (micros-foliar-routed or per-element keys); Mo handled via Mo-fert-routed or default-not-mehlich.
+- Path-2 active-channels-only framing in REQ-141 carries no STORED-vs-FP pressure prose.
+- DL handling consistency triangulated (REQ-140 ↔ REQ-164 ↔ P-04 principle).
+- All refinement triggers condition-based; zero on STORED-vs-FP.
+- Lettuce coverage cross-referenced (REQ-142 + REQ-145 N turnover-bound applies cross-crop) without duplication.
+- PLANT_PEAK_WEEKLY_DEMAND_MG_PER_M2 cert defense traceable (cert inheritance from plant-needs).
+- REQ-145 element-to-key mapping explicit or documented.
+
+RULES OF ENGAGEMENT
+
+- Lane: own spec.md / derivation.md / learnings.md / this todo file
+- Forbidden (P-06): app/index.html, */app/logic.js, */app/page.html, dist/, calc.js, model.js, data.js, requirements.md
+- Verifier scripts: may edit if REQ changes
+- REQ claims: scripts/claim-req.sh <spec-path> plant-nutrition-specialist (flock race-safe)
+- Changelog: one line per material change, no trimming
+- Deviation from intent: only with explicit justification in report
+
+## Items
+
+- [x] REQ-145 missing pourquoi keys for Fe/Mn/Zn/B/Cu (and Mo) → spec.md REQ-145: new `micros-foliar-routed` key declared (covers Fe/Mn/Zn/B/Cu — prose names cation sulfate-metal curve + B Fe/Al oxide adsorption + Ca-borate complexes; active channel = foliar per REQ-061). Mo correctly stays on `default-not-mehlich` (genuinely not on Mehlich-3 panel). Key-count 6 → 7. Deleted `B-fert-routed` key that a parallel session added earlier today — factually wrong (B routes via foliar Solubore per CHANNEL_ROLE `{foliar:0.5, passive:0.5}`, not fertigation). Verifier `expectedKeys` updated 6 → 7 in `scripts/check-recipes.mjs`. Coder cascade filed for dispatcher fix (`logic.js:209-210` routes B → `B-fert-routed`).
+- [x] Path-2 active-channels-only framing residual STORED-vs-FP pressure walk → spec.md REQ-141 lines 124-132 re-read; "operator-side headroom from bank K + Mg explains real-world tolerance to fertigation output that reads under REQ-013's 0.9× floor" is informational, no STORED-vs-FP pressure framing. Path-2 commitment clean.
+- [x] DL handling consistency triangulation (REQ-140 ↔ REQ-164 ↔ P-04) → cross-checked: REQ-140 names Mehlich-3 bank DLs (lettuce B = 20 mg/m², tomato N-NH4 = 12 mg/m² combined into 7272 N total) cert 2; REQ-164 names SME DLs (Mn/Zn both crops at 0.03 ppm) cert 2; P-04 principle named in both. Sets are complementary (different lab tests, different elements); no contradiction. Consistent.
+- [x] Refinement-trigger STORED-vs-FP scan → derivation.md walked. Triggers found: transpiration log (line 50), next Berger SME reading (line 78), S turnover-bound carve (line 102), P-exit-CONTRIBUTING-if-pH-drops (line 213). All condition-based on lab readings / field signals; zero on STORED-vs-FP deltas. Clean per P-13.
+- [x] Lettuce coverage cross-reference (REQ-142 + N turnover-bound) → REQ-142 `TURNOVER_BOUND_ELEMENTS = ['N']` applies cross-crop by default (spec.test.mjs `REQ-142 — N returns null on both crops` pins this). REQ-145 `N-not-mehlich` Renders block uses `${el}` interpolation — crop-agnostic prose, applies for both tomato + lettuce dispatchers (lettuce-side dispatcher not yet wired in `logic.js` per Block-2-tomato-only, but spec-side coverage is generic). Cross-crop applicability is implicit-via-data-shape, no duplication.
+- [x] PLANT_PEAK_WEEKLY_DEMAND_MG_PER_M2 cert defense source trace → spec.md:177-179 names cert inheritance (cert 3 macros tomato, cert 4 macros lettuce, cert 1-2 micros — inherits from plant-needs). data.js:91-105 comment names sources: tomato = `TOMATO_REMOVAL × 1.5 kg/m²/wk` whole-plant peak (cert 3 macros, cert 1-2 micros); lettuce = `LETTUCE_TISSUE_DW × 75 g DW/m²/wk` head-formation peak (cert 4 macros, cert 3 micros). Cert lineage traceable spec → data.js → plant-needs data without re-deriving.
+- [x] REQ-145 element-to-key mapping explicit walk → mapping table added to spec body above the Renders blocks. 6-row table names every element + key + routing rationale, including CHANNEL_ROLE references for the micros branch. Future readers don't need to grep `logic.js`.

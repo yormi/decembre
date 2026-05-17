@@ -5,11 +5,13 @@ dose** (liquid replenishment of K, Mg, and B at the dripper) per tomato
 production stage, in grams of product per total tomato area per week.
 
 Mass-balance derivation, T5 refined target rationale, source tables (PA
-Taillon April 2026), refinement triggers live in `derivation.md`. Rejected
-alternatives and historical anchors (legacy PA Taillon K 5167 / Mg 1379)
-live in `learnings.md`. Operational *stored* values
-(`STORED_RECIPE.tomato.fertigation`) are governed by `/retire-recipe`, not
-this spec.
+Taillon April 2026 — applies to the FP target, NOT to STORED), refinement
+triggers live in `derivation.md`. PA Taillon K 5167 / Mg 1379 is the FP
+agronomist recommendation; the operational `STORED_RECIPE.tomato.fertigation`
+has been Haifa-heritage (T5 K 3489) since 2026-05-09 and has never
+carried PA Taillon values — only the FP target moved through the
+2026-05-12 → 2026-05-15 amendment cycle. STORED is governed by
+`/retire-recipe`, not this spec. Calibration history in `learnings.md`.
 
 The model answers two questions:
 
@@ -46,14 +48,18 @@ upstream subprojects / constants — see derivation.
 `computeStageRecipe(stage)` returns:
 
 ```js
-{ kSulfate: number, mgSulfate: number }
+{ kSulfate: number, mgSulfate: number, solubore: number, naMolybdate: number }
 ```
 
-Both masses in **grams of product per total tomato area per week**
+All four masses in **grams of product per total tomato area per week**
 (area = `TOMATO_NUM_BEDS × TOMATO_BED_AREA = 7 × 54.7 = 382.9 m²`).
-`kSulfate` is grams of K₂SO₄; `mgSulfate` is grams of MgSO₄·7H₂O.
-Boric acid (Solubore) is wired into `FP_RECIPE_T5.fertigation` as a
-T5-only constant (B demand uniform across stages, no stage signal to ramp).
+`kSulfate` = K₂SO₄, `mgSulfate` = MgSO₄·7H₂O, `solubore` = Solubor
+(disodium octaborate tetrahydrate, Na₂B₈O₁₃·4H₂O, 20.5 % B mass),
+`naMolybdate` = sodium molybdate (Na₂MoO₄·2H₂O). K + Mg + Solubore are
+mass-balance-derived per REQ-098 / REQ-155. Sodium molybdate is a flat
+0.5 g/wk floor across all stages T1-T5 (operator-weighing floor, not
+demand-driven) per the REQ-061 Mo carve-out 2026-05-16 — rationale in
+`derivation.md` "Mo algorithmic detail".
 
 ---
 
@@ -85,8 +91,14 @@ where `soil_bank_credit` applies **only** to elements `{P, Ca}` and is
 zero for all others. Compost release and sidedress release are
 *current-week* deliveries from upstream channels, not bank reservoirs.
 
-The function implements only the K and Mg branches (the two macros
-where fertigation is the dominant channel); P and Ca resolve to zero
+The function implements the K, Mg, and B (Solubore) branches at full
+mass-balance — the macros + B where fertigation is the dominant channel.
+Mo (sodium molybdate) is also in the return but **bypasses the mass-balance
+formula**: `naMolybdate` is a flat 0.5 g/wk floor pinned by the team's
+smallest reliable weighing increment, not derived from `naMolybdate_demand
+− compost − sidedress` (peak Mo demand ~0.07 mg/m²/wk lands below any
+realistic weighing precision). REQ-061 Mo carve-out 2026-05-16; rationale
+in `derivation.md` "Mo algorithmic detail". P and Ca resolve to zero
 fertigation under the soil-bank credit branch (P drawdown via Banque
 sol, Ca not fertigated), so they're not in the function's return.
 
@@ -134,7 +146,10 @@ at 1.0). Orthogonal bed → plant uptake-inefficiency axis is
 
 REQ-099 covers the sizer surface. Supply-side `computeFertigationSupply`
 is asserted independently by REQ-151. `FIRST_PRINCIPLES_T5` mirrors the
-wired `FP_RECIPE_T5.fertigation` shape (`K2SO4`, `MgSO4-7H2O`, `Solubore`).
+wired `FP_RECIPE_T5.fertigation` shape: `K2SO4`, `MgSO4-7H2O`, `Solubore`,
+`NaMolybdate`. All four are populated by `wireFpFertigation()` at boot
+from `computeStageRecipe('T5')` per REQ-154; `NaMolybdate` is the Mo
+carve-out per REQ-061 amendment 2026-05-16, flat-floor not mass-balance.
 
 **Cert:** 5 (structural assertion).
 
@@ -143,23 +158,28 @@ wired `FP_RECIPE_T5.fertigation` shape (`K2SO4`, `MgSO4-7H2O`, `Solubore`).
 ## REQ-154 — `FIRST_PRINCIPLES_T5_FERTIGATION` mirrors `computeStageRecipe('T5')` by construction
 
 **Statement:** At runtime, after `wireFpFertigation()` runs at script load,
-`FIRST_PRINCIPLES_T5_FERTIGATION['K2SO4']` equals `computeStageRecipe('T5').kSulfate`
-and `FIRST_PRINCIPLES_T5_FERTIGATION['MgSO4-7H2O']` equals
-`computeStageRecipe('T5').mgSulfate`. `Solubore` is hand-coded (B is
-single-channel by REQ-061, not in the `computeStageRecipe` surface).
-The same values propagate to `FP_RECIPE_T5.fertigation` in the same
+`FIRST_PRINCIPLES_T5_FERTIGATION` equals `computeStageRecipe('T5')` by
+construction across all four keys:
+
+- `K2SO4` ≡ `computeStageRecipe('T5').kSulfate` (mass-balance per REQ-098)
+- `MgSO4-7H2O` ≡ `computeStageRecipe('T5').mgSulfate` (mass-balance per REQ-098)
+- `Solubore` ≡ `computeStageRecipe('T5').solubore` (mass-balance per REQ-098 / REQ-155)
+- `NaMolybdate` ≡ `computeStageRecipe('T5').naMolybdate` (flat 0.5 g/wk floor per REQ-061 Mo carve-out)
+
+The same four values propagate to `FP_RECIPE_T5.fertigation` in the same
 boot pass, so the FP target read by Block 7/8 drift gauges, the Banque
 sol view, and the consumer-side cascade is a deterministic function of
-the mass-balance derivation — not a hand-locked agronomist anchor.
+`computeStageRecipe` — not a hand-locked agronomist anchor on any product.
 
 **Rationale:** Closes the loop opened by REQ-098 — without this pin
-the constant could drift from the function (REQ-098 verifier tests the
-function, not the constant). Historical PA Taillon anchor preserved in
-`learnings.md` for audit.
+the constants could drift from the function (REQ-098 verifier tests the
+function, not the constants). Historical PA Taillon FP anchor (K 5 167 /
+Mg 1 379 / Solubore 9 from April 2026) preserved in `learnings.md` for
+audit; STORED was never on those values (Haifa-heritage since 2026-05-09).
 
 **Verification:** `scripts/check-recipes.mjs` REQ-154 — exact equality
-of K2SO4 / MgSO4-7H2O between constant and `computeStageRecipe('T5')`
-output; Solubore numeric-presence only; same triple propagates to
+of K2SO4 / MgSO4-7H2O / Solubore / NaMolybdate between constant and
+`computeStageRecipe('T5')` output; same quadruple propagates to
 `FP_RECIPE_T5.fertigation`.
 
 **Cert:** 5 (structural — invariant by construction).
@@ -264,10 +284,16 @@ Fertigation consumes plant-needs, sidedress, and stored-recipe outputs:
 Specs that *consume* the fertigation output:
 
 - **REQ-013 / REQ-014** (`nutrition/tomato/spec.md`) — supply chain bounds.
-  Fertigation K, Mg, B are channels summed against demand.
+  Fertigation K, Mg, B are channels summed against demand. The supply
+  sum is **active-channels only**: compost + sidedress + fertigation +
+  foliar. The soil-bank K + Mg mass-flow delivery declared in REQ-141
+  (`nutrition/soil-contribution/spec.md`) is **not** in the sum by
+  architectural choice — bank K + Mg sit outside the sizer as operator-
+  side headroom (see `nutrition/soil-contribution/learnings.md` for the
+  rejected path-1 subtract-bank-from-sizer alternative).
 - **REQ-022** (`nutrition/spec.md`) — every product is Ecocert-allowed.
-  K₂SO₄, MgSO₄·7H₂O, and Solubore (boric acid) are all on the certified-
-  input list.
+  K₂SO₄, MgSO₄·7H₂O, and Solubor (disodium octaborate tetrahydrate) are
+  all on the certified-input list (CAN/CGSB-32.311 sodium borates).
 - **REQ-002** (`nutrition/spec.md`) — no forbidden products.
 - **REQ-061** (`requirements.md`) — foliar dose only when earlier channels
   insufficient. Fertigation owns B as the single channel; foliar B = 0.

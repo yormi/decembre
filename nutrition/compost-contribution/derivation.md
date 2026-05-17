@@ -46,7 +46,7 @@ Values in `g/m²/wk`. Calculation: `(applied_g_m² × year1_fraction / 52) × 1.
 | N       | 0.5 %       | 127          | 30 %                 | 1.099               | **1.10**       | 2    | Standard organic-N rate (Stanford & Smith) |
 | K       | 0.1 % (K₂O → K factor 0.83) | 21.1 | 65 %       | 0.395               | **0.40**       | 2    | Highly soluble in compost |
 | Ca      | 1.1 %       | 279          | 60 %                 | 4.83                | **4.82**       | 3    | Carbonate matrix degrades. Part of Ca-saturation problem. |
-| Mg      | ~0.3 % assumed (NOT on label) | 76 | 30 %    | 0.658               | **0.50**       | 1    | Conservative override — label gap. See `learnings.md`. |
+| Mg      | ~0.3 % assumed (NOT on label) | 76 | 30 %    | 0.658               | **0.50**       | 1    | Conservative override — label gap. Stored ÷ theoretical = 0.50 / 0.658 ≈ **0.76** (i.e. ~24 % conservative-down). See `learnings.md`. |
 | P       | 0.1 % (P₂O₅ → P factor 0.437) | 11.1 | 5 % | 0.016              | **0.016**      | 2    | pH-locked at soil pH 7.3-7.5. |
 
 Stored column → `window.CompostContribution.releasePerWeek`.
@@ -92,18 +92,19 @@ Per-element cert (`min` of mineralization-rate cert and label-input cert):
 
 ## Caveats
 
-- **Flat year-1 rate.** Accurate through ~2027-04; decline curve deferred (spec.md → Pending; `learnings.md`).
-- **Cross-bed uniform.** Berger tests confirm similar Ca-saturation tomato + lettuce. Per-bed scaling if future drift.
-- **Mg label gap.** Conservative-down assumption. Confirm via vendor QC.
-- **Sonotube Ca leaching.** Separate channel, not modeled here. Reflects in pH program.
+- **Flat year-1 rate.** Decline curve deferred (spec.md → Pending; `learnings.md`); refinement triggers condition-based, not calendar-bound (see below).
+- **Cross-bed uniform.** Berger tests confirm similar Ca-saturation tomato + lettuce. Per-bed scaling fires if Mehlich-3 Ca-saturation diverges > 20 % between tomato and lettuce beds at the next sampling (see refinement trigger).
+- **Mg label gap.** Conservative-down assumption (stored 0.50 / theoretical 0.658 ≈ 0.76 ratio). Confirm via vendor QC.
+- **Sonotube Ca leaching.** Separate channel, not modeled here. Reflects in pH program. Stays informational — no refinement trigger; the pH program is the operative response surface and a separate-channel Ca model adds complexity without operator-facing decision value.
 
 ---
 
 ## Refinement triggers
 
-- **~2027-04** — labile fraction depletes → replace flat rate with decline curve (target shape in `learnings.md`).
+- **Cumulative mineralization ≈ 50 % of applied organic-N mass** — labile fraction depletes → replace flat rate with decline curve (target shape in `learnings.md`). Estimated trigger window: month 12-18 post-application under current Q10 / seasonal profile, but the binding signal is the integral, not the calendar.
 - **New amendment applied** — extend `COMPOST_AMENDMENT` or replace (see `learnings.md`).
-- **Mg vendor QC arrives** — drop override, recompute from measured %.
+- **Mg vendor QC arrives** — drop the 0.76 conservative-down override, recompute from measured %.
+- **Cross-bed Ca-saturation divergence > 20 %** — if Mehlich-3 Ca-saturation between tomato and lettuce beds spreads beyond 20 % at the next sampling, split `COMPOST_AMENDMENT` per-crop and scale the release maps independently.
 - **Soil-test drift** — if Mehlich-3 N/K shifts faster than predicted, refit year-1 mineralization fractions.
 - **Tissue panel persistent under/over-supply on element X** — refit mineralization rate (and efficiency) for X.
 

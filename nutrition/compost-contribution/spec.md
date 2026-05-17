@@ -113,10 +113,18 @@ re-exposed for the canonical-handle reason.
 
 Year-1 mineralization is approximately flat across the application's first
 12 months. After ~18 months, the mineralization rate drops as the labile
-fraction depletes. The current model holds the rate constant — accurate
-through ~2027-04, off by an unknown but increasing factor afterward. The
-right next step is a piecewise rate that decays after month 12. Wired when
-operator-facing decisions depend on the late-stage curve.
+fraction depletes. The current model holds the rate constant; replace
+with a piecewise rate that decays after month 12 when any of the following
+fires (whichever comes first):
+
+- Cumulative mineralization since application reaches ~50 % of applied
+  organic-N mass (textbook labile-fraction boundary; see `learnings.md`
+  → "Decline curve").
+- A new compost amendment is applied (decision point: extend
+  `COMPOST_AMENDMENT` to a list or replace constant — see `learnings.md`
+  → "Multi-amendment handling").
+- Berger Mehlich-3 or tissue panel surfaces persistent drift on a
+  compost-routed element that the flat-rate model can't explain.
 
 ---
 

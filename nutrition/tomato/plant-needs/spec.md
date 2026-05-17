@@ -101,10 +101,10 @@ At runtime, `window.PlantNeedsTomato` exists and exposes:
 
 ## Pending — tissue-test back-test invariant
 
-When tissue test data lands (~2026-05-12), back-test against 2025-2026
-actual fertigation + compost mineralization + measured yield: predicted
-demand (annual) − measured uptake within ±25 % per macro and ±50 % per
-micro. Will replace the v1 "split-sum reconciles" identity.
+When tissue test results land (regardless of sample / report date), back-test
+against 2025-2026 actual fertigation + compost mineralization + measured
+yield: predicted demand (annual) − measured uptake within ±25 % per macro
+and ±50 % per micro. Will replace the v1 "split-sum reconciles" identity.
 
 ---
 

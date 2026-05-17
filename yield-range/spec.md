@@ -5,8 +5,9 @@ canopy-density cap, under best non-light conditions, packed-only.
 Inputs: tray choice (32 or 50-cell) and supplemental-LED hours.
 Outputs: canopy cap (g/plant) and the daily growth trajectory.
 
-Math derivation, constant choices, and reasoning trail live in
-`derivation.md`. Empirical anchor:
+Math derivation, constant choices, refinement triggers, and reasoning
+trail live in `derivation.md`. Rejected alternatives and historical
+decisions in `learnings.md`. Empirical anchor:
 `yield-range/doc/yield-range-calibration-2026-spring.md`. App-side
 specs in `yield-range/app/spec.md`.
 
@@ -77,8 +78,9 @@ No senescence branch, no decay, no negative-growth flip.
 ## REQ-116 — Packed-canopy spacing always applied
 
 Per-plant DLI is `dliBenchAvg × spacing_factor(d)`, where
-`spacing_factor` decays from 1.0 (d ≤ 14) to 0.40 (d ≥ 28). No
-spread-schedule input.
+`spacing_factor` is `1.0` for `d ≤ 14`, linearly interpolated between
+`d = 14` and `d = 28`, and `0.40` for `d ≥ 28`. No spread-schedule
+input.
 
 ---
 
@@ -101,3 +103,30 @@ day 49 inclusive (50 entries).
 
 - App-side spec: `yield-range/app/spec.md`
 - Empirical anchor: `yield-range/doc/yield-range-calibration-2026-spring.md`
+
+---
+
+## Specialist note (2026-05-17) — extension pending
+
+Decision (Guillaume, 2026-05-16): extend yield-range to cover
+nursery + field + throughput balance. Objective:
+**maximize annual harvested kg**.
+
+Model plan in `working files/yield-range-extension-draft.md` —
+function signature, two-stage integrator, throughput formula,
+constant list, settled + open inputs, and requirement queue.
+
+Settled 2026-05-17: `bench_dli_mol_per_m2_per_day` (REQ-114 formula
+preserved, `ledHours` stays a dynamic operator input up to 18);
+nursery cap basis (breeder-anchored, 50-cell = 25 g pinned; other
+trays scaled by geometric proportion); `per_plant_dli_share_field`
+shape (1.0 until rosette covers spacing, then decays with 0.40 floor,
+cert 2).
+
+REQ landing gated on the marketability constraint on head size
+(commercial input — does 200 g matter or is 150-160 g sellable?
+yield/m² ≈ flat across 25-50 heads/m² so density choice is
+commercial, not biological). When that lands, the extension claims
+a contiguous REQ block (regime-switch integrator, `annual_yield_kg`
+output, nursery + field cap accessors, `per_plant_dli_share_field`,
+`canopy_geometry`) through `scripts/claim-req.sh`.

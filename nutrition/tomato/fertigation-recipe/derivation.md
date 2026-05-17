@@ -59,10 +59,10 @@ Implemented in `calc.js` — `computeStageRecipe(stage)` returns `{ kSulfate, mg
 
 B2-REV shifts (2026-05-15, uptake-factor inflation): K 4 953 → **5 568** (+12 %), Mg 1 378 → **1 963** (+42 %), Solubore 9 → **11** (+22 %). PA Taillon's pre-amendment anchor (K 5 167 / Mg 1 379) no longer matches by construction — anchor was set under an implicit 100 %-uptake assumption.
 
-Stored vs FP gap at Block 7/8:
-- **Mg:** STORED 1 396 → FP 1 963 (+41 % under-supply)
-- **K:** STORED 3 489 → FP 5 568 (+60 % under-supply)
-- **Solubore:** STORED 7 → FP 11 (+57 % under-supply)
+Stored-vs-FP drift values at Block 7/8 (informational; STORED moves on operator timing via `/retire-recipe`, not under FP-target pressure per P-13):
+- **Mg:** STORED 1 396 g, FP 1 963 g (FP / STORED = 1.41×)
+- **K:** STORED 3 489 g, FP 5 568 g (FP / STORED = 1.60×)
+- **Solubore:** STORED 7 g, FP 11 g (FP / STORED = 1.57×)
 
 ### Per-element derivation at T5 (stageYield = 1.5 kg/m²/wk)
 
@@ -74,9 +74,23 @@ Stored vs FP gap at Block 7/8:
 
 \* Actisol K passed through at 0.85 mineralization efficiency. REQ-089 / SME P-lockout governs whether Actisol stays as the sidedress vehicle; formula does not gate Actisol K to zero.
 
+#### Active-channels sum vs REQ-013 / REQ-014 envelope at T5
+
+Active-channels sum = compost + sidedress + fertigation + foliar (REQ-013 / REQ-014 in `nutrition/tomato/spec.md`). Foliar K / Mg / B = 0 (foliar carries Mn / Zn / Cu / Fe only; B is single-channel fertigation per REQ-061). Bank K + Mg mass-flow is **outside** the sum by REQ-141 architectural choice.
+
+| Element | Compost | Sidedress | Fertigation | Foliar | Active sum (bed) | Demand | Bed-side ratio | Plant-side ratio (× uptake factor) |
+|---------|---------|-----------|-------------|--------|------------------|--------|----------------|-------------------------------------|
+| K       | 400     | 234       | 6 033       | 0      | 6 667            | 6 000  | **1.11×**      | 1.00× (6 667 × 0.90 = 6 000)        |
+| Mg      | 500     | 0         | 506         | 0      | 1 006            | 855    | **1.18×**      | 1.00× (1 006 × 0.85 = 855)          |
+| B       | 0       | 0         | 5.89        | 0      | 5.89             | 4.5    | **1.31×**      | 1.05× (5.89 × 0.80 = 4.71)          |
+
+All three elements land plant-side at 1.00-1.05× demand by construction of the uptake-factor-inflated sizer (REQ-155), well inside REQ-014's 1.3× cap. Bed-side ratio for B nicks 1.3× at the boundary; plant-side is the comparison REQ-013 / REQ-014 actually use (channel supply uses pH-aware effective efficiency per REQ-017, and uptake factor inflates demand uniformly across bed sources).
+
+T1-T2 Mg is the only cell where the active-channels sum runs hot vs demand: at T1, compost Mg 500 × 0.85 = 425 mg/m²/wk plant-side vs demand 175 → **2.43× demand** (REQ-014 cap breach). Fertigation Mg = 0 at those stages; the overshoot comes entirely from compost release. Acceptable under REQ-098 reversal framing — compost-release surplus accumulates in the soil-bank Mg pool by design (already 1 646 kg/ha pre-existing pool; the calcitic-lime compost amendment is the root cause, not a recipe-side fix). Operator-side does not size against T1-T2 Mg cap.
+
 ### Solubore — single-channel B at T5
 
-H₃BO₃ (~17.5 % B mass) is non-ionic, bypasses pH lockout (REQ-018 OK). 11 g / 382.9 m² × 17.5 % / 1000 ÷ ~95 % fertigation efficiency ≈ 5.625 mg/m²/wk = T5 demand_to_bed. Single-channel (REQ-061: foliar B = 0).
+Solubor / disodium octaborate tetrahydrate (Na₂B₈O₁₃·4H₂O, 20.5 % B mass — Eti Maden Etidot-67; supplier link in `nutrition/doc/context.md`). Non-ionic in solution, bypasses pH lockout (REQ-018 OK). 11 g × 20.5 % B / 382.9 m² × 1000 ≈ 5.89 mg/m²/wk B delivered to bed — covers the per-element table's 5.625 mg/m²/wk demand_to_bed (plant demand 4.5 mg/m²/wk ÷ REQ-155 B uptake factor 0.80). Single-channel (REQ-061: foliar B = 0).
 
 ---
 
@@ -84,7 +98,7 @@ H₃BO₃ (~17.5 % B mass) is non-ionic, bypasses pH lockout (REQ-018 OK). 11 g 
 
 Supply formula prior to 2026-05-15 implicitly assumed `delivered_to_bed = taken_up_by_plant`. That conflated:
 
-- **Dripper-line non-precipitation** — defended by chemistry (K₂SO₄ / MgSO₄·7H₂O / H₃BO₃ all dissociate cleanly at water-pH 6.2).
+- **Dripper-line non-precipitation** — defended by chemistry (K₂SO₄ / MgSO₄·7H₂O dissociate cleanly at water-pH 6.2; Solubor hydrolyzes to H₃BO₃, non-ionic and non-precipitating in the dripper line).
 - **Root-zone uptake at Décembre soil** (pH 7.28, Ca 10 989 kg/ha, CEC 28-33 meq/100g, Ca-saturated) — not defended by chemistry, actively discounted by literature.
 
 REQ-155 makes the root-zone discount explicit. Factor applies uniformly to all bed sources (root competes with Ca-saturated CEC regardless of ion origin), so it pulls out as a single division on demand.
@@ -111,15 +125,22 @@ Full mechanism + stacked-cert caveat + refinement priority order: `learnings.md`
 
 `window.FertigationRecipeTomato.efficiency` (REQ-157, exposed via model.js) declares the per-element **channel → bed** delivery fraction at current soil pH 7.4 — distinct from REQ-155's bed → plant uptake-factor.
 
-| Element | Value | Source                                                        |
-|---------|-------|---------------------------------------------------------------|
-| K       | 0.94  | `PH_RESPONSE['soluble-cation'](7.4)` — K₂SO₄ dissociation     |
-| Mg      | 0.94  | `PH_RESPONSE['soluble-cation'](7.4)` — MgSO₄·7H₂O dissociation |
-| B       | 1.00  | `PH_RESPONSE['borate'](7.4)` — H₃BO₃ non-ionic, flat across pH |
+| Element | Value | Source                                                          |
+|---------|-------|-----------------------------------------------------------------|
+| K       | 0.94  | `PH_RESPONSE['soluble-cation'](7.4)` — K₂SO₄ dissociation       |
+| Mg      | 0.94  | `PH_RESPONSE['soluble-cation'](7.4)` — MgSO₄·7H₂O dissociation  |
+| B       | 1.00  | `PH_RESPONSE['borate'](7.4)` — H₃BO₃ non-ionic, flat across pH  |
+| Mo      | 1.00  | `PH_RESPONSE['molybdate'](7.4)` — anion, fully soluble at pH ≥ 7 |
 
-Cert 4 — pH curves themselves are cert 4; soil pH measurement is cert 5 (Berger April 2026). Refinement: if soil pH drops below 7.0, K/Mg efficiency rises (curve returns 1.0 at pH ≤ 7.0); update the constants when the next Berger reading lands.
+Cert 4 — pH curves themselves are cert 4; soil pH measurement is cert 5 (Berger April 2026). Refinement: if soil pH drops below 7.0, K/Mg efficiency rises (curve returns 1.0 at pH ≤ 7.0); Mo efficiency drops sharply below pH 7 (molybdate curve sits at 0.30 below pH 5.5, linear ramp 0.30 → 1.0 between pH 5.5 and 7.0). Update the constants when the next Berger reading lands.
 
-Elements absent from the map: N (sidedress channel), P / Ca ({P, Ca}-only bank credit, not fertigated), Fe / Mn / Zn / Cu / Mo (foliar channel by REQ-061 cascade order at current pH).
+Elements absent from the map: N (sidedress channel), P / Ca ({P, Ca}-only bank credit, not fertigated), Fe / Mn / Zn / Cu (foliar channel by REQ-061 cascade order at current pH).
+
+**Mo carve-out (REQ-061 amendment 2026-05-16).** Cation micros (Mn / Zn / Cu / Fe) stay on foliar because the foliar route bypasses pH lockout at the root. Mo is an anion (molybdate, MoO₄²⁻) — at our pH 7.4 it is *more* plant-available from the soil/dripper line, not less, so the foliar-bypass argument doesn't apply. Sodium molybdate joined the fertigation barrel at the team's smallest reliable barrel weight (0.5 g/week → roughly 0.5 mg Mo/m²/sem, about 7× peak demand, well within Mo's wide tolerance band). Foliar's Mo entry retired in lockstep. Stored-recipe moves on both channels gated on `/retire-recipe` audit.
+
+**Mo algorithmic detail.** Mo is NOT mass-balance-derived like K / Mg / B. `computeStageRecipe(stage).naMolybdate` returns a **flat 0.5 g/wk** for every stage T1-T5 (pin in `calc.js`), bypassing the demand → uptake-factor → compost-subtract → product-mass chain. Rationale: peak Mo demand is ~0.07 mg/m²/wk (cert 1, micro-demand from `BIOMASS_DEMAND`); demand-driven sizing would land at fractional milligrams of sodium molybdate per week, well below the team's smallest reliable weighing increment (0.5 g). Flat 0.5 g/wk is the floor the operator can actually deliver. Even at 7× peak demand the dose stays well inside Mo's tolerance band (Mo deficiency below ~0.1 mg/kg DW tissue, toxicity above ~100 mg/kg; ~3-order-of-magnitude window). Cert 2 — operator-floor anchor, not field-measured. REQ-155 uptake factor entry is absent for Mo because no demand-side division applies; for parity with the REQ-157 channel→bed map (Mo = 1.00), if Mo were ever lifted into the mass-balance branch a default uptake factor of 1.00 is the right starting point (anion, no Ca competition argument, fully soluble at pH ≥ 7).
+
+**Mo and the FP-pin (REQ-154).** `naMolybdate` propagates through `wireFpFertigation()` into `FIRST_PRINCIPLES_T5_FERTIGATION['NaMolybdate']` and `FP_RECIPE_T5.fertigation['NaMolybdate']` at boot exactly like Solubore — by construction the constants equal `computeStageRecipe('T5').naMolybdate = 0.5`. The flat-floor model is the FP target; STORED moves on operator timing via `/retire-recipe`. No "Mo FP literal" hand-coded anywhere — same pin-by-construction discipline as K / Mg.
 
 ---
 
@@ -132,7 +153,7 @@ totalArea_m²        = TOMATO_NUM_BEDS × TOMATO_BED_AREA   // 7 × 54.7 = 382.9
 delivered_mg_per_m² = (product_grams × element_pct × 1000) / totalArea_m²
 ```
 
-`element_pct` from `PRODUCT_PCT`. No pH-response, no mixing-factor, no coverage discount: all three products (K₂SO₄, MgSO₄·7H₂O, H₃BO₃) are non-precipitating at pH 7.4 in the dripper line.
+`element_pct` from `PRODUCT_PCT`. No pH-response, no mixing-factor, no coverage discount: all three products (K₂SO₄, MgSO₄·7H₂O, Solubor disodium octaborate) are non-precipitating at pH 7.4 in the dripper line.
 
 ### Per-element table (canonical T5 recipe)
 
@@ -140,7 +161,7 @@ delivered_mg_per_m² = (product_grams × element_pct × 1000) / totalArea_m²
 |---------|--------------------|-----------|---------------|--------------------|
 | K       | K₂SO₄              | 5 568     | 0.4150        | 6 033              |
 | Mg      | MgSO₄·7H₂O         | 1 963     | 0.0985        | 506                |
-| B       | Solubore (H₃BO₃)   | 11        | 0.205         | 5.89               |
+| B       | Solubor (Na₂B₈O₁₃·4H₂O) | 11   | 0.205         | 5.89               |
 
 ### Why no pH-response gate
 
@@ -174,7 +195,7 @@ REQ-136 requires per-element `{cert, cap}` alongside flat `mg` map. For fertigat
 |---------|------|------------------------------------------------------------|
 | K       | 4    | K₂SO₄ structural, organic-cert-listed, sulfate dissociates cleanly. |
 | Mg      | 4    | MgSO₄·7H₂O same product class.                            |
-| B       | 3    | Solubore FP-only at T5; dose number is the cert-3 anchor (PA Taillon recommendation, not field-measured). |
+| B       | 3    | Solubore single-channel (REQ-061); dose = mass-balance output (REQ-098) × REQ-155 B uptake factor 0.80 (cert 2 mid-band). Effective cert min over stack = 3 (product chemistry + organic-cert listing cert 4; biomass.B demand cert 2-3; uptake factor cert 2). Not field-measured at Décembre yet — refinement via foliar B test per REQ-155 trigger. |
 
 ---
 

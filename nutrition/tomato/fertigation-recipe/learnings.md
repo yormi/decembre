@@ -23,7 +23,7 @@ Combined literature 10-25 % range, 0.85 is mid-band.
 
 ### B = 0.80 (cert 2) — Soil B adsorption in Ca-rich beds at pH > 7
 
-Original draft framed B discount as H₃BO₃ ↔ B(OH)₄⁻ equilibrium (pKa 9.24); at pH 7.3 borate fraction is ~1 %, so molecular-form discount is negligible — challenger acknowledged the overestimate in B2-REV. Real mechanism: **soil B adsorption** to Fe/Al oxides + Ca-borate complexes in Ca-rich high-pH soils. Literature 15-25 % adsorption discount, some sources to 35 %. 0.80 is conservative-middle. Specialist held at 0.80 (not 0.75) because: (a) Solubore boric acid is non-ionic, faster-equilibrating than the borate fraction the adsorption literature typically measures; (b) Ca-borate kinetics in young (first-season) compost amendments aren't well-characterized — may over-count adsorption.
+Original draft framed B discount as H₃BO₃ ↔ B(OH)₄⁻ equilibrium (pKa 9.24); at pH 7.3 borate fraction is ~1 %, so molecular-form discount is negligible — challenger acknowledged the overestimate in B2-REV. Real mechanism: **soil B adsorption** to Fe/Al oxides + Ca-borate complexes in Ca-rich high-pH soils. Literature 15-25 % adsorption discount, some sources to 35 %. 0.80 is conservative-middle. Specialist held at 0.80 (not 0.75) because: (a) Solubor hydrolyzes to H₃BO₃ in dilute solution, non-ionic and faster-equilibrating than the borate fraction the adsorption literature typically measures; (b) Ca-borate kinetics in young (first-season) compost amendments aren't well-characterized — may over-count adsorption.
 
 ### Stacked-cert caveat
 
@@ -31,7 +31,7 @@ All three factors compound with `COMPOST_RELEASE_PER_WEEK` (cert 2-3, Mg cert 1-
 
 ### Refinement priority order (when tissue data lands)
 
-1. **Mg first** — petiole Mg in the 2026-05-11 panel; 41 % stored-vs-FP gap is biggest signal.
+1. **Mg first** — petiole Mg in the 2026-05-11 panel; widest stacked-cert spread (Mg uptake-factor cert 2 × compost-Mg cert 1-2 × Sonneveld 0.25× ratio), so an off-band tissue read drives the largest defensible refit. Cation antagonism on the Ca-saturated bed sharpens the Mg leverage further.
 2. **K second** — petiole K not always in standard panel; if present, refines 0.90. Else stays cert 2.
 3. **B last** — needs dedicated foliar B test, not on cadence. 0.80 stays cert 2 longest. Qualitative signals: leaf-margin scorch (toxicity), interveinal yellowing (deficiency).
 
@@ -87,7 +87,9 @@ T5 fertigation anchor recommended by PA Taillon (agronomist), April 2026:
 
 **Why the match isn't coincidence:** agronomist's recommendation came from the same mass-balance principle the model uses; once demand + compost-release flow through `max(0, demand − compost − sidedress)`, model output equals recommendation. 2026-05-12 amendment broke the match (141 % Mg gap); reversal restored it.
 
-**Audit-trail intent:** preserved for organic-cert (FP recipe in service since April 2026 at this anchor, brief excursion to 3 319 g Mg on 2026-05-14 — both states reproducible from model history) and for re-evaluation if inputs shift materially.
+**Audit-trail intent:** preserved for organic-cert (FP target in service since April 2026 at this anchor, brief excursion to 3 319 g Mg on 2026-05-14 — both states reproducible from model history) and for re-evaluation if inputs shift materially.
+
+**STORED was never on this anchor (audit-trail repair 2026-05-16).** The anchor describes the FP target only. `STORED_RECIPE.tomato.fertigation.T5.kSulfate` has been Haifa-heritage 3 489 g since the 2026-05-09 commit (`11cccfc`) and never moved to PA Taillon's 5 167 g. `git log --all -S "kSulfate: 5167"` returns zero hits on STORED. `RECIPE_HISTORY` carries the same 3 489 as the "retired 2026-05-07 Haifa-anchored values × multipliers" snapshot — Haifa was retired from the FP target (TOMATO_STAGES → `computeStageRecipe`) but left intact in STORED. The STORED-vs-FP K drift at peak production (3 489 stored vs ~5 568 FP after B2-REV uptake-factor inflation) is genuine, not a documentation artefact. Operator-facing prose elsewhere that says "STORED is locked at PA Taillon's recommendation" is misleading and needs correction (filed for coder lane — operator-display surfaces).
 
 ---
 

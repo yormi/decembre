@@ -4,6 +4,30 @@ Rejected alternatives and historical decisions that no longer support a live REQ
 
 ---
 
+## Yucca return as a refinement trigger — dropped (2026-05-17)
+
+**Rejected claim:** spec + derivation carried a "Yucca decision flips" refinement trigger asserting that if yucca returns to the program, `FOLIAR_COVERAGE_DEFAULT` flips `0.30 → 0.80` AND the per-element doses go back up to pre-2026-05-05 values (Cu 2 → 4 g, Mn 18 → 22 g, Zn 16 → 22 g). Two problems compounded:
+
+1. **Dose-restoration claim contradicted by burn-cap reasoning.** The same subproject's burn-cap research (vendor + extension literature) flags yucca's wet-film property under sun as a residue-concentrating burn-risk *amplifier*, not a relaxer. Raising coverage from 0.30 → 0.80 increases effective leaf delivery ~2.7× by itself; coupling that with a dose increase compounds the burn risk that motivated the surfactant-multiplier rejection (see § "Surfactant impact on burn cap"). The "doses go back up" half of the trigger never had a defensible empirical basis.
+
+2. **Fabricated historical anchor.** The trigger's framing leaned on a parallel claim that Mn 22 → 18 g and Zn 22 → 16 g were cut at the 2026-05-05 yucca drop. That cut never landed — STORED foliaire has carried 22 / 22 g for both since the 2026-04-29 45 L → 15 L volume restructure (verified against RECIPE_HISTORY, which records only the Cu 4 → 2 g retirement; no Mn / Zn entries exist). Whatever the trigger "restored" was already in place.
+
+**Decision (2026-05-17):** drop the entire "yucca returns" refinement trigger. Yucca is not on order and is not tracked as a return path. If coverage ever flips back to a surfactant-assisted regime, that's a separate model-side decision and rebalancing call — not a back-fill of fabricated historical doses. Burn caps re-pinned to live STORED 22 / 22 at cert 2 (see `derivation.md` § "Mn / Zn certainty exception"). No PA Taillon ask attached (per P-08 — move forward, don't wait on external acks).
+
+**Re-litigate when:** never, on this framing. A future surfactant-on regime would land via fresh observation + tissue data, not via this trigger.
+
+---
+
+## Mn / Zn burn caps held at extension mid-band 18 / 16 (pre-2026-05-17)
+
+**Rejected state:** `BURN_CAP_BASE_G.Mn = 18` and `.Zn = 16`, cert 3 with rationale "Extension mid-band of Sonneveld 2009 + Yara + Cornell / U. Delaware / U. Missouri extension publications." Caps lived in the model layer while STORED foliaire ran 22 / 22 in the field since the 2026-04-29 restructure.
+
+**Why retired:** the caps were tighter than empirical reality. STORED has run 22 g for both Mn and Zn continuously since 2026-04-29 with no burn observed under Wednesday-AM operator timing — that's a Décembre-internal observation period of multiple weeks across the active production window. Block 7/8 fires a drift signal (cap-vs-STORED) whose meaning was "the cap is decorative" rather than actionable. The Cu cert-2 carve-out from 2026-05-16 (Cu diverges *below* extension by Décembre-internal observation) is the parallel; Mn and Zn diverge *above* extension by the same evidence class. Caps raised to 22 / 22 with cert 2 transferability (non-portable to ops at different timing / volume / soil regimes).
+
+**Re-litigate when:** any operator-timing-window shift (afternoon spray, post-irrigation high-leaf-moisture), tank-volume restructure (return to 45 L or other), or tissue panel surfaces Mn / Zn over-luxury signals (>120 ppm DW Sonneveld guideline) or leaf-tip phytotoxicity. Cap drops back to extension mid-band 18 / 16 on any of those triggers; the historical state is preserved here for the audit.
+
+---
+
 ## Sentís 3 % cuticle penetration vs 30 % coverage — analysis raised, value held (2026-05-14)
 
 **Discrepancy:** Sentís et al. *Crop Protection* 2017 — tomato cuticle Mn penetration ~3 % without surfactant. `FOLIAR_COVERAGE_DEFAULT = 0.30` (cert 3 per 2026-05-12 B2 downgrade). Order of magnitude apart. If Sentís is rate-limiter, retention × runoff geometry is irrelevant — plant-side uptake caps at ~3 % of label dose. Under that regime: Zn 136 % → ~14 % of demand, Mn ~72 % → ~7 %, Cu ~25 % → ~2.5 %. Channel collapses for Mn/Zn/Cu → insurance-only.

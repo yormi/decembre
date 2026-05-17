@@ -83,8 +83,8 @@ where `FOLIAR_COVERAGE_DEFAULT = 0.30` while operating without surfactant
 **Cert:** 3 (literature mid-band 25-40 % without surfactant; pinned at
 0.30 as working assumption, not measured at Décembre. See `derivation.md`
 for full uncertainty breakdown — Sentís et al. 2017 penetration vs
-retention, cost-sensitivity 0.20 vs 0.40 doubles/halves delivery, refinement
-trigger via 2026-05-12 petiole panel).
+retention, cost-sensitivity 0.20 vs 0.40 doubles/halves delivery, cert
+bump to 4 when tissue Mn / Zn / Cu correlates predicted within ±20 %).
 
 ---
 
@@ -98,14 +98,20 @@ At runtime, `window.FoliarRecipeTomato` exists and exposes:
 | `FOLIAR_COVERAGE_DEFAULT`        | number   |
 | `FOLIAR_COVERAGE_WITH_YUCCA`     | number   |
 | `efficiency`                     | object   |
+| `efficiencyFor`                  | function |
 | `computeFoliarSupply`            | function |
 
 `efficiency` (REQ-157) is the channel-side contract for the Efficacité
-column (REQ-156): per-element foliar delivery fraction at current no-yucca
-regime and default spray-tank pH, uniform 0.27 across the six oligo
-elements (Mn / Zn / Cu / Fe / Mo); B absent because single-channel by
-REQ-061 (fertigation owns B). Yucca return flips coverage 0.30 → 0.80 and
-updates the map in lockstep.
+column (REQ-156): per-element foliar delivery fraction at current
+no-surfactant regime and default spray-tank pH, uniform 0.27 across the
+four cation-micro oligos (Mn / Zn / Cu / Fe); B absent because
+single-channel by REQ-061 (fertigation owns B); Mo absent because
+retired from foliar 2026-05-16 (REQ-061 carve-out, fertigation owns Mo).
+
+`efficiencyFor(surfactant)` (REQ-170) is the surfactant-aware variant of
+the same contract: returns the per-element map for the given lever
+state. `efficiencyFor(false)` equals `efficiency` (back-compat).
+`efficiencyFor(true)` returns 0.72 uniform across Mn/Zn/Cu/Fe.
 
 **Cert:** 5 (structural assertion).
 
@@ -120,25 +126,47 @@ per-tank predicted-CE cap (REQ-025), and an operational dosing floor.
 
 **Algorithm:**
 
-1. For each foliar element `el ∈ {Mn, Zn, Cu, Fe, Mo, B}` with `gap[el] > 0`:
+1. For each foliar element `el ∈ {Mn, Zn, Cu, Fe, B}` (Mo retired to
+   fertigation 2026-05-16 per REQ-061 carve-out) with `gap[el] > 0`:
    - `ideal_g = gap[el] × area_m² / (element_pct × 1000 × coverage × sprayCount)`
-   - If `ideal_g < 0.5` → `0` (operational floor — sub-half-gram doses aren't measurable on an organic-farm scale).
-   - Else cap at `burnCapG(el, surfactant)`; round up to nearest 0.5 g.
-2. Compute `predictedCE` on the proposed recipe. If
-   `predictedCE > REQ-025 cap × 0.95`: scale all non-zero doses by
-   `target_CE / predicted_CE`, re-round up to 0.5 g, recompute CE.
-   Bound at 4 iterations to guarantee termination.
-3. Return `{ MnSO4_g, ZnSO4_g, CuSO4_g, FeSO4_g, NaMoO4_g, Solubore_g }`.
+   - If `ideal_g < MIN_DOSE_G_PER_ELEMENT[el]` → `0` (per-element
+     operational floor; Cu = 0.2 g, others = 0.5 g — narrow Cu toxicity
+     forces a tighter floor to avoid a 2.5× luxury feed when ideal_g
+     lands in 0.2-0.5 g).
+   - Else cap at `burnCapG(el)`; round up to nearest 0.5 g.
+   - Luxury-cap guard: if the rounded dose would deliver `> 1.3 × gap[el]`,
+     drop to 0 (catches the edge case where even the per-element floor
+     is too coarse for a tiny gap; see `derivation.md` § "Per-element
+     min-dose floor" worked-example table for the Cu fire range).
+2. (After step 1 returns a per-element floor + cap + luxury-guard recipe.)
+   Compute `predictedCE` on the proposed recipe. If
+   `predictedCE > REQ-025 cap × 0.95`: drop the highest-CE-contributor's
+   dose first (Fe is the typical mass-dominant case under FeSO₄·7H₂O);
+   re-round, recompute CE. Preserves pH-locked micros (Mn / Cu / B) that
+   have no alternative channel under REQ-061 cascade order. Bound at 4
+   iterations to guarantee termination.
+3. Return `{ MnSO4_g, ZnSO4_g, CuSO4_g, FeSO4_g, NaMoO4_g, Solubore_g }`
+   (NaMoO4_g always 0 per REQ-061 Mo carve-out; key preserved for
+   downstream consumer compatibility).
 
 **Surfactant scope — coverage axis only:** affects penetration/coverage
-(REQ-101 0.30 → 0.80 with yucca, cert 4 — Sentís et al. *Crop Protection*
-2017). Does NOT affect burn cap: `burnCapG(el) = BURN_CAP_BASE_G[el]`
-regardless of surfactant flag. Rejected per-element-multiplier alternative
-in `learnings.md`.
+(REQ-101 0.30 → 0.80 with yucca, cert 3 — same evidence base as the
+no-yucca default; Sentís et al. *Crop Protection* 2017 surfactant-assisted
+Mn cuticle penetration ~20 % blended with retention literature). Does
+NOT affect burn cap: `burnCapG(el) = BURN_CAP_BASE_G[el]` regardless of
+surfactant flag. Rejected per-element-multiplier alternative in
+`learnings.md`.
 
-**Cert:** 3 (research-grounded surfactant framing + per-element burn-cap
-base values from foliar-uptake literature mid-band; refinable when
-Décembre tissue + lesion data lands).
+**Cert:** 3 baseline (research-grounded surfactant framing + per-element
+burn-cap base values from foliar-uptake literature mid-band; refinable
+when Décembre tissue + lesion data lands). **Per-element exceptions at
+cert 2** for transferability (see `derivation.md`):
+- **Cu** — divergence below extension mid-band; sourced from Décembre-
+  internal axil-pool observation 2026-05-06.
+- **Mn / Zn** — divergence above extension mid-band; cap pinned to live
+  STORED 22 g (held since 2026-04-29 restructure with no burn observed
+  under Wednesday-AM operator timing); cert 2 reflects non-portability
+  to ops with different timing / volume regimes.
 
 ---
 
@@ -179,17 +207,22 @@ with surfactant in mind — that's `/retire-recipe` + REQ-025 territory.
 
 ---
 
-## Pending — yucca-coverage refinement trigger
+## REQ-170 — Surfactant-aware foliar efficiency map
 
-If yucca returns, `FOLIAR_COVERAGE_DEFAULT` flips `0.30 → 0.80` and every
-element's effective delivery jumps ~2.7×. Recipe-history context: when
-yucca was dropped (2026-05-05), Cu 4 → 2 g, Mn 22 → 18 g, Zn 22 → 16 g
-to stay under burn cap. Restoration relaxes those dose limits
-(re-evaluate against REQ-025).
+`window.FoliarRecipeTomato.efficiencyFor(surfactant)` returns the
+per-element efficiency map at the given surfactant lever state.
+`efficiencyFor(true)` is strictly greater than `efficiencyFor(false)` for
+every routed element (the cuticle-uptake coverage axis: 0.30 → 0.80
+without changing the spray-pH multiplier). Channel capability shape per
+REQ-157 (only Mn / Zn / Cu / Fe routed today; B + Mo absent per REQ-061).
+The page-side Efficacité cell (REQ-163) reads this surface and updates
+when the operator toggles the lever.
 
-When wired: `/retire-recipe` first (doses in `STORED_RECIPE.tomato.foliaire`
-change — that's the trigger), then flip `FOLIAR_COVERAGE_DEFAULT` here.
-Recipe edit first so the audit snapshot lands on the old recipe.
+**Cert:** 3 (coverage constants are both cert 3; surfactant-on regime
+needs Décembre tissue correlation to bump cert 3 → 4. See `derivation.md`
+"Channel efficiency map" + the with-yucca coverage derivation.)
+
+---
 
 ---
 
@@ -207,4 +240,4 @@ Consume foliar output or govern tank behavior:
 - **REQ-025** (`nutrition/spec.md`) — foliar tank predicted CE under burn cap (10 mS/cm tomato); wired in `scripts/check-recipes.mjs`.
 - **REQ-053 / REQ-055** (`nutrition/spec.md`) — predicted tank pH + cuticle-pH multiplier. Tank pH ~5 (sulfate dominant), within `foliarPhResponse` peak 5.5-6.0.
 - **REQ-061** (`nutrition/spec.md`) — cascade order. Foliar carries residual gap; Mn / Zn / Fe / Cu have no other channel today (sulfates precipitate at root-zone pH 7.4), so foliar IS the earliest active channel for those — verifier accommodates.
-- **REQ-062** (`nutrition/spec.md`) — single foliar spray per week. `STORED_RECIPE.tomato.foliaire` carries exactly one spray-recipe key (`A`); enforced by REQ-062 verifier.
+- **REQ-062** (`nutrition/spec.md`) — single fertigation tank per week (foliar-singleton half retired 2026-05-17). Foliar-frequency now governed by REQ-112 `sprayCount` 1-3 lever in this subproject; no cross-crop singleton constraint on foliar.

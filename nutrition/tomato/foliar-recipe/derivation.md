@@ -107,10 +107,14 @@ this table carried before 2026-05-17). STORED foliaire has carried
 22 / 22 g since the 2026-04-29 45 L → 15 L volume restructure with no
 burn observed under Wednesday-AM operator timing. The cap was lagging
 STORED reality; pinning the cap at 22 g matches live empirical practice.
-Cert 2 for transferability — the no-burn observation depends on the
-Décembre operator window (early-AM, post-fog, low leaf temperature),
-the post-restructure tank concentration regime, and Ca-saturated soil
-context; not portable without an independent observation period.
+Defensible by Décembre observation (cert 3 within Décembre — multi-week
+no-burn track at 22 g under the Wednesday-AM operator window since the
+2026-04-29 restructure); transferability to other ops unproven without
+an independent observation period (cert 2 in general — the no-burn
+mechanism depends on the early-AM post-fog low-leaf-temperature
+spray window, the post-restructure tank concentration regime, and the
+Ca-saturated soil context; none of those carry without their own
+verification).
 
 **Refinement triggers.** (a) Once tissue + lesion data across multiple
 seasons stabilizes any cap as a Décembre-empirical transferable value
@@ -264,21 +268,25 @@ Elements absent from the map:
   molybdate. The stored-recipe edit on this channel is gated on
   `/retire-recipe` audit.
 
-**Cert 3** — `FOLIAR_COVERAGE_DEFAULT` is cert 3 (B2 downgrade 2026-05-12,
-no Décembre tissue correlation yet); `FOLIAR_COVERAGE_WITH_YUCCA` is
-cert 3 (YUCCA-CERT downgrade 2026-05-16); `foliarPhResponse` curve is
-cert 4. Effective cert min = 3 across both regimes. Refinement triggers:
+**Cert 3** — `FOLIAR_COVERAGE_DEFAULT` is cert 3 (no Décembre tissue
+correlation yet); `FOLIAR_COVERAGE_WITH_YUCCA` is cert 3 (no Décembre
+tissue correlation yet, same evidence-base shape as the no-surfactant
+default); `foliarPhResponse` curve is cert 4. Effective cert min = 3
+across both regimes. Refinement triggers:
 
-- **Tissue panel ±20 % correlation (no-surfactant)** → cert 3 → 4 for the
-  no-surfactant value (0.27).
-- **Yucca returns + tissue panel ±20 % correlation** → cert 3 → 4 for the
-  with-surfactant value (0.72). Separate trigger — surfactant-on regime
-  needs its own correlation since 0.80 isn't measured at Décembre.
-- **Sentís ceiling regime** (downward, ×0.10 ratio in tissue) → coverage
-  collapses to ~0.03; efficiency drops to ~0.027 (channel becomes
-  insurance-only pending soil-pH drop). Applies to the no-surfactant
-  regime; with-surfactant Sentís ceiling 20 % would collapse 0.72 to
-  ~0.06.
+- **Tissue panel ±20 % correlation under no-surfactant regime** → cert
+  3 → 4 for the no-surfactant value (0.27).
+- **Tissue panel ±20 % correlation under surfactant-on regime** → cert
+  3 → 4 for the with-surfactant value (0.72). Separate trigger — the
+  with-surfactant value 0.80 isn't measured at Décembre, so its cert
+  bump needs its own correlation period under that regime (independent
+  of whether yucca specifically is the surfactant; see `learnings.md`
+  § "Yucca return as a refinement trigger" for why yucca-return is not
+  itself the trigger).
+- **Sentís ceiling regime** (downward, ×0.10 ratio in tissue) — see §
+  "Refinement triggers" below for the full collapse math. Headline:
+  no-surfactant coverage collapses to ~0.03 (efficiency ~0.027);
+  with-surfactant collapses by a ~×0.25 ratio to ~0.06.
 
 ---
 
@@ -410,11 +418,12 @@ chain stays uniform.
 ## Refinement triggers
 
 - **Tissue test reveals per-element drift.** Petiole panel (NO₃-N + Mg +
-  Cu/Mn/Zn) sampled 2026-05-11. Cu toxicity-bound (less coverage-sensitive);
-  Mn cleanest signal. Three paths, paired per P-03:
+  Cu/Mn/Zn). Cu toxicity-bound (less coverage-sensitive); Mn cleanest
+  signal. Three paths, paired per P-03:
   - **Upward.** Measured Mn correlates predicted within ±20 % → 30 %
     coverage anchored. Raise REQ-101 cert 3 → 4 (mirror to data.js
-    + parallel B2' for with-yucca).
+    + parallel cert-bump for with-surfactant value 0.80 if a surfactant-
+    on tissue period is also in the data).
   - **Lateral.** Correlation 30-50 % off either way → midpoint wrong for
     cultivar/climate. Refit to matched value (~25 % under, ~35 % over);
     cert stays 3.
@@ -425,8 +434,8 @@ chain stays uniform.
     fertigation Mn / Zn / Cu route, depends on soil pH < ~7.0 (REQ-018 /
     `effectiveEff` gate).
 
-  Until panel lands, REQ-101 stays cert 3 (B2 downgrade, 2026-05-12);
-  hold rationale in `learnings.md`.
+  Until tissue data lands, REQ-101 stays cert 3 (no Décembre tissue
+  correlation yet); hold rationale in `learnings.md`.
 - **Solubor moved fully to fertigation.** Already conceptual
   (`FP_RECIPE_T5.foliar.Solubore = 0`); STORED still carries 7 g. Next
   `/retire-recipe` zeros it — delivers ~1.1 mg B/m²/wk today; fertigation

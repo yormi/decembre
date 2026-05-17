@@ -141,7 +141,12 @@ Specs that *consume* sidedress output:
 - **REQ-013 / REQ-014** (`nutrition/tomato/spec.md`) — supply chain bounds.
   Sidedress N is one of four channels summed against demand.
 - **REQ-022** (`nutrition/spec.md`) — every product Ecocert-allowed.
-  Farine de plumes 13-0-0 ✓. Eco-luzerne 3-0.5-2 cert **TBD** pending
-  Ecocert evaluation in `nutrition/doc/eco-luzerne-3-0-5-2/` — alfalfa
-  branch not default until cert lands.
+  Farine de plumes 13-0-0 ✓. Eco-luzerne 3-0.5-2 CAN/CGSB-32.311
+  status unverified — no certificate on file under `nutrition/doc/` as
+  of the last scan; directory `nutrition/doc/eco-luzerne-3-0-5-2/` has
+  not been created. Alfalfa branch remains non-default until a cert
+  PDF is filed under that path (gate is filesystem-condition, no
+  calendar). When filed, this REQ inheritance flips to ✓ and the
+  default-product swap becomes operator-callable (still gated by
+  `/retire-recipe` for STORED).
 - **REQ-002** (`nutrition/spec.md`) — no forbidden products.
