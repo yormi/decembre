@@ -11,6 +11,43 @@ Most recent at the top.
 
 ## Entries
 
+## 2026-05-16 22:00 — app/operator (new subproject — Stage 1 of 6-stage app/index.html carve)
+
+**Change type:** added (structural refactor — no spec change; carves operator chrome out of `app/index.html` into `app/operator/`)
+**REQs affected:** none — REQ-005 (cross-app page-registry + `setPage` + `setCrop` + `syncHash` + `CROP_PAGES`) keeps the same window-global identifier surface, only file location changes; spec text in `requirements.md` unchanged.
+**Summary:** Stage 1 of 6-stage `app/index.html` carve plan (see `working files/index-html-carve-plan.md`). Extract operator chrome — top nav, page-toggle bar, crop selector, `setPage` / `setCrop` / `setCropBtn` / `setVigor` / `syncHash` JS, page/crop hash routing, vigor + stage levers — out of `app/index.html` (~200-400 lines) into `app/operator/{page.html, page.css, logic.js}`. Floor target after all 6 stages: `app/index.html` from 5521 → ~500-800 lines.
+**Suggested waves:** test-writer · coder · pruner. Stages 2-6 stay queued until this entry is archived green.
+
+### Team-leader outcome (2026-05-16) — ALL SIX STAGES SHIPPED IN ONE SESSION
+
+Per Guillaume's "do the full 6 stages" ruling, the team-leader executed all six stages of the carve plan sequentially with verifier-green gates between each, in a single session. Six coder subagents, six commits, six verifier passes — all green throughout.
+
+**Stage 1 (commit 0aaf229) — app/operator chrome carve:** moved top nav + page-toggle + crop selector + setPage/setCrop/setCropBtn/setVigor/syncHash + cropFor + toggleAdmin + init wiring + PAGES/ADMIN_PAGES/CROP_PAGES constants. Created `app/operator/{page.html (40), page.css (18), logic.js (347)}`. 4 TDZ-mandatory let state vars kept inline. REQ-005 window-global identifier surface preserved explicitly at bottom of logic.js. `app/index.html` 5523 → 5146 (-377).
+
+**Stage 2 (commit 40fceae) — lettuce + nursery composites:** carved Salanova nutriment HTML scaffold into `nutrition/lettuce/app/page.html` (101); carved nursery composite from scratch into `nutrition/nursery/app/{page.html (75), logic.js (268)}`. No lettuce/nursery-specific CSS to extract. Cross-domain leak check clean — sub-wave F dispatch inversion held. `app/index.html` 5146 → 4710 (-436).
+
+**Stage 3 (commit a871917) — recipe-page carves (highest risk):** created `nutrition/tomato/{fertigation,foliar}-recipe/app/{page.html, stored.js, logic.js}` + `nutrition/tomato/sidedress-recipe/app/stored.js`. STORED_RECIPE.tomato.{fertigation, foliaire, sidedress} paths preserved BYTE-IDENTICAL across the file move — single literal split into shell + 3 includes, inner-object bytes verbatim (T1-T5 numeric content, foliar arrays, sidedress per-stage entries unchanged). `/retire-recipe` skill workflow unaffected — `dist/index.html` has 63 grep hits across the 3 STORED paths. P-08 carve-out from the persona's "always escalate STORED" gate per plan body. `app/index.html` 4710 → 4092 (-618).
+
+**Stage 4 (commit ae841eb) — cross-crop pages + per-crop sol/irrigation:** created `app/week/`, `app/diagnostic/`, `app/historique-nutriments/` (with RECIPE_HISTORY byte-identical move to `history.js`), plus `nutrition/{tomato,lettuce}/app/{sol,irrigation}/` subpages. 11 @include directives wired. RECIPE_HISTORY path preserved (11 dist hits). Sun-time helpers + TENSIO_CONFIG intentionally left inline for Stage 5 placement decision. `app/index.html` 4092 → 2889 (-1203).
+
+**Stage 5 (commit 8bb96b4) — lib/ extraction:** moved 7 shared helpers to deepest-common-ancestor lib/ dirs: `lib/spec-strings.js` (renderSpec), `lib/sun.js` (SUN_TABLE + sun-time helpers), `nutrition/lib/{product-pct,format,pourquoi,render-gap-grid}.js` (PRODUCT_PCT, formatMg/formatValue, pourquoi modal infra, renderGapGrid), `nutrition/tomato/app/irrigation/logic.js` (TENSIO_CONFIG + buildTensio). `fmt` inlined into fertigation-recipe consumer; `fmtML` deleted as dead code. Single-consumer integrator soil-math (weeklyMassFlowL, transpirationFactor, etc.) and cross-page state-reading helpers (getRatio, getMultK, recalc, etc.) intentionally left inline. `app/index.html` 2889 → 2490 (-399).
+
+**Stage 6 (commit 3b1aaa3) — per-page CSS split (FINAL):** carved chrome CSS block into 7 page.css / lib/styles.css files: `lib/global.css` (64 — :root tokens, base layout, .stage-*, .pq-modal*), `nutrition/lib/styles.css` (13 — input layout), `nutrition/tomato/lib/styles.css` (9 — .steps-list/.step-*), `nutrition/tomato/app/sol/page.css` (3), `nutrition/tomato/fertigation-recipe/app/page.css` (5 — .param-*), `app/week/page.css` (13), `app/diagnostic/page.css` (32 — .diag-* including .diag-cert-0..5 badges). 12 dead CSS rules deleted (.result-*, .bed-info*, .irr-grid, .irr-card*, .multi-row .multi-unit — vestiges of prior UI iteration). `app/index.html` `<style>` block reduced 159 → 10 lines (just @includes). `app/index.html` 2490 → 2341 (-149).
+
+**Final stats across all 6 stages:**
+- `app/index.html`: **5523 → 2341 lines (-3182, -57.6 %)**
+- `dist/index.html`: 10159 → 10231 (+72 cumulative @include marker hygiene; well within tolerance)
+- New subprojects: 7 cross-crop / per-crop `app/` dirs + 4 `lib/` dirs (top-level, nutrition-level, tomato-level)
+- Files created: 31 (HTML + CSS + JS partials across 11 carved subprojects)
+- STORED_RECIPE / RECIPE_HISTORY values byte-identical throughout; paths preserved; `/retire-recipe` skill workflow unaffected
+- No DOM ID changes; no behavior change; window-global identifier surface preserved (REQ-005 invariant intact at every stage)
+- `npm test` 255/0 maintained at every stage end
+- `npm run check` 161/0 maintained at every stage end
+- REQs wired 108/111 unchanged
+- 8 commits total (Phase -2 snapshot + sub-wave H + 6 stage commits, each independently revertible)
+
+Stages 2-6 were unblocked end-to-end after Stage 1 — no scope changes mid-execution. The plan's "one stage per session" cadence was overridden by Guillaume's direct ruling for this session. Future structural-refactor mailbox entries can use the same one-coder-subagent-per-stage / verifier-green-gate-between-each pattern.
+
 ## 2026-05-16 — nutrition/tomato/app
 
 **Change type:** added
