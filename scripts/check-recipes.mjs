@@ -759,60 +759,80 @@ header('REQ-141 — Only CONTRIBUTING elements (P, Ca) participate in the gap ch
   }
 }
 
-header('REQ-142 — monthsToDepletion = bank ÷ (SME × transpiration × WEEKS_PER_MONTH)');
+header('REQ-142 — monthsToDepletion = bank ÷ min(mass-flow, plant peak demand) × WEEKS_PER_MONTH; null for turnover-bound');
 {
   const SC = window.SoilContribution;
   if (!SC) {
     fail('SoilContribution available', 'namespace missing');
   } else {
     const offenders = [];
-    // Tomato Ca — bank, SME, transpiration all wired → numeric runway.
+    const WPM = 52 / 12;
+    // Tomato Ca — demand binds (peak 2250 < mass-flow 3582). Runway ~113 mo.
     const caMonths = SC.monthsToDepletion('tomato', 'Ca');
     if (typeof caMonths !== 'number' || !(caMonths > 0)) {
       offenders.push(`monthsToDepletion(tomato, Ca) = ${caMonths} (expected positive number)`);
     }
-    // Tomato P — locked out at pH 7.4 (SME 1.1 ppm); bank 55 800 mg/m² → years.
+    // Tomato P — lockout regime (mass-flow 16.5 < peak 660). Runway ~780 mo.
     const pMonths = SC.monthsToDepletion('tomato', 'P');
     if (typeof pMonths !== 'number' || !(pMonths > 0)) {
       offenders.push(`monthsToDepletion(tomato, P) = ${pMonths} (expected positive number)`);
     }
-    // Tomato K — NOT in CONTRIBUTING but has bank + SME → still numeric (REQ-142 carve-out).
+    // Tomato K — NOT in CONTRIBUTING but has bank + SME → still numeric.
+    // Mass-flow 4385 < peak 6000 → mass-flow binds.
     const kMonths = SC.monthsToDepletion('tomato', 'K');
     if (typeof kMonths !== 'number' || !(kMonths > 0)) {
       offenders.push(`monthsToDepletion(tomato, K) = ${kMonths} (disabled rows must still expose runway)`);
     }
-    // N now has bank data (Mehlich-3 NO3 + NH4) → numeric runway expected.
-    const nMonths = SC.monthsToDepletion('tomato', 'N');
-    if (typeof nMonths !== 'number' || !(nMonths > 0)) {
-      offenders.push(`monthsToDepletion(tomato, N) = ${nMonths} (expected positive number — 2026-05-16 extension wired N)`);
+    // N is turnover-bound → null on every crop (mineralization replenishes).
+    const nMonthsTomato = SC.monthsToDepletion('tomato', 'N');
+    if (nMonthsTomato !== null) {
+      offenders.push(`monthsToDepletion(tomato, N) = ${nMonthsTomato} (expected null — turnover-bound, mineralization replenishes)`);
+    }
+    const nMonthsLettuce = SC.monthsToDepletion('lettuce', 'N');
+    if (nMonthsLettuce !== null) {
+      offenders.push(`monthsToDepletion(lettuce, N) = ${nMonthsLettuce} (expected null — turnover-bound)`);
     }
     // Mo has no Mehlich-3 measurement → null.
     const moMonths = SC.monthsToDepletion('tomato', 'Mo');
     if (moMonths !== null) {
       offenders.push(`monthsToDepletion(tomato, Mo) = ${moMonths} (expected null — Mo not on Mehlich-3 panel)`);
     }
-    // Lettuce Ca — both crop entries wired.
+    // Lettuce Ca — wired; lettuce mass-flow 457.6 < peak 1152 → mass-flow binds.
     const lettuceCa = SC.monthsToDepletion('lettuce', 'Ca');
     if (typeof lettuceCa !== 'number' || !(lettuceCa > 0)) {
       offenders.push(`monthsToDepletion(lettuce, Ca) = ${lettuceCa} (expected positive number)`);
     }
-    // Pinned arithmetic — tomato P with current constants.
-    //   bank = 55 770 mg/m² (sample 596615 exact) ; SME = 1.1 ppm ; transp = 15 L/m²/wk ; WEEKS_PER_MONTH = 52/12.
-    //   weekly = 1.1 × 15 = 16.5 mg/m²/wk ; runway months = 55 770 / (16.5 × 4.333…) ≈ 780 mois.
-    const expectedP = 55770 / (1.1 * 15 * (52 / 12));
+    // Pinned arithmetic — tomato P (lockout, clamp no-op).
+    //   bank 55770 ; mass-flow 1.1 × 15 = 16.5 ; peak 660 ; min = 16.5.
+    //   runway = 55770 / (16.5 × 52/12) ≈ 780 mois.
+    const expectedP = 55770 / (Math.min(1.1 * 15, 660) * WPM);
     if (Math.abs(pMonths - expectedP) > 1e-3) {
       offenders.push(`P runway arithmetic mismatch: got ${pMonths}, expected ${expectedP}`);
     }
-    // Pinned arithmetic — lettuce Ca with current constants.
-    //   bank = 1 061 240 (sample 596617 exact) ; SME = 114.4 ; transp = 4 ; expected ≈ bank / (114.4 × 4 × 4.333…) ≈ 535 mois.
-    const expectedLettuceCa = 1061240 / (114.4 * 4 * (52 / 12));
+    // Pinned arithmetic — tomato Ca (clamp binds at peak demand 2250).
+    //   bank 1098910 ; mass-flow 238.8 × 15 = 3582 ; peak 2250 ; min = 2250.
+    //   runway = 1098910 / (2250 × 52/12) ≈ 113 mois.
+    const expectedCa = 1098910 / (Math.min(238.8 * 15, 2250) * WPM);
+    if (Math.abs(caMonths - expectedCa) > 1e-3) {
+      offenders.push(`Ca runway arithmetic mismatch (clamp): got ${caMonths}, expected ${expectedCa}`);
+    }
+    // Pinned arithmetic — tomato Mg (clamp binds).
+    //   bank 164630 ; mass-flow 79.3 × 15 = 1189.5 ; peak 855 ; min = 855.
+    const mgMonths = SC.monthsToDepletion('tomato', 'Mg');
+    const expectedMg = 164630 / (Math.min(79.3 * 15, 855) * WPM);
+    if (Math.abs(mgMonths - expectedMg) > 1e-3) {
+      offenders.push(`Mg runway arithmetic mismatch (clamp): got ${mgMonths}, expected ${expectedMg}`);
+    }
+    // Pinned arithmetic — lettuce Ca (clamp inert; mass-flow binds).
+    //   bank 1061240 ; mass-flow 114.4 × 4 = 457.6 ; peak 1152 ; min = 457.6.
+    const expectedLettuceCa = 1061240 / (Math.min(114.4 * 4, 1152) * WPM);
     if (Math.abs(lettuceCa - expectedLettuceCa) > 1e-3) {
       offenders.push(`Lettuce Ca runway arithmetic mismatch: got ${lettuceCa}, expected ${expectedLettuceCa}`);
     }
     if (offenders.length > 0) {
       fail('monthsToDepletion behaviour', offenders.map(o => `  ${o}`).join('\n'));
     } else {
-      pass(`SME-derived runway: tomato Ca ${caMonths.toFixed(0)} mois · tomato P ${pMonths.toFixed(0)} mois (lockout) · K disabled-but-numeric · N → null · lettuce Ca ${lettuceCa.toFixed(0)} mois`);
+      pass(`Clamped runway: tomato Ca ${caMonths.toFixed(0)} mois (demand-bound) · P ${pMonths.toFixed(0)} mois (lockout) · K ${kMonths.toFixed(0)} mois (mass-flow-bound) · N → null (turnover) · lettuce Ca ${lettuceCa.toFixed(0)} mois`);
     }
   }
 }
@@ -2236,34 +2256,15 @@ if (!FOLIAR || !FOLIAR.tomato || !CHANNEL_ROLE) {
   }
 }
 
-// ─── REQ-062 — Single fertigation tank, single foliar spray per week ──────
+// ─── REQ-062 — Single fertigation tank per week ──────────────────────────
 //
-// Per-crop-channel one-tank/one-spray rule:
-//   - tomato foliar: FOLIAR.tomato has exactly one spray-recipe key, and it's 'A'
-//     (spray-recipe keys = single-letter, array-valued; non-recipe metadata
-//     like masterVol/backpacks/area is excluded)
+// Per-crop one-tank rule (foliar-singleton half retired 2026-05-17):
 //   - tomato fertigation: computeStageRecipe(stage) returns one tank composition
 //     per stage (object with kSulfate/mgSulfate/etc. — no parallel A1/A2 tanks)
 //   - lettuce fertigation: LETTUCE constant exists and is flat (one production
 //     fertigation recipe, with feSulfate as part of the same tank)
 
-header('REQ-062 — Single fertigation tank, single foliar spray per week');
-
-if (!FOLIAR || !FOLIAR.tomato) {
-  fail('REQ-062 — STORED_RECIPE.tomato.foliaire exposed', 'missing');
-} else {
-  // Spray-recipe keys = single uppercase letter, with array value (the spray
-  // ingredient list). Filters out metadata keys (masterVol, backpacks, area).
-  const sprayKeys = Object.keys(FOLIAR.tomato).filter(k =>
-    /^[A-Z]$/.test(k) && Array.isArray(FOLIAR.tomato[k])
-  );
-  if (sprayKeys.length === 1 && sprayKeys[0] === 'A') {
-    pass(`STORED_RECIPE.tomato.foliaire a exactement 1 recette de spray active (clé 'A')`);
-  } else {
-    fail('STORED_RECIPE.tomato.foliaire a exactement 1 recette de spray active',
-         `clés trouvées: [${sprayKeys.join(', ')}] (attendu: ['A'])`);
-  }
-}
+header('REQ-062 — Single fertigation tank per week');
 
 if (!LETTUCE) {
   fail('REQ-062 — LETTUCE exposed', 'missing');

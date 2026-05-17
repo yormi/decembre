@@ -69,6 +69,65 @@ const SOIL_CONTRIBUTING = {
   Ca: true,
 };
 
+// Elements whose soil-bank reservoir is replenished by ongoing turnover
+// rather than acting as a fixed depleting stock. The Mehlich-3 N pool
+// (NO3-N + NH4-N) sits at quasi-steady-state with mineralization of soil
+// organic matter + compost amendments; the displayed "runway" computed
+// from bank ÷ uptake is a counterfactual ("weeks until empty IF
+// mineralization stopped") that never materialises operationally. For
+// these elements the runway column renders blank — see REQ-142 + the
+// pourquoi-modal `N-not-mehlich` strings. Add S here when sulfur is wired.
+const TURNOVER_BOUND_ELEMENTS = ['N'];
+
+// Plant peak weekly demand per crop × element (mg/m²/wk). Clamps the
+// depletion-runway denominator at the actual plant-uptake ceiling rather
+// than mass-flow capacity (SME × transpiration). For elements where
+// mass-flow exceeds demand (Ca / Mg on the tomato bed), the plant draws
+// only what it needs and the bank drains at the demand rate. For locked-
+// out elements (P / Mn / Zn at pH 7.4) mass-flow is below demand and the
+// clamp doesn't bind — the runway formula reduces to the SME-throttled
+// version. Spec REQ-142.
+//
+// Sources:
+//   - Tomato: nutrition/tomato/plant-needs/data.js TOMATO_REMOVAL × yield
+//     1.5 kg/m²/wk (whole-plant Koller-aligned ratio at T5 production peak;
+//     cert 3 for macros, cert 1-2 for micros — inherits per-element from
+//     plant-needs).
+//   - Lettuce: nutrition/lettuce/plant-needs/data.js LETTUCE_TISSUE_DW ×
+//     ~75 g DW/m²/wk head-formation peak (1.5× cycle-mean of a Salanova
+//     transplant 30 g → target 350 g × density 16 plants/m² × 35-day
+//     cycle; cert 4 macros, cert 3 micros).
+//
+// N intentionally omitted — N is turnover-bound (TURNOVER_BOUND_ELEMENTS);
+// runway returns null regardless of demand.
+//
+// Refinement trigger: any shift in TOMATO_REMOVAL, BIOMASS_DEMAND[T5],
+// LETTUCE_TISSUE_DW, or a tissue-test recalibration of peak demand.
+const PLANT_PEAK_WEEKLY_DEMAND_MG_PER_M2 = {
+  tomato: {
+    P:  660,
+    K:  6000,
+    Ca: 2250,
+    Mg:  855,
+    Fe:   15,
+    Mn:    7.5,
+    Zn:    4.5,
+    B:     4.5,
+    Cu:    1.5,
+  },
+  lettuce: {
+    P:   384,
+    K:  5376,
+    Ca: 1152,
+    Mg:  307,
+    Fe:   15.4,
+    Mn:    3.8,
+    Zn:    3.1,
+    B:     2.3,
+    Cu:    0.6,
+  },
+};
+
 // 52 weeks / 12 months. Used to convert the bank-to-uptake ratio into
 // months for the depletion runway column.
 const WEEKS_PER_MONTH = 52 / 12;

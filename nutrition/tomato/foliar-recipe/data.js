@@ -101,25 +101,31 @@ const FOLIAR_EFFICIENCY_AT_CURRENT_CONDITIONS = foliarEfficiency(false);
 
 // REQ-115 — per-element burn cap (g per 15 L master tank).
 // Per-element certainty (refinable when Décembre tissue + lesion log lands):
-//   Mn / Zn / Fe / Mo / B — cert 3. Defensible mid-band of Sonneveld 2009,
-//   Yara crop-nutrition foliar tables, university extension publications
+//   Fe / Mo / B — cert 3. Defensible mid-band of Sonneveld 2009, Yara
+//   crop-nutrition foliar tables, university extension publications
 //   (Cornell, U. Delaware, U. Missouri).
-//   Cu — cert 2. The 2 g value came from a Décembre-internal observation
-//   on 2026-05-06 (Cu local-pool-toxicity image triggered the halving from
-//   PA Taillon's original 4 g), not from extension mid-band. Extension
-//   publications support 0.05-0.1 % Cu solutions = 7.5-15 g CuSO₄/15 L,
-//   several × Décembre's 2 g. The lower value is defensible by local
-//   observation (cert 3 within Décembre) but not transferable (cert 2 in
-//   general — narrow Cu toxicity threshold, Cu²⁺ enzyme damage). Bump Cu
-//   back to cert 3 when tissue + lesion data across multiple seasons
-//   stabilizes the cap as a Décembre-empirical transferable value for
-//   similar Ca-saturated soil ops.
+//   Cu — cert 2. Divergence BELOW extension mid-band. The 2 g value came
+//   from a Décembre-internal observation on 2026-05-06 (Cu local-pool-
+//   toxicity image triggered the halving from PA Taillon's original 4 g),
+//   not from extension mid-band. Extension supports 0.05-0.1 % Cu solutions
+//   = 7.5-15 g CuSO₄/15 L, several × Décembre's 2 g. Defensible by local
+//   observation (cert 3 within Décembre); not transferable (cert 2 in
+//   general — narrow Cu²⁺ enzyme-damage threshold).
+//   Mn / Zn — cert 2. Divergence ABOVE extension mid-band. 22 g held since
+//   the 2026-04-29 45 L → 15 L volume restructure (no Mn / Zn cut at the
+//   2026-05-05 yucca drop — see `derivation.md` § historical-context).
+//   No burn observed across Décembre Wednesday-AM operator timing window;
+//   the 2026-05-16 Mn 22 → 18 / Zn 22 → 16 cap proposal lagged STORED
+//   reality. Cap re-pinned 22 g 2026-05-17 to match live STORED. Cert 2
+//   for transferability (Décembre Wednesday-AM window + Ca-saturated soil
+//   regime + post-restructure concentration; not portable to ops at
+//   different volumes / timing without their own observation period).
 // Surfactant has no published effect on the burn-cap axis — yucca acts on
 // coverage, not on max safe tank concentration; see learnings.md.
 const BURN_CAP_BASE_G = {
-  Mn: 18,   // MnSO₄ — extension mid-band, cert 3
-  Zn: 16,   // ZnSO₄ — extension mid-band, cert 3
-  Cu: 2,    // CuSO₄ — Décembre-internal observation, cert 2 (narrow toxicity, non-transferable)
+  Mn: 22,   // MnSO₄ — Décembre-internal observation (held at 22 g post-restructure), cert 2
+  Zn: 22,   // ZnSO₄ — Décembre-internal observation (held at 22 g post-restructure), cert 2
+  Cu: 2,    // CuSO₄ — Décembre-internal observation (axil-pool toxicity), cert 2
   Fe: 80,   // FeSO₄·7H₂O — high-mass dose, well below tank-CE bound, cert 3
   Mo: 2,    // NaMoO₄ — wide tolerance (Sonneveld 50-200 mg/L band), cert 3
   B:  9,    // Solubore (Na₂B₈O₁₃·4H₂O, 20.5 % B) — non-ionic, cert 3

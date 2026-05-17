@@ -16,20 +16,35 @@ function soilWeeklyContribution(crop, element, demand_mg) {
   return Math.min(demand_mg, bank);
 }
 
-// REQ-142 + REQ-164 — depletion runway is now SME-throttled, not
-// demand-throttled. Denominator = SME_ppm × transpiration_L_per_m²_per_wk
-// (mg/L × L/m²/wk = mg/m²/wk) — weekly plant uptake currently sustainable
-// at measured soil-solution availability. Defined for any element with
-// both bank data and SME data, regardless of whether it's in CONTRIBUTING
-// (disabled rows K / Mg still surface their runway for operator context).
-// Returns null when either operand is missing or zero.
+// REQ-142 + REQ-164 — depletion runway, clamped at min(mass-flow, plant
+// peak demand). Denominator = min(SME_ppm × transpiration_L/m²/wk,
+// PLANT_PEAK_WEEKLY_DEMAND_MG_PER_M2[crop][element]). The plant cannot
+// draw faster than its actual demand even when soil-solution availability
+// exceeds that demand; clamping at demand prevents the runway from
+// pessimising for over-supplied elements (Ca / Mg on the tomato bed).
+// For lockout elements (P / Mn / Zn / B / Cu / Fe at pH 7.4) mass-flow
+// is below demand and the clamp is a no-op — the runway reduces to the
+// SME-throttled form. Defined for any element with both bank data and
+// SME data, regardless of whether it's in CONTRIBUTING (disabled rows
+// K / Mg still surface their runway for operator context).
+//
+// Turnover-bound elements (N today; TURNOVER_BOUND_ELEMENTS) return null —
+// the Mehlich-3 N pool is replenished by mineralization at quasi-steady-
+// state, so the bank-÷-uptake counterfactual ("weeks until empty if
+// mineralization stopped") is not operationally meaningful. The pourquoi
+// modal explains the carve-out at the row level.
 function soilMonthsToDepletion(crop, element) {
+  if (TURNOVER_BOUND_ELEMENTS.includes(element)) return null;
   const bank = (SOIL_BANK_MG_M2[crop] || {})[element];
   const smeSoilSolutionPpm = (SME_SOIL_SOLUTION_PPM[crop] || {})[element];
   const transpirationLPerWeek = TRANSPIRATION_L_PER_M2_PER_WEEK[crop];
   if (!(bank > 0)) return null;
   if (!(smeSoilSolutionPpm > 0)) return null;
   if (!(transpirationLPerWeek > 0)) return null;
-  const weeklyUptakeMg = smeSoilSolutionPpm * transpirationLPerWeek;
+  const massFlowMg = smeSoilSolutionPpm * transpirationLPerWeek;
+  const peakDemandMg = (PLANT_PEAK_WEEKLY_DEMAND_MG_PER_M2[crop] || {})[element];
+  const weeklyUptakeMg = (peakDemandMg > 0)
+    ? Math.min(massFlowMg, peakDemandMg)
+    : massFlowMg;
   return bank / (weeklyUptakeMg * WEEKS_PER_MONTH);
 }

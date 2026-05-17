@@ -148,9 +148,10 @@ function computeFertigationSupply(stage, opts, recipe) {
 // formula; B2-REV uptake factor inflates it further to ~1 962 g.
 // Learnings.md carries the full history.
 //
-// Editing the live STORED_RECIPE.tomato.fertigation requires `/retire-
-// recipe` audit cycle; the FP target shifting here surfaces as drift in
-// Block 7/8 until the team's weighed-out stored recipe follows.
+// Editing the live STORED_RECIPE.tomato.fertigation is operator lane,
+// audited via `/retire-recipe`. Movement in the FP target here surfaces
+// at Block 7/8 as informational drift; STORED responds on operator
+// timing, not under FP-target pressure (P-13).
 (function wireFpFertigation() {
   const t5 = computeStageRecipe('T5') || {};
   FIRST_PRINCIPLES_T5_FERTIGATION['K2SO4']       = t5.kSulfate    || 0;
