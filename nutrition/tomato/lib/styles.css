@@ -1,0 +1,9 @@
+  /* Steps — used by tomato sol + fertigation-recipe + foliar-recipe pages */
+  .steps-list { list-style: none; position: relative; padding-left: 28px; }
+  .steps-list::before { content: ''; position: absolute; left: 10px; top: 24px; bottom: 24px; width: 2px; background: var(--step-line); }
+  .step-item { position: relative; padding: 10px 0; }
+  .step-number { position: absolute; left: -28px; top: 10px; width: 22px; height: 22px; border-radius: 50%; background: var(--card); border: 2px solid var(--step-line); display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; color: var(--text-muted); z-index: 1; }
+  .step-item.step-acid .step-number { border-color: var(--accent-active); color: var(--accent-active); background: var(--accent-active-light); }
+  .step-title { font-size: 14px; font-weight: 600; margin-bottom: 3px; }
+  .step-desc { font-size: 12.5px; color: var(--text-muted); line-height: 1.45; }
+  .step-amount { font-family: 'DM Mono', monospace; font-weight: 600; font-size: 13px; color: var(--text); background: var(--input-bg); border: 1px solid var(--border); border-radius: 4px; padding: 2px 6px; display: inline-block; margin-top: 4px; }

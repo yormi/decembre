@@ -1,0 +1,13 @@
+  /* Form inputs — used by tomato/lettuce/nursery nutriment pages */
+  .input-row { display: flex; gap: 10px; margin-bottom: 12px; }
+  .input-group { flex: 1; }
+  .input-group label { display: block; font-size: 12px; font-weight: 600; color: var(--text-muted); margin-bottom: 5px; }
+  .input-group input { width: 100%; padding: 10px 12px; border: 1.5px solid var(--border); border-radius: var(--radius-sm); font-family: 'DM Mono', monospace; font-size: 15px; background: var(--input-bg); color: var(--text); transition: border-color 0.2s; -webkit-appearance: none; }
+  .input-group input:focus { outline: none; border-color: var(--accent-active); }
+  .input-unit { font-size: 11px; color: var(--text-muted); margin-top: 3px; font-family: 'DM Mono', monospace; }
+
+  /* Multi row — used by tomato + lettuce nutriment pages */
+  .multi-row { display: flex; align-items: center; gap: 10px; background: var(--input-bg); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 10px 12px; margin-bottom: 12px; }
+  .multi-row label { font-size: 12px; font-weight: 600; color: var(--text-muted); white-space: nowrap; }
+  .multi-row input { width: 65px; padding: 6px 8px; border: 1.5px solid var(--border); border-radius: var(--radius-sm); font-family: 'DM Mono', monospace; font-size: 14px; background: var(--card); color: var(--text); text-align: center; }
+  .multi-row input:focus { outline: none; border-color: var(--accent-active); }
