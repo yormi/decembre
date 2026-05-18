@@ -16,7 +16,7 @@ Filing rule: repeatable how-to → skill. Judgment-call stance → principle. Wh
 
 One `principles.md` per persona, under `<persona>/`.
 
-Persona reads on entry. When Guillaume's decisions reveal a transferable value, **draft the principle inline and surface for his confirmation before writing to the file** — he may reject, edit, or confirm. Only write on explicit confirm; a wrong-stated principle propagates across every future decision in that persona.
+Persona reads its own `principles.md` + the shared `_shared/principles.md` on entry. When Guillaume's decisions reveal a transferable value, **draft the principle inline and surface for his confirmation before writing to the file** — he may reject, edit, or confirm. Only write on explicit confirm; a wrong-stated principle propagates across every future decision in that persona. Cross-persona values land in `_shared/`; persona-specific applications stay in `<persona>/`.
 
 Format: `## <slug>` heading + body `<rule>. *Because:* <why>. (YYYY-MM-DD)`. Slug = kebab-case, unique within the file (persona-scoped, not global). Blank line between entries. Most-recent at top. Legacy `P-NN` ids or bulleted-list entries migrate to `## <slug>` heading lazily on next edit.
 
