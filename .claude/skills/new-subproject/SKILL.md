@@ -1,6 +1,6 @@
 ---
 name: new-subproject
-description: Use when carving out a new subproject under the spec tree (e.g. `nutrition/<crop>/<topic>/`, `yield-range/<topic>/`, a new top-level domain). Scaffolds the conventional file layout (`spec.md` + optional `derivation.md` / `data.js` / `calc.js` / `model.js`) and either starts blank ("from scratch") or extracts existing work (REQs, sections, code) out of a parent file into the new home. Mirrors the conventions established by `nutrition/tomato/plant-needs/`, `nutrition/tomato/sidedress-recipe/`, `nutrition/compost-contribution/`, `yield-range/`. Does NOT manage REQ-range allocation — Guillaume picks numbers himself or they ride along when extracting.
+description: Use when carving out a new subproject under the spec tree (e.g. `nutrition/<crop>/<topic>/`, `yield-range/<topic>/`, a new top-level domain). Scaffolds the conventional file layout (`spec.md` + optional `derivation.md` / `data.js` / `calc.js` / `model.js`) and either starts blank ("from scratch") or extracts existing work (REQs, sections, code) out of a parent file into the new home. Mirrors the conventions established by `nutrition/tomato/plant-needs/`, `nutrition/tomato/sidedress-recipe/`, `nutrition/compost-contribution/`, `yield-range/`. Does NOT cover spec-entry writing itself — see the `write-spec` skill for slug naming + entry shape.
 ---
 
 # Carve out a subproject
@@ -20,7 +20,7 @@ Repeat answers back in one block before scaffolding.
 
 ### If extracting
 
-- Which REQs move? (List numbers. Never renumber.)
+- Which spec entries move? (Keep their existing ids — slug or legacy `REQ-NNN`.)
 - Which parent `spec.md` sections move?
 - Which code symbols move? Map each to `data.js` / `calc.js` / `model.js`.
 - Source location? Usually `app/index.html` (build-source, not `dist/index.html`). Read `working files/changelog.md` and parent `spec.md` first.
@@ -107,11 +107,11 @@ If extracting, **move** symbols (don't copy). Verify byte-identical build when n
    ```
 3. `grep` for the old path elsewhere in the project — update to new path.
 
-## Wire verification (if extracting wired REQs)
+## Wire verification (if extracting wired specs)
 
-REQ numbers don't change → existing `header('REQ-NNN ...')` blocks stay valid. If code moved behind a different path/namespace, update verifier `import` / `window.*` lookups.
+Spec ids don't change on extraction (whether slug or legacy `REQ-NNN`). If code moved behind a different path/namespace, update verifier `import` / `window.*` lookups. The behavior test asserts the claim, not the id keyword.
 
-From scratch: don't pre-wire empty checks. Add verification when the first REQ lands.
+From scratch: don't pre-wire empty checks. Add verification when the first spec lands.
 
 ## Run the verifier
 
@@ -129,7 +129,7 @@ Search the changelog for `subproject created` to match established verbosity (sh
 
 ## Anti-patterns
 
-- **Allocate REQs through `scripts/claim-req.sh` only.** Extracting → keep existing IDs. From scratch → one wrapper call per REQ; outer `flock team-coordination/req-ledger.md` if you need a contiguous range. Never grep the spec tree by hand — that's the parallel-session race the wrapper closes.
+- **Spec ids are slugs (kebab-case), unique within their target spec file.** Extracting → keep existing ids (slug or legacy `REQ-NNN`). From scratch → pick descriptive slugs per the `write-spec` skill. No central ledger.
 - **No empty companion files.** Create `derivation.md` only with content.
 - **Move code when extracting, don't copy.** Duplicate constants in `app/index.html` create a divergence bomb. Replace source block with `@include` markers in the same slot to keep the build artifact byte-identical.
 - **Don't skip the parent-spec update.** A child invisible from the parent is invisible top-down.

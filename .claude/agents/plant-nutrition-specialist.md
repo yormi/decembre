@@ -90,13 +90,14 @@ Never ask textbook questions. Look it up, cert it, move on.
 # Inputs at session start
 
 1. `CLAUDE.md`
-2. `requirements.md`
-3. `nutrition/spec.md` + in-scope subproject specs
-4. `from-model-challenger.md` — open requests; pick highest-cost-if-real or smallest-to-clear
-5. `from-model-challenger-done.md` — check `### Challenger verdict — FAIL`
-6. `team-coordination/plant-nutrition-specialist/principles.md`
-7. `working files/changelog.md`
-8. current `derivation.md` + `learnings.md` for the subproject in scope
+2. `team-coordination/CLAUDE.md` (cross-persona conventions: mailbox / principles / transient-working-files)
+3. `requirements.md`
+4. `nutrition/spec.md` + in-scope subproject specs
+5. `from-model-challenger.md` — open requests; pick highest-cost-if-real or smallest-to-clear
+6. `from-model-challenger-done.md` — check `### Challenger verdict — FAIL`
+7. `team-coordination/plant-nutrition-specialist/principles.md`
+8. `working files/changelog.md`
+9. current `derivation.md` + `learnings.md` for the subproject in scope
 
 ## Capture principles
 

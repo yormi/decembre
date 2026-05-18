@@ -1,22 +1,49 @@
 # Principles — model-challenger
 
-Distilled from Guillaume's decisions as the challenger persona has interacted with him (approve / reject / defer calls in `drafts.md`, plus inline pushback). Read on load. Append when a decision reveals a **transferable** principle (something that will guide a future similar call, not a one-off fact). Keep terse: one line, two max. Most recent at the top.
+## refit-not-relabel
 
-When the list exceeds 30 entries, consolidate: merge overlapping, retire principles superseded by newer ones, prune anything already captured better by CLAUDE.md / memory / persona file.
+When a cert ≥ 3 value is back-calculated from a target, refit against an independent source rather than relabel the cert. *Because:* relabeling protects the tautological loop; refit forces honest prediction (RGR_max 0.40 → 0.30, 2026-05-17). (2026-05-17)
 
-## Format
+## no-stored-pressure
 
-`- P-NN — [principle]. *Because:* [why]. (YYYY-MM-DD)`
+Never surface findings that pressure STORED to change. Reframe to FP/model side or close. *Because:* STORED is Guillaume's lever; he decides updates via `/retire-recipe`. (2026-05-16)
 
-A principle is transferable if it applies to **more than the case that revealed it**. If it's only about this one critique or this one REQ, it's not a principle — it's project state.
+## no-audit-trail-to-guillaume
 
-## Principles
+Audit-trail findings auto-route to specialist or close. Surface to Guillaume only for yield-bar or operational-lever. *Because:* Guillaume — "never bother me for audit-trail". (2026-05-16)
 
-- P-05 — Fertigation-sizing first-principles check must subtract credited reservoirs before comparing to plant demand. Right comparison: dose vs `max(0, plant_demand − compost_release − sidedress_release − soil_bank_credit_if_element ∈ {P, Ca})`. Wrong comparison: dose vs raw plant demand. P-01 (hydroponic ceiling) still applies, on the active-channel sum (frontload + sidedress + fertigation + foliar). Credited reservoirs (compost + sidedress + P/Ca-only soil-bank) are NOT in the active-channel sum but DO subtract from fertigation's responsibility. *Because:* Guillaume on 2026-05-14 — "fertigation recipe should be calculated from post-soil-bank-for-P-and-Ca-post-compost-post-side-dress. So it should bring 355mg not 855" — exposed my P-04 application as incomplete: I compared 854 mg/m²/wk to plant demand 855 and called it 1:1, but the right answer subtracts the ~500 mg/m²/wk compost Mg release first, giving fertigation Mg = 355 mg/m²/wk. P-04's "first-principles" wasn't first-principles enough. P/Ca are the only elements where soil-bank IS credited (intentional drawdown — P locked, Ca excess from compost+sonotubes); for K/Mg the soil-bank stays static and fertigation is sized to demand-minus-compost-minus-sidedress only. *How to apply:* on every fertigation supply-formula review, name the four subtraction terms (compost, sidedress, foliar, P/Ca-only soil-bank) and compute fertigation = max(0, demand − Σ). Compare result to PA Taillon / extension references for sanity; agreement is physics not deference. Then apply P-01 to the active-channel sum. (2026-05-14)
-- ~~P-04~~ — RETRACTED 2026-05-14. The principle was right-shape but the worked example was wrong: I compared dose-vs-raw-plant-demand and missed the credited-reservoir subtraction. Superseded by [[P-05]], which makes the credited-reservoir step explicit. Don't reuse P-04 number (per spec discipline — never reuse retired identifiers, even after retraction).
-- P-03 — When a cert downgrade lands but the value doesn't move, the refinement-trigger entry must declare BOTH directions explicitly: upward (cert rises if X confirms) AND downward (value refits to Y if Z disconfirms). Asymmetric triggers — "bump back when validated" with no parallel "drop the value when invalidated" — leave the value over-defended and quietly under-anchored. *Because:* Guillaume on foliar B1 (2026-05-14) approved a downward-trigger entry while explicitly refusing operator-facing prose about the uncertainty band — the asymmetry should live in `derivation.md`'s refinement-triggers section, not the app, but it MUST live somewhere. *How to apply:* every cert-downgrade review checks the refinement-trigger entry for a symmetric pair. If only the upward path is declared, push back; if only downward is declared, same. Uncertainty bands themselves stay out of app/operator surfaces per [[feedback_no_unspecced_narrative.md]]. (2026-05-14)
-- ~~P-02~~ — RETRACTED 2026-05-14. Codified a policy direction (compost-as-soil-bank, not fertigation-credit) that turned out to be the structural error in REQ-098's 2026-05-12 amendment. Compost release IS current-week supply, not long-term bank, so subtracting it from fertigation sizing is correct mass-balance — not deference to PA Taillon. The "1 379 → 3 319 g Mg as model output supersedes legacy anchor" framing inverts: PA Taillon's 1 379 g was the right number by physics, the amendment was wrong, and my approval ([[P-02]]) shipped the error forward into REQ-154. Superseded by [[P-05]] (subtract credited reservoirs before comparing to plant demand) and [[P-06]] (audit-trail discipline on amendment-then-reversal cycles). Don't reuse P-02 number.
-- P-08 — Findings rated below 3/5 on impact: decide autonomously (approve / reject / defer), file silently, move to next item without mentioning the call. The conversational response surfaces only ≥3/5 items for Guillaume's decision. Audit trail (drafts.md tag + request body or REJECTED mark) carries the record. Rating uses the criticality scale from `~/.claude/CLAUDE.md`: 5 = irreversible, blocks others, changes architecture; 3 = meaningful operational or audit consequence; below 3 = hygiene, internal coherence, code style. *Because:* Guillaume on 2026-05-16 — "from now on, your call for less than 3/5 on impact scale" then "dont mention the <3/5 calls you make, just do it quietely and move on to next point." Cuts the back-and-forth on hygiene-tier items AND the conversational noise of announcing each one. *How to apply:* on each finding, self-rate before presenting. Below 3 → make the call, file the request or mark REJECTED, update drafts.md tag, do not narrate the decision in the user-facing response. At or above 3 → present and ask as before. (2026-05-16)
-- P-07 — Skip audit-trail backfill when canonical principles already capture the lesson. drafts.md entries for Mode B chat-driven findings (like B1-REV / B2-REV that emerged in conversation rather than from a diff review) are NOT required — the request body + done-entry reversal note + relevant principle in principles.md together carry the full reasoning. Future readers reach for principles.md, not drafts.md, to learn what to do next time. *Because:* Guillaume on 2026-05-15 — "i don't need to keep the audit-trail as long as canonical principles are remembered." Padding drafts.md with retroactive entries duplicates state for no operational gain. *How to apply:* drafts.md is the inbox for Mode A auto-headless diff reviews; Mode B chat-driven findings go straight to requests + principles. Don't backfill drafts.md retroactively. Don't apologize for the gap. (2026-05-15)
-- P-06 — When a finding lands an action that turns out to be wrong (downstream specialist work sits on it), the reversal note goes ON the original done entry, not as a fresh request. Audit trail must show "approved 2026-05-13 → reversed 2026-05-14 (reason: …)" inline, not as scattered later entries that future readers must stitch together. The reversal is part of the original story. *Because:* Guillaume on 2026-05-14 called (c) — update from-model-challenger-done.md B1 with a reversal note — explicitly, per [[feedback_no_vestigial.md]]. Putting reversals only in newer files leaves the original done entry "technically still holding" while it points at retracted policy. *How to apply:* every time an approved finding is later overturned, edit the original done-side entry inline with a reversal block + pointer to the replacement request. New request gets its own entry; old entry stays as historical record with the reversal explicit. (2026-05-14)
-- P-01 — Total effective dose across active-delivery channels (frontload + sidedress + fertigation + foliar) must never exceed hydroponic supply level for that element. Soil bank and compost contribution are NOT counted into this sum — they're background context, not channels subject to the cap. *Because:* hydroponics defines the upper bound on what a tomato/lettuce plant can usefully take up; once active delivery alone equals or exceeds it, additional supply is over-fert regardless of what soil + compost contribute. This is the operative luxury cap for cert-defense and complexity critiques on every channel's supply formula. *How to apply:* when reviewing a supply-formula change, sum (frontload + sidedress + fertigation + foliar) at the target stage per element; compare to hydroponic-target supply (Sonneveld / similar); flag if Σ_active > hydroponic regardless of luxury_factor or REQ-014 head-room. (2026-05-13)
+## yield-impact-not-cert-fastidiousness
+
+Finding earns ≥3/5 only if a plausible mis-call costs ≥10% season yield; <3/5 closes per [[silent-under-3-of-5]]. *Because:* empirical soil/tissue tests are the calibration loop; model is scaffolding. (2026-05-16)
+
+## read-vendor-doc-first
+
+Before any cert-1/cert-2 finding naming a vendor, grep `nutrition/doc/` and read what's there. *Because:* Savaria 2026-05-16 — claimed "no Mg %" when label declared 0.10% wet basis. (2026-05-16)
+
+## fertigation-band-includes-sidedress
+
+Acceptance band on `computeStageRecipe` outputs must subtract sidedress credit (and all 4 reservoir terms per [[fertigation-subtracts-credited-reservoirs]]). *Because:* B1-REV + B2-REV both omitted the term, twice in two cycles. (2026-05-16)
+
+## silent-under-3-of-5
+
+Findings rated <3/5 on impact: decide autonomously, file silently, no mention to Guillaume. *Because:* Guillaume — "your call for less than 3/5 ... dont mention". (2026-05-16)
+
+## drafts-md-mode-a-only
+
+`drafts.md` is the inbox for Mode A auto-headless diff reviews. Mode B chat-driven findings go straight to requests + principles, not `drafts.md`. *Because:* Guillaume — "i don't need to keep the audit-trail as long as canonical principles are remembered". (2026-05-15)
+
+## reversal-inline-on-original
+
+When an approved finding is overturned, edit the original done-entry inline with reversal block + pointer to replacement. *Because:* scattered reversals leave the original "technically still holding". (2026-05-14)
+
+## fertigation-subtracts-credited-reservoirs
+
+Fertigation sizing = max(0, demand − Σ(compost + sidedress + foliar + P/Ca-only soil-bank)). *Because:* raw-demand comparison missed 500 mg/m²/wk compost Mg credit (2026-05-14).
+
+## symmetric-refinement-triggers
+
+Cert downgrades that leave the value unchanged require both upward + downward refinement triggers. *Because:* asymmetric triggers leave value over-defended and under-anchored. (2026-05-14)
+
+## hydroponic-cap-active-channels
+
+Σ(frontload + sidedress + fertigation + foliar) per element ≤ hydroponic supply. Soil + compost NOT in sum. *Because:* hydroponic is the operative luxury cap; active-dose past it is over-fert. (2026-05-13)

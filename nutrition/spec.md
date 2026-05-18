@@ -343,7 +343,7 @@ channels for the residual gap. Order (earliest → latest):
 
 1. **Compost** (passive mineralization from past amendments)
 2. **Sidedress** (granular, weekly application — Actisol, farine de plumes)
-3. **Fertigation** (active, drip-delivered — K₂SO₄, MgSO₄)
+3. **Fertigation** (active, drip-delivered — K₂SO₄, MgSO₄, Solubore, sodium molybdate)
 4. **Foliar spray** (rapid leaf application — Spray A micros)
 
 Per element, each channel covers what it can; only the residual feeds the
@@ -358,16 +358,33 @@ foliar_remaining      = max(0, fertigation_remaining − fertigation_supply)
 If foliar_remaining > 0, the foliar dose covers it. If 0, foliar is not
 needed for that element.
 
+**Mo carve-out (2026-05-16):** The cation micros (Mn / Zn / Cu / Fe) sit on
+foliar by default because at current soil pH 7.4 they're locked out at the
+root and foliar bypasses that lockout. Mo is the exception — molybdate is
+an anion and its plant-availability *rises* with pH rather than dropping, so
+the lockout argument does not apply. Mo sits on fertigation under this rule;
+foliar's Mo entry is retired. Sodium molybdate joins the fertigation barrel
+at the team's smallest reliable barrel weight (0.5 g/week sodium molybdate ≈
+0.5 mg Mo/m²/sem ≈ 7× peak demand, well within Mo's wide tolerance band).
+
 ---
 
-## REQ-062 — Single fertigation tank, single foliar spray per week
+## REQ-062 — Single fertigation tank per week
 
-The team workflow allows at most ONE fertigation tank preparation per week and
-at most ONE foliar spray per week. `TOMATO_STAGES` (or its successor
-`computeStageRecipe`) and `FOLIAR.tomato` MUST contain at most one active
-fertigation recipe and one active foliar recipe respectively at any given
-time. Constraint is per-crop-channel: 1 tomato fertigation + 1 tomato foliar
-+ 1 lettuce fertigation per week.
+The team workflow allows at most ONE fertigation tank preparation per
+week. `TOMATO_STAGES` (or its successor `computeStageRecipe`) MUST
+contain at most one active fertigation recipe at any given time, and
+the `LETTUCE` fertigation recipe is a flat object (one production
+recipe, no parallel sub-tanks). Constraint is per-crop: 1 tomato
+fertigation + 1 lettuce fertigation per week.
+
+The previous "single foliar spray per week" clause retired 2026-05-17
+(Guillaume direct ruling). Multi-spray weeks are operationally on the
+table via the foliar-recipe model's `sprayCount` 1-3 lever (REQ-112);
+they're useful on Mn / Zn lockout-regime weeks where foliar is the only
+channel and a single weekly spray clips the gap. Foliar-frequency is
+now governed by the foliar-recipe subproject (REQ-112), not by this
+cross-crop workflow rule.
 
 ---
 
@@ -570,3 +587,27 @@ Tomato Sol soil-bank block) MUST render, between its title and gap-grid, a
 in the live recipe. Composition is the product's label % as a `·`-separated
 string in canonical element order (N · P · K · Ca · Mg · Fe · Mn · Zn · Cu ·
 B · Mo), elements at 0 % omitted. Quantité is the channel-native dose.
+
+---
+
+## REQ-159 — Elemental mass in nutrition tables is in milligrams
+
+Every nutrition-table column expressing an elemental-mass quantity (demand, contribution, gap, soil reservoir, supply) renders in milligrams (mg). Recipe-product mass tables — Block 7 / 8 « Recette stockée vs calculée (drift) » and any other table whose cells are product masses such as K₂SO₄ g — are out of scope; product masses remain in g or kg.
+
+---
+
+## REQ-160 — Column-header unit declaration
+
+Every nutrition-table column whose cells share a unit declares that unit once in the column header. Cells contain only the numeric value (or `0`, `—`, `0 %`). Applies to all nutrition tables: contribution-block gap-grid, soil-bank block, fertigation / foliar / sidedress recipe tables, Salanova subpage tables, nursery subpage tables.
+
+---
+
+## REQ-161 — Bare 0 communicates coverage; no parenthetical
+
+On the contribution-block gap-grid, the `Manque sortant` cell rendering 0 (gap closed by the channel) displays the digit `0` only — color-coded per the three-tier scheme (REQ-016) — with no `(couvert)` or equivalent annotation.
+
+---
+
+## REQ-162 — Mois d'épuisement on the soil-bank block: SME-availability runway
+
+Every element row on the soil-bank block displays a Mois d'épuisement value equal to the Mehlich-3 reservoir divided by the weekly plant uptake currently sustainable at the measured SME plant-availability — the bank's runway at zero replenishment, with weekly draw throttled by current soil-solution availability.

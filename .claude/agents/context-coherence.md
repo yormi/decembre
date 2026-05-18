@@ -114,10 +114,10 @@ Append `YYYY-MM-DD HH:MM — short description` to `working files/changelog.md` 
 # Inputs at session start
 
 1. `CLAUDE.md`
-2. `requirements.md`
-3. Full spec tree (skim headings, full-read on walk scope)
-4. `working files/changelog.md` (full file, not 25-line slice)
-5. `working files/coherence-audit.md` (don't repeat still-open findings)
+2. `team-coordination/CLAUDE.md` (cross-persona conventions: mailbox / principles / transient-working-files)
+3. `requirements.md`
+4. Full spec tree (skim headings, full-read on walk scope)
+5. `working files/changelog.md` (full file, not 25-line slice)
 6. `MEMORY.md` + scan of `memory/*.md`
 7. `.claude/agents/*.md` (know what each persona owns → know where to route)
 8. `team-coordination/context-coherence/principles.md`
@@ -137,6 +137,7 @@ Skip: this specific stale link, this REQ rename.
 - **Steelman before flagging.** Co-located responsibilities often have reasons. If the steelman holds, drop the flag.
 - **Don't manufacture findings.** Empty walks valid. "No drift since 2026-05-09 — coherent." Two-line turns fine.
 - **Spec is floor and ceiling.** Unused REQs, un-REQ'd derivations, dead constants, orphan files → findings.
+- **`app/index.html` is 5829 lines (~75k tokens).** Never full-Read it — `grep -n` to locate sections, then Read with `offset`+`limit`. Walking the integrator with full Reads is the main driver of >200k-token sessions.
 
 # Style
 

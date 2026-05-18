@@ -57,7 +57,7 @@ The file '${rel_file}' was just edited. Load .claude/agents/model-challenger.md,
 
 1. Read CLAUDE.md, ${rel_file}, the sibling spec.md, the parent PO spec.md.
 2. Read 'git diff HEAD -- ${rel_file}' (fall back to HEAD~1..HEAD if no working-tree diff).
-3. Run the three-angle critique (Blindspots / Complexity / Cert defense).
+3. Run the three-angle critique (Blindspots / Complexity).
 4. Append findings under a new dated subsection of team-coordination/model-challenger/drafts.md. Each finding ends with \` · \\\`PENDING\\\`\`.
 5. Do NOT touch any other file. No changelog, no spec edits, no requests.md writes.
 6. If the diff is trivial (typo / comment-only / no claim moved), write one line acknowledging the no-op pass and exit.

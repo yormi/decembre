@@ -147,3 +147,9 @@ it on next render with no separate edit.
 ## REQ-153 — Bloc « Recette stockée vs calculée (drift) » : ratio FP / Stockée
 
 Pour chaque élément affiché dans le bloc « Recette stockée vs calculée (drift) » de la page Nutrition tomate (admin, mode T5), le ratio rendu est `recette premiers principes ÷ recette stockée`. 100 % ⇒ stockée et FP coïncident ; > 100 % ⇒ la stockée sous-fournit la cible FP ; < 100 % ⇒ la stockée sur-fournit.
+
+---
+
+## REQ-163 — Foliar Efficacité reactive to surfactant lever
+
+The Efficacité column on the foliar contribution block updates when the operator toggles the surfactant lever in Block 5. With surfactant engaged, foliar efficiency for routed elements is higher than without.

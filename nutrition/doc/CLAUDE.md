@@ -1,6 +1,6 @@
 # nutrition/doc — reference docs index
 
-Primary-source documents for Décembre's nutrition work: lab reports, datasheets, agronomist correspondence. Reach for these BEFORE relying on session memory.
+Primary sources for nutrition: lab reports, datasheets, agronomist correspondence. Read BEFORE relying on session memory.
 
 Crisis context for most of these: pH 7.28-7.48 root-zone lockout (P/Mn/Zn unavailable), Ca-saturated soil, traced to Savaria ORGANIMIX marin shrimp compost (calcitic-lime-amended) applied 2 inches fall 2025. Water ruled out.
 
@@ -59,7 +59,7 @@ Granular organic 4-2-5 + 3.7 % Ca + 1.0 % Mg + 2.3 % S. Ingredients: luzerne, pl
 ⚠️ **Adds 3.7-4.5 % Ca + gypsum + bone meal — wrong direction for current Ca-saturated, high-pH beds.** S from gypsum is pH-neutral (exchanges Ca onto CEC). Do NOT recommend until bank drawn down + pH below 6.5; then attractive.
 
 ### Eco-luzerne 3-0.5-2 (Acti-Sol) — *no datasheet yet*
-Pure alfalfa pellet, Quebec-made. 3-0.5-2 NPK, no animal by-products, no Ca amendments. Slow N (mineralizes weeks). Already referenced in `app/index.html:534+` for proposition tomato sidedress (Actisol → luzerne T1-T2; luzerne + frass 50/50 T3-T5; ~61 kg luzerne / 7 planches / cycle).
+Pure alfalfa pellet, Quebec-made. 3-0.5-2 NPK, no animal by-products, no Ca. Slow N (mineralizes weeks). Referenced in `app/index.html:534+` for proposition tomato sidedress (Actisol → luzerne T1-T2; luzerne + frass 50/50 T3-T5; ~61 kg luzerne / 7 planches / cycle).
 
 **Reach for:** low-Ca organic N comparison, building proposition sidedress, alfalfa-only top-dress.
 ✅ **Crisis-fit vs Selectus:** pure alfalfa = no Ca, no bone meal, no gypsum.
@@ -83,7 +83,7 @@ Email 2026-05-01. Visit report + lettuce fertigation. Reservoir 208 L, injection
 
 ## Boron
 
-### `context.md`
+### `Boron spray product.md`
 One-line link to Solubore 20-B (Etidot 67) product page (foliar Spray A boron source).
 **Reach for:** re-ordering boron, swapping suppliers, verifying Solubore spec for foliar dose math.
 

@@ -6,7 +6,7 @@ domain: write the least implementation that flips red tests green — no feature
 
 # Enter
 
-Spawned by team-leader. Leader's prompt names your subproject + pastes the filtered baseline failure list. Read your `spec.md`, the new `*.test.mjs` files, this file, root `CLAUDE.md`, `requirements.md`.
+Spawned by team-leader. Leader's prompt names your subproject + pastes the filtered baseline failure list. Read your `spec.md`, the new `*.test.mjs` files, this file, root `CLAUDE.md`, `team-coordination/CLAUDE.md` (cross-persona conventions: mailbox / principles / transient-working-files), `requirements.md`.
 
 One-shot subagent. Return a structured report; no dialogue.
 
@@ -38,6 +38,7 @@ Write the minimum code that flips Wave 1's failing tests green. No new tests, no
 - **Spec is floor and ceiling.** Build only what the test (via the spec) demands. No "nice to have", no future-proofing.
 - **French user-facing text** (REQ-001/006/007): CE not EC, Algue not Kelp.
 - **No narrative in operator UI** (`feedback_no_unspecced_narrative.md`): deterministic derivation from spec/data. No `// stable —`. Test asserts page content → render via deterministic helper, not hand-written string.
+- **`app/index.html` is 5829 lines (~75k tokens).** Never full-Read it. `grep -n 'pattern' app/index.html` to locate, then Read with `offset`+`limit`. A full Read costs ~5% of context per use; a targeted Read is 1-2k tokens. Full Reads have driven sessions past 200k tokens.
 
 # Working mode
 

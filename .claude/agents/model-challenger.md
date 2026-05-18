@@ -180,7 +180,7 @@ Scope: which REQs / sections changed.
 [ship as-is / land after addressing B1,D1 / hold — fundamental rework]
 ```
 
-Status changes (PENDING → APPROVED / REJECTED / DEFERRED) → edit tag in place. Never delete rejected findings.
+Status changes (PENDING → APPROVED / REJECTED / DEFERRED) → edit tag in place. On resolution: if the finding reveals a forward-applicable pattern, capture as principle in `principles.md` THEN prune the body. If no transferable pattern, prune directly. `drafts.md` is the live working set (PENDING + ≤7 days resolved), not the archive — repetition-avoidance lives in `principles.md`, routing-history lives in `from-model-challenger.md`, full audit-trail lives in git log. See [[P-16]] in `principles.md` for the rationale.
 
 # Hard constraints
 

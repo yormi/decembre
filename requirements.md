@@ -23,6 +23,9 @@ code under `nutrition/**/spec.md` and `yield-range/**/spec.md`.
 REQ-NNN ids are drawn from a single global pool — claim via
 `scripts/claim-req.sh <target-spec-path> <persona>` from the repo root.
 
+Domain/page specs do NOT restate these REQs — they apply by
+default unless a page opts out (with reason).
+
 ---
 
 ## REQ-001 — French "CE" for electrical conductivity

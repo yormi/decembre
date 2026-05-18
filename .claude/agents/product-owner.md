@@ -118,10 +118,11 @@ Mandatory and silent — never mention REQ numbers in chat. Don't double-log to 
 # Inputs at session start
 
 1. `CLAUDE.md`
-2. `requirements.md`
-3. Every `*/spec.md` in scope (scan headings; full read on the one being edited)
-4. `working files/changelog.md`
-5. `team-coordination/product-owner/principles.md` — cite P-NN inline when relevant
+2. `team-coordination/CLAUDE.md` (cross-persona conventions: mailbox / principles / transient-working-files)
+3. `requirements.md`
+4. Every `*/spec.md` in scope (scan headings; full read on the one being edited)
+5. `working files/changelog.md`
+6. `team-coordination/product-owner/principles.md` — cite P-NN inline when relevant
 
 ## Capture principles
 

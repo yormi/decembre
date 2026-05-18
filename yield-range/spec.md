@@ -13,24 +13,42 @@ specs in `yield-range/app/spec.md`.
 
 ## Contract
 
-### Inputs (one cohort)
-- `plateauSize` — `18`, `24`, `32`, or `50` (cells per tray; always packed end-to-end)
+### Inputs (one cohort, two-regime)
+- `plateauSize` — `18`, `24`, `32`, or `50` (cells per tray; always packed end-to-end in nursery)
 - `ledHours` — number 0–18, hours of supplemental LED at 200 µmol/m²/s
+- `nurseryDays` — integer ≥ 1, days in nursery before transplant
+- `fieldDays` — integer ≥ 1, days in field after transplant
+- `fieldDensityHeadsPerM2` — number, plants per m² in field beds
+- `nurseryAreaM2` — number, bench area dedicated to nursery (m²)
+- `fieldAreaM2` — number, bed area dedicated to field (m²)
 
 ### Outputs
-- `canopyCapG` — biomass asymptote at this packed density (g/plant)
-- `daysToPotential` — first integer day where W(d) ≥ 0.95 × `canopyCapG`,
-  or `null` if not reached within the trajectory window
-- `trajectory` — array of `{ day, weight_g }` from day 0 to day 49 (50 entries)
+- `nurseryCanopyCapG` — biomass asymptote at packed tray density (g/plant)
+- `fieldCanopyCapG` — biomass asymptote at field density (g/plant)
+- `transplantWeightG` — weight at day `nurseryDays` (g/plant)
+- `harvestWeightG` — weight at day `nurseryDays + fieldDays` (g/plant)
+- `daysToTransplantPotential` — first integer day in nursery where
+  W(d) ≥ 0.95 × `nurseryCanopyCapG`, or `null` if not reached (REQ-117)
+- `daysToHarvestPotential` — first integer day in field where
+  W(d) ≥ 0.95 × `fieldCanopyCapG`, or `null` if not reached (REQ-117)
+- `trajectory` — array of `{ day, weight_g, regime }` from day 0
+  through day `nurseryDays + fieldDays` (REQ-118)
+- `annualYieldKg` — annual harvested kg/year at steady state (REQ-175)
+- `bottleneckStage` — `'nursery' | 'field'` (REQ-175)
 
 ### Assumptions
-- Trays packed end-to-end throughout cycle. No spread.
+- Trays packed end-to-end throughout the nursery regime; field at
+  uniform spacing throughout the field regime. No within-regime
+  spread schedule.
 - All non-light stress factors fixed at 1.0 (T, T_night, CE, VPD, CO₂,
   nutrients, no disease, no bolting, no decay).
 - Solar contribution = annual-average Quebec outdoor PAR DLI ×
   double-poly greenhouse transmission factor (both constants explicit
-  in `data.js`; no seasonal lookup).
+  in `data.js`; no seasonal lookup). Same bench DLI applies in both
+  regimes (both stages under LEDs at Décembre).
 - Days are days-from-germination (not days-from-sow).
+- Steady-state continuous operation: nursery and field cohorts overlap
+  in parallel, weekly harvest cadence emerges automatically.
 
 ---
 
@@ -84,18 +102,133 @@ input.
 
 ---
 
-## REQ-117 — Days-to-potential output
+## REQ-117 — Days-to-potential outputs (both regimes)
 
-Output `daysToPotential` = first integer day where W(d) ≥ 0.95 ×
-`canopyCapG`. Returns `null` if not reached within the trajectory
-window (49 days).
+`daysToTransplantPotential` = first integer day `d ∈ [1, nurseryDays]`
+where `W(d) ≥ 0.95 × nurseryCanopyCapG`, or `null` if the nursery
+trajectory does not reach the threshold by day `nurseryDays`.
+`daysToHarvestPotential` = first integer day
+`d ∈ [nurseryDays + 1, nurseryDays + fieldDays]` where
+`W(d) ≥ 0.95 × fieldCanopyCapG`, or `null` if the field trajectory
+does not reach the threshold by day `nurseryDays + fieldDays`. Each
+output binds to its regime's cap unambiguously; the `0.95` threshold
+is shared.
 
 ---
 
 ## REQ-118 — Trajectory output for chart
 
-Output `trajectory` is an array of `{ day, weight_g }` from day 0 to
-day 49 inclusive (50 entries).
+Output `trajectory` is an array of `{ day, weight_g, regime }` from
+day 0 through day `nurseryDays + fieldDays` inclusive
+(`nurseryDays + fieldDays + 1` entries). `regime ∈ { 'nursery',
+'field' }`, transitioning from `'nursery'` to `'field'` at
+`day = nurseryDays + 1`. Trajectory length is dynamic, not capped at
+49 days; the legacy `TRAJECTORY_MAXIMUM_DAYS` constant in `data.js`
+is repurposed as a sanity ceiling on the sum `nurseryDays + fieldDays`
+(coder lane).
+
+---
+
+## REQ-171 — Two-regime growth integrator
+
+Daily integration spans nursery + field in a single loop running from
+`day = 1` through `day = nurseryDays + fieldDays`. For
+`day ≤ nurseryDays`, the step uses the nursery canopy cap (from
+`CANOPY_CAP_BY_PLATEAU[plateauSize]`, REQ-172) and the nursery
+per-plant DLI share (`NURSERY_SPACING_PACKED`, REQ-116). For
+`day > nurseryDays`, the step uses the field canopy cap (from
+`fieldCanopyCapByDensity(fieldDensityHeadsPerM2)`, REQ-173) and the
+field per-plant DLI share (`perPlantDliShareField(weight,
+fieldDensityHeadsPerM2)`, REQ-174). `RGR_MAX`, `f_light`, and the
+multiplicative logistic update of REQ-115 are unchanged across the
+regime boundary. The function exposes `transplantWeightG`,
+`harvestWeightG`, and the full per-day trajectory tagged with regime.
+
+---
+
+## REQ-172 — Nursery canopy cap by tray cells
+
+`CANOPY_CAP_BY_PLATEAU` covers all four `plateauSize` values:
+`{ 18: 69, 24: 52, 32: 39, 50: 25 }` (g/plant). Each entry is
+`area_per_cell × FOLIAGE_HEIGHT_M × FOLIAGE_DENSITY_KG_PER_M3 × 1000`,
+where `area_per_cell = 0.1525 / plateauSize` on a 1020 tray frame
+(28 × 54 cm = 0.1525 m²), `FOLIAGE_HEIGHT_M = 0.10`, and
+`FOLIAGE_DENSITY_KG_PER_M3 = 82`. The 50-cell value is anchored to
+Salanova breeder spec sheets (cert 3); 32 / 24 / 18 follow by
+holding the canopy mass-loading product (`h × ρ ≈ 8.2 kg/m²`)
+constant across cell footprints. Cert 3 at 32-cell (geometric
+physics floor — same canopy mass-loading at the next-up density is
+the conservative-physics baseline); cert 2 at 24 / 18 (the
+constant-`h × ρ` assumption likely underpredicts: at wider spacing
+Salanova grows taller and denser, so observed asymptote may land
+above the geometric prediction). Refinement trigger: cohort weighing
+at non-50-cell trays, with 18-cell as the highest-priority gap.
+
+---
+
+## REQ-173 — Field canopy cap by density
+
+`fieldCanopyCapByDensity(fieldDensityHeadsPerM2)` returns the per-plant
+cap (g) at a given field spacing:
+
+```
+fieldCanopyCapByDensity(d) =
+  (1 / d) × FIELD_CANOPY_HEIGHT_M × FIELD_FOLIAGE_DENSITY_KG_PER_M3 × 1000
+```
+
+With `FIELD_CANOPY_HEIGHT_M = 0.18` and
+`FIELD_FOLIAGE_DENSITY_KG_PER_M3 = 55` (geometric basis for mature
+Salanova: 18 cm tall × 55 kg/m³ fresh foliage density). At 43
+heads/m²: cap = 230 g/head. Cert 2 — geometric basis, no breeder
+anchor at field densities; refinement trigger is first Décembre
+cohort weight at the operational density.
+
+---
+
+## REQ-174 — Field per-plant DLI share
+
+`perPlantDliShareField(weightG, fieldDensityHeadsPerM2)` returns the
+share of bench DLI a single plant integrates as effective input
+post-transplant:
+
+```
+perPlantDliShareField(w, d) =
+  max(0.40,
+      min(1.0,
+          1 / (LEAF_PROJECTED_AREA_M2_PER_G × w × d)))
+```
+
+With `LEAF_PROJECTED_AREA_M2_PER_G = 0.00035` m²/g (Salanova
+empirical: 200 g head ≈ 30 cm rosette ≈ 700 cm² projected leaf
+area). Share holds at `1.0` until the rosette covers the per-plant
+bench footprint (`w × d × LEAF_PROJECTED_AREA_M2_PER_G ≥ 1.0`), then
+decays as `1 / leaf_cover`. Floor `0.40` mirrors
+`NURSERY_SPACING_PACKED` (REQ-116) — at full canopy closure, plants
+still integrate ~40 % of bench DLI via gaps, sunflecks, and scattered
+radiation. Cert 2 on both the leaf-area-per-gram constant and the
+floor value; refinement trigger is cohort leaf-area measurement or
+Beer-Lambert canopy modelling.
+
+---
+
+## REQ-175 — Throughput-bounded annual yield output
+
+`annualYieldKg` is computed at steady state from the throughput
+balance between nursery output and field intake:
+
+```
+trayCellsPerM2      = plateauSize / 0.1525
+nurseryOutputPerDay = (nurseryAreaM2 × trayCellsPerM2) / nurseryDays
+fieldIntakePerDay   = (fieldAreaM2 × fieldDensityHeadsPerM2) / fieldDays
+headsPerDay         = min(nurseryOutputPerDay, fieldIntakePerDay)
+annualYieldKg       = headsPerDay × 365 × harvestWeightG / 1000
+```
+
+`bottleneckStage` returns `'nursery'` if `nurseryOutputPerDay` was
+the `min`, else `'field'`. The `min` enforces that nursery cannot
+supply faster than its area × density / days, and field cannot
+absorb faster than its area × density / days; whichever is smaller
+caps the operation.
 
 ---
 

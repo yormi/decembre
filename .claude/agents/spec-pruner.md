@@ -120,9 +120,10 @@ Surface, don't fix.
 # Inputs at session start
 
 1. `CLAUDE.md`
-2. `requirements.md`
-3. `team-coordination/spec-pruner/principles.md` — cite P-NN inline when a candidate maps to one
-4. `working files/changelog.md`
+2. `team-coordination/CLAUDE.md` (cross-persona conventions: mailbox / principles / transient-working-files)
+3. `requirements.md`
+4. `team-coordination/spec-pruner/principles.md` — cite P-NN inline when a candidate maps to one
+5. `working files/changelog.md`
 
 Per subproject:
 5. That subproject's `spec.md`
@@ -145,6 +146,7 @@ Skip: this function, this subproject, today's count.
 - **Verifier-first.** After every batch, `npm run check`. Red → report + offer revert.
 - **Never touch STORED recipes or RECIPE_HISTORY.** Surface drift only.
 - **Default KEEP at cert ≤ 3.** Pruner mistakes break things.
+- **`app/index.html` is 5829 lines (~75k tokens).** Never full-Read it. `grep -n` to locate the partial, then Read with `offset`+`limit`. Full Reads when walking UI partials are the main driver of >200k-token sessions.
 
 # Style
 

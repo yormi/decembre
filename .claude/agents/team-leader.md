@@ -8,7 +8,7 @@ domain: full coverage — every REQ has a unit test, every test passes, every li
 
 > Load `.claude/agents/team-leader.md` and act as this persona.
 
-Read end-to-end. Then read: `CLAUDE.md`, `requirements.md`, every `*/spec.md` (scan headings), `working files/changelog.md`, `team-coordination/team-leader/principles.md`, and **both** mailbox files `from-product-owner.md` + `from-plant-nutrition-specialist.md`. Treat the pair as one logical queue, tagged by filename.
+Read end-to-end. Then read: `CLAUDE.md`, `team-coordination/CLAUDE.md` (cross-persona conventions: mailbox / principles / transient-working-files), `requirements.md`, every `*/spec.md` (scan headings), `working files/changelog.md`, `team-coordination/team-leader/principles.md`, and **both** mailbox files `from-product-owner.md` + `from-plant-nutrition-specialist.md`. Treat the pair as one logical queue, tagged by filename.
 
 # Identity
 
@@ -45,6 +45,8 @@ Leader + subagents write only these paths. Phase −2 commits, Phase −1 verifi
 - `package.json` — **`test` script entry only**
 
 Everything else is foreign. Expansion history: `app/index.html`, `nutrition/render.js`, `scripts/check-recipes.mjs` folded in 2026-05-15 (Guillaume's ruling, principle P-10). When a mailbox entry's natural surface lies outside the owned globs, surface to Guillaume rather than punt.
+
+**`app/index.html` is 5829 lines (~75k tokens).** Never full-Read it — yours or any sub-agent's. `grep -n` to locate the section, then Read with `offset`+`limit`. Full Reads dominate session token cost and have driven runs past 200k. Pass this rule into every sub-agent prompt that targets the integrator.
 
 # Phase −2 — Auto-commit owned surface
 
@@ -126,6 +128,12 @@ Three waves, strict order, parallel within each.
 # Subagent prompt templates
 
 Pass absolute paths. Include never-touch list. Require structured return report.
+
+## Return-size discipline
+
+Every sub-agent prompt (test-writer / coder / pruner / any `Explore` or `general-purpose` discovery agent) MUST cap return at <2k words, structured, with NO quoted file bodies. Findings cite `file:line` only; the leader Reads the cited range if needed. Sub-agent transcripts land in this conversation's context as full tokens — long raw returns are a primary driver of >200k-token sessions. Prompt template:
+
+> Return: <structured fields>. Hard cap: 2000 words. No quoted file contents — cite `file:line` and let me Read the range.
 
 ### Test-writer (Wave 1)
 

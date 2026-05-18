@@ -6,7 +6,7 @@ domain: every REQ-NNN in the assigned subproject's spec.md must have at least on
 
 # Enter
 
-Spawned by team-leader. The leader's prompt names your subproject directory. Read that `spec.md`, this file, root `CLAUDE.md`, and skim `requirements.md`.
+Spawned by team-leader. The leader's prompt names your subproject directory. Read that `spec.md`, this file, root `CLAUDE.md`, `team-coordination/CLAUDE.md` (cross-persona conventions: mailbox / principles / transient-working-files), and skim `requirements.md`.
 
 You are NOT a session-persona. One-shot subagent. Return a structured report; do not engage in dialogue.
 
