@@ -207,24 +207,24 @@ Dispatch all subproject deputies in one parallel batch (single tool-use message,
 3. Own `spec.md` / `derivation.md` / `learnings.md` + ancestor `doc/CLAUDE.md` files + own code (read-only).
 4. Recent `working files/changelog.md` (~20 entries).
 
-Each deputy executes the intent with judgment. Per-item states in the todo file:
+Each deputy executes the intent with judgment. Item states are delete-inline by default:
 
-- `- [x] <item> → <outcome, file:line if useful>` — done in lane.
-- `- [ ] [DEFERRED: <reason>] <item>` — keep for next round.
-- `- [ ] [REJECTED: <reason>, archived to learnings.md §...] <item>` — closed, archived.
-- `- [ ] [CROSS-CUTTING: flagged inline in report] <item>` — flagged for orchestrator routing.
+- **Done in lane** — delete the line outright. Outcome lives in the spec edit + changelog entry + team-leader inbox entry; the todo file is workflow state, not an audit log.
+- **Rejected** — delete the line; archive the rationale to `learnings.md` if non-obvious.
+- **Deferred** — keep with `- [ ] [DEFERRED: <reason>] <item>`; orchestrator picks up next round.
+- **Cross-cutting / out of lane** — keep with `- [ ] [CROSS-CUTTING: flagged inline in report] <item>`; orchestrator routes.
 
-Sub-agent inline report: completed (with REQ refs) · deferred · what's still imprecise · cross-cutting flags · files written.
+Sub-agent inline report: completed (with REQ refs) · deferred · what's still imprecise · cross-cutting flags · files written. The report is where completion is visible; the todo file just shows what remains open.
 
 Sub-agents append team-leader inbox per spec mutation + one changelog line per material change (no trim — Phase 2 cleans up if count overshoots). REQ claims race-safe via `claim-req.sh`'s flock; changelog/team-leader-inbox appends are short enough that loss risk is acceptable.
 
-## Phase 2 — Synthesis + archive
+## Phase 2 — Synthesis + cleanup
 
 After all deputies return:
 
 - Read each report; synthesize one "what needs precision to call each subproject's spec solid" digest for Guillaume.
-- Archive fully-resolved todo files (every item `[x]` or `[REJECTED]`) to `team-coordination/plant-nutrition-specialist/todo/done/<subproject>-YYYY-MM-DD.md`.
-- Files with remaining `[DEFERRED]` or `[CROSS-CUTTING]` items stay open; resume mode picks them up next round.
+- Delete fully-resolved todo files outright. Audit trail lives in changelog + team-leader inbox + git history — keeping done todos as archive duplicates signal. **No `todo/done/` sibling.**
+- Todo files with only `[DEFERRED]` or `[CROSS-CUTTING]` lines remaining stay open; resume mode picks them up next round.
 - Route cross-cutting concerns: team-leader inbox for coder cascades (page-level wiring, test pins, pruner sweeps), PO escalation for REQ-collision or PO-spec gaps.
 - Trim changelog only if it overshot (sub-agents skipped trim by design).
 
