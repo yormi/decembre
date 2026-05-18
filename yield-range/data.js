@@ -5,6 +5,9 @@
 //
 // All constants live here; calc.js consumes them, model.js exposes the public API.
 
+// REQ-115: cross-cultivar butterhead seedling RGR_max — conservative end
+// of literature band. See yield-range/derivation.md REQ-115 + learnings.md
+// "Rejected: back-calculated RGR_max from cap-asymptote target".
 const RGR_MAXIMUM_LETTUCE_NURSERY = 0.30;
 
 const W_INIT_GERMINATED_G = 0.015;

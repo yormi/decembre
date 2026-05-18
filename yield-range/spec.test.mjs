@@ -459,4 +459,11 @@ describe('Inherited — REQ-112/114/115 preserved across the extension', () => {
         `W must be non-decreasing; day ${out.trajectory[i].day} W=${out.trajectory[i].weight_g} < day ${out.trajectory[i-1].day} W=${out.trajectory[i-1].weight_g}`);
     }
   });
+
+  test('REQ-115 — RGR refit pin: 50-cell / ledHours=16 / RGR=0.30 → daysToTransplantPotential = 44', () => {
+    const out = predict({ ledHours: 16, nurseryDays: 49, fieldDays: 1 });
+    if (!out) return;
+    assert.equal(out.daysToTransplantPotential, 44,
+      `at 50-cell cap=25g / DLI≈28 / RGR=0.30, W reaches 0.95×25=23.75g at d44 — locks the 2026-05-17 refit anchor (specialist trace, derivation.md REQ-115)`);
+  });
 });
