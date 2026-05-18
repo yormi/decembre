@@ -23,6 +23,4 @@ A single turn that touches multiple subprojects writes one entry per subproject.
 
 ## Entries
 
-_(Inbox empty. 2026-05-16 22:00 app/operator carve archived to `from-product-owner-done.md` after team-leader executed all 6 stages of the app/index.html carve plan in one session per Guillaume's "do the full 6 stages" ruling — 5523 → 2341 lines, -57.6 %.)_
-
-
+_(Inbox empty. 2026-05-17 Block 2 lettuce-app bundle archived to `from-product-owner-done.md` after sub-wave J.)_

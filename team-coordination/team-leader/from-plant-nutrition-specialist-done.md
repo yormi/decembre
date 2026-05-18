@@ -11,6 +11,103 @@ Most recent at the top.
 
 ## Entries
 
+## 2026-05-17 — yield-range (REQ-112 / REQ-172 cap-basis switch)
+
+**Change type:** edited
+**REQs affected:** REQ-172 (formula text + cert breakdown + refinement trigger); REQ-112 derivation rewritten (basis switch power-law → geometric)
+**Summary:** Spec REQ-172 already carried the new cap values `{18:69, 24:52, 32:39, 50:25}` from the 2026-05-17 extension-bundle landing — but the formula text was dimensionally off by 10×. Fixed by expanding to `area_per_cell × FOLIAGE_HEIGHT_M × FOLIAGE_DENSITY_KG_PER_M3 × 1000` with constants explicit; cert breakdown restructured 50→3 / 32→3 / 24→2 / 18→2; 18-cell-priority refinement trigger added. `derivation.md` REQ-112 rewritten; `learnings.md` "Rejected: two-anchor power-law extrapolation" entry added.
+
+### Team-leader outcome (2026-05-17)
+Sub-wave J. **W2 coder:** `yield-range/data.js` CANOPY_CAP_BY_PLATEAU `{50:25, 32:50, 24:80, 18:120}` → `{18:69, 24:52, 32:39, 50:25}`; comment block 45-58 rewritten retiring the power-law prose and citing REQ-172 / derivation REQ-112 / learnings "Rejected: two-anchor power-law extrapolation". **W3 pruner:** swept `density^-1.585` / old cap values `120/80/50` stragglers tree-wide — clean (only audit-trail mentions in learnings.md, KEEP). **W1 test-writer:** REQ-172 value-pin tests in new `yield-range/spec.test.mjs` cover four-tray table + geometric formula. `npm test` 316/0; `npm run check` 161/0.
+
+## 2026-05-17 — yield-range (REQ-117 / REQ-118 amendments)
+
+**Change type:** edited
+**REQs affected:** REQ-117 (split into two parallel outputs, regime-bound), REQ-118 (trajectory length dynamic + regime tag); Contract outputs updated to match
+**Summary:** REQ-117 — `daysToPotential` retired; replaced by `daysToTransplantPotential` (nursery, binds to `nurseryCanopyCapG`) and `daysToHarvestPotential` (field, binds to `fieldCanopyCapG`). REQ-118 — trajectory length = `nurseryDays + fieldDays + 1`; entries tagged `regime ∈ {'nursery', 'field'}` transitioning at `day = nurseryDays + 1`. `TRAJECTORY_MAXIMUM_DAYS = 49` repurposed as sanity ceiling on the sum.
+
+### Team-leader outcome (2026-05-17)
+Sub-wave J. **W2 coder:** `yield-range/calc.js` predictor rewrite — `daysToPotential` retired; `daysToTransplantPotential` + `daysToHarvestPotential` added (regime-bound, 0.95 threshold); trajectory length dynamic with regime tag per entry; TRAJECTORY_MAXIMUM_DAYS comment repurposed (constant value untouched, no spec-side gate to raise). `yield-range/app/logic.js` updated to consume `daysToTransplantPotential`. **W3 pruner + manual fix:** "49 jours" UI stragglers swept at `yield-range/app/logic.js:78` (dynamic `windowDays` substitution) and `:260` (chart-internal `xMaximum` substitution). **W1 test-writer:** five regime-bound REQ-117 tests + four REQ-118 tests in `yield-range/spec.test.mjs` covering both regimes + negative pin against legacy singular `daysToPotential`. `npm test` 316/0; `npm run check` 161/0.
+
+## 2026-05-17 — yield-range (extension bundle)
+
+**Change type:** added, edited
+**REQs affected:** REQ-171, REQ-172, REQ-173, REQ-174, REQ-175 (all added — yield-range two-regime extension bundle); Contract section extended with five new inputs + five new outputs
+**Summary:** Two-regime integrator (REQ-171); four-tray nursery cap with geometric basis (REQ-172); field cap by density (REQ-173); field per-plant DLI share with leaf-cover saturation (REQ-174); throughput-bound annual yield + bottleneckStage (REQ-175). Contract gains inputs `nurseryDays / fieldDays / fieldDensityHeadsPerM2 / nurseryAreaM2 / fieldAreaM2` and outputs `nurseryCanopyCapG / fieldCanopyCapG / transplantWeightG / harvestWeightG / annualYieldKg / bottleneckStage`. Spec-only landing.
+
+### Team-leader outcome (2026-05-17)
+Sub-wave J — biggest thread of the wave. **W1 test-writer** created `yield-range/spec.test.mjs` (462 lines, 32 tests) covering REQ-117/118/171/172/173/174/175 + inherited REQ-112/114/115; shared boilerplate in new `yield-range/test-helpers.mjs`. **W2 coder** shipped:
+- `yield-range/data.js` — CANOPY_CAP_BY_PLATEAU 4-key; FIELD_CANOPY_HEIGHT_M=0.18, FIELD_FOLIAGE_DENSITY_KG_PER_M3=55, LEAF_PROJECTED_AREA_M2_PER_G=0.00035, FOLIAGE_HEIGHT_M=0.10, FOLIAGE_DENSITY_KG_PER_M3=82.
+- `yield-range/calc.js` — two-regime integrator day=1..nurseryDays+fieldDays with REQ-115 logistic update unchanged across boundary; full new output shape including annualYieldKg + bottleneckStage per REQ-175 throughput formula.
+- `yield-range/model.js` — `fieldCanopyCapByDensity` + `perPlantDliShareField` exposed via namespace alongside all 5 new constants.
+
+**W3 pruner:** straggler sweep in `yield-range/app/logic.js` for `daysToPotential` singular + "49 jours" framing — both cleaned. `npm test` 281→316/0 (+35 yield-range tests flipped red→green); `npm run check` 161/0.
+
+**Spec-gap flagged (PO routing):** `yield-range/app/spec.md` REQ-119 declares "Two inputs" but the new model takes 7. W2 coder kept `yield-range/app/logic.js` functional by calling calc.js with hardcoded defaults (nurseryDays=28, fieldDays=21, fieldDensityHeadsPerM2=43, nurseryAreaM2=1, fieldAreaM2=1) — page UI doesn't crash but doesn't expose the new levers either. REQ-119 needs PO amendment to add operator levers for `nurseryDays` / `fieldDays` / density / areas and displays for `annualYieldKg` + `bottleneckStage`. NOT in this turn's scope.
+
+## 2026-05-17 15:10 — nutrition/tomato/sidedress-recipe
+
+**Change type:** edited
+**REQs affected:** none (REQ-022 inheritance section wording only)
+**Summary:** Eco-luzerne 3-0.5-2 cert framing reworded under the REQ-022 inheritance bullet — gate is now stated as filesystem-conditioned. Plus a cross-cutting cert mismatch surfaced inline by specialist: `data.js:66` says FarinePlumes cert 4 while `derivation.md:84` says cert 3.
+
+### Team-leader outcome (2026-05-17)
+Sub-wave J. **W3 pruner:** edited `nutrition/tomato/sidedress-recipe/data.js:66` cert 4 → cert 3; reworded comment to include the Sonneveld 70-85% feather-meal-literature defense (0.75 = mid-band). Eco-luzerne directory filesystem-conditioned gate left untouched (filesystem state, not code; Guillaume's lane to populate when the cert PDF arrives). `npm test` 316/0; `npm run check` 161/0.
+
+## 2026-05-17 14:30 — yield-range
+
+**Change type:** edited
+**REQs affected:** REQ-116 (statement tightened, no identity mutation); Specialist note 2026-05-17 reframed condition-based
+**Summary:** REQ-116 spec body tightened to name the linear interpolation between `d = 14` and `d = 28` explicitly. New scaffolds `yield-range/derivation.md` and `yield-range/learnings.md` landed.
+
+### Team-leader outcome (2026-05-17)
+Sub-wave J. Spec-amendment-only — `NURSERY_SPACING_PACKED` in `yield-range/data.js` already encodes the linear shape, no code edit needed. Covered indirectly by yield-range integrator tests (REQ-171 boundary-continuity + REQ-117 transplant-threshold tests exercise the spacing factor at d=14 / d=28). PO-side REQ-112..116 collision with foliar-recipe spec.md filed separately in prior PO mailbox entry; remains PO renumbering scope.
+
+## 2026-05-17 11:57 — nutrition/tomato/fertigation-recipe
+
+**Change type:** edited
+**REQs affected:** REQ-098, REQ-099, REQ-154 (+ Contract section)
+**Summary:** Mo carve-out now load-bearing — `computeStageRecipe(stage)` return-shape extended to include `naMolybdate` (flat 0.5 g/wk floor). REQ-098 distinguishes mass-balance branches from flat-floor Mo branch. REQ-099 `FIRST_PRINCIPLES_T5` gains `NaMolybdate`. REQ-154 invariant covers all four products. `scripts/check-recipes.mjs` REQ-154 verifier extended in specialist lane.
+
+### Team-leader outcome (2026-05-17)
+Sub-wave J. **W2 defensive coder:** confirmed `nutrition/tomato/fertigation-recipe/calc.js` `computeStageRecipe` already returns 4-key shape `{kSulfate, mgSulfate, solubore, naMolybdate}` at all stages. **Block 7 drift renderer** at `nutrition/tomato/fertigation-recipe/app/drift.js` extended with NaMolybdate column (was 3-product enumeration). Caller-side destructure sweep clean — no orphan 2-key or 3-key destructures across the tree. `npm test` 316/0; `npm run check` 161/0 (verifier 149-pass preserved).
+
+## 2026-05-17 11:57 — nutrition/soil-contribution
+
+**Change type:** edited
+**REQs affected:** REQ-145
+**Summary:** REQ-145 micros-gap closed. New `micros-foliar-routed` key declared (Fe / Mn / Zn / B / Cu — all measured banks, all routed via foliar per CHANNEL_ROLE). Verifier `expectedKeys` updated 6 → 7. Coder follow-up REQUIRED: dispatcher in `nutrition/tomato/app/logic.js` (lines 200-215) routed `B → 'B-fert-routed'` (wrong key — B routes foliar). Also stale comment in `nutrition/tomato/foliar-recipe/data.js:66`.
+
+### Team-leader outcome (2026-05-17)
+Sub-wave J. **W2 coder:** fixed dispatcher at `nutrition/tomato/app/logic.js:209-211` — removed `else if (element === 'B') interpretationKey = 'B-fert-routed'` branch; extended the next branch's condition to include B (Fe/Mn/Zn/Cu/B → 'micros-foliar-routed'). Stale comment at `nutrition/tomato/foliar-recipe/data.js:66` (B "single-channel via fertigation") rewritten to match live CHANNEL_ROLE (B foliar 0.5 + passive 0.5). **W1 test-writer:** pinned `window.currentPourquoi['soil.B'].interpretation.key === 'micros-foliar-routed'` via JSDOM page-boot in `nutrition/soil-contribution/spec.test.mjs` (behavioral test) + structural pin verifying `scripts/check-recipes.mjs` expectedKeys matches the 7-key set declared in spec.md. **Pruner sweep** folded into W2 coder run — no other `B-fert-routed` live references found tree-wide. `npm test` 316/0 (+2 new green); `npm run check` 161/0.
+
+## 2026-05-17 — nutrition/tomato/plant-needs
+
+**Change type:** edited
+**REQs affected:** Pending block (tissue-test back-test invariant; no numbered REQ)
+**Summary:** Pending block reframed condition-based — drops the "~2026-05-12" calendar anchor. Derivation work alongside (cert-floor source table per (stage, element), T4 cert-1 load-bearing defense, refinement triggers rewritten, new micros-gap refinement-priority section).
+
+### Team-leader outcome (2026-05-17)
+Sub-wave J. Awareness-only entry per specialist's brief — no numbered REQ, no verifier matcher, no team-leader action. Archived as no-op.
+
+## 2026-05-17 — nutrition/tomato/foliar-recipe
+
+**Change type:** edited
+**REQs affected:** REQ-101, REQ-115
+**Summary:** REQ-101 cert paragraph reframed condition-based — calendar-anchored "trigger via 2026-05-12 petiole panel" replaced with "cert bump to 4 when tissue Mn / Zn / Cu correlates predicted within ±20 %". REQ-115 algorithm step 1 → step 2 transition got an explicit cross-reference to derivation's worked-example table.
+
+### Team-leader outcome (2026-05-17)
+Sub-wave J. **W3 pruner:** swept "2026-05-12 petiole panel" / "petiole-panel" stragglers tree-wide — hits returned only in audit-trail files (learnings.md historical entries, derivation.md rejected-stance archive) which are KEEP per spec-pruner discipline. No live spec/code/render-string stragglers needing update. REQ-101 / REQ-115 matchers in `scripts/check-recipes.mjs` still match post-edit headers (verifier scrub is no-op). `npm test` 316/0; `npm run check` 161/0.
+
+## 2026-05-17 — nutrition/compost-contribution
+
+**Change type:** edited (spec.md Pending block + verifier added)
+**REQs affected:** INV-1 (now enforced by new verifier), Pending decline-curve block reframed condition-based; no REQ-NNN identity mutations
+**Summary:** Spec's Pending decline-curve block reframed from calendar-bound (`~2027-04`) to condition-based triggers; INV-1 four-map closure now enforced in `scripts/check-recipes.mjs` after REQ-080.
+
+### Team-leader outcome (2026-05-17)
+Sub-wave J. **W3 pruner:** swept "2027-04" / "April 2027" calendar bound stragglers tree-wide — zero hits outside the original specialist-amended Pending block. Specialist's INV-1 verifier extension already shipped in `scripts/check-recipes.mjs` (in lane). No code edits needed. `npm test` 316/0; `npm run check` 161/0 (the new INV-1 verifier block is part of the 161-pass baseline).
+
 ## 2026-05-17 (follow-up) — nutrition/spec.md (REQ-062 retired in place — PO action delivered)
 
 Specialist filed REQ-062 retirement: title + body rewritten to "Single fertigation tank per week"; foliar-singleton clause dropped; sprayCount 1-3 lever in REQ-112 now load-bearing.

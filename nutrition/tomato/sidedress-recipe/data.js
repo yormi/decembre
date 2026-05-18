@@ -63,8 +63,9 @@ const SIDEDRESS_MINIMUM_EFFICIENCY = {
 // current Ca-saturated soil) contributes; FarinePlumes is N-only by
 // label (13-0-0), so only N is routed.
 //
-//   N = SIDEDRESS_PRODUCTS.FarinePlumes.efficiency = 0.75 (cert 4 —
-//       Sonneveld mineralization rate for cool-greenhouse organic-N)
+//   N = SIDEDRESS_PRODUCTS.FarinePlumes.efficiency = 0.75 (cert 3 —
+//       Sonneveld mineralization rate for cool-greenhouse organic-N;
+//       70-85% range from feather-meal literature → 0.75 mid-band)
 //
 // Elements absent from the map (K / P / Mg / micros) are not routed at
 // the current channel state — REQ-089 gates Actisol out so its K (0.85)

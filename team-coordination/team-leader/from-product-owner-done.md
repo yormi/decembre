@@ -11,6 +11,22 @@ Most recent at the top.
 
 ## Entries
 
+## 2026-05-17 — nutrition/lettuce/app — Block 2 bundle (REQ-177..180) + REQ-176 input-name fix
+
+**Change type:** added, edited
+**REQs affected:** REQ-176 (edited — input names snake_case → camelCase to match plant-needs spec convention); REQ-177 / REQ-178 / REQ-179 / REQ-180 (added — Block 2 plant-need bundle).
+**Summary:**
+- **REQ-176 amendment.** Input names rewritten `transplant_g` → `transplantG`, `target_g` → `targetG`, `cycle_days` → `cycleDays`. Aligns with `nutrition/lettuce/plant-needs/spec.md` REQ-165 signature and tomato REQ-104 convention. Behavior unchanged; spec-naming-only fix.
+- **REQ-177** pins demand source: plant-need block reads `window.PlantNeedsLettuce.calculateLettuceNutritionDemand(transplantG, targetG, cycleDays, density)`; no bare-global access to `LETTUCE_TISSUE_DW` / `LETTUCE_DM_FRACTION` in the render path. Mirrors tomato REQ-108.
+- **REQ-178** pins row layout: exactly 2 columns (`Él.` / `Besoin`) — no fruit/biomass split (Salanova is monotonic-mass-gain per REQ-166). Diverges from tomato REQ-111 (4-col with fruit/biomass) on purpose.
+- **REQ-179** pins click-to-modal: every element in `LETTUCE_TISSUE_DW` is a clickable row; modal shows EXACTLY three pieces (cert badge per REQ-168 / symbolic equation / plugged numbers). Rejects the current modal's 4th piece (`interpretation` prose like "Macros Salanova bien documentés en littérature serre — cert 4."). Tomato REQ-109 lookalike.
+- **REQ-180** pins reactivity: mutating any of `transplantG` / `targetG` / `cycleDays` / `density` re-renders the plant-need block; `phLocked` is supply-side per REQ-167 and excluded. Tomato REQ-110 lookalike scoped to the four demand-side scalars.
+
+### Team-leader outcome (2026-05-17)
+Sub-wave J. Three-pass test-writer + coder + pruner. **Test-writer (W1):** created `nutrition/lettuce/app/spec.test.mjs` (392 lines) covering REQ-176/177/178/179/180; shared boilerplate in new `nutrition/lettuce/app/test-helpers.mjs`. Initial pass: REQ-177 / REQ-178 / REQ-180 already green against existing code (demand source + 2-col layout + reactivity already aligned); REQ-176 + REQ-179 failed substantively (sixth front-load input present + interpretation prose still in modal payload). **Coder (W2):** removed front-load DOM input from lettuce Bilan header card at `nutrition/lettuce/app/page.html` (-7 lines), trimmed corresponding listener wiring at `app/operator/nutriment.js` (1-line glue trim), stripped `interpretation` key from `registerPourquoi` payload at `nutrition/lettuce/app/logic.js` line ~88 (REQ-179). **Pruner (W3):** verified cert-reasoning prose preservation in `nutrition/lettuce/plant-needs/derivation.md` BEFORE strip — confirmed per-element cert table captures macros cert 4 / micros cert 3 with Salanova-breeder-data + leafy-greens-generality defenses; no info loss across the strip. `npm test` 259 → 316 / 0 (+57 new tests green; REQ-176/179 flipped from red to green); `npm run check` 161/0 maintained.
+
+**Owned-surface expansion (P-10 — surface-for-Guillaume):** `nutrition/lettuce/app/page.html` (DOM partial) and `app/operator/nutriment.js` (listener glue) touched by the wave but outside the strict team-leader owned-globs. Parallel to the 2026-05-15 expansion ratification (P-10 episode) when `app/index.html` / `nutrition/render.js` / `scripts/check-recipes.mjs` were folded into the persona's surface after a similar incident. Both files are post-Stage-7-carve fragments of `app/index.html`; same routing logic suggests folding `**/page.html` and `app/operator/**/*.js` into the persona body's owned-glob list. Awaiting Guillaume's ratification.
+
 ## 2026-05-16 22:00 — app/operator (new subproject — Stage 1 of 6-stage app/index.html carve)
 
 **Change type:** added (structural refactor — no spec change; carves operator chrome out of `app/index.html` into `app/operator/`)

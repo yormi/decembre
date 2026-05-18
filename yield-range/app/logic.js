@@ -63,8 +63,9 @@ function renderYieldRange() {
     fieldAreaM2: 1,
   });
   const canopyCapG = result.nurseryCanopyCapG;
-  const daysToPotential = result.daysToTransplantPotential;
+  const daysToTransplantPotential = result.daysToTransplantPotential;
   const trajectory = result.trajectory;
+  const windowDays = trajectory[trajectory.length - 1].day;
 
   // REQ-120: capacité plafond display.
   const capEl = document.getElementById('yr-canopy-cap');
@@ -73,9 +74,9 @@ function renderYieldRange() {
   // REQ-133: daysToTransplantPotential rendered inline next to the cap.
   const daysElement = document.getElementById('yr-days-to-potential');
   if (daysElement) {
-    daysElement.textContent = (daysToPotential != null)
-      ? `· pic à J${daysToPotential}`
-      : `· pic non atteint dans la fenêtre de 49 jours`;
+    daysElement.textContent = (daysToTransplantPotential != null)
+      ? `· pic à J${daysToTransplantPotential}`
+      : `· pic non atteint dans la fenêtre de ${windowDays} jours`;
   }
 
   // REQ-132: clickable bench-DLI display. Recompute via the model API so
@@ -103,7 +104,7 @@ function renderYieldRange() {
   // REQ-121: chart re-render. Replace SVG markup wholesale on each call —
   // simplest approach; trajectory is 50 points so cost is negligible.
   const chartElement = document.getElementById('yr-chart-container');
-  if (chartElement) chartElement.innerHTML = renderYieldRangeChart(trajectory, canopyCapG, daysToPotential);
+  if (chartElement) chartElement.innerHTML = renderYieldRangeChart(trajectory, canopyCapG, daysToTransplantPotential);
 }
 
 // REQ-132: f_light response modal. Auto-renders the breakpoint table from
@@ -183,17 +184,17 @@ document.addEventListener('keydown', (e) => {
   if (e.key === 'Escape') closeDliModal();
 });
 
-// renderYieldRangeChart(trajectory, canopyCapG, daysToPotential) → SVG markup string.
+// renderYieldRangeChart(trajectory, canopyCapG, daysToTransplantPotential) → SVG markup string.
 //
 // REQ-121 contract:
-//   - x-axis labeled "Jours depuis germination" (range 0–49, integer, ticks every 7 days)
+//   - x-axis labeled "Jours depuis germination" (range 0 to nurseryDays + fieldDays, integer, ticks every 7 days)
 //   - y-axis labeled "Poids tête (g)" (range 0 to canopyCapG × 1.1, auto-scale)
 //   - polyline series for trajectory
 //   - horizontal dashed reference line at canopyCapG, labeled "Plafond" at the right edge
-//   - vertical marker at daysToPotential when not null, labeled "Pic potentiel: J<n>"
-//   - when daysToPotential is null, render annotation
-//     "Plein potentiel non atteint dans la fenêtre de 49 jours" inside the chart area
-function renderYieldRangeChart(trajectory, canopyCapG, daysToPotential) {
+//   - vertical marker at daysToTransplantPotential when not null, labeled "Pic potentiel: J<n>"
+//   - when daysToTransplantPotential is null, render annotation
+//     "Plein potentiel non atteint dans la fenêtre nurseryDays + fieldDays" inside the chart area
+function renderYieldRangeChart(trajectory, canopyCapG, daysToTransplantPotential) {
   // SVG canvas + plot-area math. viewBox keeps the chart responsive within
   // its container; margins reserve room for axis labels and tick text.
   const W = 600, H = 320;
@@ -202,14 +203,14 @@ function renderYieldRangeChart(trajectory, canopyCapG, daysToPotential) {
   const plotH = H - MT - MB;
 
   const xMinimum = 0;
-  const xMaximum = trajectory[trajectory.length - 1].day; // 49
+  const xMaximum = trajectory[trajectory.length - 1].day; // nurseryDays + fieldDays
   const yMinimum = 0;
   const yMaximum = canopyCapG * 1.1;
 
   const x = day => ML + (day - xMinimum) / (xMaximum - xMinimum) * plotW;
   const y = w   => MT + plotH - (w - yMinimum) / (yMaximum - yMinimum) * plotH;
 
-  // X ticks every 7 days (0, 7, 14, 21, 28, 35, 42, 49).
+  // X ticks every 7 days (0, 7, 14, … up to xMaximum).
   const xTicks = [];
   for (let d = 0; d <= xMaximum; d += 7) xTicks.push(d);
   // Y ticks: 0, then evenly-spaced fractions of canopyCapG (0.25, 0.5, 0.75, 1.0).
@@ -251,13 +252,13 @@ function renderYieldRangeChart(trajectory, canopyCapG, daysToPotential) {
   const points = trajectory.map(p => `${x(p.day)},${y(p.weight_g)}`).join(' ');
   svg += `<polyline points="${points}" fill="none" stroke="${seriesColor}" stroke-width="2"/>`;
 
-  // Vertical marker at daysToPotential (REQ-121) — or empty-state text.
-  if (daysToPotential != null) {
-    const xd = x(daysToPotential);
+  // Vertical marker at daysToTransplantPotential (REQ-121) — or empty-state text.
+  if (daysToTransplantPotential != null) {
+    const xd = x(daysToTransplantPotential);
     svg += `<line x1="${xd}" y1="${MT}" x2="${xd}" y2="${MT + plotH}" stroke="${markerColor}" stroke-width="1" stroke-dasharray="3 3"/>`;
-    svg += `<text x="${xd + 5}" y="${MT + 14}" text-anchor="start" font-size="11" fill="${markerColor}" font-weight="600">Pic potentiel: J${daysToPotential}</text>`;
+    svg += `<text x="${xd + 5}" y="${MT + 14}" text-anchor="start" font-size="11" fill="${markerColor}" font-weight="600">Pic potentiel: J${daysToTransplantPotential}</text>`;
   } else {
-    svg += `<text x="${ML + plotW / 2}" y="${MT + plotH / 2}" text-anchor="middle" font-size="12" fill="${markerColor}" font-weight="600">Plein potentiel non atteint dans la fenêtre de 49 jours</text>`;
+    svg += `<text x="${ML + plotW / 2}" y="${MT + plotH / 2}" text-anchor="middle" font-size="12" fill="${markerColor}" font-weight="600">Plein potentiel non atteint dans la fenêtre de ${xMaximum} jours</text>`;
   }
 
   // Axis titles.
