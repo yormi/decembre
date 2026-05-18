@@ -63,7 +63,9 @@ const FOLIAR_COVERAGE_WITH_YUCCA = 0.80;
 // the absorption-only ratio.
 //
 // Elements absent from the map:
-//   B  — single-channel via fertigation (REQ-061; Solubore in the barrel).
+//   B  — two-channel: foliar (Solubore spray) + passive (compost/sidedress)
+//        per CHANNEL_ROLE B: {foliar:0.5, passive:0.5}. Absent here only
+//        because the spray formulation lives elsewhere; not a fertigation route.
 //   Mo — retired from foliar 2026-05-16 (REQ-061 Mo carve-out). Molybdate
 //        is anionic and fully available at our soil pH 7.4, so the foliar-
 //        bypass argument that keeps cation micros here doesn't apply. Mo

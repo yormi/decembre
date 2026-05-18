@@ -68,7 +68,7 @@ function captureCurrentSnapshot() {
 ['nutr-target','nutr-solar-per-gram','nutr-phlocked',
  'nutr-foliar-spray-count','nutr-foliar-surfactant',
  'nutr-l-transplant','nutr-l-target','nutr-l-days','nutr-l-density',
- 'nutr-l-frontload','nutr-l-phlocked',
+ 'nutr-l-phlocked',
  'nutr-n-target','nutr-n-days','nutr-n-cells','nutr-n-trays','nutr-n-applications'].forEach(id => {
   const element = document.getElementById(id);
   if (element) element.addEventListener('input', buildNutriment);

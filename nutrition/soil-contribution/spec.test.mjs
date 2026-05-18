@@ -402,3 +402,128 @@ describe('renderGrid — structural contract (helper for REQ-143 / REQ-162)', ()
       `expected ≥ 11 dash cells, got ${dashCount}`);
   });
 });
+
+// ────────────────────────────────────────────────────────────────────────
+// REQ-145 — Boron pourquoi-modal dispatches to micros-foliar-routed
+// ────────────────────────────────────────────────────────────────────────
+//
+// Two pins added 2026-05-17 alongside the spec's 6 → 7 key extension
+// (micros-foliar-routed now covers B as well as Fe / Mn / Zn / Cu):
+//
+//   1. Behavioral. Load the assembled tomato page via JSDOM, let the
+//      page's `setNutrCrop('tomato')` boot path run `buildNutrimentTomato`,
+//      then read `window.currentPourquoi['soil.B'].interpretation.key`.
+//      Must equal `'micros-foliar-routed'`. Cross-subproject load: the
+//      dispatcher (lines ~200-215 of nutrition/tomato/app/logic.js) is
+//      inline inside `buildNutrimentTomato` — not a separately callable
+//      function — so the page-render path is the only behavioral surface.
+//
+//   2. Structural pin. The Node verifier (scripts/check-recipes.mjs around
+//      line 5180) maintains `expectedKeys` for REQ-145; the spec maintains
+//      the same set as ` ```render <key>` ` blocks. Both must agree on the
+//      7-key set. Equality is already enforced by the verifier itself but
+//      a node:test pin guards against silent drift when one file moves
+//      without the other.
+
+import { JSDOM, VirtualConsole } from 'jsdom';
+import { readFileSync, existsSync } from 'node:fs';
+import { execSync } from 'node:child_process';
+import { dirname, join } from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+const THIS_DIR = dirname(fileURLToPath(import.meta.url));
+const REPO_ROOT = join(THIS_DIR, '..', '..');
+const DIST_INDEX = join(REPO_ROOT, 'dist', 'index.html');
+const SPEC_MD = join(THIS_DIR, 'spec.md');
+const VERIFIER_PATH = join(REPO_ROOT, 'scripts', 'check-recipes.mjs');
+const BUILD_SCRIPT = join(REPO_ROOT, 'scripts', 'build.mjs');
+
+function ensureDistBuilt() {
+  if (existsSync(DIST_INDEX)) return;
+  execSync(`node ${BUILD_SCRIPT}`, { cwd: REPO_ROOT, stdio: 'pipe' });
+}
+
+describe('REQ-145 — boron pourquoi-modal key dispatches to micros-foliar-routed', () => {
+  test('REQ-145 — soil.B interpretation key is micros-foliar-routed (not B-fert-routed, not default-not-mehlich)', () => {
+    ensureDistBuilt();
+    const html = readFileSync(DIST_INDEX, 'utf8');
+    const virtualConsole = new VirtualConsole();
+    virtualConsole.on('jsdomError', () => {});
+    virtualConsole.on('error', () => {});
+    virtualConsole.on('warn', () => {});
+    virtualConsole.on('log', () => {});
+    const dom = new JSDOM(html, {
+      url: 'http://localhost/index.html',
+      runScripts: 'dangerously',
+      pretendToBeVisual: true,
+      virtualConsole,
+    });
+    const pourquoi = dom.window.currentPourquoi;
+    assert.ok(pourquoi, 'window.currentPourquoi missing — page did not boot');
+    const entry = pourquoi['soil.B'];
+    assert.ok(entry, 'window.currentPourquoi["soil.B"] missing — buildNutrimentTomato did not register B row');
+    assert.ok(entry.interpretation, 'soil.B has no interpretation object');
+    assert.equal(entry.interpretation.requirementId, 'REQ-145',
+      `soil.B interpretation.requirementId = ${entry.interpretation.requirementId} (expected REQ-145)`);
+    assert.equal(entry.interpretation.key, 'micros-foliar-routed',
+      `soil.B interpretation.key = "${entry.interpretation.key}" (expected "micros-foliar-routed"; ` +
+      `dispatcher in nutrition/tomato/app/logic.js around line 209 routes B to a stale key)`);
+  });
+});
+
+// ────────────────────────────────────────────────────────────────────────
+// REQ-145 — Structural pin: verifier expectedKeys equals spec render-keys
+// ────────────────────────────────────────────────────────────────────────
+
+describe('REQ-145 — expectedKeys set in verifier matches Renders: keys in spec.md', () => {
+  test('REQ-145 — 7-key set agreement (verifier ↔ spec)', () => {
+    const specSource = readFileSync(SPEC_MD, 'utf8');
+    const verifierSource = readFileSync(VERIFIER_PATH, 'utf8');
+
+    // Spec: extract ` ```render <key>` ` blocks below the REQ-145 header.
+    // The spec uses ` ```render Ca` ` / ` ```render P` ` / ` ```render
+    // K-fert-routed` ` / etc. as the canonical declaration.
+    const renderRe = /```render\s+([A-Za-z0-9_-]+)\b/g;
+    const specKeys = new Set();
+    let match;
+    while ((match = renderRe.exec(specSource)) !== null) {
+      specKeys.add(match[1]);
+    }
+
+    // Verifier: locate the REQ-145 expectedKeys assignment (only one in the
+    // REQ-145 section — anchored to the REQ-145 header comment block).
+    const sectionStart = verifierSource.indexOf('REQ-145 — Pourquoi modal interpretation strings');
+    assert.ok(sectionStart > 0,
+      'REQ-145 section header not found in scripts/check-recipes.mjs');
+    const sectionSlice = verifierSource.slice(sectionStart, sectionStart + 4000);
+    const expectedKeysRe = /const expectedKeys\s*=\s*\[([^\]]+)\]/;
+    const keysMatch = sectionSlice.match(expectedKeysRe);
+    assert.ok(keysMatch,
+      'expectedKeys array not found within REQ-145 section of check-recipes.mjs');
+    const verifierKeys = new Set(
+      keysMatch[1]
+        .split(',')
+        .map(token => token.trim().replace(/^['"]|['"]$/g, ''))
+        .filter(token => token.length > 0)
+    );
+
+    assert.equal(specKeys.size, 7,
+      `spec.md REQ-145 declares ${specKeys.size} render keys (expected 7): ${[...specKeys].join(', ')}`);
+    assert.equal(verifierKeys.size, 7,
+      `verifier expectedKeys has ${verifierKeys.size} entries (expected 7): ${[...verifierKeys].join(', ')}`);
+
+    const missingInVerifier = [...specKeys].filter(key => !verifierKeys.has(key));
+    const missingInSpec = [...verifierKeys].filter(key => !specKeys.has(key));
+    assert.deepEqual(missingInVerifier, [],
+      `keys in spec.md but missing from verifier: ${missingInVerifier.join(', ')}`);
+    assert.deepEqual(missingInSpec, [],
+      `keys in verifier but missing from spec.md: ${missingInSpec.join(', ')}`);
+
+    // Spot-check the new key is in the set on both sides (regression guard
+    // for the 6 → 7 extension landed 2026-05-17).
+    assert.ok(specKeys.has('micros-foliar-routed'),
+      'spec.md REQ-145 missing micros-foliar-routed render block');
+    assert.ok(verifierKeys.has('micros-foliar-routed'),
+      'verifier expectedKeys missing micros-foliar-routed entry');
+  });
+});

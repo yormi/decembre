@@ -48,17 +48,29 @@ function renderYieldRange() {
   const labelElement = document.getElementById('yr-led-hours-label');
   if (labelElement) labelElement.textContent = `${ledHours} h`;
 
-  // Run the math model.
-  const { canopyCapG, daysToPotential, trajectory } = window.YieldRange.predictNurseryYield({ plateauSize, ledHours });
+  // Run the math model. The yield-range model accepts a two-regime input
+  // set; the legacy admin page (REQ-119) exposes only plateauSize + ledHours,
+  // so the remaining inputs are wired here from page-level defaults until
+  // REQ-119 is extended to surface them. nurseryDays/fieldDays/density/areas
+  // come from the operator inputs once that spec lands; PO-routing follow-up.
+  const result = window.YieldRange.predictNurseryYield({
+    plateauSize,
+    ledHours,
+    nurseryDays: 28,
+    fieldDays: 21,
+    fieldDensityHeadsPerM2: 43,
+    nurseryAreaM2: 1,
+    fieldAreaM2: 1,
+  });
+  const canopyCapG = result.nurseryCanopyCapG;
+  const daysToPotential = result.daysToTransplantPotential;
+  const trajectory = result.trajectory;
 
   // REQ-120: capacité plafond display.
   const capEl = document.getElementById('yr-canopy-cap');
   if (capEl) capEl.textContent = canopyCapG.toFixed(0);
 
-  // REQ-133: daysToPotential rendered inline next to the cap value. Number
-  // → "· pic à J<n>"; null → "· pic non atteint dans la fenêtre de 49 jours".
-  // Empty string when the slot isn't in the DOM yet (defensive — same shape
-  // as capEl above).
+  // REQ-133: daysToTransplantPotential rendered inline next to the cap.
   const daysElement = document.getElementById('yr-days-to-potential');
   if (daysElement) {
     daysElement.textContent = (daysToPotential != null)

@@ -10,7 +10,7 @@ function buildNutrimentLettuce() {
   const targetG     = parseFloat(document.getElementById('nutr-l-target').value)     || 100;
   const cycleDays   = parseFloat(document.getElementById('nutr-l-days').value)       || 14;
   const density     = parseFloat(document.getElementById('nutr-l-density').value)    || 43;
-  const frontloadG  = parseFloat(document.getElementById('nutr-l-frontload').value)  || 0;
+  const frontloadG  = PN.LETTUCE_FRONTLOAD_DEFAULTS.featherMeal_g_per_m2;
   const phLocked    = document.getElementById('nutr-l-phlocked').checked;
 
   const demand = PN.calculateLettuceNutritionDemand(transplantG, targetG, cycleDays, density);
@@ -99,11 +99,6 @@ function buildNutrimentLettuce() {
       cert: certByEl[element],
       equation: `demand[${element}] = (gain frais × densité / 1000) × DM × (7 / cycleDays) × LETTUCE_TISSUE_DW[${element}] × 1 000`,
       plugged: `gain ${(targetG - transplantG).toFixed(0)} g × ${density.toFixed(0)} plants/m² / 1 000 = ${massGainPerCycle.toFixed(2)} kg/m² · DM ${(PN.LETTUCE_DM_FRACTION*100).toFixed(0)}% · sur ${cycleDays.toFixed(0)} j → DW ${dwGainPerWk_g.toFixed(1)} g/m²/sem · × ${dryWeightString} = <strong>${fmt(demand[element])} mg/m²/sem</strong>`,
-      interpretation: `Concentration tissulaire DW (Hochmuth + Sonneveld leafy greens) : <strong>${dryWeightString}</strong>. ` + (
-        certByEl[element] === 4
-          ? 'Macros Salanova bien documentés en littérature serre — cert 4.'
-          : 'Micros leafy greens : cert 3 (fourchette plus large, varie selon génétique + lumière).'
-      )
     });
   });
   let needsHtml = `<div style="display:grid; grid-template-columns:0.6fr 1fr; gap:6px 12px; font-size:12px;">

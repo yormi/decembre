@@ -13,10 +13,12 @@
 function renderPhase1Comparison() {
   const stage = nutrStage;
   // Stored recipes summarized as { productName: gramsPerWeekTotal }
-  const storedFert = STORED_RECIPE.tomato.fertigation[stage] || { mgSulfate: 0, kSulfate: 0 };
+  const storedFert = STORED_RECIPE.tomato.fertigation[stage] || { mgSulfate: 0, kSulfate: 0, borax: 0, naMolybdate: 0 };
   const fertStored = {
     'K2SO4':       storedFert.kSulfate * getMultK(),
     'MgSO4-7H2O':  storedFert.mgSulfate * getMultMg(),
+    'Solubore':    storedFert.borax || 0,
+    'NaMolybdate': storedFert.naMolybdate || 0,
   };
   const sd = STORED_RECIPE.tomato.sidedress[stage];
   // Side-dress is g/planche/wk (NOT total area)
@@ -55,10 +57,12 @@ function renderPhase1Comparison() {
   // FP fertigation: prefer FP_RECIPE_T5 override when set; otherwise fall back
   // to computeStageRecipe(stage) (mass-balance derivation from RECIPE_INPUTS).
   // Mirrors the precedence in calculateNutritionSupply's FP branch.
-  const fpStage = computeStageRecipe(stage) || { mgSulfate: 0, kSulfate: 0 };
+  const fpStage = computeStageRecipe(stage) || { mgSulfate: 0, kSulfate: 0, solubore: 0, naMolybdate: 0 };
   const fertFp      = {
-    'K2SO4':      (FP_RECIPE_T5.fertigation['K2SO4']      != null) ? FP_RECIPE_T5.fertigation['K2SO4']      : fpStage.kSulfate,
-    'MgSO4-7H2O': (FP_RECIPE_T5.fertigation['MgSO4-7H2O'] != null) ? FP_RECIPE_T5.fertigation['MgSO4-7H2O'] : fpStage.mgSulfate,
+    'K2SO4':       (FP_RECIPE_T5.fertigation['K2SO4']       != null) ? FP_RECIPE_T5.fertigation['K2SO4']       : fpStage.kSulfate,
+    'MgSO4-7H2O':  (FP_RECIPE_T5.fertigation['MgSO4-7H2O']  != null) ? FP_RECIPE_T5.fertigation['MgSO4-7H2O']  : fpStage.mgSulfate,
+    'Solubore':    (FP_RECIPE_T5.fertigation['Solubore']    != null) ? FP_RECIPE_T5.fertigation['Solubore']    : fpStage.solubore,
+    'NaMolybdate': (FP_RECIPE_T5.fertigation['NaMolybdate'] != null) ? FP_RECIPE_T5.fertigation['NaMolybdate'] : fpStage.naMolybdate,
   };
   const sidedressFp = FP_RECIPE_T5.sidedress;
   const foliarFp    = FP_RECIPE_T5.foliar;
