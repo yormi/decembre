@@ -2,15 +2,24 @@
 
 Persona infrastructure: identity, decision values, procedures, cross-persona handoffs.
 
-## Three storage layers
+## Four storage layers
 
 Separates HOW from WHEN/WHY from WHO. Conflating muddies all three.
 
-- **Skills — HOW.** Procedural, triggered by task-description match. Executable, shareable. Lives in `.claude/skills/` (project) or `~/.claude/skills/` (user).
+- **Skills — HOW, cross-persona.** Procedural, triggered by task-description match. Executable, shareable across personas + sessions. Lives in `.claude/skills/` (project) or `~/.claude/skills/` (user). Slash-invocable.
+- **Procedures — HOW, persona-local.** Procedural how-to specific to one persona (queue-processing, mailbox sweeps, fan-out, wave orchestration). Loaded only when triggered, NOT on persona entry — keeps persona load slim. Lives in `<persona>/procedures/<name>.md`. Persona file says "when X, follow `procedures/<name>.md`". Not slash-invocable; reachable only through the persona.
 - **Principles — VALUES.** Stance Guillaume aligned on at a judgment call. Ambient, loaded on persona entry. Persona-local, append-only. Lives in `<persona>/principles.md`.
 - **Persona — WHO.** Identity, scope, lane boundaries. Guillaume-curated. Lives in `.claude/agents/<persona>.md`.
 
-Filing rule: repeatable how-to → skill. Judgment-call stance → principle. What the persona is → persona.
+Filing rule: repeatable cross-persona how-to → skill. Persona-local how-to → procedure. Judgment-call stance → principle. What the persona is → persona.
+
+## Procedures convention
+
+Persona files MUST NOT pre-load mailboxes, inbox files (`from-*.md`, `from-*-done.md`), drafts queues, full spec-tree scans, or any other queue-state on entry. Those reads happen inside the procedure that needs them, at trigger time.
+
+Persona file `Inputs at session start` minimum: persona file itself, `CLAUDE.md`, `team-coordination/CLAUDE.md`, `requirements.md`, own `principles.md`, `_shared/principles.md`, recent `working files/changelog.md`. Anything else (in-scope spec, derivation, inbox, drafts) lives in the relevant procedure.
+
+Trigger phrasing in persona file: "When Guillaume asks to <X>, follow `procedures/<name>.md`." Procedure file is self-contained — assumes the persona is already loaded, lists its own reads + steps + writes.
 
 ## Principles convention
 

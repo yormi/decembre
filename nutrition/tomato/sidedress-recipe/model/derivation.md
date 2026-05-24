@@ -205,7 +205,7 @@ that policy — adding more N at T1 / T2 would deepen the same excess.
   variability. Further downward refit (sub-0.70) gated on n ≥ 5
   stage-tagged cohorts + petiole NO₃-N tracking. FP T5 dose shifts
   1 655 → 1 773 g/planche/wk; STORED ramp gated on `/retire-recipe`.
-  Full trace in `nutrition/tomato/research/tomato-t5-tissue-analysis-2026-05-23.md`.
+  Full trace in `nutrition/tomato/doc/tomato-t5-tissue-analysis-2026-05-23.md`.
 - **`stageYield` retunes.** Dose shifts proportionally; no model edit.
 - **Compost release shifts** (REQ-079 verifier drift, or compost ages
   per `compost-contribution/spec.md` decline curve). Re-derives

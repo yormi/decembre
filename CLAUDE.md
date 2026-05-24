@@ -31,7 +31,8 @@ A **spec** is a normative, testable, minimal claim about what the system must do
 **Always prefix a spec reference with its ancestor namespace.** Anywhere — conversation, code comment, cross-ref, commit message, persona summary — write `nutrition/tomato/fertigation-recipe — solubore-routed-fertigation`, not bare `solubore-routed-fertigation`. Slugs are unique only within their spec file; the namespace disambiguates and keeps grep self-locating.
 
 **Does NOT belong in a spec:**
-- Formulas, derivations, source tables, calibration → `*/derivation.md`. Rejected/historical → `*/learnings.md`.
+- Formulas, current math → code (`calc.js`, `model.js`) is the source of truth; `derivation.md` is **optional**, kept only where code-only reading is genuinely hostile (dense integrators, multi-step coupling).
+- Decisions, trade-offs, rejected alternatives, why-this-number → `*/learnings/NNNN-slug.md` (numbered, dated, append-only — see Learnings below).
 - Per-element values, magic numbers, datasets → `data.js` or calibration files.
 - Implementation walkthroughs, code excerpts, paths to consumers.
 
@@ -40,7 +41,64 @@ A **spec** is a normative, testable, minimal claim about what the system must do
 - *Edit in place when superseded — no vestigial entries.* History lives in git, not supersedes chains or strikethrough.
 - *Slug uniqueness is per spec file.* No central ledger.
 
-**When a spec gains complexity (formulas, tables, edge cases), split it.** `spec.md` keeps normative claims; *how* + *why-this-number* → sibling `derivation.md`. Target: 5-minute read.
+**When a spec gains complexity (formulas, tables, edge cases), split it.** `spec.md` keeps normative claims; *what the code does* → the code itself (`calc.js`, `model.js`, `data.js`); *why-this-number* + *why-this-decision* → `learnings/NNNN-slug.md`. Only add `derivation.md` if a real reader hits friction reading the code end-to-end. Target: 5-minute read.
+
+**Migration:** lazy. Existing `derivation.md` files stay until next touched; when next touched, move formulas to code (or code comments at the call site), move why-this-number to a learning, and delete the file. Exceptions kept by maintainer judgment.
+
+## Learnings
+
+A **learning** records a decision or fork: what we picked, what we rejected, why. `derivation.md` answers *"how does the current model compute X?"*; learnings answer *"why is the model shaped this way?"*. Together: spec + code + data = current truth (HEAD); derivation.md = current math explanation; learnings/ = log of decisions that shaped HEAD.
+
+**Where:** `<subproject>/learnings/NNNN-slug.md`, numbered per-subproject (no global counter). Lives at the highest subproject scope the decision applies to — foliar-only → `nutrition/tomato/foliar-strategy/learnings/`; cross-crop → `nutrition/learnings/`; project-wide → root `learnings/`.
+
+**Entry shape:** title + dated 1-3 sentence default. Optional sections (Status, Considered Options, Consequences) only when they earn their keep. Voice: research-notebook *(we tried X, found Y; considered A vs B, picked B because Z)*, not corporate ADR prose.
+
+**Three-criteria filter** — write a learning when all three fire:
+1. *Hard to reverse* — meaningful cost to change later.
+2. *Surprising without context* — a future reader will wonder "why this way?".
+3. *Real trade-off* — genuine alternatives existed.
+
+Otherwise it's just current state — capture in `derivation.md` (math) or `spec.md` (rule).
+
+**Append-only by default.** Prune only when a learning has zero forward value (e.g. a calibration we'll never retry). Superseded learnings get a new file referencing the old; old stays.
+
+**Migration:** lazy. Existing flat `learnings.md` files stay until next touched; when next touched, split into numbered files.
+
+## Code style — Elm-influenced JS
+
+Calc/model layers are pure (no I/O, no globals, no `Date.now`).
+Beyond purity, write JS in a shape that would translate
+mechanically to Elm later — the safety wins are real even
+without the compiler.
+
+- **Discriminated unions as tagged objects.** Variant data
+  carries a `kind` discriminant: `{kind: 'foliar', ...}`,
+  `{kind: 'fertigation', ...}`. Branch on `kind`. No
+  duck-typing, no "if this field exists then…".
+- **Exhaustive switches.** Every `switch (x.kind)` ends with
+  `default: throw new Error(`unreachable: ${x.kind}`)` (the
+  Elm `_ -> Debug.todo` equivalent). New variant added →
+  every switch breaks loud, not silent.
+- **Result / Maybe shapes for partial functions.** When a
+  calc can fail (missing input, out-of-range), return
+  `{ok: true, value}` / `{ok: false, error}` or
+  `{some: true, value}` / `{some: false}` — never `null`,
+  never throw for expected branches. Throw only for true
+  invariant violations.
+- **Immutable data.** No in-place mutation of inputs.
+  Functions return new objects. Spread freely; arrays via
+  `.map` / `.filter` / `.reduce`, never `.push` on a passed-
+  in array.
+- **Total functions over defaults.** Prefer signatures that
+  force the caller to handle every case over silent
+  defaults that paper over missing inputs.
+- **No nullable mixed-shape returns.** A function returns
+  one shape, not "object or null or number." If it can
+  return nothing, use Maybe.
+
+Lazy migration: existing code stays until next touched;
+when you edit a calc/model function, refactor its shape to
+match. No big-bang rewrite.
 
 ## Parallel-session staleness mitigation
 

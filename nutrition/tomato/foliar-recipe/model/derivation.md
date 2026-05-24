@@ -72,6 +72,43 @@ constant exposed for future toggle, not currently consumed.
 
 ---
 
+## Ca-specific cuticle coverage (Test 1 Path B, 2026-05-24)
+
+Ca²⁺ doesn't share the cation-micro (Mn / Zn / Cu / Fe) coverage axis.
+Two physical reasons: (a) divalent Ca²⁺ binds cuticle pectate at the
+deposition surface and resists translocation into the lamina (Conway /
+Sams cell-wall Ca-pectate retention is the disease-resistance
+mechanism, also the absorption bottleneck); (b) Ca/sulfate
+electrochemistry differs — no sulfate counter-ion shuttle into the
+hydrated cuticle pore. Ca foliar uptake literature mid-band sits
+~half the sulfate-cation-micro band; pin Ca coverage to **0.50 × the
+sulfate-metal coverage** at each surfactant state.
+
+| Surfactant | Sulfate-metals | Ca²⁺ | Ratio |
+|------------|---------------:|-----:|------:|
+| false      | 0.30           | 0.15 | 0.50  |
+| true       | 0.80           | 0.40 | 0.50  |
+
+```js
+const FOLIAR_COVERAGE_CA_NO_SURFACTANT   = 0.15;  // cert 2
+const FOLIAR_COVERAGE_CA_WITH_SURFACTANT = 0.40;  // cert 2
+```
+
+**Cert 2** for both — no Décembre tissue measurement under a Ca-foliar
+regime; the 0.50 sulfate-ratio is literature-mid-band heuristic
+(Schönherr 2000 cuticle Ca permeability ~10× lower than K but
+surfactant-assisted regimes close the gap). Cert bump to 3 if the
+Test 1 week-4 tissue panel correlates predicted within ±20 %.
+
+**Spec status.** REQ-101 currently anchors a global
+`FOLIAR_COVERAGE_DEFAULT` (sulfate-metal-shaped). The per-element
+coverage axis split is pending — needs a PO-coordinated REQ next pass
+(handoff item 3). Until then, these constants live in derivation
+only; `computeFoliarSupply` returns `Ca: 0` (handoff item 5 schema
+gating).
+
+---
+
 ## Per-element burn cap — `BURN_CAP_BASE_G`
 
 Maximum cuticle-safe per-element load per 15 L master tank, used by
@@ -88,6 +125,7 @@ extension publications): 0.1-0.3 % MnSO₄, 0.05-0.1 % CuSO₄, etc.
 | Fe      | 80       | Extension mid-band; high-mass dose, well below tank-CE bound | 3 |
 | Mo      | 2        | Sonneveld 50-200 mg/L band; seldom binding              | 3    |
 | B       | 9        | Solubore (Na₂B₈O₁₃·4H₂O, 20.5 % B); non-ionic           | 3    |
+| Ca      | 100      | CaCl₂·2H₂O (27.3 % Ca); 0.67 % solution ≈ 9 mS/cm under REQ-025 tomato 10 mS/cm cap with 10 % safety margin (Test 1 Path B 2026-05-24) | 3 |
 
 **Cu certainty exception (cert 2, divergence BELOW extension mid-band).**
 The 2 g/15 L Cu value didn't come from extension mid-band — extension
@@ -382,8 +420,25 @@ Schema carries N / P / K / Ca / Mg as explicit zeros:
   Fails REQ-018's 5 % effective floor in spray pH. Fertigation owns P.
 - **K**: cuticle ~5 %; 6 g/m²/wk demand → ~120 g elemental K in tank.
   Hits burn cap + tank-volume limits before useful uptake.
-- **Ca**: Spray B (CaCl₂) retired 2026-05-06 (Teris industrial-grade
-  Ecocert listing unverifiable). BER now managed by ventilation + humidity.
+- **Ca** (reactivated 2026-05-24 — Test 1 Path B): foliar CaCl₂·2H₂O +
+  surfactant returns to the program. **Goals:** (a) close the
+  ~315 mg/m²/wk T5 canopy gap left after root-channel obstacles
+  (Vmax 0.50 × Mg antagonism 0.80 × root-mass 0.70 × pH 0.94 = net 0.27
+  of soil bank delivered; full chain in
+  `nutrition/tomato/doc/ca-ber-investigation-tests-2026-05-24.md`); (b)
+  reduce stem-canker susceptibility via Ca-pectate cell-wall
+  cross-linking (Conway/Sams; Volpin & Elad — cert 4 mechanism).
+  **Dose:** 100 g CaCl₂·2H₂O per 15 L tank, 2 sprays/wk indiscriminate
+  on foliage + fruit + stems, separate tank from oligo spray
+  (REQ-029 — Ca²⁺ + SO₄²⁻ → gypsum precipitation). **Delivered:**
+  ~56 mg Ca/m²/wk at Path B (~18 % of canopy gap; Path C 3×/wk closes
+  ~27 %). **Schema status:** `computeFoliarSupply` still returns
+  `Ca: 0` — Ca slot is open in handoff item 5, pending PO call on the
+  schema-wiring shape (cuticle-coverage axis becoming per-element vs
+  staying global). **Ecocert:** CaCl₂·2H₂O food-grade vendor + product
+  certified 2026-05-24 (resolves the 2026-05-06 retirement caveat, see
+  `learnings.md`). Surfactant — Ecocert-allowed yucca / quillaja /
+  equivalent, vendor in operator lane.
 - **Mg**: cuticle ~10 %; competes with Ca/K; burn-cap headroom too
   costly. Fertigation MgSO₄ + compost residual cover demand.
 

@@ -127,7 +127,7 @@ supply ~67 mg/m²/wk vs 660 demand (-90 %). Severely-déficient
 tissue confirms the lockout-regime prediction. The mass-flow-binds
 mechanism for P is validated against peak-demand tissue (cert
 3 → 4). Full delivered-vs-demand trace in
-`nutrition/tomato/research/tomato-t5-tissue-analysis-2026-05-23.md`.
+`nutrition/tomato/doc/tomato-t5-tissue-analysis-2026-05-23.md`.
 
 ### Example runway: tomato Ca — demand-bound regime (clamp binds)
 

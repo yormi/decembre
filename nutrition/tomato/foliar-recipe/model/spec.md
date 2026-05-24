@@ -236,7 +236,7 @@ Consume foliar output or govern tank behavior:
 
 - **REQ-013 / REQ-014** (`nutrition/tomato/spec.md`) — supply chain bounds; foliar is one of four channels. Mn / Zn / Fe / Cu have no other channel while pH ≥ 7.
 - **REQ-018** (`nutrition/spec.md`) — no decorative products at current pH; coverage discount cuts headline to ~30 %, fires if a product drops below 5 % effective after coverage.
-- **REQ-022** (`nutrition/spec.md`) — Ecocert-allowed only. MnSO₄ / ZnSO₄ / CuSO₄ / Solubore / Na molybdate / FeSO₄·7H₂O all on CAN/CGSB-32.310/311. CaCl₂ (Spray B) removed 2026-05-06 (Teris industrial-grade listing unverified).
+- **REQ-022** (`nutrition/spec.md`) — Ecocert-allowed only. MnSO₄ / ZnSO₄ / CuSO₄ / Solubore / Na molybdate / FeSO₄·7H₂O all on CAN/CGSB-32.310/311. CaCl₂·2H₂O reactivated 2026-05-24 for Test 1 Path B (food-grade vendor + product Ecocert-verified by operator); model-side wiring into `computeFoliarSupply` output gated on macro-channel contract call upstream.
 - **REQ-025** (`nutrition/spec.md`) — foliar tank predicted CE under burn cap (10 mS/cm tomato); wired in `scripts/check-recipes.mjs`.
 - **REQ-053 / REQ-055** (`nutrition/spec.md`) — predicted tank pH + cuticle-pH multiplier. Tank pH ~5 (sulfate dominant), within `foliarPhResponse` peak 5.5-6.0.
 - **REQ-061** (`nutrition/spec.md`) — cascade order. Foliar carries residual gap; Mn / Zn / Fe / Cu have no other channel today (sulfates precipitate at root-zone pH 7.4), so foliar IS the earliest active channel for those — verifier accommodates.

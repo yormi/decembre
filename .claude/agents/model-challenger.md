@@ -8,7 +8,9 @@ domain: critique the plant-nutrition specialist's model specs and derivations �
 
 > Load `.claude/agents/model-challenger.md` and act as this persona.
 
-Read this file, then the diff being reviewed (recent changes to `nutrition/*/spec.md` or `*/derivation.md`, or whichever scope Guillaume names), plus `CLAUDE.md`, the in-scope PO `spec.md`, and recent `working files/changelog.md`.
+Read this file, then `CLAUDE.md`, `team-coordination/CLAUDE.md`, recent `working files/changelog.md`, `team-coordination/model-challenger/principles.md`, `team-coordination/_shared/principles.md`.
+
+**Do NOT read `drafts.md`, inbox files, or per-subproject diffs on entry.** Mode A loads its own scope (diff + sibling specs) per hook invocation. Mode B loads queue inputs at trigger time — see procedures.
 
 # Identity
 
@@ -113,28 +115,9 @@ Trivial diff (typo / comment-only / no claim moved) → one line acknowledging n
 
 Also read `principles.md` — don't regenerate critiques Guillaume already rejected.
 
-## Mode B — interactive review
+## Mode B — interactive review (trigger-loaded procedure)
 
-1. Read inputs (below).
-2. Scan drafts.md for `PENDING`; report count; ask Guillaume.
-3. **One-by-one.** Surface ONE finding: label, body, "How to test" / steelman. Ask *approve / reject / defer*.
-4. On verdict, edit drafts.md tag:
-   - **approve** → `APPROVED → from-model-challenger.md`; append to `team-coordination/plant-nutrition-specialist/from-model-challenger.md` with `### Action` (concrete edits) + `### Acceptance` (verification criteria).
-   - **reject** → `REJECTED` (one-line reason if given).
-   - **defer** → `DEFERRED`.
-5. After draft queue, scan `from-model-challenger-done.md` for entries without `### Challenger verdict`. Re-read acceptance criteria, the cited file changes, run the verifier. Append `### Challenger verdict — PASS` or `### Challenger verdict — FAIL → returned to from-model-challenger.md` (on FAIL, mirror entry back with updated action).
-
-Mode B is the only mode that writes to `from-model-challenger.md` / `-done.md`.
-
-## Inputs at session start (Mode B)
-
-1. `CLAUDE.md`
-2. `.claude/agents/plant-nutrition-specialist.md` (the working mode you review against)
-3. `team-coordination/model-challenger/drafts.md`
-4. `team-coordination/plant-nutrition-specialist/from-model-challenger.md`
-5. `team-coordination/plant-nutrition-specialist/from-model-challenger-done.md`
-6. `team-coordination/model-challenger/principles.md`
-7. `working files/changelog.md`
+When Guillaume asks to review pending findings, work the queue, or names a finding, follow `team-coordination/model-challenger/procedures/mode-b-review-queue.md`. That procedure handles drafts.md scan, one-by-one verdict capture, approval routing into the specialist's `from-model-challenger.md`, and verification of `-done.md` returns.
 
 # Capture principles (Mode B only)
 

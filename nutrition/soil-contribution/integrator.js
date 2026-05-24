@@ -42,33 +42,33 @@ function weeklyMassFlowL() {
   return (2 * getSolarRad() * 7) / 1000;
 }
 
-// Transpiration factor — corrects mass-flow for canopy size. Cert 3.
+// Transpiration factor — corrects mass-flow for canopy size. Locked at 1.0
+// (2026-05-24). Cert 3.
 //
 // `weeklyMassFlowL()` returns IRRIGATION volume (the formula is fertigation-
-// driven). For a mature, healthy plant with full canopy, transpiration ≈ irrigation
-// minus a small leaching fraction. But for a stunted plant at, say, 30% target
-// yield, the canopy is much smaller and real transpiration is materially less —
-// often 50-70% of irrigation. Most of the surplus water leaches past the roots
-// without contributing to mass-flow uptake.
+// driven). For a mature, healthy plant with full canopy, transpiration ≈
+// irrigation minus a small leaching fraction.
 //
-// Without this correction, the Bilan would systematically overstate soil supply
-// for stunted plants — exactly the failure mode that perpetuates stunting (the
-// model says "you have plenty of N from soil", user under-fertigates, plants
-// stay stunted, model still says "you have plenty"...).
+// Previous formula: `current_yield / target_yield` (floor 0.4, cap 1.0). Retired
+// 2026-05-24 — operator-anchored (denominator was the operator's target), not
+// first-principles. See `nutrition/tomato/doc/ca-ber-investigation-tests-
+// 2026-05-24.md` Test 6 for the physics-anchored replacements:
+//   - Variant 6a — sunlight × RUE → theoretical yield; ratio = currentYield /
+//     theoreticalYield, paired with canopy-state visual override.
+//   - Variant 6b — FAO-56 ET₀ vs measured irrigation; cleanest if climate
+//     computer is wired.
 //
-// Approximation: transpiration scales roughly with canopy area, which scales
-// roughly with yield achievement at production stages. Floor at 0.4 because
-// even tiny seedlings transpire some. Cap at 1.0 (can't exceed irrigation).
+// Operational value held at 1.0 until either variant ships:
+//   - Tomato bed is at full canopy (rows touching) in current crop cycle.
+//   - Worked example in Test 6b shows factor ≈ 1.0 at 28 L/m²/wk irrigation,
+//     2 000 J/cm²/day solar, ETc 20.7 L/m²/wk, 25 % drainage overshoot.
+//   - Field signal (BER + water shoots + leaf Ca déficience) traces to root-
+//     side obstacles (antagonism, root mass) and distribution-to-fruit failure
+//     — NOT to a transpiration shortfall. See research doc.
 //
-// More precise alternatives we're NOT using yet (cost > value at current state):
-//   - Direct LAI measurement (would need leaf-area meter)
-//   - Penman-Monteith from VPD + canopy resistance (overengineered for our context)
-//   - Drainage-fraction monitoring on a sample bed (good idea, separate operational
-//     decision — see issue R3 in the audit notes)
-function transpirationFactor(currentKgM2Wk, targetKgM2Wk) {
-  if (!targetKgM2Wk || targetKgM2Wk <= 0) return 1.0;
-  const ratio = currentKgM2Wk / targetKgM2Wk;
-  return Math.max(0.4, Math.min(1.0, ratio));
+// Signature preserved for caller compatibility; arguments ignored.
+function transpirationFactor(_currentKgM2Wk, _targetKgM2Wk) {
+  return 1.0;
 }
 
 // Seasonal mineralization multiplier for organic N specifically. Cert 3.
