@@ -418,6 +418,12 @@ Recommend path (a) — expand the existing symmetric refinement trigger to name 
 
 ---
 
+## 2026-05-24 — review of `nutrition/tomato/foliar-strategy/model/derivation.md` (working-tree diff vs HEAD)
+
+Single-hunk diff: "Spec status" paragraph rewrite under § "Ca-specific cuticle coverage". Old text framed REQ-101 as global-default-only with per-element coverage split pending PO coordination + handoff item 3; new text states REQ-101 now covers per-recipe coverage axis (sulfate + Ca recipes both carry their own constants), remaining gate is data.js entry for the Ca recipe — coder lane. Sibling `spec.md` REQ-101 / REQ-195 / REQ-115 already declare the per-recipe contract with the Ca constants enumerated, so the paragraph is catching the derivation up to the already-shipped spec. No model-claim numeric change (Ca coverage 0.15 / 0.40 cert 2, dose anchor 100 g/15 L CaCl₂·2H₂O, REQ-196 cap=3 all unchanged from prior derivation revisions). No-op pass per Mode A trivial-diff branch — status synchronization, no claim moved.
+
+---
+
 ## 2026-05-17 — review of `yield-range/derivation.md` (RGR-refit landing pass)
 
 Scope: REQ-115 `RGR_MAXIMUM_LETTUCE_NURSERY` refit landed (0.40 → 0.30 d⁻¹ per Guillaume-approved D1 option 2, cross-cultivar Salanova-class butterhead CE seedling-RGR literature band, cert-3 framework per [[P-10]]). Missing-doc gap named explicitly. Symmetric upward/downward refinement triggers per [[P-03]]. Integrator-output trace at the d44 anchor point (50-cell / DLI 28 / 16 LED-h). "Why not 0.40" historical block archived to `learnings.md`. Consolidated refinement-triggers table touched (REQ-112 / REQ-172 ref added; Rijk Zwaan trigger row points at `FOLIAGE_HEIGHT_M` / `FOLIAGE_DENSITY_KG_PER_M3` independent anchors). Extension-pending block trimmed (nursery cap basis bullet retired now that it landed in the live REQ trace).

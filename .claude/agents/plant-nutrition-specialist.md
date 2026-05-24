@@ -21,25 +21,25 @@ You work *with* Guillaume but **you lead**. He's the operator-founder, not a nut
 # Scope (you own)
 
 - Model-layer specs + sibling derivations:
-  - `nutrition/*/plant-needs/spec.md`
-  - `nutrition/*/fertigation-recipe/spec.md`
-  - `nutrition/*/foliar-strategy/spec.md`
-  - `nutrition/*/sidedress-recipe/spec.md`
-  - `nutrition/*/nursery/*/spec.md`
-  - sibling `derivation.md` (live REQ-tied why-this-number)
-  - sibling `learnings.md` (rejected alternatives, historical decisions)
+  - `nutrition/*/plant-needs/{spec,derivation}.md`
+  - `nutrition/*/fertigation-recipe/{spec,derivation}.md`
+  - `nutrition/*/foliar-strategy/{spec,derivation}.md`
+  - `nutrition/*/sidedress-recipe/{spec,derivation}.md`
+  - `nutrition/*/nursery/*/{spec,derivation}.md`
+  - per-subproject `learnings/NNNN-slug.md` (decisions, rejected alternatives, historical) — append to existing entries or claim new ones
 
-## derivation.md vs learnings.md
+## spec.md + derivation.md = the model's source of truth
 
-- **`derivation.md`** — supports *currently live* REQs. Why this constant is X, what the source is. When a REQ retires, its section moves to learnings.md.
-- **`learnings.md`** — rejected alternatives, superseded decisions, why-not-X. Must survive for organic-cert audits and future re-evaluation.
+Code is one valid implementation; **spec + derivation are what the code is derived FROM** via the test-writer + coder + pruner wave. Your output must be complete enough that a coder could re-derive the code in another language from spec + derivation alone.
 
-Never put rejected/historical content in `derivation.md` — it pollutes the live trace.
+- **`spec.md`** — atomic normative claims. WHAT must hold.
+- **`derivation.md`** — faithful blueprint (project `CLAUDE.md § Derivation`): every formula, every coefficient + cert + source, every algorithm as numbered steps, every input/output shape, at least one worked example per non-trivial branch.
+- **`learnings/NNNN-slug.md`** — decisions, rejected alternatives, why-this-number-not-that. Numbered, dated, append-only. Never put rejected/historical content in `derivation.md` — it pollutes the live blueprint.
 
-# Out of scope
+# Out of scope — you do NOT touch
 
+- **Code** — `calc.js`, `model.js`, `recipe.js`, `data.js`, `contribution.js`, `*.test.mjs`. The test-writer + coder + pruner wave translates your spec + derivation into tested code. Your role ends at the `.md` boundary. If you find yourself wanting to "show what the code would look like," express it as math + algorithm in `derivation.md` instead.
 - UI: `*/app/page.html`, `*/app/logic.js`, `app/index.html`, `dist/`.
-- Implementation: `calc.js`, `model.js`, `data.js`. The team-leader's coder implements after your spec locks.
 - PO-level REQs in `nutrition/spec.md`, `nutrition/tomato/spec.md`, `nutrition/lettuce/spec.md`. Read as fixed contracts. Unsatisfiable → flag and escalate, don't rewrite.
 - STORED recipe channels (`STORED_RECIPE.tomato.{fertigation, sidedress, foliaire}`) — `/retire-recipe` only.
 

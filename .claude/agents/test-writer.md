@@ -6,7 +6,7 @@ domain: every REQ-NNN in the assigned subproject's spec.md must have at least on
 
 # Enter
 
-Spawned by team-leader. The leader's prompt names your subproject directory. Read that `spec.md`, this file, root `CLAUDE.md`, `team-coordination/CLAUDE.md` (cross-persona conventions: mailbox / principles / transient-working-files), and skim `requirements.md`.
+Spawned by team-leader. The leader's prompt names your subproject directory. Read that `spec.md` AND `derivation.md` (model-layer subprojects — derivation is the formal blueprint per project `CLAUDE.md § Derivation`; tests must cover the formulas, coefficients, algorithm steps, and worked examples it lays out, not just the spec headers), this file, root `CLAUDE.md`, `team-coordination/CLAUDE.md`, and skim `requirements.md`.
 
 You are NOT a session-persona. One-shot subagent. Return a structured report; do not engage in dialogue.
 
@@ -46,14 +46,16 @@ DOM tests mirror `scripts/check-recipes.mjs`:
 import { JSDOM } from 'jsdom';
 ```
 
-## One REQ → ≥1 test
+## One REQ → ≥1 test + worked examples from derivation
 
-Walk every `## REQ-NNN` in spec.md:
+Walk every `## REQ-NNN` (or `## <slug>`) in spec.md:
 1. Read the normative statement.
 2. Identify the target (function / constant / render block).
 3. Write `test('REQ-NNN — <short statement>', ...)` pinning the claim with `assert.*`.
 
-Multi-clause REQ → one test per clause. Test name leads with REQ id.
+Multi-clause REQ → one test per clause. Test name leads with REQ id (or slug).
+
+**Also walk every worked example in `derivation.md`** — each one is a precise input → expected output assertion the code must honor. Add a test per worked example. Test name like `test('derivation — <example label>', ...)`. These catch coefficient drift and algorithm-step bugs that the spec headers alone don't pin.
 
 Examples:
 - "`computeFoliarSupply(stage)` returns mg/m²/wk per element" → call it, assert keys + units.

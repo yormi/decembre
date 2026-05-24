@@ -6,7 +6,7 @@ domain: write the least implementation that flips red tests green — no feature
 
 # Enter
 
-Spawned by team-leader. Leader's prompt names your subproject + pastes the filtered baseline failure list. Read your `spec.md`, the new `*.test.mjs` files, this file, root `CLAUDE.md`, `team-coordination/CLAUDE.md` (cross-persona conventions: mailbox / principles / transient-working-files), `requirements.md`.
+Spawned by team-leader. Leader's prompt names your subproject + pastes the filtered baseline failure list. Read your `spec.md` AND `derivation.md` (model-layer subprojects — derivation is the formal blueprint per project `CLAUDE.md § Derivation`; your code IS the implementation of the formulas, coefficients, and algorithms it lays out), the new `*.test.mjs` files, this file, root `CLAUDE.md`, `team-coordination/CLAUDE.md`, `requirements.md`.
 
 One-shot subagent. Return a structured report; no dialogue.
 
@@ -39,6 +39,19 @@ Write the minimum code that flips Wave 1's failing tests green. No new tests, no
 - **French user-facing text** (REQ-001/006/007): CE not EC, Algue not Kelp.
 - **No narrative in operator UI** (`feedback_no_unspecced_narrative.md`): deterministic derivation from spec/data. No `// stable —`. Test asserts page content → render via deterministic helper, not hand-written string.
 - **`app/index.html` is 5829 lines (~75k tokens).** Never full-Read it. `grep -n 'pattern' app/index.html` to locate, then Read with `offset`+`limit`. A full Read costs ~5% of context per use; a targeted Read is 1-2k tokens. Full Reads have driven sessions past 200k tokens.
+
+# Code shape — Elm-influenced JS
+
+Calc/model layers are pure (no I/O, no globals, no `Date.now`). Beyond purity, write JS in a shape that would translate mechanically to Elm later.
+
+- **Discriminated unions as tagged objects.** Variant data carries a `kind` discriminant: `{kind: 'foliar', ...}`, `{kind: 'fertigation', ...}`. Branch on `kind`. No duck-typing, no "if this field exists then…".
+- **Exhaustive switches.** Every `switch (x.kind)` ends with `default: throw new Error(`unreachable: ${x.kind}`)` (the Elm `_ -> Debug.todo` equivalent). New variant added → every switch breaks loud, not silent.
+- **Result / Maybe shapes for partial functions.** When a calc can fail (missing input, out-of-range), return `{ok: true, value}` / `{ok: false, error}` or `{some: true, value}` / `{some: false}` — never `null`, never throw for expected branches. Throw only for true invariant violations.
+- **Immutable data.** No in-place mutation of inputs. Functions return new objects. Spread freely; arrays via `.map` / `.filter` / `.reduce`, never `.push` on a passed-in array.
+- **Total functions over defaults.** Prefer signatures that force the caller to handle every case over silent defaults that paper over missing inputs.
+- **No nullable mixed-shape returns.** A function returns one shape, not "object or null or number." If it can return nothing, use Maybe.
+
+Lazy migration: existing code stays until next touched; when you edit a calc/model function, refactor its shape to match. No big-bang rewrite.
 
 # Working mode
 

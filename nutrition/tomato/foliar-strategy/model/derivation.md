@@ -100,12 +100,18 @@ regime; the 0.50 sulfate-ratio is literature-mid-band heuristic
 surfactant-assisted regimes close the gap). Cert bump to 3 if the
 Test 1 week-4 tissue panel correlates predicted within ±20 %.
 
-**Spec status.** REQ-101 currently anchors a global
-`FOLIAR_COVERAGE_DEFAULT` (sulfate-metal-shaped). The per-element
-coverage axis split is pending — needs a PO-coordinated REQ next pass
-(handoff item 3). Until then, these constants live in derivation
-only; `computeFoliarSupply` returns `Ca: 0` (handoff item 5 schema
-gating).
+**Spec status.** REQ-101 covers the per-recipe coverage axis: the
+sulfate-cation-micro recipe (`FOLIAR_COVERAGE_DEFAULT` /
+`FOLIAR_COVERAGE_WITH_YUCCA`) and the Ca recipe
+(`FOLIAR_COVERAGE_CA_NO_SURFACTANT` /
+`FOLIAR_COVERAGE_CA_WITH_SURFACTANT`) each declare their own
+coverage values. Remaining gate is *implementation*: the Ca recipe
+needs a `data.js` entry (target element set `{Ca}`, dose anchor
+100 g/15 L CaCl₂·2H₂O, weekly leaf-tolerance cap 3 per REQ-196,
+surfactant required) before `computeFoliarSupply(stage, opts, recipe)`
+can route a non-zero Ca output. Until that entry lands, the function
+returns `Ca: 0` and the constants above sit unused by the runtime.
+Coder lane.
 
 ---
 
