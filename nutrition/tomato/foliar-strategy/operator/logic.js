@@ -117,5 +117,5 @@ function buildFoliar() {
   });
   html += '</div>';
 
-  document.getElementById('foliar-recipe').innerHTML = html;
+  document.getElementById('foliar-strategy').innerHTML = html;
 }

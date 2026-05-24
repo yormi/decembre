@@ -7,7 +7,7 @@
 //   - REQ-033 — TOMATO_REMOVAL biased toward high end of refs (N/P/K/Mg)
 //
 // These claims are integration-shaped: they assert how the children
-// (plant-needs / fertigation-recipe / sidedress-recipe / foliar-recipe +
+// (plant-needs / fertigation-recipe / sidedress-recipe / foliar-strategy +
 // the cross-cutting CHANNEL_ROLE / ACCEPTED_*) compose. The fixture in
 // test-helpers.mjs assembles app/index.html + every @included partial in
 // memory and boots jsdom so window.<Namespace> bindings populate.

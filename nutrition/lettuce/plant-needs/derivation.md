@@ -185,7 +185,7 @@ modal built by the integrator.
   channel to `calculateLettuceNutritionSupply`; out of scope today, no
   active lettuce foliar program, no return path tracked (the surfactant-
   on / yucca-return scenario in tomato derivation is also retired —
-  `nutrition/tomato/foliar-recipe/learnings.md` § "Yucca return as a
+  `nutrition/tomato/foliar-strategy/learnings.md` § "Yucca return as a
   refinement trigger").
 
 ---

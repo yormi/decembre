@@ -17,7 +17,7 @@ Append at the top (most recent first):
 **Specialist scope:** specific model-layer files / functions / data sources the specialist should touch.
 ```
 
-`<subproject-path>` is the directory of the model module the change affects (e.g. `nutrition/tomato/foliar-recipe`, `nutrition/soil-contribution`).
+`<subproject-path>` is the directory of the model module the change affects (e.g. `nutrition/tomato/foliar-strategy`, `nutrition/soil-contribution`).
 
 A single turn that touches multiple model subprojects writes one entry per subproject.
 

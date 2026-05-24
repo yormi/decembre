@@ -54,7 +54,7 @@ All 21 entries below resolved by the Phase 1-4 nutrition reorg run on 2026-05-23
 
 **Change type:** moved · added · deleted (structural reorg only; no spec semantics changed)
 **REQs affected:** moves — none amended; splits — REQ-182 + REQ-188 each split into a procedure + operator REQ (new ids REQ-192, REQ-193 hold the operator halves); see per-subproject entries below for inventory.
-**Summary:** Locked plan executed — every tomato subproject now follows `<domain>/{model,procedure,operator,builder}/spec.md` shape. (1) Moved 4 model specs into `model/` subdirs: `fertigation-recipe/spec.md` → `fertigation-recipe/model/spec.md`; same for `sidedress-recipe`, `foliar-recipe`, `plant-needs`. (2) Split `nutrition/tomato/app/spec.md` (admin page) into `shell/spec.md` (REQ-104..107, REQ-153, REQ-004), `plant-needs/builder/spec.md` (REQ-108..111), `foliar-recipe/builder/spec.md` (REQ-113, REQ-114, REQ-163); original deleted. (3) Split `nutrition/tomato/fertigation-recipe/app/spec.md` (operator page) into `procedure/spec.md` (REQ-182 stage-resolution, REQ-183, REQ-185..188 calc, REQ-190, REQ-191) and `operator/spec.md` (REQ-181, REQ-192 header label, REQ-184, REQ-193 anchor placement, REQ-189); original deleted. (4) Scaffolded empty `fertigation-recipe/builder/spec.md` + `sidedress-recipe/builder/spec.md` (framing only, no REQs claimed). (5) Updated `requirements.md` Domain organization table to point at new spec locations.
+**Summary:** Locked plan executed — every tomato subproject now follows `<domain>/{model,procedure,operator,builder}/spec.md` shape. (1) Moved 4 model specs into `model/` subdirs: `fertigation-recipe/spec.md` → `fertigation-recipe/model/spec.md`; same for `sidedress-recipe`, `foliar-strategy`, `plant-needs`. (2) Split `nutrition/tomato/app/spec.md` (admin page) into `shell/spec.md` (REQ-104..107, REQ-153, REQ-004), `plant-needs/builder/spec.md` (REQ-108..111), `foliar-strategy/builder/spec.md` (REQ-113, REQ-114, REQ-163); original deleted. (3) Split `nutrition/tomato/fertigation-recipe/app/spec.md` (operator page) into `procedure/spec.md` (REQ-182 stage-resolution, REQ-183, REQ-185..188 calc, REQ-190, REQ-191) and `operator/spec.md` (REQ-181, REQ-192 header label, REQ-184, REQ-193 anchor placement, REQ-189); original deleted. (4) Scaffolded empty `fertigation-recipe/builder/spec.md` + `sidedress-recipe/builder/spec.md` (framing only, no REQs claimed). (5) Updated `requirements.md` Domain organization table to point at new spec locations.
 **Suggested waves:** none beyond test-file relocation (already team-leader's lane) — no model-layer work implied; specialist queue intentionally not double-fired. Code-side dir moves (`tomato/app/` → `tomato/shell/`, model.js consolidation) are specialist's parallel scope.
 
 ## 2026-05-23 22:00 — nutrition/tomato/fertigation-recipe/model
@@ -71,11 +71,11 @@ All 21 entries below resolved by the Phase 1-4 nutrition reorg run on 2026-05-23
 **Summary:** Spec moved from `sidedress-recipe/spec.md` → `sidedress-recipe/model/spec.md`.
 **Suggested waves:** test-writer (path updates only)
 
-## 2026-05-23 22:00 — nutrition/tomato/foliar-recipe/model
+## 2026-05-23 22:00 — nutrition/tomato/foliar-strategy/model
 
 **Change type:** moved
 **REQs affected:** REQ-101, REQ-103, REQ-115, REQ-116, REQ-112, REQ-170 (content byte-identical)
-**Summary:** Spec moved from `foliar-recipe/spec.md` → `foliar-recipe/model/spec.md`.
+**Summary:** Spec moved from `foliar-strategy/spec.md` → `foliar-strategy/model/spec.md`.
 **Suggested waves:** test-writer (path updates only)
 
 ## 2026-05-23 22:00 — nutrition/tomato/plant-needs/model
@@ -99,7 +99,7 @@ All 21 entries below resolved by the Phase 1-4 nutrition reorg run on 2026-05-23
 **Summary:** New builder spec for the Block 1 ("Besoin du plant") plant-needs UI on the admin page.
 **Suggested waves:** test-writer · pruner
 
-## 2026-05-23 22:00 — nutrition/tomato/foliar-recipe/builder
+## 2026-05-23 22:00 — nutrition/tomato/foliar-strategy/builder
 
 **Change type:** added (extracted from `nutrition/tomato/app/spec.md`)
 **REQs affected:** REQ-113, REQ-114, REQ-163

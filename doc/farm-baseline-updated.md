@@ -169,7 +169,7 @@ weights beyond typical Salanova commercial range (150-200g).
 ### Foliar program
 
 Note: April 2026 baseline. Current foliar recipe lives in
-`nutrition/tomato/foliar-recipe/` (Fe-EDDHA dropped 2026-04-29; Iron DL +
+`nutrition/tomato/foliar-strategy/` (Fe-EDDHA dropped 2026-04-29; Iron DL +
 yucca dropped 2026-05-05; CuSO₄ cut 4 → 2 g — see `working files/changelog.md`).
 
 **Schedule:** Wednesday morning. Window = sunrise + 30 min to min(sunrise + 3h, 10:00).

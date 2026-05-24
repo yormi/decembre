@@ -323,7 +323,7 @@ yield-impact) and P-08 (no PA-asks): default plan, no fork to Guillaume.
 **Yield-impact assessment.** Micros are foliar-channel routed per
 `CHANNEL_ROLE` (Fe / Mn / Zn / B / Cu / Mo all foliar-only at Décembre's
 current high-pH lockout regime). Foliar dose is capped by burn ceiling
-(REQ-115 in `nutrition/tomato/foliar-recipe/spec.md`), not by
+(REQ-115 in `nutrition/tomato/foliar-strategy/spec.md`), not by
 plant-demand readout. So cert-1 micros in `BIOMASS_DEMAND` drive the
 Bilan delivered-vs-demand gap visualization but do NOT drive operator
 weighing — the foliar recipe is independently capped. **Low yield-impact**

@@ -7,7 +7,7 @@ coverage bounds.
 Cross-crop nutrition rules (chemistry, products, organic cert, mass-balance
 framing) live in `nutrition/spec.md`. UI-side specs for the Tomato Nutrition
 admin page live in `nutrition/tomato/shell/spec.md` (page-shell orchestration
-+ layout) and `nutrition/tomato/{plant-needs,fertigation-recipe,sidedress-recipe,foliar-recipe}/builder/spec.md`
++ layout) and `nutrition/tomato/{plant-needs,fertigation-recipe,sidedress-recipe,foliar-strategy}/builder/spec.md`
 (per-block surface).
 
 ## Subprojects
@@ -22,14 +22,14 @@ admin page live in `nutrition/tomato/shell/spec.md` (page-shell orchestration
   per stage (N gap left after compost mineralization). Owns
   `computeStageSidedress(stage, product)`, `SIDEDRESS_PRODUCTS`,
   `SIDEDRESS_AREA_PER_PLANCHE`. REQ-087/088/089.
-- **`foliar-recipe/spec.md`** — cuticle-uptake delivery model for the
-  weekly oligo spray (Mn / Zn / Cu / Mo / Fe). Burn-cap-constrained,
-  not mass-balance-derived: dose pinned at burn-safe maximum, model
-  computes delivered mg/m²/wk under `FOLIAR_COVERAGE_DEFAULT` (0.30
-  no-yucca; 0.80 with-yucca refinement trigger). Owns
-  `computeFoliarSupply(stage)`, `FOLIAR_COVERAGE_DEFAULT`,
-  `FOLIAR_COVERAGE_WITH_YUCCA`. REQ-101/103 (REQ-025 burn cap inherited
-  from `nutrition/spec.md`).
+- **`foliar-strategy/spec.md`** — the tomato foliar program: one
+  strategy per crop, one or more recipes per strategy (each = one
+  tank's mix, REQ-029-clean). Model picks per-recipe weekly count
+  bounded by per-recipe weekly leaf-tolerance cap, spreads sprays
+  across the `nutrition — farm-working-days` set. Builder block
+  carries surfactant lever only (sprayCount input retired 2026-05-24).
+  Layer files: `spec.md`, `model/spec.md`, `builder/spec.md`,
+  `procedure/spec.md`, `operator/spec.md`. Vocabulary in `CONTEXT.md`.
 
 The specs below cover the *coupling* between plant-needs and the supply
 chain (REQ-013, REQ-014) plus the demand-anchor source-of-truth invariant

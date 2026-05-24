@@ -3,11 +3,6 @@
 The plan and weekly procedure for foliar-feeding the tomato
 crop: which mixes to spray, how many times each, on which days.
 
-> **Note:** subproject directory is still named `foliar-recipe/`
-> at the time of writing; rename to `foliar-strategy/` is
-> approved and pending coordination with the in-flight model
-> session. Vocabulary below uses the post-rename terms.
-
 ## Language
 
 ### Strategy structure

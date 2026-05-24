@@ -13,7 +13,7 @@
 // Per-channel contribution slices are pure functions in the model/ dirs:
 //   - nutrition/tomato/fertigation-recipe/model/contribution.js → computeFertigationContribution
 //   - nutrition/tomato/sidedress-recipe/model/contribution.js   → computeSidedressContribution
-//   - nutrition/tomato/foliar-recipe/model/contribution.js      → computeFoliarContribution + deriveFoliarRecipeFromGap
+//   - nutrition/tomato/foliar-strategy/model/contribution.js      → computeFoliarContribution + deriveFoliarRecipeFromGap
 //
 // DOM reads (spray count, surfactant) + cross-channel concerns
 // (LUXURY_FACTOR demand cap on supply.soil, FP-vs-stored selection,
@@ -110,7 +110,7 @@ function calculateNutritionSupply(stage, phLocked, transpFactor, targetYield, re
   //
   // Stored mode is untouched — STORED_RECIPE.tomato.foliaire.A is
   // /retire-recipe-governed and not derived. Spec:
-  // nutrition/tomato/foliar-recipe/spec.md → REQ-116.
+  // nutrition/tomato/foliar-strategy/spec.md → REQ-116.
   if (mode === 'fp') {
     const fertPre = { K: fertK, Mg: fertMg };
     if (fertB > 0) fertPre.B = fertB;
@@ -136,7 +136,7 @@ function calculateNutritionSupply(stage, phLocked, transpFactor, targetYield, re
     };
     // Call via window.FoliarRecipeTomato so REQ-139's registry check
     // resolves the consumer surface (orchestrator) → namespace
-    // (foliar-recipe subproject). The bare function is reachable in
+    // (foliar-strategy subproject). The bare function is reachable in
     // the same script bundle but routing through the namespace keeps
     // the subproject boundary visible.
     const derived = window.FoliarRecipeTomato.deriveFoliarRecipeFromGap({

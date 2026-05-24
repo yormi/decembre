@@ -38,7 +38,7 @@ One claim per line. Most recent at the bottom (true append).
 2026-05-16T20:46:49Z — REQ-167 — plant-nutrition-specialist — claude-code — nutrition/lettuce/plant-needs/spec.md
 2026-05-16T20:46:49Z — REQ-168 — plant-nutrition-specialist — claude-code — nutrition/lettuce/plant-needs/spec.md
 2026-05-16T20:46:49Z — REQ-169 — plant-nutrition-specialist — claude-code — nutrition/lettuce/plant-needs/spec.md
-2026-05-16T21:07:44Z — REQ-170 — plant-nutrition-specialist — claude-code — /home/guillaume/Documents/Random_Projects/decembre/nutrition/tomato/foliar-recipe/spec.md
+2026-05-16T21:07:44Z — REQ-170 — plant-nutrition-specialist — claude-code — /home/guillaume/Documents/Random_Projects/decembre/nutrition/tomato/foliar-strategy/spec.md
 2026-05-17T16:27:27Z — REQ-171 — plant-nutrition-specialist — claude-code — yield-range/spec.md
 2026-05-17T16:36:25Z — REQ-172 — plant-nutrition-specialist — claude-code — yield-range/spec.md
 2026-05-17T16:36:25Z — REQ-173 — plant-nutrition-specialist — claude-code — yield-range/spec.md
@@ -63,3 +63,7 @@ One claim per line. Most recent at the bottom (true append).
 2026-05-24T01:00:52Z — REQ-192 — product-owner — claude-code — nutrition/tomato/fertigation-recipe/procedure/spec.md
 2026-05-24T01:00:52Z — REQ-193 — product-owner — claude-code — nutrition/tomato/fertigation-recipe/operator/spec.md
 2026-05-24T01:53:11Z — REQ-194 — product-owner — claude-code — nutrition/spec.md
+2026-05-24T21:24:36Z — REQ-195 — plant-nutrition-specialist — claude-code — nutrition/tomato/foliar-strategy/model/spec.md
+2026-05-24T21:24:36Z — REQ-196 — plant-nutrition-specialist — claude-code — nutrition/tomato/foliar-strategy/model/spec.md
+2026-05-24T21:24:36Z — REQ-197 — plant-nutrition-specialist — claude-code — nutrition/tomato/foliar-strategy/model/spec.md
+2026-05-24T21:24:36Z — REQ-198 — plant-nutrition-specialist — claude-code — nutrition/tomato/foliar-strategy/model/spec.md

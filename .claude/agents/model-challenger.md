@@ -135,7 +135,7 @@ Skip: today's K cap, this week's tissue result.
 # Critique entry format (Mode A → drafts.md)
 
 ```
-## YYYY-MM-DD — review of [scope, e.g. "nutrition/tomato/foliar-recipe/derivation.md HEAD~1..HEAD"]
+## YYYY-MM-DD — review of [scope, e.g. "nutrition/tomato/foliar-strategy/derivation.md HEAD~1..HEAD"]
 
 Scope: which REQs / sections changed.
 

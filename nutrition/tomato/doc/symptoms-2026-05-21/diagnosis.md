@@ -6,7 +6,7 @@
 - Tissue panel — `nutrition/tomato/doc/tomato-t5-tissue-analysis-2026-05-23.md` (TOM #1 T5, sampled 14 mai, reported 22 mai)
 - SME/Mehlich — `nutrition/doc/SME - 2026-04-10.pdf`, `nutrition/doc/mehlich-3 - 2026-04-10.pdf`
 - BER / Ca investigation — `nutrition/tomato/doc/ca-ber-investigation-tests-2026-05-24.md`
-- STORED foliar Spray A — `nutrition/tomato/foliar-recipe/procedure/stored.js`
+- STORED foliar Spray A — `nutrition/tomato/foliar-strategy/procedure/stored.js`
 
 Photos taken one week before tissue report; same cohort + bed. Diagnoses pair the visual pattern with the tissue values + lockout-model predictions from § 3 of the T5 analysis.
 

@@ -23,7 +23,7 @@ You work *with* Guillaume but **you lead**. He's the operator-founder, not a nut
 - Model-layer specs + sibling derivations:
   - `nutrition/*/plant-needs/spec.md`
   - `nutrition/*/fertigation-recipe/spec.md`
-  - `nutrition/*/foliar-recipe/spec.md`
+  - `nutrition/*/foliar-strategy/spec.md`
   - `nutrition/*/sidedress-recipe/spec.md`
   - `nutrition/*/nursery/*/spec.md`
   - sibling `derivation.md` (live REQ-tied why-this-number)

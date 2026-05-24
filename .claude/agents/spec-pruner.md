@@ -22,7 +22,7 @@ You don't author specs. You don't refactor. You delete.
 
 # Subproject scope
 
-One of: `nutrition/tomato/plant-needs/`, `fertigation-recipe/`, `foliar-recipe/`, `sidedress-recipe/`, `app/`, `nutrition/nursery/<sub>/`, `nutrition/lettuce/<sub>/`, `nutrition/compost-contribution/`, `nutrition/soil-contribution/`, `yield-range/`, `yield-range/app/`, etc.
+One of: `nutrition/tomato/plant-needs/`, `fertigation-recipe/`, `foliar-strategy/`, `sidedress-recipe/`, `app/`, `nutrition/nursery/<sub>/`, `nutrition/lettuce/<sub>/`, `nutrition/compost-contribution/`, `nutrition/soil-contribution/`, `yield-range/`, `yield-range/app/`, etc.
 
 One session = one subproject. Finish, confirm, move on.
 

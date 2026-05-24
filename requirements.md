@@ -14,7 +14,7 @@ code under `nutrition/**/spec.md` and `yield-range/**/spec.md`.
 | `nutrition/tomato/spec.md` | Tomato nutrition: per-stage demand, fruit export, biomass, mass-balance coupling |
 | `nutrition/tomato/shell/spec.md` | Tomato Nutrition admin page chrome (header inputs, ceiling, recipe-mode toggle, drift block, single-source-of-truth read) |
 | `nutrition/tomato/plant-needs/builder/spec.md` | Plant-needs builder block on the admin page (Block 1) |
-| `nutrition/tomato/foliar-recipe/builder/spec.md` | Foliar builder block on the admin page (Block 5/6) |
+| `nutrition/tomato/foliar-strategy/builder/spec.md` | Foliar builder block on the admin page (Block 5/6) |
 | `nutrition/tomato/fertigation-recipe/builder/spec.md` | Fertigation builder block on the admin page (supply vs demand + drift sub-block) |
 | `nutrition/tomato/sidedress-recipe/builder/spec.md` | Sidedress builder block on the admin page (supply vs demand + drift sub-block) |
 | `nutrition/tomato/fertigation-recipe/operator/spec.md` | Operator-facing tomato fertigation page UI |

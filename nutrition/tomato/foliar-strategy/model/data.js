@@ -1,7 +1,7 @@
 // Foliar-recipe — source data.
 //
-// Spec:        nutrition/tomato/foliar-recipe/spec.md
-// Derivation:  nutrition/tomato/foliar-recipe/derivation.md
+// Spec:        nutrition/tomato/foliar-strategy/spec.md
+// Derivation:  nutrition/tomato/foliar-strategy/derivation.md
 //
 // Foliar is the cuticle-uptake channel for the weekly oligo spray
 // (Mn / Zn / Cu / Mo / Fe + historical Solubore + retired CaCl₂). The
@@ -40,7 +40,7 @@ const FOLIAR_COVERAGE_DEFAULT = 0.30;
 const FOLIAR_COVERAGE_WITH_YUCCA = 0.80;
 
 // Per-element efficiency for the Efficacité column (REQ-157, REQ-170) —
-// share of applied foliar-recipe mass that becomes plant-available per
+// share of applied foliar-strategy mass that becomes plant-available per
 // applied gram. Surfactant-aware per REQ-170: toggling the surfactant
 // lever in Block 5 (REQ-163 page-side) flips the efficiency between the
 // no-surfactant and with-surfactant regimes.

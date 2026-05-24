@@ -1,4 +1,4 @@
-# Tomate — foliar-recipe · derivation
+# Tomate — foliar-strategy · derivation
 
 How the model is built. Spec in `spec.md`. Rejected alternatives and
 historical hold/decision detail in `learnings.md`.
@@ -518,11 +518,11 @@ chain stays uniform.
 
 | File                                                | Owns                                                               |
 |-----------------------------------------------------|--------------------------------------------------------------------|
-| `nutrition/tomato/foliar-recipe/data.js`            | `FOLIAR_COVERAGE_DEFAULT`, `FOLIAR_COVERAGE_WITH_YUCCA`, `BURN_CAP_BASE_G`, `burnCapG(el)` (area = `TOMATO_NUM_BEDS × TOMATO_BED_AREA`, computed inline in `calc.js`) |
-| `nutrition/tomato/foliar-recipe/calc.js`            | `computeFoliarSupply(stage)`                                       |
-| `nutrition/tomato/foliar-recipe/model.js`           | `window.FoliarRecipeTomato` namespace wrapper                      |
-| `nutrition/tomato/foliar-recipe/spec.md`            | Spec — what the model must do or be                                |
-| `nutrition/tomato/foliar-recipe/derivation.md`      | This file                                                          |
+| `nutrition/tomato/foliar-strategy/data.js`            | `FOLIAR_COVERAGE_DEFAULT`, `FOLIAR_COVERAGE_WITH_YUCCA`, `BURN_CAP_BASE_G`, `burnCapG(el)` (area = `TOMATO_NUM_BEDS × TOMATO_BED_AREA`, computed inline in `calc.js`) |
+| `nutrition/tomato/foliar-strategy/calc.js`            | `computeFoliarSupply(stage)`                                       |
+| `nutrition/tomato/foliar-strategy/model.js`           | `window.FoliarRecipeTomato` namespace wrapper                      |
+| `nutrition/tomato/foliar-strategy/spec.md`            | Spec — what the model must do or be                                |
+| `nutrition/tomato/foliar-strategy/derivation.md`      | This file                                                          |
 
 `app/index.html` include order: AFTER plant-needs (`BIOMASS_DEMAND`,
 `TOMATO_FRUIT_EXPORT` for cross-ref), AFTER `STORED_RECIPE`

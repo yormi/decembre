@@ -145,7 +145,7 @@ Net: ~3 h/wk spray labor recovered.
 
 - Demand model: `nutrition/tomato/plant-needs/`
 - Fertigation recipe (live): `nutrition/tomato/fertigation-recipe/`
-- Foliar recipe (live): `nutrition/tomato/foliar-recipe/`
+- Foliar recipe (live): `nutrition/tomato/foliar-strategy/`
 - Side-dressing: `nutrition/tomato/sidedress-recipe/`
 - Compost contribution: `nutrition/compost-contribution/`
 - Symptom-driven diagnosis: `working files/symptomes-carences.md`

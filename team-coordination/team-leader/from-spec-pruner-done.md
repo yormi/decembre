@@ -18,7 +18,7 @@ All 1 entries below resolved by the Phase 1-4 nutrition reorg run on 2026-05-23/
 - `app/operator/nutriment.js:16` same
 - `nutrition/tomato/fertigation-recipe/model/contribution.js:3` `shell/supply.js` → `shell/contribution-orchestrator.js`
 - `nutrition/tomato/sidedress-recipe/model/contribution.js:3` same
-- `nutrition/tomato/foliar-recipe/model/contribution.js:2,43,69` same (3 hits in one file)
+- `nutrition/tomato/foliar-strategy/model/contribution.js:2,43,69` same (3 hits in one file)
 - `nutrition/tomato/fertigation-recipe/model/derivation.md:191` `app/logic.js` → `shell/logic.js`
 - `nutrition/tomato/fertigation-recipe/model/learnings.md:193` same
 - `nutrition/tomato/plant-needs/model/derivation.md:145` same
@@ -27,8 +27,8 @@ All 1 entries below resolved by the Phase 1-4 nutrition reorg run on 2026-05-23/
 - `scripts/check-recipes.mjs:1749` `tomato/app/spec.md` → `tomato/shell/spec.md` (REQ-153 new home)
 - `scripts/check-recipes.mjs:3374` `tomato/app/spec.md` → `tomato/shell/spec.md` (REQ-104..107 new home)
 - `scripts/check-recipes.mjs:3531` → `tomato/plant-needs/builder/spec.md` (REQ-108..111)
-- `scripts/check-recipes.mjs:3866,3909` → `tomato/foliar-recipe/builder/spec.md` (REQ-113, REQ-114)
-- `scripts/check-recipes.mjs:5570,6041` → `tomato/foliar-recipe/builder/spec.md` (REQ-163)
+- `scripts/check-recipes.mjs:3866,3909` → `tomato/foliar-strategy/builder/spec.md` (REQ-113, REQ-114)
+- `scripts/check-recipes.mjs:5570,6041` → `tomato/foliar-strategy/builder/spec.md` (REQ-163)
 
 **Deletions:** none. Every stale reference had a legitimate new home — updates only.
 
@@ -41,7 +41,7 @@ All 1 entries below resolved by the Phase 1-4 nutrition reorg run on 2026-05-23/
 - `working files/changelog.md` + `team-coordination/**/*.md` — audit trail.
 
 **Punted (out of pruner lane):**
-- `nutrition/lettuce/app/spec.test.mjs:5`, `nutrition/soil-contribution/spec.test.mjs:417,470`, `nutrition/tomato/shell/spec.test.mjs:1,803`, `nutrition/tomato/foliar-recipe/model/test-helpers.mjs:3`, `nutrition/tomato/shell/test-helpers.mjs:63` — all `*.test.mjs` / `test-helpers.mjs`. Stale `tomato/app/spec.md` and `tomato/app/logic.js` pointers in test comments. Route to test-writer.
+- `nutrition/lettuce/app/spec.test.mjs:5`, `nutrition/soil-contribution/spec.test.mjs:417,470`, `nutrition/tomato/shell/spec.test.mjs:1,803`, `nutrition/tomato/foliar-strategy/model/test-helpers.mjs:3`, `nutrition/tomato/shell/test-helpers.mjs:63` — all `*.test.mjs` / `test-helpers.mjs`. Stale `tomato/app/spec.md` and `tomato/app/logic.js` pointers in test comments. Route to test-writer.
 - `nutrition/spec.md:9`, `nutrition/tomato/spec.md:9`, `nutrition/soil-contribution/spec.md:221,235` — stale pointers in `spec.md` bodies. Route to PO.
 
 **Verifier:** `npm test` 22/22 · `bash scripts/check-requirements.sh` 161/0 · `npm run check` 161/0.

@@ -1,5 +1,5 @@
 // Foliar-recipe spec tests — pins the normative claims in
-// nutrition/tomato/foliar-recipe/spec.md against the live model.
+// nutrition/tomato/foliar-strategy/spec.md against the live model.
 //
 // Coverage map:
 //   INV-1   — Element coverage closed (numeric / finite / non-negative across all stages)

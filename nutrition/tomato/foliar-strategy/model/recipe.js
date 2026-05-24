@@ -1,7 +1,7 @@
 // Foliar-recipe — delivery function.
 //
-// Spec:        nutrition/tomato/foliar-recipe/spec.md
-// Derivation:  nutrition/tomato/foliar-recipe/derivation.md
+// Spec:        nutrition/tomato/foliar-strategy/spec.md
+// Derivation:  nutrition/tomato/foliar-strategy/derivation.md
 //
 // REQ-101: delivered_mg/m²/wk = recipe_g × element_pct × 1000 / area
 //                              × coverage_factor × sprayCount
@@ -217,9 +217,9 @@ function computeFoliarRecipeForGap(gap, opts) {
 }
 
 // Browser-globals export
-// Public API for the tomate foliar-recipe model.
+// Public API for the tomate foliar-strategy model.
 //
-// Spec:    nutrition/tomato/foliar-recipe/spec.md
+// Spec:    nutrition/tomato/foliar-strategy/spec.md
 // REQ-103: this namespace exists at runtime with the keys below.
 //
 // Consumers (Bilan supply chain via calculateNutritionSupply, future yucca-decision
@@ -262,7 +262,7 @@ window.FoliarRecipeTomato = {
   // REQ-115 / REQ-116 — gap-maximizing recipe derivation.
   computeFoliarRecipeForGap,
   // REQ-116 — pure gap-chain wrapper consumed by the shell-side
-  // contribution orchestrator. Lives in foliar-recipe/model/contribution.js;
+  // contribution orchestrator. Lives in foliar-strategy/model/contribution.js;
   // re-exported here so REQ-139's registry check resolves it under the
   // FoliarRecipeTomato namespace.
   deriveFoliarRecipeFromGap,

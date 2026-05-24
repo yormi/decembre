@@ -403,7 +403,7 @@ compounds the S over-supply mathematically.
 - STORED recipes:
   - `nutrition/tomato/fertigation-recipe/app/stored.js`
   - `nutrition/tomato/sidedress-recipe/app/stored.js`
-  - `nutrition/tomato/foliar-recipe/app/stored.js`
+  - `nutrition/tomato/foliar-strategy/app/stored.js`
 - Demand model: `nutrition/tomato/plant-needs/data.js`
 - Soil-contribution model:
   - `nutrition/soil-contribution/data.js` (SME values)

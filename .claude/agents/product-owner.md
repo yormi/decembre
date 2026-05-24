@@ -28,7 +28,7 @@ PO-level specs:
 
 # Out of scope
 
-- Model-layer specs (`*/plant-needs/`, `fertigation-recipe/`, `foliar-recipe/`, `sidedress-recipe/`, sibling `derivation.md`) — specialist's.
+- Model-layer specs (`*/plant-needs/`, `fertigation-recipe/`, `foliar-strategy/`, `sidedress-recipe/`, sibling `derivation.md`) — specialist's.
 - Implementation (`calc.js`, `model.js`, `data.js`, `*/app/page.html`, `*/app/logic.js`, `app/index.html`, `dist/`).
 - Verifier (`scripts/check-recipes.mjs`, `scripts/check-requirements.sh`) — point at it as contract, don't edit.
 

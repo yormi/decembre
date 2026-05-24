@@ -2969,14 +2969,14 @@ if (!SCN) {
   }
 }
 
-// ─── INV-1 (foliar-recipe) — Element coverage closed + non-negative ─────
+// ─── INV-1 (foliar-strategy) — Element coverage closed + non-negative ─────
 //
 // computeFoliarSupply(stage) must return numeric, finite, non-negative
 // values for every element in TOMATO_FRUIT_EXPORT (currently 11 elements:
 // N, P, K, Ca, Mg, Fe, Mn, Zn, B, Cu, Mo) at every stage in
 // RECIPE_INPUTS.stageYield.
 //
-// Spec: nutrition/tomato/foliar-recipe/spec.md → INV-1.
+// Spec: nutrition/tomato/foliar-strategy/spec.md → INV-1.
 
 header('Foliar INV-1 — Element coverage closed + numeric output');
 
@@ -3020,7 +3020,7 @@ header('Foliar INV-1 — Element coverage closed + numeric output');
 // computeFoliarSupply('T5').{Mn, Fe} matches within 1 % tolerance. Mn pins
 // the surfactant-coverage logic; Fe pins the FeSO₄·7H₂O 20 % Fe path.
 //
-// Spec: nutrition/tomato/foliar-recipe/spec.md → REQ-101.
+// Spec: nutrition/tomato/foliar-strategy/spec.md → REQ-101.
 
 header('REQ-101 — Foliar delivery applies FOLIAR_COVERAGE_DEFAULT (Mn, Fe)');
 
@@ -3064,7 +3064,7 @@ header('REQ-101 — Foliar delivery applies FOLIAR_COVERAGE_DEFAULT (Mn, Fe)');
 
 // ─── REQ-103 — FoliarRecipeTomato public API namespace ──────────────────
 //
-// Spec: nutrition/tomato/foliar-recipe/spec.md → REQ-103.
+// Spec: nutrition/tomato/foliar-strategy/spec.md → REQ-103.
 
 header('REQ-103 — window.FoliarRecipeTomato public API surface');
 
@@ -3101,7 +3101,7 @@ header('REQ-103 — window.FoliarRecipeTomato public API surface');
 // Defaults match prior single-arg behavior; sprayCount=2 doubles every
 // element; surfactant=true scales by FOLIAR_COVERAGE_WITH_YUCCA / DEFAULT.
 //
-// Spec: nutrition/tomato/foliar-recipe/spec.md → REQ-112.
+// Spec: nutrition/tomato/foliar-strategy/spec.md → REQ-112.
 
 header('REQ-112 — computeFoliarSupply(stage, opts) — sprayCount + surfactant levers');
 
@@ -3175,7 +3175,7 @@ header('REQ-112 — computeFoliarSupply(stage, opts) — sprayCount + surfactant
 
 // ─── REQ-115 — computeFoliarRecipeForGap derives gap-maximizing recipe
 //
-// Spec: nutrition/tomato/foliar-recipe/spec.md → REQ-115.
+// Spec: nutrition/tomato/foliar-strategy/spec.md → REQ-115.
 
 header('REQ-115 — computeFoliarRecipeForGap (min-dose clamp + surfactant + burn cap + CE scale)');
 
@@ -3303,7 +3303,7 @@ header('REQ-115 — computeFoliarRecipeForGap (min-dose clamp + surfactant + bur
 
 // ─── REQ-116 — FP foliar recipe live-derived from pre-foliar gap chain ──
 //
-// Spec: nutrition/tomato/foliar-recipe/spec.md → REQ-116.
+// Spec: nutrition/tomato/foliar-strategy/spec.md → REQ-116.
 //
 // Integration test: call calculateNutritionSupply twice in FP mode at T5. Between
 // calls, bump COMPOST_RELEASE_PER_WEEK.Mn so the pre-foliar gap drops
@@ -3863,7 +3863,7 @@ header('REQ-126 — applicationsPerWeek coerced to integer ∈ [1, 7]');
 
 // ─── REQ-113 — Block 5 exposes sprayCount + surfactant inputs ──────────
 //
-// Spec: nutrition/tomato/foliar-recipe/builder/spec.md → REQ-113.
+// Spec: nutrition/tomato/foliar-strategy/builder/spec.md → REQ-113.
 
 header('REQ-113 — Block 5 inputs: nutr-foliar-spray-count + nutr-foliar-surfactant');
 
@@ -3906,7 +3906,7 @@ header('REQ-113 — Block 5 inputs: nutr-foliar-spray-count + nutr-foliar-surfac
 
 // ─── REQ-114 — Block 5 reactive to spray count + surfactant changes ────
 //
-// Spec: nutrition/tomato/foliar-recipe/builder/spec.md → REQ-114.
+// Spec: nutrition/tomato/foliar-strategy/builder/spec.md → REQ-114.
 
 header('REQ-114 — Block 5 reactive (sprayCount + surfactant → text changes)');
 
@@ -4697,15 +4697,15 @@ header('REQ-157 — Contribution-channel efficiency map exposed on runtime retur
     } else {
       const routedMg = { Mn: 1, Zn: 1, Cu: 1, Fe: 1 };
       offendersFoliar.push(...validateEfficiencyMap(
-        'foliar-recipe namespace (window.FoliarRecipeTomato.efficiency)',
+        'foliar-strategy namespace (window.FoliarRecipeTomato.efficiency)',
         routedMg,
         FoR.efficiency
       ));
     }
     if (offendersFoliar.length === 0) {
-      pass('REQ-157 — foliar-recipe efficiency map (window.FoliarRecipeTomato.efficiency)');
+      pass('REQ-157 — foliar-strategy efficiency map (window.FoliarRecipeTomato.efficiency)');
     } else {
-      fail('REQ-157 — foliar-recipe efficiency map', offendersFoliar.slice(0, 4).join(' · '));
+      fail('REQ-157 — foliar-strategy efficiency map', offendersFoliar.slice(0, 4).join(' · '));
     }
   }
 
@@ -4734,7 +4734,7 @@ header('REQ-157 — Contribution-channel efficiency map exposed on runtime retur
 
 // ─── REQ-170 — Surfactant-aware foliar efficiency map ─────────────────────
 //
-// Spec: nutrition/tomato/foliar-recipe/spec.md → REQ-170. The foliar
+// Spec: nutrition/tomato/foliar-strategy/spec.md → REQ-170. The foliar
 // channel exposes `efficiencyFor(surfactant)` returning a per-element map
 // reactive to the surfactant lever. The page-side REQ-163 (Block 5) reads
 // this surface and updates the Efficacité column when the operator toggles.
@@ -5567,7 +5567,7 @@ header('REQ-158 — Function/variable/property names in JS source must be full w
 // Specs: nutrition/spec.md → REQ-159 (elemental-mass columns in mg),
 // REQ-160 (unit suffix in header not in cells), REQ-161 (bare 0, no
 // `(couvert)`), REQ-162 (Mois d'épuisement every row with reservoir data).
-// nutrition/tomato/foliar-recipe/builder/spec.md → REQ-163 (foliar Efficacité reacts to
+// nutrition/tomato/foliar-strategy/builder/spec.md → REQ-163 (foliar Efficacité reacts to
 // surfactant lever).
 //
 // REQ-159 / REQ-160 / REQ-161 are designed-to-fail at first run — the
@@ -6038,7 +6038,7 @@ header('REQ-162 — Mois d\'épuisement rendered for every row with reservoir + 
 
 // ─── REQ-163 — Foliar Efficacité is surfactant-aware ───────────────────
 //
-// Spec: nutrition/tomato/foliar-recipe/builder/spec.md → REQ-163. Two assertions:
+// Spec: nutrition/tomato/foliar-strategy/builder/spec.md → REQ-163. Two assertions:
 //   (a) Reactive render — toggling #nutr-foliar-surfactant re-renders
 //       Block 5's Efficacité column (column index 2 in the 6-col gap-grid
 //       per REQ-137: Él. | Manque entrant | Efficacité | Apport ici |

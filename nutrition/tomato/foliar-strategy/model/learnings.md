@@ -1,4 +1,4 @@
-# Tomate — foliar-recipe · learnings
+# Tomate — foliar-strategy · learnings
 
 Rejected alternatives and historical decisions that no longer support a live REQ but must survive for organic-cert audit + future re-evaluation. Live REQ trace in `derivation.md`.
 
