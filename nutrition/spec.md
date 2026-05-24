@@ -6,7 +6,8 @@ organic certification rules, anything not crop-specific).
 Crop-specific nutrition specs live in:
 
 - `nutrition/tomato/spec.md` — tomato model/recipe/biology
-- `nutrition/tomato/app/spec.md` — Tomato Nutrition page UI
+- `nutrition/tomato/shell/spec.md` — Tomato Nutrition page shell (orchestration, layout)
+- `nutrition/tomato/{plant-needs,fertigation-recipe,sidedress-recipe,foliar-recipe}/builder/spec.md` — per-block page surface
 - `nutrition/lettuce/spec.md` — Salanova post-transplant nutrition
 - `nutrition/lettuce/app/spec.md` — Salanova subpage UI
 - `nutrition/nursery/spec.md` — Semis laitue nutrition

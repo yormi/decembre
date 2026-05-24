@@ -6,7 +6,9 @@ coverage bounds.
 
 Cross-crop nutrition rules (chemistry, products, organic cert, mass-balance
 framing) live in `nutrition/spec.md`. UI-side specs for the Tomato Nutrition
-admin page live in `nutrition/tomato/app/spec.md`.
+admin page live in `nutrition/tomato/shell/spec.md` (page-shell orchestration
++ layout) and `nutrition/tomato/{plant-needs,fertigation-recipe,sidedress-recipe,foliar-recipe}/builder/spec.md`
+(per-block surface).
 
 ## Subprojects
 
