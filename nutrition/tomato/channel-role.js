@@ -5,7 +5,7 @@
 // crop-specific editorial decisions, not shared chemistry. Each crop owns its
 // own channel-role file (option A from the locked plan).
 
-// REQ-011, REQ-012 — Channel ownership per element.
+// REQ-011 — Channel ownership per element.
 // Tomato-only for Phase 1. Sums must hit 1.0 ± 0.05 per flux element.
 // Cert 2-3 across the board: these splits are the model's editorial decisions
 // about who owns delivery, not measurements. Source of opinion: the existing

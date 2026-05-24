@@ -142,7 +142,7 @@ the named source — don't bump cert without addressing it.
 
 ### T4 cert-1 — load-bearing for the Bilan modal
 
-`PN.certFor(stage, element)` is consumed by `nutrition/tomato/app/logic.js`
+`PN.certFor(stage, element)` is consumed by `nutrition/tomato/shell/logic.js`
 to stamp the per-element cert badge on the Bilan modal Pourquoi row (see
 `registerPourquoi('demand.<element>', { cert: dCert, … })` at logic.js:172).
 Operator sees cert 1 explicitly when reviewing T4 demand rows. This is

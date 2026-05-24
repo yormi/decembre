@@ -1,5 +1,5 @@
 // Per-channel contribution function for foliar, extracted from the inline
-// foliar slice of calculateNutritionSupply in nutrition/tomato/shell/supply.js.
+// foliar slice of calculateNutritionSupply in nutrition/tomato/shell/contribution-orchestrator.js.
 // Pure: no DOM reads, no window.* reads.
 //
 // Returns the per-element supply vector (mg/m²/wk) the foliar channel
@@ -40,7 +40,7 @@ void computeFoliarContribution;
 // REQ-116 — gap-derived FP foliar recipe (pure).
 //
 // Extracted from the inline FP branch of calculateNutritionSupply in
-// shell/supply.js (Phase 3 of nutrition reorg). Takes pre-computed
+// shell/contribution-orchestrator.js (Phase 3 of nutrition reorg). Takes pre-computed
 // pre-foliar per-element contributions (compost + sidedress + fertigation)
 // + weekly demand, builds the per-element residual gap for foliar elements,
 // and routes it through computeFoliarRecipeForGap. Returns a fresh recipe
@@ -66,7 +66,7 @@ void computeFoliarContribution;
 //          null when computeFoliarRecipeForGap is unavailable / returns
 //          a non-object (caller falls back to the prior literal).
 //
-// Defensive try/catch dropped (was in supply.js to guard a window.*
+// Defensive try/catch dropped (was in shell/contribution-orchestrator.js to guard a window.*
 // indirection that no longer exists — both functions live in the same
 // script bundle now; fail loudly on real bugs).
 const FOLIAR_GAP_ELEMENTS = ['Mn', 'Zn', 'Cu', 'Fe', 'Mo', 'B'];

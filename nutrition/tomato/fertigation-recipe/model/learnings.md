@@ -190,7 +190,7 @@ Contribution-channel functions must return flat `mg` map + `details` sibling wit
 
 **Option B — `details` built at caller, flat return from model (selected).** Returns flat `mg` map; caller composes `details` from supplied values + page state (current pH, lockout flag).
 
-Selected B: fertigation cap detection depends on context the model shouldn't know (current pH, sourced elements in current recipe, which pages render the block). Pushing in would require `{ currentPh, phLocked, sourcedElements }` opts — glue inside. Matches `computeFoliarSupply` precedent (flat return; details composed in `nutrition/tomato/app/logic.js`). When caller surface is ready for unified `{ perM2_mg, details }` across all channels, foliar + fertigation retrofitted together — separate REQ.
+Selected B: fertigation cap detection depends on context the model shouldn't know (current pH, sourced elements in current recipe, which pages render the block). Pushing in would require `{ currentPh, phLocked, sourcedElements }` opts — glue inside. Matches `computeFoliarSupply` precedent (flat return; details composed in `nutrition/tomato/shell/logic.js`). When caller surface is ready for unified `{ perM2_mg, details }` across all channels, foliar + fertigation retrofitted together — separate REQ.
 
 ---
 

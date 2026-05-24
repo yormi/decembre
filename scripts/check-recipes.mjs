@@ -15,7 +15,7 @@
 //   REQ-010 — every PRODUCT[*].mode is 'flux' or 'concentration'
 //   REQ-011 — CHANNEL_ROLE covers every element in BIOMASS_DEMAND.T1..T5
 //             ∪ TOMATO_FRUIT_EXPORT
-//   REQ-012 — fraction sums per element in CHANNEL_ROLE within 1.0 ± 0.05
+//   REQ-011 — fraction sums per element in CHANNEL_ROLE within 1.0 ± 0.05
 //   REQ-019 — every product's phClass covers every element in base
 //   REQ-022 — every product in any active recipe has organicAllowed: true
 //   REQ-023 — every product in PRODUCT has an ecFactor field (number; 0 explicit)
@@ -1319,9 +1319,9 @@ if (!uf) {
   }
 }
 
-// ─── REQ-012 — fraction sums per element in CHANNEL_ROLE within 1.0 ± 0.05
+// ─── REQ-011 — fraction sums per element in CHANNEL_ROLE within 1.0 ± 0.05
 
-header('REQ-012 — Aucun double flux-ownership (sommes 1.0 ± 0.05)');
+header('REQ-011 — Aucun double flux-ownership (sommes 1.0 ± 0.05)');
 
 if (!CHANNEL_ROLE) {
   fail('CHANNEL_ROLE exposed', 'missing');
@@ -1746,7 +1746,7 @@ if (!PRODUCT) {
 // Stubs one element so FP/Stored = 1.5 and asserts the rendered K row text
 // contains "150"; defensive guard rejects the inverted "67" rendering.
 //
-// Spec: nutrition/tomato/app/spec.md → REQ-153.
+// Spec: nutrition/tomato/shell/spec.md → REQ-153.
 
 header('REQ-153 — Block 8 drift gauge renders FP ÷ Stored (≥100 % = under-supply)');
 
@@ -3371,7 +3371,7 @@ header('REQ-116 — FP foliar recipe live-derived from pre-foliar gap chain (cal
 //
 // Section 1 of the Bilan UI specs. Asserts header inputs, light ceiling
 // formula, recipe-mode toggle behaviour. Spec:
-// nutrition/tomato/app/spec.md → "Section 1 — Cible & contexte".
+// nutrition/tomato/shell/spec.md → REQ-104..107.
 
 header('REQ-104 — Header inputs are exactly five scalars (no nutr-current)');
 
@@ -3528,7 +3528,7 @@ header('REQ-107 — Recipe toggle: First principles left, default; products-in-p
 // ─── REQ-108..111 — Tomato Nutrition page Block 1 (Besoin du plant) ────
 //
 // Section 2 of the Bilan UI specs. Spec:
-// nutrition/tomato/app/spec.md → REQ-108..111.
+// nutrition/tomato/plant-needs/builder/spec.md → REQ-108..111.
 
 header('REQ-108 — Block 1 calls PN.calculateNutritionDemand (no bare-global lookups in render)');
 
@@ -3863,7 +3863,7 @@ header('REQ-126 — applicationsPerWeek coerced to integer ∈ [1, 7]');
 
 // ─── REQ-113 — Block 5 exposes sprayCount + surfactant inputs ──────────
 //
-// Spec: nutrition/tomato/app/spec.md → REQ-113.
+// Spec: nutrition/tomato/foliar-recipe/builder/spec.md → REQ-113.
 
 header('REQ-113 — Block 5 inputs: nutr-foliar-spray-count + nutr-foliar-surfactant');
 
@@ -3906,7 +3906,7 @@ header('REQ-113 — Block 5 inputs: nutr-foliar-spray-count + nutr-foliar-surfac
 
 // ─── REQ-114 — Block 5 reactive to spray count + surfactant changes ────
 //
-// Spec: nutrition/tomato/app/spec.md → REQ-114.
+// Spec: nutrition/tomato/foliar-recipe/builder/spec.md → REQ-114.
 
 header('REQ-114 — Block 5 reactive (sprayCount + surfactant → text changes)');
 
@@ -5567,7 +5567,7 @@ header('REQ-158 — Function/variable/property names in JS source must be full w
 // Specs: nutrition/spec.md → REQ-159 (elemental-mass columns in mg),
 // REQ-160 (unit suffix in header not in cells), REQ-161 (bare 0, no
 // `(couvert)`), REQ-162 (Mois d'épuisement every row with reservoir data).
-// nutrition/tomato/app/spec.md → REQ-163 (foliar Efficacité reacts to
+// nutrition/tomato/foliar-recipe/builder/spec.md → REQ-163 (foliar Efficacité reacts to
 // surfactant lever).
 //
 // REQ-159 / REQ-160 / REQ-161 are designed-to-fail at first run — the
@@ -6038,7 +6038,7 @@ header('REQ-162 — Mois d\'épuisement rendered for every row with reservoir + 
 
 // ─── REQ-163 — Foliar Efficacité is surfactant-aware ───────────────────
 //
-// Spec: nutrition/tomato/app/spec.md → REQ-163. Two assertions:
+// Spec: nutrition/tomato/foliar-recipe/builder/spec.md → REQ-163. Two assertions:
 //   (a) Reactive render — toggling #nutr-foliar-surfactant re-renders
 //       Block 5's Efficacité column (column index 2 in the 6-col gap-grid
 //       per REQ-137: Él. | Manque entrant | Efficacité | Apport ici |

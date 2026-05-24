@@ -13,7 +13,7 @@ let nutrCrop = 'tomato';
 
 // Top-level Nutrition page dispatch. Picks the crop-specific page builder
 // based on the current `nutrCrop` toggle. Tomato uses the stage-driven Bilan
-// (nutrition/tomato/app/logic.js); Salanova uses the continuous post-transplant
+// (nutrition/tomato/shell/logic.js); Salanova uses the continuous post-transplant
 // model (nutrition/lettuce/app/logic.js); Semis uses the per-tray nursery
 // model (nutrition/nursery/app/logic.js). Each crop's logic.js is single-
 // purpose — the dispatch lives here at the integrator boundary.
