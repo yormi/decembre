@@ -1,18 +1,26 @@
-// TRANSITIONAL — will move to shell/contribution-orchestrator.js in Phase 2.
+// Tomato — Nutrition supply orchestrator + status helper.
 //
-// Tomato — Bilan supply orchestrator + status helper.
+// Carved out of nutrition/tomato/shell/supply.js (Phase 3 of nutrition
+// reorg, 2026-05-23). Reads STORED_RECIPE.tomato.{fertigation,sidedress,
+// foliaire} (live operational state) or FP_RECIPE_T5 + computeStageRecipe
+// (first-principles target) per the `recipeMode` argument, runs the gap
+// chain (compost → sidedress → fertigation → foliar) for FP mode's
+// REQ-116 gap-derived foliar recipe via deriveFoliarRecipeFromGap, and
+// returns the per-channel + total supply ledger consumed by
+// buildNutrimentTomato in nutrition/tomato/shell/logic.js + the Block 7
+// drift gauge.
 //
-// Reads STORED_RECIPE.tomato.{fertigation,sidedress,foliaire} (live operational
-// state) or FP_RECIPE_T5 + computeStageRecipe(stage) (first-principles target)
-// per the `recipeMode` argument, runs the gap chain (compost → sidedress →
-// fertigation → foliar) for FP mode's REQ-116 gap-derived foliar recipe, and
-// returns the per-channel + total supply ledger consumed by buildNutrimentTomato
-// in nutrition/tomato/shell/logic.js and the Block 7 drift gauge.
-//
-// Per-channel contribution slices live in the model/ dirs:
+// Per-channel contribution slices are pure functions in the model/ dirs:
 //   - nutrition/tomato/fertigation-recipe/model/contribution.js → computeFertigationContribution
 //   - nutrition/tomato/sidedress-recipe/model/contribution.js   → computeSidedressContribution
-//   - nutrition/tomato/foliar-recipe/model/contribution.js      → computeFoliarContribution
+//   - nutrition/tomato/foliar-recipe/model/contribution.js      → computeFoliarContribution + deriveFoliarRecipeFromGap
+//
+// DOM reads (spray count, surfactant) + cross-channel concerns
+// (LUXURY_FACTOR demand cap on supply.soil, FP-vs-stored selection,
+// REQ-116 FP_RECIPE_T5.foliar mutation, page-local nutrStage /
+// nutrRecipeMode state, statusFor render helper) stay HERE — orchestrator
+// layer is allowed to read inputs and mutate page state; pure model
+// files are not.
 //
 // Consumes (all script-global at this script position):
 //   - STORED_RECIPE.tomato.* (operator-side procedure/stored.js partials)
@@ -23,8 +31,7 @@
 //   - computeStageRecipe (nutrition/tomato/fertigation-recipe/model/recipe.js)
 //   - calculateNutritionDemand (nutrition/tomato/plant-needs/model/demand.js)
 //   - TOMATO_FRUIT_EXPORT, BIOMASS_DEMAND (nutrition/tomato/plant-needs/model/data.js)
-//   - window.FoliarRecipeTomato (computeFoliarSupply, computeFoliarRecipeForGap,
-//     efficiencyFor)
+//   - window.FoliarRecipeTomato (computeFoliarSupply, efficiencyFor)
 //   - window.FertigationRecipeTomato.efficiency
 //   - window.SidedressRecipeTomato.efficiency
 //   - window.CompostContribution.releasePerWeek
@@ -95,11 +102,11 @@ function calculateNutritionSupply(stage, phLocked, transpFactor, targetYield, re
   const { k_g_total, mg_g_total, sb_fert_g } = fert._raw;
   void sb_fert_g;
 
-  // ─── REQ-116 — FP foliar recipe is live-derived from the pre-foliar gap.
-  // In FP mode, BEFORE building the foliar branch, compute the residual gap
-  // after compost + sidedress + fertigation, then call
-  // computeFoliarRecipeForGap(gap, opts) and mutate FP_RECIPE_T5.foliar so
-  // the existing FP foliar branch and all downstream readers see the live values.
+  // ─── REQ-116 — FP foliar recipe live-derived from the pre-foliar gap.
+  // In FP mode, BEFORE building the foliar branch, compute the FP-side
+  // sidedress contribution + assemble pre-foliar fertigation map, then
+  // call the pure deriveFoliarRecipeFromGap and mutate FP_RECIPE_T5.foliar
+  // so the existing FP foliar branch + downstream readers see live values.
   //
   // Stored mode is untouched — STORED_RECIPE.tomato.foliaire.A is
   // /retire-recipe-governed and not derived. Spec:
@@ -107,7 +114,6 @@ function calculateNutritionSupply(stage, phLocked, transpFactor, targetYield, re
   if (mode === 'fp') {
     const fertPre = { K: fertK, Mg: fertMg };
     if (fertB > 0) fertPre.B = fertB;
-    // Pre-foliar FP sidedress doses via the sidedress contribution function.
     const sdFp = {
       actisol_g: FP_RECIPE_T5.sidedress['Actisol-5-3-2'] || 0,
       farine_g:  FP_RECIPE_T5.sidedress['FarinePlumes']  || 0,
@@ -122,33 +128,31 @@ function calculateNutritionSupply(stage, phLocked, transpFactor, targetYield, re
     });
     const CC_pre = (typeof window !== 'undefined' && window.CompostContribution) ? window.CompostContribution : null;
     const demandPre = calculateNutritionDemand(ty, stage, tf);
-    const FOLIAR_ELS = ['Mn', 'Zn', 'Cu', 'Fe', 'Mo', 'B'];
-    const gapPre = {};
-    FOLIAR_ELS.forEach(function(element) {
-      const dem = (demandPre[element] && demandPre[element].total) || 0;
-      const compostMg_el = (CC_pre && CC_pre.releasePerWeek[element] != null) ? CC_pre.releasePerWeek[element] * 1000 : 0;
-      const sdMg_el = sidedressPre[element] || 0;
-      const fertMg_el = fertPre[element] || 0;
-      gapPre[element] = Math.max(0, dem - compostMg_el - sdMg_el - fertMg_el);
-    });
     const sprayCountInpFp = document.getElementById('nutr-foliar-spray-count');
     const surfactantInpFp = document.getElementById('nutr-foliar-surfactant');
     const foliarOptsFp = {
       sprayCount: sprayCountInpFp ? parseFloat(sprayCountInpFp.value) : 1,
       surfactant: surfactantInpFp ? surfactantInpFp.checked : false,
     };
-    try {
-      const derived = window.FoliarRecipeTomato.computeFoliarRecipeForGap(gapPre, foliarOptsFp);
-      if (derived && typeof derived === 'object') {
-        FP_RECIPE_T5.foliar['MnSO4']        = derived.MnSO4_g    || 0;
-        FP_RECIPE_T5.foliar['ZnSO4']        = derived.ZnSO4_g    || 0;
-        FP_RECIPE_T5.foliar['CuSO4']        = derived.CuSO4_g    || 0;
-        FP_RECIPE_T5.foliar['FeSO4-7H2O']   = derived.FeSO4_g    || 0;
-        FP_RECIPE_T5.foliar['NaMolybdate']  = derived.NaMoO4_g   || 0;
-        FP_RECIPE_T5.foliar['Solubore']     = derived.Solubore_g || 0;
-      }
-    } catch (e) {
-      if (typeof console !== 'undefined') console.warn('[REQ-116] computeFoliarRecipeForGap failed; falling back to FP_RECIPE_T5.foliar literal:', e);
+    // Call via window.FoliarRecipeTomato so REQ-139's registry check
+    // resolves the consumer surface (orchestrator) → namespace
+    // (foliar-recipe subproject). The bare function is reachable in
+    // the same script bundle but routing through the namespace keeps
+    // the subproject boundary visible.
+    const derived = window.FoliarRecipeTomato.deriveFoliarRecipeFromGap({
+      demand:         demandPre,
+      compostRelease: CC_pre ? CC_pre.releasePerWeek : null,
+      fertigationPre: fertPre,
+      sidedressPre,
+      foliarOpts:     foliarOptsFp,
+    });
+    if (derived) {
+      FP_RECIPE_T5.foliar['MnSO4']        = derived['MnSO4'];
+      FP_RECIPE_T5.foliar['ZnSO4']        = derived['ZnSO4'];
+      FP_RECIPE_T5.foliar['CuSO4']        = derived['CuSO4'];
+      FP_RECIPE_T5.foliar['FeSO4-7H2O']   = derived['FeSO4-7H2O'];
+      FP_RECIPE_T5.foliar['NaMolybdate']  = derived['NaMolybdate'];
+      FP_RECIPE_T5.foliar['Solubore']     = derived['Solubore'];
     }
   }
 

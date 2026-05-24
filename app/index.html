@@ -555,8 +555,11 @@ const ACCEPTED_EXCESSES = [
 // ── 9. Bilan supply orchestrator + Block 7 drift renderer ─────────────────
 // nutrStage + nutrRecipeMode page-local state + LUXURY_FACTOR demand cap +
 // calculateNutritionSupply (FP gap chain, channel-by-channel ledger) +
-// statusFor. Consumers: nutrition/tomato/app/logic.js → buildNutrimentTomato.
-<!-- @include nutrition/tomato/shell/supply.js -->
+// statusFor. Consumes the pure per-channel contribution functions loaded
+// in section 7 (computeFertigationContribution, computeSidedressContribution,
+// computeFoliarContribution, deriveFoliarRecipeFromGap). Consumers:
+// nutrition/tomato/shell/logic.js → buildNutrimentTomato.
+<!-- @include nutrition/tomato/shell/contribution-orchestrator.js -->
 
 // renderPhase1Comparison — stored-vs-FP drift table renderer for the Bilan's
 // Block 7 admin panel. Reads nutrStage + STORED_RECIPE + FP_RECIPE_T5 +

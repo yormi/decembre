@@ -23,6 +23,20 @@ A single turn that touches multiple subprojects writes one entry per subproject.
 
 ## Entries
 
+## 2026-05-24 02:05 — nutrition/tomato/shell
+
+**Change type:** model-code-shift (no spec mutation in this lane)
+**REQs affected:** none — structural reorg only (REQ-116 wiring preserved end-to-end)
+**Summary:** Phase 3 carve. `nutrition/tomato/shell/supply.js` deleted in full; replaced by `nutrition/tomato/shell/contribution-orchestrator.js`. The orchestrator still owns `calculateNutritionSupply` (same signature) + `statusFor` + `nutrStage` / `nutrRecipeMode` page-local state + `LUXURY_FACTOR` demand cap + DOM reads for spray-count / surfactant. The REQ-116 inline gap-derivation block (compost + sidedress + fertigation → gap → recipe → mutate `FP_RECIPE_T5.foliar`) is now a one-line call to `window.FoliarRecipeTomato.deriveFoliarRecipeFromGap` followed by the FP_RECIPE_T5.foliar mutation. Defensive try/catch around the foliar derivation dropped (was a guard against a window.* indirection that no longer exists; both functions live in the same script bundle now). `app/index.html` @include line 559 rewired (`shell/supply.js` → `shell/contribution-orchestrator.js`). `scripts/check-recipes.mjs` REQ-139 registry row updated: `computeFoliarRecipeForGap` → `deriveFoliarRecipeFromGap` for the orchestrator's consumer surface (the raw function still has its own REQ-115 behavioral verifier block via the namespace). `npm test` 20/20; `npm run check` 161/0.
+**Suggested waves:** pruner sweep — `nutrition/tomato/shell/test-helpers.mjs:72` and `nutrition/tomato/sidedress-recipe/model/data.js:46/86` carry `calculateNutritionSupply` comment refs that still resolve correctly (function name unchanged) but may benefit from a one-line note that the home file is now `contribution-orchestrator.js`; non-blocking.
+
+## 2026-05-24 02:05 — nutrition/tomato/foliar-recipe
+
+**Change type:** model-code-shift (no spec mutation in this lane)
+**REQs affected:** REQ-116 (extraction only — behavior preserved)
+**Summary:** Pure `deriveFoliarRecipeFromGap({ demand, compostRelease, fertigationPre, sidedressPre, foliarOpts })` added to `nutrition/tomato/foliar-recipe/model/contribution.js`. Wraps the per-element foliar-gap arithmetic (six FOLIAR_GAP_ELEMENTS — Mn / Zn / Cu / Fe / Mo / B — gap = max(0, demand − compost − sidedress − fertigation) per element) + the call into `computeFoliarRecipeForGap` + the reshape from `{ MnSO4_g, ZnSO4_g, … }` to the FP_RECIPE_T5.foliar key shape (`{ MnSO4, ZnSO4, Solubore, CuSO4, NaMolybdate, 'FeSO4-7H2O' }`). Returns null on derivation failure so the orchestrator can fall back to the prior FP_RECIPE_T5.foliar literal silently. Pure — no DOM reads, no `window.*` reads, no channel-orchestrator coupling (orchestrator pre-computes the sidedress + fertigation per-element maps via the existing sibling contribution functions and passes them in). Re-exported on `window.FoliarRecipeTomato` (recipe.js tail) so REQ-139 sees it under the namespace. `npm test` 20/20; `npm run check` 161/0.
+**Suggested waves:** test-writer (optional) — direct unit on `deriveFoliarRecipeFromGap` (stub demand + compost + sidedress + fertigation maps; assert returned shape + null-on-no-derivation; matches behavior currently covered transitively by REQ-116 integration test at `scripts/check-recipes.mjs:3317-3365`).
+
 ## 2026-05-23 21:40 — nutrition/chemistry
 
 **Change type:** model-code-shift (new subproject, no spec)

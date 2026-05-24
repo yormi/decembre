@@ -222,13 +222,12 @@ Reference values:
 
 ---
 
-## REQ-055 — Foliar uptake pH multiplier
+## REQ-055 — Foliar uptake pH curve
 
-`effectiveEff` for the foliar channel applies a `foliarPhResponse(sprayPh)`
-multiplier curve, in addition to the leaf-surface field modifiers (yucca,
-window timing) already specified.
-
-Curve (cert 3):
+`foliarPhResponse(sprayPh)` returns a uptake-multiplier value per the curve
+below (cert 3). The application rule wiring this curve into the foliar
+channel's effective efficiency lives at `nutrition/spec.md —
+foliar-uptake-ph-application`.
 
 | Spray pH | Multiplier |
 |---|---|

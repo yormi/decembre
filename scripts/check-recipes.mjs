@@ -4957,7 +4957,12 @@ header('REQ-139 — App must call subproject namespace (no inline reimplementati
   // into the app.
   const REGISTRY = [
     { ns: 'FoliarRecipeTomato',  handler: 'computeFoliarSupply',         consumer: 'dist/index.html' },
-    { ns: 'FoliarRecipeTomato',  handler: 'computeFoliarRecipeForGap',   consumer: 'dist/index.html' },
+    // REQ-116 — the shell orchestrator consumes the gap-chain wrapper
+    // (deriveFoliarRecipeFromGap) via the FoliarRecipeTomato namespace
+    // rather than the raw computeFoliarRecipeForGap; the wrapper owns
+    // the per-element gap arithmetic + reshape. computeFoliarRecipeForGap
+    // is still namespaced for foliar-only verifier tests (REQ-115 below).
+    { ns: 'FoliarRecipeTomato',  handler: 'deriveFoliarRecipeFromGap',   consumer: 'dist/index.html' },
     { ns: 'CompostContribution', handler: 'releasePerWeek',              consumer: 'dist/index.html' },
   ];
 

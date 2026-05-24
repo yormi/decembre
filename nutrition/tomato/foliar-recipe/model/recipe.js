@@ -261,4 +261,9 @@ window.FoliarRecipeTomato = {
   computeFoliarSupply,
   // REQ-115 / REQ-116 — gap-maximizing recipe derivation.
   computeFoliarRecipeForGap,
+  // REQ-116 — pure gap-chain wrapper consumed by the shell-side
+  // contribution orchestrator. Lives in foliar-recipe/model/contribution.js;
+  // re-exported here so REQ-139's registry check resolves it under the
+  // FoliarRecipeTomato namespace.
+  deriveFoliarRecipeFromGap,
 };

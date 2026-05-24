@@ -72,19 +72,21 @@ sum to 1.0 ± 0.05.
 
 ---
 
-## REQ-012 — No double flux-ownership
-
-For each flux-driven element, the channel fractions in `CHANNEL_ROLE` sum to
-1.0 ± 0.05.
-
----
-
 ## REQ-017 — pH-aware effective efficiency
 
 Soil-applied channels (fertigation, sidedress, frontload) compute supply as
 `recipe_mass × base_efficiency × phResponse[phClass](currentSoilPh)`. The
 `PH_RESPONSE` table contains a curve for every named `phClass` referenced by
 any product.
+
+---
+
+## REQ-194 — Foliar-uptake pH application
+
+When computing `effectiveEfficiency` for any foliar-channel product, the
+result MUST be multiplied by `foliarPhResponse(sprayPh)` in addition to the
+leaf-surface field modifiers (yucca, window timing). The curve is defined at
+`nutrition/chemistry — foliar-uptake-ph-curve`.
 
 ---
 

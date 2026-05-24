@@ -62,3 +62,4 @@ One claim per line. Most recent at the bottom (true append).
 2026-05-23T21:37:03Z — REQ-191 — product-owner — claude-code — nutrition/tomato/fertigation-recipe/app/spec.md
 2026-05-24T01:00:52Z — REQ-192 — product-owner — claude-code — nutrition/tomato/fertigation-recipe/procedure/spec.md
 2026-05-24T01:00:52Z — REQ-193 — product-owner — claude-code — nutrition/tomato/fertigation-recipe/operator/spec.md
+2026-05-24T01:53:11Z — REQ-194 — product-owner — claude-code — nutrition/spec.md

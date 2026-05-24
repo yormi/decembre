@@ -23,6 +23,20 @@ A single turn that touches multiple subprojects writes one entry per subproject.
 
 ## Entries
 
+## 2026-05-23 23:55 — nutrition (Phase 3 — REQ-012 prune)
+
+**Change type:** deleted
+**REQs affected:** REQ-012 (removed; fully subsumed by new REQ-011 wording's "Channel fractions for each element MUST sum to 1.0 ± 0.05" clause)
+**Summary:** REQ-012 entry removed from `nutrition/spec.md`. The sum-to-1.0 constraint now lives once in REQ-011 (the cross-crop channel-role rule); no behavior changes — REQ-012 was redundant under the Phase 2 REQ-011 lift. Verifier still 161/0.
+**Suggested waves:** pruner (sweep any lingering REQ-012 references in tests/derivations/comments)
+
+## 2026-05-23 23:55 — nutrition + nutrition/chemistry (Phase 3 — REQ-055 split)
+
+**Change type:** edited (chemistry) · added (nutrition)
+**REQs affected:** REQ-055 (chemistry — narrowed to curve-only, slug renamed to `foliar-uptake-ph-curve`), REQ-194 (nutrition — NEW, application rule wiring the curve into foliar `effectiveEfficiency`)
+**Summary:** Per Guillaume's ruling, REQ-055 split along curve vs application-rule line. `nutrition/chemistry/spec.md — foliar-uptake-ph-curve` keeps the pH-vs-multiplier anchors (the lookup table) only. `nutrition/spec.md — foliar-uptake-ph-application` (REQ-194) carries the cross-crop model rule: when computing `effectiveEfficiency` for any foliar product, multiply by `foliarPhResponse(sprayPh)` on top of leaf-surface field modifiers. Both halves cross-reference each other with the namespace-prefixed slug form. Verifier 161/0.
+**Suggested waves:** test-writer (verifier check that foliar effectiveEfficiency calls multiply by foliarPhResponse — wire to REQ-194) · pruner
+
 ## 2026-05-23 23:30 — nutrition (Phase 2 — REQ-011 lift + generalization)
 
 **Change type:** added
