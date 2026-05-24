@@ -118,6 +118,17 @@ is throttled to a trickle, so the vault drains slowly even with a heavy
 bank. Bank is not the bottleneck; pH-driven availability is. Clamp inert
 here.
 
+**Tissue validation (2026-05-23):** T5 tomato tissue panel (TOM #1,
+14 mai 2026, `nutrition/doc/tissus - 2026-05-22.pdf`) shows leaf P at
+0.23 % vs lab floor 0.50 % (-54 %). Under STORED at T5 the only
+P pathway is the mass-flow trickle modelled here (16.5 mg/m²/wk) +
+Actisol mineralization passing through the same lockout; total
+supply ~67 mg/m²/wk vs 660 demand (-90 %). Severely-déficient
+tissue confirms the lockout-regime prediction. The mass-flow-binds
+mechanism for P is validated against peak-demand tissue (cert
+3 → 4). Full delivered-vs-demand trace in
+`nutrition/tomato/research/tomato-t5-tissue-analysis-2026-05-23.md`.
+
 ### Example runway: tomato Ca — demand-bound regime (clamp binds)
 
 ```

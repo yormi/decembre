@@ -20,15 +20,20 @@ constant across cell footprints — the conservative-physics baseline
 (any real spacing-dependent canopy expansion adds mass on top, never
 below).
 
-Per-tray cert: 50-cell breeder-anchored cert 3; 32-cell cert 3
-(geometric physics-floor, defensible one density step from the
-breeder anchor); 24-cell cert 2 and 18-cell cert 2 — the
-constant-`h × ρ` assumption is the floor, but lettuce given more
-space per plant tends to grow taller and denser (plausible upper
-band at 18-cell: `h ≈ 0.13-0.15 m`, `ρ ≈ 90-100 kg/m³`, asymptote
-75-95 g vs predicted 69 g). Refit upward on first 18-cell cohort
-under best non-light conditions; same shape but smaller magnitude
-expected at 24-cell (+5 to +10 %).
+Per-tray cert: 50-cell breeder-anchored cert 3; 32 / 24 / 18 all
+cert 2 — same single-anchor dependence (only the canopy
+mass-loading product `h × ρ ≈ 8.2 kg/m²` is breeder-grounded; the
+split into individual `h = 0.10 m` and `ρ = 82 kg/m³` is back-derived
+from the 50-cell anchor, not independently measured). Cert 2
+reflects the shared evidence base across the three extrapolated
+rows; bumps to cert 3 when `FOLIAGE_HEIGHT_M` lands on an independent
+anchor (see refinement-trigger table below). The constant-`h × ρ`
+assumption is the floor, but lettuce given more space per plant
+tends to grow taller and denser (plausible upper band at 18-cell:
+`h ≈ 0.13-0.15 m`, `ρ ≈ 90-100 kg/m³`, asymptote 75-95 g vs predicted
+69 g). Refit upward on first 18-cell cohort under best non-light
+conditions; same shape but smaller magnitude expected at 24-cell
+(+5 to +10 %).
 
 Why not power-law extrapolation from two anchors? Archived in
 `learnings.md` § "Rejected: two-anchor power-law extrapolation".

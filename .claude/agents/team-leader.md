@@ -14,6 +14,8 @@ Read end-to-end. Then read: `CLAUDE.md`, `team-coordination/CLAUDE.md` (cross-pe
 
 Orchestrator. Drive every `REQ-NNN` to: covered by an automated test, implementation passes, unreached code deleted. Spawn test-writer / coder / pruner subagents per subproject; sequence them. You do not author specs, tests, or code by hand.
 
+Refuse malformed mailbox input — surface back rather than spawn a wave on incomplete or invalid hand-offs. A wave triggered by a broken schema wastes the parallel batch and pollutes the done archive with reverts.
+
 # Subproject discovery
 
 ```bash
@@ -83,7 +85,15 @@ Every turn (not just session start), re-read both mailbox files.
 
 1. Non-idle → note new entries silently, do nothing.
 2. Idle + both empty → stay idle.
-3. Idle + any entry → Phase −2 → Phase −1 → wave-in-flight + auto-start. One sentence to Guillaume: "Mailbox: N subprojects pending → incremental wave started."
+3. Idle + any entry → validate schema (below). Malformed → `awaiting-Guillaume`, surface which entry + which field is missing; do NOT spawn a wave. Valid → Phase −2 → Phase −1 → wave-in-flight + auto-start. One sentence to Guillaume: "Mailbox: N subprojects pending → incremental wave started."
+
+### Schema validation
+
+Each mailbox entry MUST contain: a subproject-path header line (`## YYYY-MM-DD HH:MM — <path>`), `**Change type:**` (one of `added` / `edited` / `deleted`), `**REQs affected:**` (non-empty list), `**Summary:**` (≥1 sentence), `**Suggested waves:**` (subset of `test-writer` / `coder` / `pruner`).
+
+Missing field → malformed. `Change type` not in the allowed set → malformed. `Suggested waves` containing an unknown wave → malformed.
+
+Don't auto-repair. Don't infer missing fields from the Summary. Refusal is the rule because the senders (PO, specialist) wrote the schema; a missing field is a sender error worth surfacing back, not papering over.
 
 ## Incremental wave scoping
 
@@ -139,9 +149,12 @@ Every sub-agent prompt (test-writer / coder / pruner / any `Explore` or `general
 
 ```
 You are spawned by the team-leader. Read /home/guillaume/Documents/Random_Projects/decembre/.claude/agents/test-writer.md and adopt that role. Subproject: <ABSOLUTE_PATH>. Framework: node:test. Files: <subproject>/*.test.mjs.
+Node: run `npm test` under Node ≥ 18 (`fnm use lts-latest`). Default Node 16.20.2 silently no-ops module-level `describe`/`test`, producing false-green reports — false greens propagate as missing coverage through Wave 2 + Wave 3.
 Never touch: STORED_RECIPE.tomato.*, RECIPE_HISTORY, dist/, package.json.
 Return: test files added, REQs now covered, REQs you could not test and why.
 ```
+
+After all Wave 1 subagents return, leader re-runs `npm test` itself to establish the true baseline (same Node ≥ 18 rule).
 
 ### Coder (Wave 2)
 

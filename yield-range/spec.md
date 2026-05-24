@@ -156,13 +156,16 @@ where `area_per_cell = 0.1525 / plateauSize` on a 1020 tray frame
 `FOLIAGE_DENSITY_KG_PER_M3 = 82`. The 50-cell value is anchored to
 Salanova breeder spec sheets (cert 3); 32 / 24 / 18 follow by
 holding the canopy mass-loading product (`h × ρ ≈ 8.2 kg/m²`)
-constant across cell footprints. Cert 3 at 32-cell (geometric
-physics floor — same canopy mass-loading at the next-up density is
-the conservative-physics baseline); cert 2 at 24 / 18 (the
-constant-`h × ρ` assumption likely underpredicts: at wider spacing
-Salanova grows taller and denser, so observed asymptote may land
-above the geometric prediction). Refinement trigger: cohort weighing
-at non-50-cell trays, with 18-cell as the highest-priority gap.
+constant across cell footprints. Cert 2 at 32 / 24 / 18 — same
+single-anchor dependence as the 50-cell pin (only `h × ρ` is
+breeder-grounded; the split into individual `h` and `ρ` is
+back-derived, not independently measured). Bumps to cert 3 when
+`FOLIAGE_HEIGHT_M` lands on an independent anchor (Décembre cohort
+photo measurement at 50-cell d28 packed density, or a published
+Salanova / butterhead canopy-height value at packed nursery
+densities). Refinement triggers: cohort weighing at non-50-cell
+trays (18-cell highest-priority); `FOLIAGE_HEIGHT_M` independent
+anchor.
 
 ---
 

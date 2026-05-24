@@ -24,10 +24,6 @@ Before grading a Wave 1 test "shape-only / weak", check what the spec actually d
 
 When a spec encodes a "policy vs current-implementation drift" note (spec says X, code does Y), always pin tests to the spec, not the current code. Wave 2 coder converges impl to spec. *Because:* spec is floor and ceiling; tests that pin current-but-wrong impl freeze the drift and turn Wave 2 fixes into spurious test failures. (2026-05-12)
 
-## node-18-for-test-writer
-
-Wave-1 test-writer prompts MUST instruct the subagent to run `npm test` under Node ≥ 18 (`fnm use lts-latest`). After all Wave 1 subagents return, leader re-runs `npm test` itself to establish the true baseline. *Because:* default Node 16.20.2 silently no-ops module-level `describe`/`test`, producing false-green reports; false greens propagate as missing coverage through Wave 2 + Wave 3. (2026-05-12)
-
 ## wave-scope-flexibility
 
 Default to "all subprojects with `spec.md` in scope" but accept narrower scoping when Guillaume asks (e.g. "nutrition/tomato and nested only"). *Because:* a 6-subproject wave reviewable in one head-context; a 19-subproject diff overflows it. (2026-05-12)

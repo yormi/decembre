@@ -3,7 +3,7 @@
 //
 // Loads index.html into jsdom, exposes the runtime objects (PRODUCT,
 // CHANNEL_ROLE, PH_RESPONSE, KSP_PAIRS, KSP_SAFE, TAG_INCOMPATIBILITIES,
-// TAGS_INERT, BIOMASS_DEMAND, TOMATO_FRUIT_EXPORT, computeRecipe,
+// TAGS_INERT, BIOMASS_DEMAND, TOMATO_FRUIT_EXPORT,
 // effectiveEfficiency, predictedCE, predictedTankPh, getWeekNumber), then runs
 // structural + DOM-walk checks for the REQs listed below.
 //
@@ -172,7 +172,7 @@ const exposeNames = [
   'SIDEDRESS_PRODUCTS',
   'TOMATO_NUMBER_BEDS', 'TOMATO_BED_AREA',
   'PAGES', 'ADMIN_PAGES', 'CROP_PAGES',
-  'effectiveEfficiency', 'predictedCE', 'predictedTankPh', 'computeRecipe',
+  'effectiveEfficiency', 'predictedCE', 'predictedTankPh',
   'computeStageRecipe',
   'calculateNutritionDemand',
   'COMPOST_AMENDMENT', 'COMPOST_LABEL_PCT', 'COMPOST_MINERALIZATION_YEAR1',
@@ -1376,11 +1376,9 @@ if (!PRODUCT) {
 } else {
   // Collect product NAMES referenced by active recipes. The current Phase 1
   // active recipes are computeStageRecipe, FOLIAR.tomato (A and B), and
-  // TOMATO_SIDEDRESS — but those use label strings, not PRODUCT keys. The
-  // computeRecipe mapping (in index.html:3808) IS keyed on PRODUCT names,
-  // so we use the union of (a) keys returned by computeRecipe across all
-  // tomato stages × channels and (b) products explicitly named in PRODUCT
-  // with mode set (every PRODUCT entry is presumed potentially active).
+  // TOMATO_SIDEDRESS — but those use label strings, not PRODUCT keys.
+  // Pragmatic choice: check every PRODUCT entry (the legacy first-principles
+  // computeRecipe builder was deleted in the Phase 2 chemistry pull-up).
   //
   // Pragmatic choice: for now check every PRODUCT entry. If any product
   // ever needs to be in PRODUCT but flagged organicAllowed: false, we'll
@@ -1564,7 +1562,7 @@ function sidedressEffective(stage, element) {
     mg_m2 += (sd.actisol_g * (PRODUCT_PCT.Actisol_N || 0)
              * (SIDEDRESS_MINIMUM_EFFICIENCY.Actisol_N || 0.6) * 1000) / area;
     mg_m2 += (sd.farine_g  * (PRODUCT_PCT.FarinePlumes_N || 0)
-             * (SIDEDRESS_MINIMUM_EFFICIENCY.FarinePlumes_N || 0.75) * 1000) / area;
+             * (SIDEDRESS_MINIMUM_EFFICIENCY.FarinePlumes_N || 0.70) * 1000) / area;
   } else if (element === 'P') {
     mg_m2 += (sd.actisol_g * (PRODUCT_PCT.Actisol_P || 0)
              * (SIDEDRESS_MINIMUM_EFFICIENCY.Actisol_P || 0.5) * 1000) / area;
@@ -3405,7 +3403,7 @@ header('REQ-105 — Light ceiling reactive to solarPerGram (mutate input → tex
   let logicJsBody = '';
   try {
     logicJsBody = readFileSync(
-      join(REPO_ROOT, 'nutrition', 'tomato', 'app', 'logic.js'),
+      join(REPO_ROOT, 'nutrition', 'tomato', 'shell', 'logic.js'),
       'utf8'
     );
   } catch (e) { /* swallow — fail below */ }
@@ -3456,7 +3454,7 @@ header('REQ-106 — FP mode locks stage to T5 (auto-revert + default fp)');
   let logicJsBody = '';
   try {
     logicJsBody = readFileSync(
-      join(REPO_ROOT, 'nutrition', 'tomato', 'app', 'logic.js'),
+      join(REPO_ROOT, 'nutrition', 'tomato', 'shell', 'logic.js'),
       'utf8'
     );
   } catch (e) { /* */ }
@@ -3538,7 +3536,7 @@ header('REQ-108 — Block 1 calls PN.calculateNutritionDemand (no bare-global lo
   let logicJsBody = '';
   try {
     logicJsBody = readFileSync(
-      join(REPO_ROOT, 'nutrition', 'tomato', 'app', 'logic.js'),
+      join(REPO_ROOT, 'nutrition', 'tomato', 'shell', 'logic.js'),
       'utf8'
     );
   } catch (e) { /* */ }
@@ -5194,7 +5192,7 @@ header('REQ-145 — Pourquoi modal interpretation strings (renderSpec call sites
     // assert each <key> is in expectedKeys.
     const consumers = [
       join(REPO_ROOT, 'app', 'index.html'),
-      join(REPO_ROOT, 'nutrition', 'tomato', 'app', 'logic.js'),
+      join(REPO_ROOT, 'nutrition', 'tomato', 'shell', 'logic.js'),
     ];
     const callRe = /renderSpec\(\s*['"]REQ-145['"]\s*,\s*['"]([^'"]+)['"]/g;
     let callsFound = 0;
@@ -5227,7 +5225,7 @@ header('REQ-145 — Pourquoi modal interpretation strings (renderSpec call sites
     }
 
     if (callsFound === 0) {
-      offenders.push('no consumer found for REQ-145 — renderSpec(\'REQ-145\', …) absent in app/index.html or nutrition/tomato/app/logic.js');
+      offenders.push('no consumer found for REQ-145 — renderSpec(\'REQ-145\', …) absent in app/index.html or nutrition/tomato/shell/logic.js');
     }
   }
 

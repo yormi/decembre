@@ -138,7 +138,7 @@ function sidedressEffectiveMg(stage, el) {
     mg_per_m2 += (sidedress.actisol_g * (G.PRODUCT_PCT.Actisol_N || 0)
       * (G.SIDEDRESS_MINIMUM_EFFICIENCY.Actisol_N || 0.6) * 1000) / area;
     mg_per_m2 += (sidedress.farine_g * (G.PRODUCT_PCT.FarinePlumes_N || 0)
-      * (G.SIDEDRESS_MINIMUM_EFFICIENCY.FarinePlumes_N || 0.75) * 1000) / area;
+      * (G.SIDEDRESS_MINIMUM_EFFICIENCY.FarinePlumes_N || 0.70) * 1000) / area;
   } else if (el === 'P') {
     mg_per_m2 += (sidedress.actisol_g * (G.PRODUCT_PCT.Actisol_P || 0)
       * (G.SIDEDRESS_MINIMUM_EFFICIENCY.Actisol_P || 0.5) * 1000) / area;

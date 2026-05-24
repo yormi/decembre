@@ -23,3 +23,10 @@ A single turn that touches multiple model subprojects writes one entry per subpr
 
 ## Entries
 
+## 2026-05-23 17:37 — nutrition/tomato/fertigation-recipe
+
+**Change type:** added (page-level spec)
+**REQs affected:** REQ-183 (stored-recipe-is-sole-source) implies model-side cleanup
+**Summary:** New `nutrition/tomato/fertigation-recipe/app/spec.md` asserts the page applies no runtime adjustment factor on top of stored values. The current `getMultK()` / `getMultMg()` multiplier mechanism (`app/index.html`, applied at render time in `nutrition/tomato/fertigation-recipe/app/logic.js`) needs to retire — any K or Mg tuning between `/retire-recipe` cycles should flow through STORED, not a runtime knob. Additionally: `nutrition/tomato/fertigation-recipe/app/page.html` currently mixes tomato + lettuce + seedling-lettuce fertigation flows under a single crop toggle; per REQ-181 the lettuce and seedling flows carve out into sibling subprojects (`nutrition/lettuce/fertigation-recipe/` and `nutrition/nursery/fertigation-recipe/`). Flagging for specialist awareness — implementation is coder lane, but the multiplier retirement may touch model-layer assumptions.
+**Specialist scope:** confirm multiplier retirement does not break any model-side consumer (search for `getMultK` / `getMultMg` outside the page render path); confirm tomato-only narrowing of `nutrition/tomato/fertigation-recipe/` model files (`calc.js`, `data.js`, `model.js`, `derivation.md`) remains consistent (subproject was already tomato-only; only the page mixed crops).
+

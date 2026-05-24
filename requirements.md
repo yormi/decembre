@@ -9,9 +9,16 @@ code under `nutrition/**/spec.md` and `yield-range/**/spec.md`.
 | File | Scope |
 |---|---|
 | `requirements.md` (this file) | Cross-app: UI language, URL routing, ISO week numbering |
-| `nutrition/spec.md` | Cross-crop nutrition: chemistry, products, organic cert, mass-balance, recipe-model architecture |
-| `nutrition/tomato/spec.md` | Tomato nutrition: per-stage demand, fruit export, biomass, channel-ownership |
-| `nutrition/tomato/app/spec.md` | Tomato Nutrition admin page UI (Bilan / Block 1-7 / drift gauge) |
+| `nutrition/spec.md` | Cross-crop nutrition: mass-balance, channel cascade, pH-aware efficiency, lockout gates, crop-level channel-role coverage |
+| `nutrition/chemistry/spec.md` | Cross-crop chemistry: product catalog, pH-response, mixing compatibility (Ksp / tags / mix order / incompatible recipes / stock stability), tank-level CE + pH predictions |
+| `nutrition/tomato/spec.md` | Tomato nutrition: per-stage demand, fruit export, biomass, mass-balance coupling |
+| `nutrition/tomato/shell/spec.md` | Tomato Nutrition admin page chrome (header inputs, ceiling, recipe-mode toggle, drift block, single-source-of-truth read) |
+| `nutrition/tomato/plant-needs/builder/spec.md` | Plant-needs builder block on the admin page (Block 1) |
+| `nutrition/tomato/foliar-recipe/builder/spec.md` | Foliar builder block on the admin page (Block 5/6) |
+| `nutrition/tomato/fertigation-recipe/builder/spec.md` | Fertigation builder block on the admin page (supply vs demand + drift sub-block) |
+| `nutrition/tomato/sidedress-recipe/builder/spec.md` | Sidedress builder block on the admin page (supply vs demand + drift sub-block) |
+| `nutrition/tomato/fertigation-recipe/operator/spec.md` | Operator-facing tomato fertigation page UI |
+| `nutrition/tomato/fertigation-recipe/procedure/spec.md` | Procedural data layer behind the operator fertigation page (stage, steps, calc) |
 | `nutrition/lettuce/spec.md` | Salanova post-transplant nutrition (model/recipe) |
 | `nutrition/lettuce/app/spec.md` | Salanova admin subpage UI |
 | `nutrition/nursery/spec.md` | Semis laitue nutrition (seedling DW%, cell volume cap) |

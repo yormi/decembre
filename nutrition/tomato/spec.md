@@ -30,17 +30,9 @@ admin page live in `nutrition/tomato/app/spec.md`.
   from `nutrition/spec.md`).
 
 The specs below cover the *coupling* between plant-needs and the supply
-chain (REQ-011, REQ-013, REQ-014) plus the demand-anchor source-of-truth
-invariant (REQ-033).
-
----
-
-## REQ-011 — `CHANNEL_ROLE` covers every demand element
-
-A `CHANNEL_ROLE` constant maps every element appearing in
-`BIOMASS_DEMAND[stage]` (and `TOMATO_FRUIT_EXPORT`) to its delivery
-channel(s) — `fertigation`, `sidedress`, `frontload`, `foliar`, `passive` —
-with explicit fractions per channel.
+chain (REQ-013, REQ-014) plus the demand-anchor source-of-truth invariant
+(REQ-033). Channel-role coverage (REQ-011) lives in `nutrition/spec.md`
+as a cross-crop rule.
 
 ---
 

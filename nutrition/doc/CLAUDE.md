@@ -27,6 +27,20 @@ Report SOL-26419 (sample 2024_18052), tabular. pH 6.09, P 1,071, K 335, Ca 5,956
 Same SOL-26419 in graphical form (richesse bars: very low → very high).
 **Reach for:** presenting baseline to non-technical viewers.
 
+## Tissue analysis (Agro-Enviro-Lab, May 2026)
+
+### `tissus - 2026-05-22.pdf`
+Lab IDs TI-0025330 / 0025331 / 0025332. Sampling 14 mai 26, report 22 mai 26. Three samples — LAIT #1 + LAIT #2 (Laitue, feuilles), TOM #1 (Tomate, feuilles); digestion acide + ICP. First post-crisis tissue read for both crops.
+
+Lab's per-element déficience / faible flags:
+- **LAIT #1** — déficient Ca / Mg / S; faible Cu / Zn; indices flagged Cu / Mg / S.
+- **LAIT #2** — déficient K / Ca; faible S; indices flagged N / K / Cu.
+- **TOM #1** — déficient N / P / Ca; faible K; indices flagged P / B / Fe.
+
+**Reach for:** what roots-to-leaves actually delivered post-crisis (foliar Mn/Zn working? Ca-saturation still leaving plants Ca-déficient?); cross-checking the pH 7.4 lockout hypothesis against leaf uptake; calibrating downstream model anchors (luxury K, Ca/Mg ratios, foliar dose sufficiency).
+⚠️ Lab interpretation thresholds are generic plant-tissue norms, not Salanova / tomato cultivar-specific — same caveat as SME spec ranges. LAIT #2 N value appears clipped on layout-extracted text; verify against the PDF before citing.
+⚠️ Three samples but no in-PDF map to which bed / which cohort / which sampling date by cultivar; cross-reference Catherine's sampling log if downstream decisions hinge on which lettuce cohort is which.
+
 ## Water (Berger Labs, April 2026)
 
 ### `analyse d'eau.pdf`

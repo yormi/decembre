@@ -49,3 +49,16 @@ One claim per line. Most recent at the bottom (true append).
 2026-05-18T00:15:56Z — REQ-178 — product-owner — claude-code — nutrition/lettuce/app/spec.md
 2026-05-18T00:15:56Z — REQ-179 — product-owner — claude-code — nutrition/lettuce/app/spec.md
 2026-05-18T00:15:56Z — REQ-180 — product-owner — claude-code — nutrition/lettuce/app/spec.md
+2026-05-23T21:37:03Z — REQ-181 — product-owner — claude-code — nutrition/tomato/fertigation-recipe/app/spec.md
+2026-05-23T21:37:03Z — REQ-182 — product-owner — claude-code — nutrition/tomato/fertigation-recipe/app/spec.md
+2026-05-23T21:37:03Z — REQ-183 — product-owner — claude-code — nutrition/tomato/fertigation-recipe/app/spec.md
+2026-05-23T21:37:03Z — REQ-184 — product-owner — claude-code — nutrition/tomato/fertigation-recipe/app/spec.md
+2026-05-23T21:37:03Z — REQ-185 — product-owner — claude-code — nutrition/tomato/fertigation-recipe/app/spec.md
+2026-05-23T21:37:03Z — REQ-186 — product-owner — claude-code — nutrition/tomato/fertigation-recipe/app/spec.md
+2026-05-23T21:37:03Z — REQ-187 — product-owner — claude-code — nutrition/tomato/fertigation-recipe/app/spec.md
+2026-05-23T21:37:03Z — REQ-188 — product-owner — claude-code — nutrition/tomato/fertigation-recipe/app/spec.md
+2026-05-23T21:37:03Z — REQ-189 — product-owner — claude-code — nutrition/tomato/fertigation-recipe/app/spec.md
+2026-05-23T21:37:03Z — REQ-190 — product-owner — claude-code — nutrition/tomato/fertigation-recipe/app/spec.md
+2026-05-23T21:37:03Z — REQ-191 — product-owner — claude-code — nutrition/tomato/fertigation-recipe/app/spec.md
+2026-05-24T01:00:52Z — REQ-192 — product-owner — claude-code — nutrition/tomato/fertigation-recipe/procedure/spec.md
+2026-05-24T01:00:52Z — REQ-193 — product-owner — claude-code — nutrition/tomato/fertigation-recipe/operator/spec.md
