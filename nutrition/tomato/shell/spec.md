@@ -4,7 +4,7 @@ UI invariants for the Tomato Nutrition admin page chrome — header inputs
 (target, solarPerGram, stage, phLocked, recipeMode), light-limit
 ceiling, recipe-mode toggle, drift block, single-source-of-truth read.
 Per-block builder specs (plant-needs, foliar) live alongside the
-corresponding subproject under `<subproject>/builder/spec.md`. Crop-side
+corresponding subproject under `<subproject>/builder/user-stories.md`. Crop-side
 recipe/biology specs in `nutrition/tomato/spec.md`; chemistry / cross-crop
 rules in `nutrition/spec.md`.
 

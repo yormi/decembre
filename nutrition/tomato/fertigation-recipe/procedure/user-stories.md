@@ -3,7 +3,7 @@
 Procedural data layer behind the operator-facing tomato fertigation page:
 stage resolution from ISO week, step-source data shape, step-inclusion
 rule, stock-volume computation. Operator-visible UI claims (page header,
-card shape, anchor placements) live in `operator/spec.md`. Model claims
+card shape, anchor placements) live in `operator/user-stories.md`. Model claims
 (sizing, supply) in `model/spec.md`.
 
 ---

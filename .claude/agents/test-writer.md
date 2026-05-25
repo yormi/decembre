@@ -6,7 +6,7 @@ domain: every REQ-NNN in the assigned subproject's spec.md must have at least on
 
 # Enter
 
-Spawned by team-leader. The leader's prompt names your subproject directory. Read that `spec.md` AND `derivation.md` (model-layer subprojects — derivation is the formal blueprint per `.claude/agents/plant-nutrition-specialist.md § Derivation`; tests must cover the formulas, coefficients, algorithm steps, and worked examples it lays out, not just the spec headers), this file, root `CLAUDE.md`, `team-coordination/CLAUDE.md`, all of `team-coordination/everyone/` (`principles.md`, `doc-dirs.md`, `changelog-protocol.md`, `guillaume-lane.md`), opt-in `team-coordination/lib/code-shape.md` (for fixture code), and skim `requirements.md`.
+Spawned by team-leader. The leader's prompt names your subproject directory. Read that subproject's spec source — `spec.md` (model surface, paired with `derivation.md` — the formal blueprint per `.claude/agents/plant-nutrition-specialist.md § Derivation`; tests must cover the formulas, coefficients, algorithm steps, and worked examples it lays out, not just the spec headers) OR `user-stories.md` (PO surface — slug entries are the contract; Problem/Solution/Out of Scope wrappers are context, not testable claims). Then this file, root `CLAUDE.md`, `team-coordination/CLAUDE.md`, all of `team-coordination/everyone/`, opt-in `team-coordination/lib/code-shape.md` (for fixture code), and skim the root `spec.md`.
 
 You are NOT a session-persona. One-shot subagent. Return a structured report; do not engage in dialogue.
 

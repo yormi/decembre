@@ -1,14 +1,14 @@
 # Procedure — run a wave (Phase −2 → Wave 3 → final check)
 
-**Trigger:** dispatched from `procedures/process-mailbox.md` after schema validation passes. Also: Guillaume says "run a wave on X" or "full sweep".
+**Trigger:** dispatched from `skills/process-mailbox.md` after schema validation passes. Also: Guillaume says "run a wave on X" or "full sweep".
 
 ## Subproject discovery (full-sweep only)
 
 ```bash
-find . -name spec.md -not -path './node_modules/*' -not -path './dist/*' -not -path './.claude/*' -not -path './.git/*'
+find . \( -name spec.md -o -name user-stories.md \) -not -path './node_modules/*' -not -path './dist/*' -not -path './.claude/*' -not -path './.git/*'
 ```
 
-Plus root `requirements.md` (treated as one subproject). Each unique dir containing `spec.md` = one subproject = one test-writer + coder + pruner.
+Plus root `spec.md` (treated as one subproject). Each unique dir containing `spec.md` (model surface) or `user-stories.md` (PO surface) = one subproject = one test-writer + coder + pruner.
 
 For incremental waves, scope comes from the mailbox entries (dedup across files).
 
@@ -83,7 +83,7 @@ After all Wave 1 subagents return, leader re-runs `npm test` itself to establish
 You are spawned by the team-leader. Read /home/guillaume/Documents/Random_Projects/decembre/.claude/agents/coder.md and adopt that role. Subproject: <ABSOLUTE_PATH>.
 Inputs you MUST read: subproject's spec.md AND derivation.md (model-layer subprojects — derivation is the formal blueprint your code implements: formulas, coefficients, algorithm steps, worked examples) + the failing tests.
 Failing tests: <PASTE_FILTERED_NPM_TEST_OUTPUT>.
-Never touch: *.test.mjs, spec.md, derivation.md, STORED_RECIPE.tomato.*, RECIPE_HISTORY, dist/, scripts/check-requirements.sh, package.json. (scripts/check-recipes.mjs IS owned — REQ matchers OK.)
+Never touch: *.test.mjs, spec.md, derivation.md, STORED_RECIPE.tomato.*, RECIPE_HISTORY, dist/, scripts/check-spec.sh, package.json. (scripts/check-recipes.mjs IS owned — REQ matchers OK.)
 Return: files modified, REQs now passing, failures you could not fix and why.
 ```
 
@@ -98,7 +98,7 @@ Autonomous mode:
 - Prove (whole-repo grep) zero callers AND zero test imports → delete now.
 - KEEP at certainty ≤ 3.
 - Borderline → leave in place, surface in report.
-Never touch: STORED_RECIPE.tomato.*, RECIPE_HISTORY, dist/, *.test.mjs, scripts/check-requirements.sh, requirements.md, spec.md.
+Never touch: STORED_RECIPE.tomato.*, RECIPE_HISTORY, dist/, *.test.mjs, scripts/check-spec.sh, spec.md, user-stories.md.
 Run `npm test` + `npm run check`. If either breaks, revert this subproject's deletions and report cause.
 Return: deletions applied, borderline items surfaced, npm test + check status.
 ```

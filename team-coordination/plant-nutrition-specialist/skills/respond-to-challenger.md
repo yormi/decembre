@@ -21,11 +21,11 @@
 
    **Files changed:** path/to/spec.md REQ-NNN · path/to/calc.js function_name · …
    **Summary:** 1–3 sentences on what changed and why.
-   **Verifier:** what changed in scripts/check-recipes.mjs / check-requirements.sh.
+   **Verifier:** what changed in scripts/check-recipes.mjs / check-spec.sh.
    **Open questions or counter-pushback:** push back instead of silently complying — legitimate; challenger reconsiders at verification.
    ```
 
-4. If `spec.md` was edited, also follow `procedures/notify-team-leader.md` before ending the turn.
+4. If `spec.md` was edited, also follow `skills/notify-team-leader.md` before ending the turn.
 
 5. Challenger verifies asynchronously → appends `### Challenger verdict — PASS` (closes) or `FAIL → returned to from-model-challenger.md` (entry mirrors back with updated `### Action`).
 

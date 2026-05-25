@@ -1,6 +1,6 @@
 ---
 name: new-subproject
-description: Use when carving out a new subproject under the spec tree (e.g. `nutrition/<crop>/<topic>/`, `yield-range/<topic>/`, a new top-level domain). Scaffolds the conventional file layout (`spec.md` + optional `derivation.md` / `data.js` / `calc.js` / `model.js`) and either starts blank ("from scratch") or extracts existing work (REQs, sections, code) out of a parent file into the new home. Mirrors the conventions established by `nutrition/tomato/plant-needs/`, `nutrition/tomato/sidedress-recipe/`, `nutrition/compost-contribution/`, `yield-range/`. Does NOT cover spec-entry writing itself — see the `write-spec` skill for slug naming + entry shape.
+description: Use when carving out a new subproject under the spec tree (e.g. `nutrition/<crop>/<topic>/`, `yield-range/<topic>/`, a new top-level domain). Scaffolds the conventional file layout (`spec.md` + optional `derivation.md` / `data.js` / `calc.js` / `model.js`) and either starts blank ("from scratch") or extracts existing work (REQs, sections, code) out of a parent file into the new home. Mirrors the conventions established by `nutrition/tomato/plant-needs/`, `nutrition/tomato/sidedress-recipe/`, `nutrition/compost-contribution/`, `yield-range/`. Does NOT cover spec-entry writing itself — see the `to-specs` skill for slug naming + entry shape.
 ---
 
 # Carve out a subproject
@@ -32,7 +32,7 @@ Repeat answers back in one block before scaffolding.
 
 <One-paragraph intent — the one-sentence answer expanded to ~3 sentences.>
 
-This file is the *spec*. <If applicable: derivations live in `derivation.md`; app-side specs in `<path>/app/spec.md`.>
+This file is the *spec*. <If applicable: derivations live in `derivation.md`; app-side specs in `<path>/app/user-stories.md`.>
 
 The <model | spec | subsystem> answers exactly one question: **"<the one question>"**
 
@@ -129,7 +129,7 @@ Search the changelog for `subproject created` to match established verbosity (sh
 
 ## Anti-patterns
 
-- **Spec ids are slugs (kebab-case), unique within their target spec file.** Extracting → keep existing ids (slug or legacy `REQ-NNN`). From scratch → pick descriptive slugs per the `write-spec` skill. No central ledger.
+- **Spec ids are slugs (kebab-case), unique within their target spec file.** Extracting → keep existing ids (slug or legacy `REQ-NNN`). From scratch → pick descriptive slugs per the `to-specs` skill. No central ledger.
 - **No empty companion files.** Create `derivation.md` only with content.
 - **Move code when extracting, don't copy.** Duplicate constants in `app/index.html` create a divergence bomb. Replace source block with `@include` markers in the same slot to keep the build artifact byte-identical.
 - **Don't skip the parent-spec update.** A child invisible from the parent is invisible top-down.
@@ -143,6 +143,6 @@ Search the changelog for `subproject created` to match established verbosity (sh
 - `nutrition/tomato/sidedress-recipe/` — most recent extraction.
 - `nutrition/compost-contribution/` — cross-crop subproject at `nutrition/<topic>/`.
 - `yield-range/` — standalone top-level domain.
-- `scripts/check-recipes.mjs` / `scripts/check-requirements.sh` — verifier.
+- `scripts/check-recipes.mjs` / `scripts/check-spec.sh` — verifier.
 - `scripts/build.mjs` — `@include` resolver.
 - `working files/changelog.md` — staleness mitigation.

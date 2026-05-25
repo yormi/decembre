@@ -5,7 +5,7 @@
   "description": "Dev-only: jsdom is needed by scripts/check-recipes.mjs (Phase 2 release-candidate verifier). The main app is a static index.html — build artifact assembled from app/index.html + per-domain partials by scripts/build.mjs into dist/.",
   "type": "module",
   "scripts": {
-    "check": "node scripts/build.mjs && bash scripts/check-requirements.sh",
+    "check": "node scripts/build.mjs && bash scripts/check-spec.sh",
     "build": "node scripts/build.mjs",
     "build:watch": "node scripts/build.mjs --watch",
     "dev": "bash scripts/dev-server.sh",

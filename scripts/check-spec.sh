@@ -1,15 +1,15 @@
 #!/usr/bin/env bash
 # Release-candidate validator — checks user-facing specs in index.html
-# against the rules defined in requirements.md (cross-app) and every
+# against the rules defined in spec.md (cross-app) and every
 # nutrition/**/spec.md (domain-scoped).
 #
 # Run before pushing. Exit 0 = all pass; non-zero = at least one failure.
 #
 # Usage:
-#   ./scripts/check-requirements.sh
+#   ./scripts/check-spec.sh
 #
 # Add new checks below as new REQ-NNN sections gain verification strategies
-# in any of the spec files (requirements.md or nutrition/**/spec.md).
+# in any of the spec files (spec.md or nutrition/**/spec.md).
 
 set -uo pipefail
 cd "$(dirname "$0")/.."
@@ -254,20 +254,20 @@ else
 fi
 
 # ─── REQ-coverage tally ───
-# Count distinct REQs documented across requirements.md + every nutrition
+# Count distinct REQs documented across spec.md + every nutrition
 # domain spec.md vs distinct REQs actually checked by either the bash script
 # or the node verifier. Self-updating: as new REQs are added or wired, the
 # ratio reflects the truth on next run.
 #
 # Spec files scanned (deduplicated by REQ id, since each id is unique across
 # the global pool):
-#   - requirements.md (cross-app)
+#   - spec.md (cross-app)
 #   - nutrition/spec.md (cross-crop nutrition)
 #   - nutrition/<crop>/spec.md (crop-specific nutrition)
 #   - nutrition/<crop>/app/spec.md (crop-specific Nutrition admin UI)
 DOCUMENTED_REQS=$(
   {
-    grep -hE '^## REQ-' requirements.md 2>/dev/null
+    grep -hE '^## REQ-' spec.md 2>/dev/null
     # find -L follows symlinks but here all are real files; -name 'spec.md'
     # picks up spec.md at every depth under nutrition/.
     find nutrition -name 'spec.md' -type f -exec grep -hE '^## REQ-' {} + 2>/dev/null
@@ -276,7 +276,7 @@ DOCUMENTED_REQS=$(
 WIRED_REQS=$(
   {
     # bash REQ section headers: `echo "REQ-NNN ..."`
-    grep -oE 'echo "REQ-[0-9]+[a-z]*' scripts/check-requirements.sh 2>/dev/null
+    grep -oE 'echo "REQ-[0-9]+[a-z]*' scripts/check-spec.sh 2>/dev/null
     # node REQ section headers: `header('REQ-NNN ...')` or `header("REQ-NNN ...")`
     grep -oE "header\([\"']REQ-[0-9]+[a-z]*" scripts/check-recipes.mjs 2>/dev/null
   } | grep -oE 'REQ-[0-9]+[a-z]*' | sort -u | wc -l
@@ -292,7 +292,7 @@ LEDGER_FILE="team-coordination/req-ledger.md"
 if [ -f "$LEDGER_FILE" ]; then
   SPEC_REQS=$(
     {
-      grep -hoE 'REQ-[0-9]+[a-z]*' requirements.md 2>/dev/null
+      grep -hoE 'REQ-[0-9]+[a-z]*' spec.md 2>/dev/null
       find nutrition yield-range -name 'spec.md' -type f -exec grep -hoE 'REQ-[0-9]+[a-z]*' {} + 2>/dev/null
     } | sort -u
   )

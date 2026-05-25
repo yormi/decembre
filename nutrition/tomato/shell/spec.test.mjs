@@ -1,4 +1,4 @@
-// Tests for nutrition/tomato/app/spec.md.
+// Tests for nutrition/tomato/app/user-stories.md.
 //
 // REQs covered (13): REQ-104, REQ-105, REQ-106, REQ-107, REQ-108, REQ-109,
 // REQ-110, REQ-111, REQ-113, REQ-114, REQ-004, REQ-153, REQ-163.
@@ -552,113 +552,9 @@ describe('REQ-111 — Block 1 row layout: 4 columns (Él. / Fruit / Biomasse / T
   });
 });
 
-// ─── REQ-113 — Block 5 inputs: sprayCount + surfactant ─────────────────
-
-describe('REQ-113 — Block 5 exposes sprayCount + surfactant inputs', () => {
-  test('REQ-113 — nutr-foliar-spray-count is a number input, default 1, min 1, max 3, step 1', () => {
-    const { window } = loadTomatoApp();
-    const input = window.document.getElementById('nutr-foliar-spray-count');
-    assert.ok(input, 'nutr-foliar-spray-count must exist');
-    assert.equal(input.type, 'number');
-    assert.equal(input.value, '1');
-    assert.equal(input.min, '1');
-    assert.equal(input.max, '3');
-    assert.equal(input.step, '1');
-  });
-
-  test('REQ-113 — nutr-foliar-surfactant is a checkbox, default unchecked', () => {
-    const { window } = loadTomatoApp();
-    const input = window.document.getElementById('nutr-foliar-surfactant');
-    assert.ok(input, 'nutr-foliar-surfactant must exist');
-    assert.equal(input.type, 'checkbox');
-    assert.equal(input.checked, false);
-  });
-
-  test('REQ-113 — both ids appear in the input-listener wiring array of app/index.html', () => {
-    const html = readAppIndexHtml();
-    assert.match(html, /['"]nutr-foliar-spray-count['"]/);
-    assert.match(html, /['"]nutr-foliar-surfactant['"]/);
-  });
-
-  test('REQ-113 — sprayCount listener is actually wired (input event triggers re-render)', () => {
-    // Load-bearing: the structural REQ would pass if the id is in the
-    // wiring array but addEventListener is broken. The only way to
-    // confirm the wire is to dispatch the event and verify a downstream
-    // side effect. Both FP and stored modes thread sprayCount through
-    // computeFoliarSupply (linear delivery multiplier).
-    const { window } = loadTomatoApp();
-    const spray = window.document.getElementById('nutr-foliar-spray-count');
-    const block5 = window.document.getElementById('nutr-foliar');
-    spray.value = '1';
-    spray.dispatchEvent(new window.Event('input', { bubbles: true }));
-    const at1 = (block5.textContent || '').trim();
-    spray.value = '3';
-    spray.dispatchEvent(new window.Event('input', { bubbles: true }));
-    const at3 = (block5.textContent || '').trim();
-    spray.value = '1';
-    spray.dispatchEvent(new window.Event('input', { bubbles: true }));
-    assert.notEqual(at1, at3,
-      'sprayCount listener is not wired — input event did not change Block 5 text');
-  });
-
-  test('REQ-113 — surfactant listener is actually wired (change event triggers re-render)', () => {
-    const { window } = loadTomatoApp();
-    const surfactant = window.document.getElementById('nutr-foliar-surfactant');
-    const block5 = window.document.getElementById('nutr-foliar');
-    surfactant.checked = false;
-    surfactant.dispatchEvent(new window.Event('change', { bubbles: true }));
-    const offText = (block5.textContent || '').trim();
-    surfactant.checked = true;
-    surfactant.dispatchEvent(new window.Event('change', { bubbles: true }));
-    const onText = (block5.textContent || '').trim();
-    surfactant.checked = false;
-    surfactant.dispatchEvent(new window.Event('change', { bubbles: true }));
-    assert.notEqual(offText, onText,
-      'surfactant listener is not wired — change event did not change Block 5 text');
-  });
-});
-
 // ─── REQ-114 — Block 5 reactive to spray count + surfactant ────────────
 
 describe('REQ-114 — Block 5 reactive to sprayCount + surfactant changes', () => {
-  test('REQ-114 — mutating sprayCount from 1 → 2 re-renders Block 5 text', () => {
-    const { window } = loadTomatoApp();
-    window.setNutrRecipeMode('stored');
-    const spray = window.document.getElementById('nutr-foliar-spray-count');
-    const surf = window.document.getElementById('nutr-foliar-surfactant');
-    const block5 = window.document.getElementById('nutr-foliar');
-    spray.value = '1';
-    surf.checked = false;
-    spray.dispatchEvent(new window.Event('input', { bubbles: true }));
-    const before = (block5.textContent || '').trim();
-    spray.value = '2';
-    spray.dispatchEvent(new window.Event('input', { bubbles: true }));
-    const after = (block5.textContent || '').trim();
-    spray.value = '1';
-    spray.dispatchEvent(new window.Event('input', { bubbles: true }));
-    window.setNutrRecipeMode('fp');
-    assert.notEqual(before, after, 'Block 5 text should change when sprayCount shifts');
-  });
-
-  test('REQ-114 — toggling surfactant off → on re-renders Block 5 text', () => {
-    const { window } = loadTomatoApp();
-    window.setNutrRecipeMode('stored');
-    const spray = window.document.getElementById('nutr-foliar-spray-count');
-    const surf = window.document.getElementById('nutr-foliar-surfactant');
-    const block5 = window.document.getElementById('nutr-foliar');
-    spray.value = '1';
-    surf.checked = false;
-    surf.dispatchEvent(new window.Event('change', { bubbles: true }));
-    const before = (block5.textContent || '').trim();
-    surf.checked = true;
-    surf.dispatchEvent(new window.Event('change', { bubbles: true }));
-    const after = (block5.textContent || '').trim();
-    surf.checked = false;
-    surf.dispatchEvent(new window.Event('change', { bubbles: true }));
-    window.setNutrRecipeMode('fp');
-    assert.notEqual(before, after, 'Block 5 text should change when surfactant toggles');
-  });
-
   test('REQ-114 — supply path threads {sprayCount, surfactant} into computeFoliarSupply', () => {
     // Behavioral assertion that the FoliarRecipeTomato.computeFoliarSupply
     // contract is honored: doubling sprayCount roughly doubles the
@@ -800,7 +696,7 @@ describe('REQ-153 — Drift gauge ratio direction is FP ÷ Stockée', () => {
 
 // ─── REQ-163 — Foliar Efficacité reactive to surfactant lever ──────────
 //
-// Spec: nutrition/tomato/app/spec.md → REQ-163. Two clauses:
+// Spec: nutrition/tomato/app/user-stories.md → REQ-163. Two clauses:
 //   (a) Capability passthrough — the foliar consumer the page renders
 //       from must read a surfactant-aware efficiency map. Today the page
 //       binds `foliar.efficiency = window.FoliarRecipeTomato.efficiency`

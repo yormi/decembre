@@ -8,9 +8,9 @@ domain: full coverage — every REQ has a unit test, every test passes, every li
 
 > Load `.claude/agents/team-leader.md` and act as this persona.
 
-Read end-to-end. Then read: `CLAUDE.md`, `team-coordination/CLAUDE.md`, all of `team-coordination/everyone/` (`principles.md`, `doc-dirs.md`, `changelog-protocol.md`, `guillaume-lane.md`), `team-coordination/team-leader/principles.md`, recent `working files/changelog.md`.
+Read end-to-end. Then read: `CLAUDE.md`, `team-coordination/CLAUDE.md`, all of `team-coordination/everyone/`, `team-coordination/team-leader/principles.md`, recent `working files/changelog.md`.
 
-**Do NOT read mailbox files, `requirements.md`, `*/spec.md` tree, or any queue state on entry.** As of the procedures refactor, the auto-listener is removed: mailbox processing is on-demand only. When Guillaume asks to check the mailbox or kick off a wave, follow `team-coordination/team-leader/procedures/process-mailbox.md` (which dispatches to `procedures/run-wave.md`) — those procedures load `requirements.md` + spec tree as needed.
+**Do NOT read mailbox files, `spec.md`, `*/spec.md` tree, or any queue state on entry.** As of the procedures refactor, the auto-listener is removed: mailbox processing is on-demand only. When Guillaume asks to check the mailbox or kick off a wave, follow `team-coordination/team-leader/skills/process-mailbox.md` (which dispatches to `skills/run-wave.md`) — those procedures load `spec.md` + spec tree as needed.
 
 # Identity
 
@@ -35,17 +35,17 @@ Everything else is foreign. Expansion history: `app/index.html`, `nutrition/rend
 
 # Trigger-loaded procedures
 
-- **Check the mailbox / spawn a wave** → follow `team-coordination/team-leader/procedures/process-mailbox.md`. Handles state machine, schema validation, incremental wave scoping, archive/retain, loop guard.
-- **Wave execution mechanics** (Phase −2 commit, Phase −1 verify, Wave 1/2/3 dispatch, subagent prompts, confirmation gates) → `procedures/run-wave.md`. Dispatched from `process-mailbox.md`, also directly callable when Guillaume says "run a wave" or "full sweep".
+- **Check the mailbox / spawn a wave** → follow `team-coordination/team-leader/skills/process-mailbox.md`. Handles state machine, schema validation, incremental wave scoping, archive/retain, loop guard.
+- **Wave execution mechanics** (Phase −2 commit, Phase −1 verify, Wave 1/2/3 dispatch, subagent prompts, confirmation gates) → `skills/run-wave.md`. Dispatched from `process-mailbox.md`, also directly callable when Guillaume says "run a wave" or "full sweep".
 
 # Never-touch (pass in every subagent prompt)
 
 - `STORED_RECIPE.tomato.fertigation` / `.sidedress` / `.foliaire` — `/retire-recipe` only.
 - `RECIPE_HISTORY` — audit trail.
 - `dist/` — build artifact.
-- `scripts/check-requirements.sh` — bash verifier still foreign.
+- `scripts/check-spec.sh` — bash verifier still foreign.
 - `*.test.mjs` — coder can't edit; pruner can't delete.
-- Cross-app infrastructure for `requirements.md` REQs (REQ-005 page registry, `CROP_PAGES`, `setPage`, `syncHash`).
+- Cross-app infrastructure for `spec.md` REQs (REQ-005 page registry, `CROP_PAGES`, `setPage`, `syncHash`).
 
 # Principles capture
 

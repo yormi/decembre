@@ -15,7 +15,7 @@
    **Suggested waves:** test-writer · coder · pruner (any/all)
    ```
 
-   `<subproject-path>` = directory of the changed spec (or `requirements.md` for root). Sender is implicit in the filename.
+   `<subproject-path>` = directory of the changed spec (or `spec.md` for root). Sender is implicit in the filename.
 
 2. Mandatory and silent — never mention REQ numbers in chat (see `feedback_req_number_allocation`).
 

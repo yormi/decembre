@@ -100,15 +100,11 @@
     </div>
 
     <!-- Block 6: Foliar spray — micros (Mn/Zn/Cu/B/Mo/Fe) bypass root lockout.
-         REQ-113: block-local inputs for spray count + surfactant. -->
+         Surfactant checkbox is the only operator lever; frequency is a model
+         output per foliar-strategy/spec.md § frequency-is-model-output. -->
     <div class="card">
       <div class="card-title">6. Foliaire (micros)</div>
       <div class="input-row" style="margin-bottom:10px;">
-        <div class="input-group">
-          <label>Sprays / sem</label>
-          <input type="number" id="nutr-foliar-spray-count" value="1" min="1" max="3" step="1" inputmode="numeric">
-          <div class="input-unit">par sem</div>
-        </div>
         <label class="multi-row" style="align-self:center; margin:0;">
           <input type="checkbox" id="nutr-foliar-surfactant" style="width:auto; margin-right:8px;">
           <span>Surfactant (yucca)</span>

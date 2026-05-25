@@ -8,9 +8,9 @@ Layer specs:
 
 - `model/spec.md` — recipe contracts + per-element delivery +
   weekly cadence selection
-- `builder/spec.md` — Tomato Nutrition admin block (Block 5 / 6)
-- `procedure/spec.md` — weekly spray calendar generation
-- `operator/spec.md` — operator-facing recipe sheet + calendar
+- `builder/user-stories.md` — Tomato Nutrition admin block (Block 5 / 6)
+- `procedure/user-stories.md` — weekly spray calendar generation
+- `operator/user-stories.md` — operator-facing recipe sheet + calendar
 
 ---
 

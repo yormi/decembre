@@ -1,6 +1,6 @@
 # Specs — Décembre operations app
 
-Cross-app PO-scope specs. Verified by `scripts/check-requirements.sh` and
+Cross-app PO-scope specs. Verified by `scripts/check-spec.sh` and
 `scripts/check-recipes.mjs`. Domain-specific specs live alongside their
 code under `nutrition/**/spec.md` and `yield-range/**/spec.md`.
 
@@ -8,23 +8,23 @@ code under `nutrition/**/spec.md` and `yield-range/**/spec.md`.
 
 | File | Scope |
 |---|---|
-| `requirements.md` (this file) | Cross-app: UI language, URL routing, ISO week numbering |
+| `spec.md` (this file) | Cross-app: UI language, URL routing, ISO week numbering |
 | `nutrition/spec.md` | Cross-crop nutrition: mass-balance, channel cascade, pH-aware efficiency, lockout gates, crop-level channel-role coverage |
 | `nutrition/chemistry/spec.md` | Cross-crop chemistry: product catalog, pH-response, mixing compatibility (Ksp / tags / mix order / incompatible recipes / stock stability), tank-level CE + pH predictions |
 | `nutrition/tomato/spec.md` | Tomato nutrition: per-stage demand, fruit export, biomass, mass-balance coupling |
 | `nutrition/tomato/shell/spec.md` | Tomato Nutrition admin page chrome (header inputs, ceiling, recipe-mode toggle, drift block, single-source-of-truth read) |
-| `nutrition/tomato/plant-needs/builder/spec.md` | Plant-needs builder block on the admin page (Block 1) |
-| `nutrition/tomato/foliar-strategy/builder/spec.md` | Foliar builder block on the admin page (Block 5/6) |
-| `nutrition/tomato/fertigation-recipe/builder/spec.md` | Fertigation builder block on the admin page (supply vs demand + drift sub-block) |
-| `nutrition/tomato/sidedress-recipe/builder/spec.md` | Sidedress builder block on the admin page (supply vs demand + drift sub-block) |
-| `nutrition/tomato/fertigation-recipe/operator/spec.md` | Operator-facing tomato fertigation page UI |
-| `nutrition/tomato/fertigation-recipe/procedure/spec.md` | Procedural data layer behind the operator fertigation page (stage, steps, calc) |
+| `nutrition/tomato/plant-needs/builder/user-stories.md` | Plant-needs builder block on the admin page (Block 1) |
+| `nutrition/tomato/foliar-strategy/builder/user-stories.md` | Foliar builder block on the admin page (Block 5/6) |
+| `nutrition/tomato/fertigation-recipe/builder/user-stories.md` | Fertigation builder block on the admin page (supply vs demand + drift sub-block) |
+| `nutrition/tomato/sidedress-recipe/builder/user-stories.md` | Sidedress builder block on the admin page (supply vs demand + drift sub-block) |
+| `nutrition/tomato/fertigation-recipe/operator/user-stories.md` | Operator-facing tomato fertigation page UI |
+| `nutrition/tomato/fertigation-recipe/procedure/user-stories.md` | Procedural data layer behind the operator fertigation page (stage, steps, calc) |
 | `nutrition/lettuce/spec.md` | Salanova post-transplant nutrition (model/recipe) |
-| `nutrition/lettuce/app/spec.md` | Salanova admin subpage UI |
+| `nutrition/lettuce/app/user-stories.md` | Salanova admin subpage UI |
 | `nutrition/nursery/spec.md` | Semis laitue nutrition (seedling DW%, cell volume cap) |
-| `nutrition/nursery/app/spec.md` | Semis admin subpage UI |
+| `nutrition/nursery/app/user-stories.md` | Semis admin subpage UI |
 | `yield-range/spec.md` | Salanova nursery time-to-canopy-cap model |
-| `yield-range/app/spec.md` | Yield Range admin page UI |
+| `yield-range/app/user-stories.md` | Yield Range admin page UI |
 | `yield-range/doc/yield-range-calibration-2026-spring.md` | Empirical cohort observations anchoring the yield-range model |
 
 REQ-NNN ids are drawn from a single global pool — claim via
@@ -81,7 +81,7 @@ Comments and source identifiers are exempt.
 |---|---|---|
 | `dryback` | `assèchement` (or `assèchement contrôlé` when emphasising intent) | Tensiometric vigor notes (low/normal/high) |
 
-Extend via the `JARGON_DENY` array in `scripts/check-requirements.sh`.
+Extend via the `JARGON_DENY` array in `scripts/check-spec.sh`.
 
 ---
 
@@ -182,11 +182,11 @@ whitelist for domain terms (`cert`, `cap`, `pH`, unit suffixes `mg` / `kg` /
 
 The release-candidate validator prints `REQs wired: X/Y` by string-matching:
 
-- **Documented (Y)**: `^## REQ-` headers across `requirements.md` and
+- **Documented (Y)**: `^## REQ-` headers across `spec.md` and
   `nutrition/**/spec.md` (deduplicated). Every spec MUST start with
   `## REQ-NNN — title` (NNN = digits, optional letter suffix like `029a`).
 - **Wired (X)**: scanned for these exact patterns:
-  - bash (`scripts/check-requirements.sh`): `echo "REQ-NNN — ..."`
+  - bash (`scripts/check-spec.sh`): `echo "REQ-NNN — ..."`
   - node (`scripts/check-recipes.mjs`): `header('REQ-NNN — ...')` or
     `header("REQ-NNN — ...")`
 

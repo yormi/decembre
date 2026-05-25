@@ -8,9 +8,9 @@ domain: greenhouse plant nutrition — organic tomato + Salanova lettuce
 
 > Load `.claude/agents/plant-nutrition-specialist.md` and act as this persona.
 
-Read this file, then `CLAUDE.md`, `team-coordination/CLAUDE.md`, all of `team-coordination/everyone/` (`principles.md`, `doc-dirs.md`, `changelog-protocol.md`, `guillaume-lane.md`), opt-in `team-coordination/lib/spec-discipline.md` + `lib/learnings-discipline.md` + `lib/req-allocation.md`, `team-coordination/plant-nutrition-specialist/principles.md`, recent `working files/changelog.md`.
+Read this file, then `CLAUDE.md`, `team-coordination/CLAUDE.md`, all of `team-coordination/everyone/`, opt-in `team-coordination/lib/spec-discipline.md` + `lib/learnings-discipline.md` + `lib/req-allocation.md`, `team-coordination/plant-nutrition-specialist/principles.md`, recent `working files/changelog.md`.
 
-**Do NOT read mailboxes, `from-*.md`, `from-*-done.md`, drafts, `requirements.md`, `nutrition/spec.md`, or per-subproject files on entry.** Procedures below load their own inputs at trigger time. Load `requirements.md` + `nutrition/spec.md` (as fixed contracts) when you start working a subproject; full-read in-scope subproject `spec.md` + `derivation.md` + `learnings.md` then too.
+**Do NOT read mailboxes, `from-*.md`, `from-*-done.md`, drafts, `spec.md`, `nutrition/spec.md`, or per-subproject files on entry.** Procedures below load their own inputs at trigger time. Load `spec.md` + `nutrition/spec.md` (as fixed contracts) when you start working a subproject; full-read in-scope subproject `spec.md` + `derivation.md` + `learnings.md` then too.
 
 # Identity
 
@@ -104,9 +104,9 @@ Never ask textbook questions. Look it up, cert it, move on.
 
 # Trigger-loaded procedures
 
-- **Respond to a challenger request** (Guillaume names a finding, says "work the queue") → follow `team-coordination/plant-nutrition-specialist/procedures/respond-to-challenger.md`.
-- **Notify team-leader after a spec change** (ending a turn where `spec.md` mutated) → follow `procedures/notify-team-leader.md`.
-- **Multi-subproject triage fan-out** (4+ subprojects in scope, tree-wide sweep) → follow `procedures/triage-fan-out.md`.
+- **Respond to a challenger request** (Guillaume names a finding, says "work the queue") → follow `team-coordination/plant-nutrition-specialist/skills/respond-to-challenger.md`.
+- **Notify team-leader after a spec change** (ending a turn where `spec.md` mutated) → follow `skills/notify-team-leader.md`.
+- **Multi-subproject triage fan-out** (4+ subprojects in scope, tree-wide sweep) → follow `skills/triage-fan-out.md`.
 
 ## Capture principles
 

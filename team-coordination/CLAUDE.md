@@ -7,7 +7,7 @@ Persona infrastructure: identity, decision values, procedures, cross-persona han
 Separates HOW from WHEN/WHY from WHO. Conflating muddies all three.
 
 - **Skills — HOW, cross-persona.** Procedural, triggered by task-description match. Executable, shareable across personas + sessions. Lives in `.claude/skills/` (project) or `~/.claude/skills/` (user). Slash-invocable.
-- **Procedures — HOW, persona-local.** Procedural how-to specific to one persona (queue-processing, mailbox sweeps, fan-out, wave orchestration). Loaded only when triggered, NOT on persona entry — keeps persona load slim. Lives in `<persona>/procedures/<name>.md`. Persona file says "when X, follow `procedures/<name>.md`". Not slash-invocable; reachable only through the persona.
+- **Procedures — HOW, persona-local.** Procedural how-to specific to one persona (queue-processing, mailbox sweeps, fan-out, wave orchestration, persona-local spec writing). Loaded only when triggered, NOT on persona entry — keeps persona load slim. Lives in `<persona>/skills/<name>.md`. Persona file says "when X, follow `<persona>/skills/<name>.md`". Not slash-invocable; reachable only through the persona.
 - **Principles — VALUES.** Stance Guillaume aligned on at a judgment call. Ambient, loaded on persona entry. Persona-local in `<persona>/principles.md`; cross-persona values live in `everyone/principles.md`.
 - **Persona — WHO.** Identity, scope, lane boundaries. Guillaume-curated. Lives in `.claude/agents/<persona>.md`.
 - **everyone/ — universal process rules.** Auto-loaded by every persona on entry. Doc-dir convention, changelog protocol, Guillaume's lane, shared principles. One topic per file.
@@ -19,9 +19,9 @@ Filing rule: repeatable cross-persona how-to → skill. Persona-local how-to →
 
 Persona files MUST NOT pre-load mailboxes, inbox files (`from-*.md`, `from-*-done.md`), drafts queues, full spec-tree scans, or any other queue-state on entry. Those reads happen inside the procedure that needs them, at trigger time.
 
-Persona file `Inputs at session start` minimum: persona file itself, `CLAUDE.md`, `team-coordination/CLAUDE.md`, all of `team-coordination/everyone/*.md` (universal process rules: principles, doc-dirs, changelog-protocol, guillaume-lane), opt-in `team-coordination/lib/<file>.md` per persona's needs, own `<persona>/principles.md`, recent `working files/changelog.md`. `requirements.md` and anything else (in-scope spec, derivation, inbox, drafts) lives in the relevant procedure.
+Persona file `Inputs at session start` minimum: persona file itself, `CLAUDE.md`, `team-coordination/CLAUDE.md`, all of `team-coordination/everyone/*.md` (universal process rules: principles, doc-dirs, changelog-protocol, guillaume-lane), opt-in `team-coordination/lib/<file>.md` per persona's needs, own `<persona>/principles.md`, recent `working files/changelog.md`. `spec.md` and anything else (in-scope spec, derivation, inbox, drafts) lives in the relevant procedure.
 
-Trigger phrasing in persona file: "When Guillaume asks to <X>, follow `procedures/<name>.md`." Procedure file is self-contained — assumes the persona is already loaded, lists its own reads + steps + writes.
+Trigger phrasing in persona file: "When Guillaume asks to <X>, follow `<persona>/skills/<name>.md`." Procedure file is self-contained — assumes the persona is already loaded, lists its own reads + steps + writes.
 
 ## Principles convention
 
@@ -48,6 +48,7 @@ Live instances:
 | `plant-nutrition-specialist/from-model-challenger.md` | model-challenger | specialist | `### Challenger verdict — PASS \| FAIL` |
 | `team-leader/from-product-owner.md` | product-owner | team-leader | `### Team-leader outcome (YYYY-MM-DD)` |
 | `team-leader/from-plant-nutrition-specialist.md` | specialist | team-leader | `### Team-leader outcome (YYYY-MM-DD)` |
+| `product-owner/from-team-leader.md` | team-leader | product-owner | `### PO outcome (YYYY-MM-DD)` |
 
 ## Working files are transient context
 

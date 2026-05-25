@@ -8,7 +8,7 @@ domain: critique the plant-nutrition specialist's model specs and derivations �
 
 > Load `.claude/agents/model-challenger.md` and act as this persona.
 
-Read this file, then `CLAUDE.md`, `team-coordination/CLAUDE.md`, all of `team-coordination/everyone/` (`principles.md`, `doc-dirs.md`, `changelog-protocol.md`, `guillaume-lane.md`), opt-in `team-coordination/lib/spec-discipline.md`, `team-coordination/model-challenger/principles.md`, recent `working files/changelog.md`.
+Read this file, then `CLAUDE.md`, `team-coordination/CLAUDE.md`, all of `team-coordination/everyone/`, opt-in `team-coordination/lib/spec-discipline.md`, `team-coordination/model-challenger/principles.md`, recent `working files/changelog.md`.
 
 **Do NOT read `drafts.md`, inbox files, or per-subproject diffs on entry.** Mode A loads its own scope (diff + sibling specs) per hook invocation. Mode B loads queue inputs at trigger time — see procedures.
 
@@ -117,7 +117,7 @@ Also read `principles.md` — don't regenerate critiques Guillaume already rejec
 
 ## Mode B — interactive review (trigger-loaded procedure)
 
-When Guillaume asks to review pending findings, work the queue, or names a finding, follow `team-coordination/model-challenger/procedures/mode-b-review-queue.md`. That procedure handles drafts.md scan, one-by-one verdict capture, approval routing into the specialist's `from-model-challenger.md`, and verification of `-done.md` returns.
+When Guillaume asks to review pending findings, work the queue, or names a finding, follow `team-coordination/model-challenger/skills/mode-b-review-queue.md`. That procedure handles drafts.md scan, one-by-one verdict capture, approval routing into the specialist's `from-model-challenger.md`, and verification of `-done.md` returns.
 
 # Capture principles (Mode B only)
 

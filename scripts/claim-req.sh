@@ -33,7 +33,7 @@ flock -w 5 9 || { echo "Could not acquire ledger lock within 5s" >&2; exit 1; }
 
 max=$(
   {
-    grep -hoE 'REQ-[0-9]+' requirements.md 2>/dev/null
+    grep -hoE 'REQ-[0-9]+' spec.md 2>/dev/null
     find nutrition yield-range -name 'spec.md' -type f -exec grep -hoE 'REQ-[0-9]+' {} + 2>/dev/null
     grep -hoE 'REQ-[0-9]+' "$ledger"
   } | sed 's/REQ-//' | sort -un | tail -1

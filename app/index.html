@@ -232,6 +232,8 @@
 // No duplicated dose tables. If you're typing a number here that exists on
 // another page, you're violating the rule — re-read instead.
 
+<!-- @include nutrition/data.js -->
+
 <!-- @include nutrition/tomato/plant-needs/model/data.js -->
 
 // PRODUCT_PCT lives in nutrition/lib/product-pct.js — cross-crop element %
@@ -259,7 +261,7 @@
 //   1. capture current state via captureCurrentSnapshot()
 //   2. append a RECIPE_HISTORY entry with the OLD values
 //   3. edit the live constant
-//   4. run scripts/check-requirements.sh
+//   4. run scripts/check-spec.sh
 //   5. log in working files/changelog.md
 // Plant-need / model inputs (RECIPE_INPUTS, TOMATO_FRUIT_EXPORT,
 // BIOMASS_DEMAND, lettuce-side constants) are NOT triggers — edit them freely.

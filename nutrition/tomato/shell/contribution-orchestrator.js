@@ -128,10 +128,8 @@ function calculateNutritionSupply(stage, phLocked, transpFactor, targetYield, re
     });
     const CC_pre = (typeof window !== 'undefined' && window.CompostContribution) ? window.CompostContribution : null;
     const demandPre = calculateNutritionDemand(ty, stage, tf);
-    const sprayCountInpFp = document.getElementById('nutr-foliar-spray-count');
     const surfactantInpFp = document.getElementById('nutr-foliar-surfactant');
     const foliarOptsFp = {
-      sprayCount: sprayCountInpFp ? parseFloat(sprayCountInpFp.value) : 1,
       surfactant: surfactantInpFp ? surfactantInpFp.checked : false,
     };
     // Call via window.FoliarRecipeTomato so REQ-139's registry check
@@ -191,10 +189,8 @@ function calculateNutritionSupply(stage, phLocked, transpFactor, targetYield, re
     // foliarRecipeArray stays null → computeFoliarSupply defaults to A.
   }
   const feApplied_g = feSO4_g * PRODUCT_PCT.FeSO4_Fe;
-  const sprayCountInp = document.getElementById('nutr-foliar-spray-count');
   const surfactantInp = document.getElementById('nutr-foliar-surfactant');
   const foliarOpts = {
-    sprayCount: sprayCountInp ? parseFloat(sprayCountInp.value) : 1,
     surfactant: surfactantInp ? surfactantInp.checked : false,
   };
   const foliar = computeFoliarContribution({

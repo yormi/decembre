@@ -122,3 +122,107 @@ test('REQ-011 — every crop with a demand table ships channel-role.js with full
     }
   }
 });
+
+// ─── REQ-062 — Single fertigation tank per week ────────────────────────────
+//
+// Normative claims (rewritten 2026-05-24):
+//   1. Tomato: at most ONE active fertigation recipe per stage
+//      (STORED_RECIPE.tomato.fertigation[stage] is a single recipe object;
+//      computeStageRecipe(stage) returns one recipe; no parallel sub-tanks
+//      like {A: ..., B: ...}).
+//   2. Lettuce: LETTUCE fertigation recipe is a FLAT object — one recipe,
+//      no parallel sub-tanks (no nested {A,B}, no array shape).
+//   3. The previous "single foliar spray per week" clause is RETIRED;
+//      foliar frequency is governed by
+//      nutrition/tomato/foliar-strategy — frequency-is-model-output.
+//      Covered structurally: nutrition/spec.md REQ-062 must NOT pin any
+//      foliar sprayCount ceiling. (Asserting that here would require
+//      parsing spec.md prose; the cross-ref is captured by tests in
+//      tomato/foliar-strategy/spec.test.mjs.)
+
+test('REQ-062 — tomato fertigation: STORED_RECIPE.tomato.fertigation[stage] is a single recipe (no parallel sub-tanks)', () => {
+  const stored = G.STORED_RECIPE;
+  assert.ok(stored && stored.tomato && stored.tomato.fertigation,
+    'STORED_RECIPE.tomato.fertigation not exposed on window');
+  const fertigation = stored.tomato.fertigation;
+  assert.ok(!Array.isArray(fertigation),
+    'STORED_RECIPE.tomato.fertigation must be a stage-keyed object, not an array');
+  const stages = Object.keys(fertigation);
+  assert.ok(stages.length > 0,
+    'STORED_RECIPE.tomato.fertigation has no stages');
+  // Per stage: one recipe object, NOT a {A, B, ...} parallel-tank shape.
+  // A parallel-tank shape would be detected by inner values themselves
+  // being object recipes (each holding numeric product doses). A single
+  // recipe holds numeric doses directly.
+  for (const stage of stages) {
+    const recipe = fertigation[stage];
+    assert.ok(recipe && typeof recipe === 'object' && !Array.isArray(recipe),
+      `STORED_RECIPE.tomato.fertigation.${stage} must be a recipe object`);
+    const innerValues = Object.values(recipe);
+    const parallelTanks = innerValues.filter(v =>
+      v && typeof v === 'object' && !Array.isArray(v)
+      && Object.values(v).some(x => typeof x === 'number'));
+    assert.equal(parallelTanks.length, 0,
+      `STORED_RECIPE.tomato.fertigation.${stage} appears to hold parallel sub-tanks `
+      + `(${parallelTanks.length} nested recipe-shaped values); REQ-062 allows one recipe per stage`);
+  }
+});
+
+test('REQ-062 — tomato fertigation: computeStageRecipe(stage) returns a single flat recipe (no parallel sub-tanks)', () => {
+  const computeStageRecipe = G.computeStageRecipe;
+  assert.equal(typeof computeStageRecipe, 'function',
+    'computeStageRecipe not exposed on window');
+  // Try common stage keys; tomato stages are T1..T6 per the model layer.
+  const probeStages = ['T1', 'T2', 'T3', 'T4', 'T5', 'T6'];
+  let probedAny = false;
+  for (const stage of probeStages) {
+    let recipe;
+    try { recipe = computeStageRecipe(stage); } catch { continue; }
+    if (!recipe || typeof recipe !== 'object') continue;
+    probedAny = true;
+    const parallelTanks = Object.values(recipe).filter(v =>
+      v && typeof v === 'object' && !Array.isArray(v)
+      && Object.values(v).some(x => typeof x === 'number'));
+    assert.equal(parallelTanks.length, 0,
+      `computeStageRecipe('${stage}') returned ${parallelTanks.length} nested recipe-shaped values; `
+      + `REQ-062 requires a single flat recipe per stage`);
+  }
+  assert.ok(probedAny, 'computeStageRecipe accepted no probe stage from T1..T6');
+});
+
+test('REQ-062 — lettuce fertigation: LETTUCE is a flat object (one recipe, no parallel sub-tanks)', () => {
+  const lettuce = G.LETTUCE;
+  assert.ok(lettuce && typeof lettuce === 'object',
+    'LETTUCE fertigation recipe not exposed on window (test-helpers EXPOSE_NAMES must include it)');
+  assert.ok(!Array.isArray(lettuce),
+    'LETTUCE must be a flat object, not an array');
+  // Flat: every value is a number (a product dose). Any nested-object value
+  // would indicate parallel sub-tanks ({A: {...}, B: {...}}).
+  const nonNumericEntries = Object.entries(lettuce)
+    .filter(([, v]) => typeof v !== 'number');
+  assert.deepEqual(nonNumericEntries.map(([k]) => k), [],
+    `LETTUCE has non-numeric entries (parallel sub-tanks?): ${nonNumericEntries.map(([k]) => k).join(', ')}`);
+});
+
+// ─── farm-working-days — single source-of-truth for the working-day set ────
+//
+// Per nutrition/spec.md § farm-working-days (added 2026-05-24): the set of
+// weekdays Décembre's operator is on-farm. Currently {Mon, Tue, Wed, Thu,
+// Fri}. Procedure-layer specs draw from this set. Until a Wave-2 coder
+// lands the runtime constant, this test is RED — that is correct.
+//
+// Test pins option (a) from the leader's prompt: a runtime constant at
+// `window.Nutrition.FARM_WORKING_DAYS` so every nutrition layer reads from
+// one place. Foliar-strategy spec.test.mjs:167 already carries a `.todo`
+// anticipating this exact shape.
+
+test('farm-working-days — single source-of-truth runtime constant at window.Nutrition.FARM_WORKING_DAYS = [Mon..Fri]', () => {
+  const nutrition = fixture.window.Nutrition;
+  assert.ok(nutrition && typeof nutrition === 'object',
+    'window.Nutrition namespace not present — farm-working-days runtime constant not yet wired (Wave 2)');
+  const days = nutrition.FARM_WORKING_DAYS;
+  assert.ok(Array.isArray(days),
+    'window.Nutrition.FARM_WORKING_DAYS must be an array');
+  assert.deepEqual([...days], ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'],
+    `expected ['Mon','Tue','Wed','Thu','Fri']; got ${JSON.stringify(days)}`);
+});

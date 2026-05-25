@@ -9,7 +9,7 @@ Math derivation, constant choices, refinement triggers, and reasoning
 trail live in `derivation.md`. Rejected alternatives and historical
 decisions in `learnings.md`. Empirical anchor:
 `yield-range/doc/yield-range-calibration-2026-spring.md`. App-side
-specs in `yield-range/app/spec.md`.
+specs in `yield-range/app/user-stories.md`.
 
 ## Contract
 
@@ -237,7 +237,7 @@ caps the operation.
 
 ## Inherited / cross-references
 
-- App-side spec: `yield-range/app/spec.md`
+- App-side spec: `yield-range/app/user-stories.md`
 - Empirical anchor: `yield-range/doc/yield-range-calibration-2026-spring.md`
 
 ---

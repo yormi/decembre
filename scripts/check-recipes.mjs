@@ -3528,7 +3528,7 @@ header('REQ-107 — Recipe toggle: First principles left, default; products-in-p
 // ─── REQ-108..111 — Tomato Nutrition page Block 1 (Besoin du plant) ────
 //
 // Section 2 of the Bilan UI specs. Spec:
-// nutrition/tomato/plant-needs/builder/spec.md → REQ-108..111.
+// nutrition/tomato/plant-needs/builder/user-stories.md → REQ-108..111.
 
 header('REQ-108 — Block 1 calls PN.calculateNutritionDemand (no bare-global lookups in render)');
 
@@ -3861,98 +3861,9 @@ header('REQ-126 — applicationsPerWeek coerced to integer ∈ [1, 7]');
   }
 }
 
-// ─── REQ-113 — Block 5 exposes sprayCount + surfactant inputs ──────────
-//
-// Spec: nutrition/tomato/foliar-strategy/builder/spec.md → REQ-113.
-
-header('REQ-113 — Block 5 inputs: nutr-foliar-spray-count + nutr-foliar-surfactant');
-
-{
-  const sprayInp = window.document.getElementById('nutr-foliar-spray-count');
-  const surfInp  = window.document.getElementById('nutr-foliar-surfactant');
-  let indexHtmlBody = '';
-  try {
-    // Read the assembled artifact — the listener-wiring array lives in an
-    // @included partial post-Stage 7, not in app/index.html.
-    indexHtmlBody = readFileSync(INDEX_HTML_PATH, 'utf8');
-  } catch (e) { /* */ }
-  const offenders = [];
-  if (!sprayInp) {
-    offenders.push('nutr-foliar-spray-count missing');
-  } else {
-    if (sprayInp.type !== 'number') offenders.push(`spray-count type=${sprayInp.type} (expected number)`);
-    if (sprayInp.value !== '1') offenders.push(`spray-count default=${sprayInp.value} (expected 1)`);
-    if (sprayInp.min !== '1' || sprayInp.max !== '3') offenders.push(`spray-count range min=${sprayInp.min} max=${sprayInp.max} (expected 1–3)`);
-  }
-  if (!surfInp) {
-    offenders.push('nutr-foliar-surfactant missing');
-  } else {
-    if (surfInp.type !== 'checkbox') offenders.push(`surfactant type=${surfInp.type} (expected checkbox)`);
-    if (surfInp.checked) offenders.push('surfactant default checked (expected unchecked)');
-  }
-  // Listener wiring: both ids must appear inside the input-listener array.
-  if (!/['"]nutr-foliar-spray-count['"]/.test(indexHtmlBody)) {
-    offenders.push('nutr-foliar-spray-count not wired in dist/index.html input-listener array');
-  }
-  if (!/['"]nutr-foliar-surfactant['"]/.test(indexHtmlBody)) {
-    offenders.push('nutr-foliar-surfactant not wired in dist/index.html input-listener array');
-  }
-  if (offenders.length === 0) {
-    pass('Block 5 expose nutr-foliar-spray-count (1, 1-3) + nutr-foliar-surfactant (checkbox, unchecked) ; listeners cabls');
-  } else {
-    fail('REQ-113 — Block 5 input shape', offenders.map(o => `  ${o}`).join('\n'));
-  }
-}
-
-// ─── REQ-114 — Block 5 reactive to spray count + surfactant changes ────
-//
-// Spec: nutrition/tomato/foliar-strategy/builder/spec.md → REQ-114.
-
-header('REQ-114 — Block 5 reactive (sprayCount + surfactant → text changes)');
-
-{
-  const sprayInp = window.document.getElementById('nutr-foliar-spray-count');
-  const surfInp  = window.document.getElementById('nutr-foliar-surfactant');
-  const block5   = window.document.getElementById('nutr-foliar');
-  let textBefore = null, textAfterSpray = null, textAfterSurf = null;
-  if (sprayInp && surfInp && block5) {
-    try {
-      sprayInp.value = '1';
-      surfInp.checked = false;
-      sprayInp.dispatchEvent(new window.Event('input', { bubbles: true }));
-      textBefore = (block5.textContent || '').trim();
-      // Mutate sprayCount → expect re-render
-      sprayInp.value = '2';
-      sprayInp.dispatchEvent(new window.Event('input', { bubbles: true }));
-      textAfterSpray = (block5.textContent || '').trim();
-      // Restore + toggle surfactant
-      sprayInp.value = '1';
-      sprayInp.dispatchEvent(new window.Event('input', { bubbles: true }));
-      surfInp.checked = true;
-      surfInp.dispatchEvent(new window.Event('change', { bubbles: true }));
-      textAfterSurf = (block5.textContent || '').trim();
-      // Restore default
-      surfInp.checked = false;
-      surfInp.dispatchEvent(new window.Event('change', { bubbles: true }));
-    } catch (e) { /* */ }
-  }
-  const offenders = [];
-  if (textBefore == null) {
-    offenders.push('Block 5 not reachable for behavioral test');
-  } else {
-    if (textBefore === textAfterSpray) offenders.push('mutating sprayCount did not change Block 5 text');
-    if (textBefore === textAfterSurf)  offenders.push('toggling surfactant did not change Block 5 text');
-  }
-  if (offenders.length === 0) {
-    pass('Block 5 réagit à sprayCount (1 → 2) et surfactant (off → on)');
-  } else {
-    fail('REQ-114 — Block 5 reactivity', offenders.map(o => `  ${o}`).join('\n'));
-  }
-}
-
 // ─── REQ-127..129 — Semis subpage Blocks 2/3 layout + gap chain ─────────
 //
-// Specs: nutrition/nursery/app/spec.md → REQ-127 (Block 2 layout),
+// Specs: nutrition/nursery/app/user-stories.md → REQ-127 (Block 2 layout),
 // REQ-128 (Block 3 layout), REQ-129 (gap chain demand → substrate → fert).
 //
 // Need to flip the page to the Semis subpage so the render lands. setNutrCrop
@@ -4923,7 +4834,7 @@ header('REQ-152 — Contribution-block recipe table — Tomato page (Salanova/Se
 
 // ─── REQ-139 — App must call subproject namespace, no inline reimplementation
 //
-// Spec: requirements.md → REQ-139.
+// Spec: spec.md → REQ-139.
 //
 // Two layers:
 //   (1) Registry-driven positive check — for each (namespace, function,
@@ -5037,7 +4948,7 @@ header('REQ-144 — Operator-facing prose is a deterministic render of spec (opt
   const requirementIdSet = new Set();
   {
     const specFiles = [
-      join(REPO_ROOT, 'requirements.md'),
+      join(REPO_ROOT, 'spec.md'),
       // Domain spec files — discovered via fs walk so new domains are picked up.
     ];
     function walk(dir) {
@@ -5244,7 +5155,7 @@ header('REQ-145 — Pourquoi modal interpretation strings (renderSpec call sites
 // ─── REQ-158 — Function/variable/property names in JS source must be full
 //     words (no abbreviations) ────────────────────────────────────────────
 //
-// Spec: requirements.md → REQ-158. Walk owned-surface JS source (app/,
+// Spec: spec.md → REQ-158. Walk owned-surface JS source (app/,
 // nutrition/, yield-range/ plus this verifier itself), extract identifier
 // declarations via regex, and flag any whose name (or a camelCase segment)
 // matches the denylist of common abbreviations. A whitelist exempts
@@ -5567,7 +5478,7 @@ header('REQ-158 — Function/variable/property names in JS source must be full w
 // Specs: nutrition/spec.md → REQ-159 (elemental-mass columns in mg),
 // REQ-160 (unit suffix in header not in cells), REQ-161 (bare 0, no
 // `(couvert)`), REQ-162 (Mois d'épuisement every row with reservoir data).
-// nutrition/tomato/foliar-strategy/builder/spec.md → REQ-163 (foliar Efficacité reacts to
+// nutrition/tomato/foliar-strategy/builder/user-stories.md → REQ-163 (foliar Efficacité reacts to
 // surfactant lever).
 //
 // REQ-159 / REQ-160 / REQ-161 are designed-to-fail at first run — the
@@ -6038,7 +5949,7 @@ header('REQ-162 — Mois d\'épuisement rendered for every row with reservoir + 
 
 // ─── REQ-163 — Foliar Efficacité is surfactant-aware ───────────────────
 //
-// Spec: nutrition/tomato/foliar-strategy/builder/spec.md → REQ-163. Two assertions:
+// Spec: nutrition/tomato/foliar-strategy/builder/user-stories.md → REQ-163. Two assertions:
 //   (a) Reactive render — toggling #nutr-foliar-surfactant re-renders
 //       Block 5's Efficacité column (column index 2 in the 6-col gap-grid
 //       per REQ-137: Él. | Manque entrant | Efficacité | Apport ici |
@@ -6062,7 +5973,7 @@ header('REQ-163 — Foliar Efficacité column reactive to surfactant lever');
   const foliarBlock = window.document.getElementById('nutr-foliar');
   const offenders = [];
   if (!surfInput) {
-    offenders.push('#nutr-foliar-surfactant input missing (REQ-113 precondition)');
+    offenders.push('#nutr-foliar-surfactant input missing');
   } else if (!foliarBlock) {
     offenders.push('#nutr-foliar block missing');
   } else {

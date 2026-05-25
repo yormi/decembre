@@ -2,7 +2,7 @@
 
 UI invariants for the operator-facing tomato fertigation page Philip
 reads weekly and on weekday mornings. Procedural data shape (stage
-resolution, step source, calc rules) lives in `procedure/spec.md`;
+resolution, step source, calc rules) lives in `procedure/user-stories.md`;
 model claims in `model/spec.md`.
 
 ---

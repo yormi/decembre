@@ -8,7 +8,7 @@ Hydrolysé 2-4-0.5 (liquid), Acadie Algues liquides (liquid). Owned data:
 `nurseryRecipeSupply`, `nurseryRecipeCE`, `nurseryRecipeTankPh`.
 
 Cross-crop nutrition rules defer to `nutrition/spec.md`; routing to
-`requirements.md`. Cert scale canonical in
+`spec.md`. Cert scale canonical in
 `nutrition/tomato/plant-needs/spec.md` (0 guess → 5 lab-grade).
 
 ---

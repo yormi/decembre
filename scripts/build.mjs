@@ -97,7 +97,7 @@ async function collectSpecMdFiles(dir, acc = []) {
     if (entry.name.startsWith('.') || entry.name === 'node_modules' || entry.name === 'dist') continue;
     const full = join(dir, entry.name);
     if (entry.isDirectory()) await collectSpecMdFiles(full, acc);
-    else if (entry.isFile() && (entry.name === 'spec.md' || entry.name === 'requirements.md')) acc.push(full);
+    else if (entry.isFile() && (entry.name === 'spec.md' || entry.name === 'spec.md')) acc.push(full);
   }
   return acc;
 }
@@ -151,7 +151,7 @@ async function build() {
   let out = await resolveIncludes(tpl, SOURCE);
 
   // Resolve the <!-- @spec-strings --> marker by parsing every spec.md /
-  // requirements.md file and injecting an inline <script> assigning
+  // spec.md file and injecting an inline <script> assigning
   // window.SPEC_STRINGS. Always emitted: if no marker exists in source we
   // skip silently (the page just won't have spec-anchored strings until
   // the marker is added).

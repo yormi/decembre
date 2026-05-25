@@ -274,7 +274,7 @@ ${el} n'est pas mesuré sur le test Mehlich-3 actuel. Apport via les canaux acti
 - **REQ-060** (`nutrition/spec.md`) — pourquoi interpretation strings must
   be auto-derived or carry `// stable —`. `renderGrid` emits no narrative.
   REQ-145 supersedes the `// stable —` escape hatch for the soil-bank modal.
-- **REQ-139** (`requirements.md`) — call sites MUST go through
+- **REQ-139** (`spec.md`) — call sites MUST go through
   `window.SoilContribution`, not redeclare constants/formulas inline.
-- **REQ-144** (`requirements.md`) — operator-facing prose requires
+- **REQ-144** (`spec.md`) — operator-facing prose requires
   `data-prose-source`. REQ-145 render emits `<span data-prose-source="REQ-145">…</span>`.

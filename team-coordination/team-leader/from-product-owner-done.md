@@ -8,7 +8,38 @@ Most recent at the top.
 
 ## Entries
 
-_(none — last trim cleared all closed entries.)_
+## 2026-05-24 23:00 — foliar-strategy 5-entry wave (bulk archive)
+
+Five subprojects + one informational entry processed in one wave: foliar-strategy (root), /builder, /procedure, /operator, /nutrition. Plus `nutrition/tomato` informational entry (no-waves).
+
+### Team-leader outcome (2026-05-24)
+
+Wave 1 (5 parallel test-writers): +27 net-new pass, 8 red Wave-2 contract pins. Files: foliar-strategy/spec.test.mjs (new, 173), builder/spec.test.mjs (new, 197), procedure/spec.test.mjs (new, 212), operator/spec.test.mjs (new, 178), nutrition/spec.test.mjs (+96). Plus REQ-113 describe block removed from shell/spec.test.mjs.
+
+Wave 2 (3 coders: builder + operator + nutrition; procedure skipped — all tests green from model coverage):
+- builder removed `nutr-foliar-spray-count` DOM input + listener + consumer reads
+- operator refactored buildFoliar() to loop over `computeFoliarStrategy(...).recipes`, emitting per-recipe `[data-recipe-sheet]` + `[data-foliar-calendar]`. Removed vestigial flat block + splitNote branch
+- nutrition added `nutrition/data.js` → `window.Nutrition.FARM_WORKING_DAYS = ['Mon'..'Fri']`; `foliarDaysForSprayCount` now reads through it
+
+Inline trims (team-leader between waves): removed 2 stale REQ-114 shell tests (sprayCount DOM paths), removed REQ-113 + REQ-114 verifier blocks in scripts/check-recipes.mjs (~149 lines), fixed cross-realm deepEqual on farm-working-days test (`[...days]` spread).
+
+Wave 3 (5 parallel pruners):
+- root: 0 deletions, vocabulary clean
+- builder: 5 stale comment trims (model/contribution.js JSDoc ×3, shell/page.html, verifier precondition)
+- procedure: 0 deletions, 2 borderline (steps.js stub + STORED — KEEP)
+- operator: 1 deletion (foliar-week-recommendation hardcoded label superseded by per-recipe kindLabel); extensive surface-with-no-spec-backing list surfaced for PO (morning-window timing, missed-window expander, application-steps card, signes-à-surveiller card, hidden lettuce toggle, ~45-line HISTORY/RATIONALE comment block recommended for migration to model/learnings)
+- nutrition: 0 deletions, fully clean
+
+Final: `npm test` 370 pass / 0 fail / 6 todo · `npm run check` 159/0 (12 bash + 147 node) · Node v24.15.0.
+
+REQs / slugs newly covered: strategy-contains-recipes, frequency-is-model-output, sprays-spread-across-farm-working-days, surfactant-input, block-5-reactive-to-surfactant, efficacite-reactive-to-surfactant, weekly-calendar-derived-from-model, spread-evenly-no-stacking, one-recipe-per-spray, no-operator-day-override, recipe-sheet-per-recipe, weekly-calendar-rendered, no-frequency-input, farm-working-days, REQ-062 (rewritten).
+
+Spec gaps surfaced for PO (operator subproject):
+1. Several operator cards unspec'd: morning-window timing, missed-window guidance, application-steps, symptom-watch.
+2. Stale "spray A/B" reference in operator step 6 (rename to oligo/ca after 2026-05-06 Spray B retirement).
+3. Hidden lettuce foliar crop-toggle button — vestigial since 2026-04-29.
+
+Deferred to follow-up waves: (a) symbol rename `FoliarRecipeTomato` → `FoliarStrategyTomato`; (b) Ca recipe data.js entry + computeFoliarSupply Ca slot wiring (gated on PO data); (c) 23:30 mailbox entry `predicted-ph-ce-*` — separate future wave; (d) nutrition/tomato informational summary (no waves needed).
 
 ## 2026-05-24 — Bulk archive — Phase 1-4 nutrition reorg (21 entries)
 
@@ -54,7 +85,7 @@ All 21 entries below resolved by the Phase 1-4 nutrition reorg run on 2026-05-23
 
 **Change type:** moved · added · deleted (structural reorg only; no spec semantics changed)
 **REQs affected:** moves — none amended; splits — REQ-182 + REQ-188 each split into a procedure + operator REQ (new ids REQ-192, REQ-193 hold the operator halves); see per-subproject entries below for inventory.
-**Summary:** Locked plan executed — every tomato subproject now follows `<domain>/{model,procedure,operator,builder}/spec.md` shape. (1) Moved 4 model specs into `model/` subdirs: `fertigation-recipe/spec.md` → `fertigation-recipe/model/spec.md`; same for `sidedress-recipe`, `foliar-strategy`, `plant-needs`. (2) Split `nutrition/tomato/app/spec.md` (admin page) into `shell/spec.md` (REQ-104..107, REQ-153, REQ-004), `plant-needs/builder/spec.md` (REQ-108..111), `foliar-strategy/builder/spec.md` (REQ-113, REQ-114, REQ-163); original deleted. (3) Split `nutrition/tomato/fertigation-recipe/app/spec.md` (operator page) into `procedure/spec.md` (REQ-182 stage-resolution, REQ-183, REQ-185..188 calc, REQ-190, REQ-191) and `operator/spec.md` (REQ-181, REQ-192 header label, REQ-184, REQ-193 anchor placement, REQ-189); original deleted. (4) Scaffolded empty `fertigation-recipe/builder/spec.md` + `sidedress-recipe/builder/spec.md` (framing only, no REQs claimed). (5) Updated `requirements.md` Domain organization table to point at new spec locations.
+**Summary:** Locked plan executed — every tomato subproject now follows `<domain>/{model,procedure,operator,builder}/spec.md` shape. (1) Moved 4 model specs into `model/` subdirs: `fertigation-recipe/spec.md` → `fertigation-recipe/model/spec.md`; same for `sidedress-recipe`, `foliar-strategy`, `plant-needs`. (2) Split `nutrition/tomato/app/user-stories.md` (admin page) into `shell/spec.md` (REQ-104..107, REQ-153, REQ-004), `plant-needs/builder/user-stories.md` (REQ-108..111), `foliar-strategy/builder/user-stories.md` (REQ-113, REQ-114, REQ-163); original deleted. (3) Split `nutrition/tomato/fertigation-recipe/app/user-stories.md` (operator page) into `procedure/user-stories.md` (REQ-182 stage-resolution, REQ-183, REQ-185..188 calc, REQ-190, REQ-191) and `operator/user-stories.md` (REQ-181, REQ-192 header label, REQ-184, REQ-193 anchor placement, REQ-189); original deleted. (4) Scaffolded empty `fertigation-recipe/builder/user-stories.md` + `sidedress-recipe/builder/user-stories.md` (framing only, no REQs claimed). (5) Updated `spec.md` Domain organization table to point at new spec locations.
 **Suggested waves:** none beyond test-file relocation (already team-leader's lane) — no model-layer work implied; specialist queue intentionally not double-fired. Code-side dir moves (`tomato/app/` → `tomato/shell/`, model.js consolidation) are specialist's parallel scope.
 
 ## 2026-05-23 22:00 — nutrition/tomato/fertigation-recipe/model
@@ -87,21 +118,21 @@ All 21 entries below resolved by the Phase 1-4 nutrition reorg run on 2026-05-23
 
 ## 2026-05-23 22:00 — nutrition/tomato/shell
 
-**Change type:** added (extracted from `nutrition/tomato/app/spec.md`)
+**Change type:** added (extracted from `nutrition/tomato/app/user-stories.md`)
 **REQs affected:** REQ-104, REQ-105, REQ-106, REQ-107, REQ-004, REQ-153
 **Summary:** New page-chrome spec for the Tomato Nutrition admin page (header inputs, light ceiling, recipe-mode toggle, source-of-truth read, drift block). Block-specific UI specs broken out into per-block builder specs.
 **Suggested waves:** test-writer · pruner
 
 ## 2026-05-23 22:00 — nutrition/tomato/plant-needs/builder
 
-**Change type:** added (extracted from `nutrition/tomato/app/spec.md`)
+**Change type:** added (extracted from `nutrition/tomato/app/user-stories.md`)
 **REQs affected:** REQ-108, REQ-109, REQ-110, REQ-111
 **Summary:** New builder spec for the Block 1 ("Besoin du plant") plant-needs UI on the admin page.
 **Suggested waves:** test-writer · pruner
 
 ## 2026-05-23 22:00 — nutrition/tomato/foliar-strategy/builder
 
-**Change type:** added (extracted from `nutrition/tomato/app/spec.md`)
+**Change type:** added (extracted from `nutrition/tomato/app/user-stories.md`)
 **REQs affected:** REQ-113, REQ-114, REQ-163
 **Summary:** New builder spec for the foliar block on the admin page (spray-count + surfactant inputs, Efficacité reactivity).
 **Suggested waves:** test-writer · pruner
@@ -122,37 +153,37 @@ All 21 entries below resolved by the Phase 1-4 nutrition reorg run on 2026-05-23
 
 ## 2026-05-23 22:00 — nutrition/tomato/fertigation-recipe/procedure
 
-**Change type:** added (extracted from `nutrition/tomato/fertigation-recipe/app/spec.md`)
+**Change type:** added (extracted from `nutrition/tomato/fertigation-recipe/app/user-stories.md`)
 **REQs affected:** REQ-182 (stage-resolution claim), REQ-183, REQ-185, REQ-186, REQ-187, REQ-188 (calc + rounding claim), REQ-190, REQ-191
 **Summary:** New procedural-data-layer spec for the operator fertigation page (stage resolution from ISO week, structured step source, step inclusion bar, stock-volume calc + rounding, Slack-post wiring). REQ-182 + REQ-188 each split — only the data-layer halves remain here.
 **Suggested waves:** test-writer · pruner
 
 ## 2026-05-23 22:00 — nutrition/tomato/fertigation-recipe/operator
 
-**Change type:** added (extracted from `nutrition/tomato/fertigation-recipe/app/spec.md`)
+**Change type:** added (extracted from `nutrition/tomato/fertigation-recipe/app/user-stories.md`)
 **REQs affected:** REQ-181, REQ-192 (NEW — header label, supersedes REQ-182 header half), REQ-184, REQ-193 (NEW — anchor placement, supersedes REQ-188 anchor half), REQ-189
-**Summary:** New operator-UI spec for the fertigation page (tomato-only render, read-only stage header label, two-card shape, stock-volume anchor placement, missing-stage error card). REQ-192 + REQ-193 carry the operator halves of the REQ-182 / REQ-188 splits; original numbers remain live in `procedure/spec.md` for the data-layer halves.
+**Summary:** New operator-UI spec for the fertigation page (tomato-only render, read-only stage header label, two-card shape, stock-volume anchor placement, missing-stage error card). REQ-192 + REQ-193 carry the operator halves of the REQ-182 / REQ-188 splits; original numbers remain live in `procedure/user-stories.md` for the data-layer halves.
 **Suggested waves:** test-writer · pruner
 
 ## 2026-05-23 22:00 — nutrition/tomato/app (deleted)
 
 **Change type:** deleted
 **REQs affected:** REQ-104..111, REQ-113, REQ-114, REQ-163, REQ-153, REQ-004 (all relocated, content preserved)
-**Summary:** Spec file fully distributed into `shell/spec.md` + per-block `builder/spec.md` files (see entries above). No content lost. Directory itself remains for code (`page.html`, `logic.js`, `supply.js`) — specialist's parallel scope handles the `app/` → `shell/` directory rename.
+**Summary:** Spec file fully distributed into `shell/spec.md` + per-block `builder/user-stories.md` files (see entries above). No content lost. Directory itself remains for code (`page.html`, `logic.js`, `supply.js`) — specialist's parallel scope handles the `app/` → `shell/` directory rename.
 **Suggested waves:** none (file deletion only)
 
 ## 2026-05-23 22:00 — nutrition/tomato/fertigation-recipe/app (spec deleted)
 
 **Change type:** deleted
 **REQs affected:** REQ-181..191 (all relocated into `procedure/` + `operator/`; REQ-182 and REQ-188 each split, gaining REQ-192 / REQ-193)
-**Summary:** Spec file fully distributed into sibling `procedure/spec.md` + `operator/spec.md`. Code files (`page.html`, `logic.js`, `stored.js`, `drift.js`) remain in `app/` for specialist's parallel layout pass.
+**Summary:** Spec file fully distributed into sibling `procedure/user-stories.md` + `operator/user-stories.md`. Code files (`page.html`, `logic.js`, `stored.js`, `drift.js`) remain in `app/` for specialist's parallel layout pass.
 **Suggested waves:** none
 
-## 2026-05-23 22:00 — requirements.md
+## 2026-05-23 22:00 — spec.md
 
 **Change type:** edited (Domain organization table)
 **REQs affected:** none amended; metadata only.
-**Summary:** Updated the Domain organization table to drop the stale `nutrition/tomato/app/spec.md` row and list the new spec locations (`shell/spec.md`, per-subproject `builder/spec.md`, `operator/spec.md`, `procedure/spec.md`). Pointer hygiene only — no REQ semantics touched.
+**Summary:** Updated the Domain organization table to drop the stale `nutrition/tomato/app/user-stories.md` row and list the new spec locations (`shell/spec.md`, per-subproject `builder/user-stories.md`, `operator/user-stories.md`, `procedure/user-stories.md`). Pointer hygiene only — no REQ semantics touched.
 **Suggested waves:** none
 
 ## 2026-05-23 17:37 — nutrition/tomato/fertigation-recipe/app

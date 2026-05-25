@@ -8,7 +8,7 @@
 //
 // The caller has already resolved:
 //   - which recipe array to score (stored A or FP-derived array)
-//   - the operator levers (sprayCount, surfactant) from DOM
+//   - the operator levers (surfactant) from DOM
 //   - the REQ-116 mutation of FP_RECIPE_T5.foliar (orchestrator concern;
 //      this function consumes the resulting array, doesn't compute it)
 
@@ -18,7 +18,7 @@
 //                         (entries with .name + .master). FP callers pass the
 //                         FP_RECIPE_T5.foliar reshape; stored callers can pass
 //                         null and computeFoliarSupplyFunction defaults internally.
-//   foliarOpts         : { sprayCount, surfactant } from DOM
+//   foliarOpts         : { surfactant } from DOM
 //   computeFoliarSupplyFunction : window.FoliarRecipeTomato.computeFoliarSupply
 //
 // Returns { N, P, K, Ca, Mg, Fe, Mn, Zn, Cu, B, Mo } in mg/m²/wk
@@ -58,8 +58,8 @@ void computeFoliarContribution;
 //                     channel (only K/Mg/B carry values today).
 //   sidedressPre    : per-element mg/m²/wk map for the FP sidedress
 //                     channel.
-//   foliarOpts      : { sprayCount, surfactant } from DOM (orchestrator
-//                     already reads these for the live foliar branch).
+//   foliarOpts      : { surfactant } from DOM (orchestrator already reads
+//                     this for the live foliar branch).
 //
 // Returns: { MnSO4, ZnSO4, Solubore, CuSO4, NaMolybdate, 'FeSO4-7H2O' }
 //          (the FP_RECIPE_T5.foliar shape) on success;

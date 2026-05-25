@@ -178,5 +178,5 @@ supply lockout discounts.
 
 Specs that *consume* demand/supply output:
 
-- `nutrition/lettuce/app/spec.md` — Salanova subpage block layout, gap-chain
+- `nutrition/lettuce/app/user-stories.md` — Salanova subpage block layout, gap-chain
   cascade (demand → compost → front-load → fertigation → leviers).

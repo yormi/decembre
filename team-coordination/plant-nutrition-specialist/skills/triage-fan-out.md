@@ -46,8 +46,8 @@ END STATE
 RULES OF ENGAGEMENT
 - Lane: own spec.md / derivation.md / learnings.md / this todo file
 - Forbidden (P-06): app/index.html, */app/page.html, */app/logic.js,
-  dist/, calc.js, model.js, data.js, requirements.md
-- Verifier scripts (scripts/check-recipes.mjs, check-requirements.sh):
+  dist/, calc.js, model.js, data.js, spec.md
+- Verifier scripts (scripts/check-recipes.mjs, check-spec.sh):
   MAY edit if REQ changes
 - REQ claims: `scripts/claim-req.sh <spec-path> plant-nutrition-specialist`
   (flock race-safe across parallel deputies)
@@ -80,7 +80,7 @@ Each deputy executes the intent with judgment. Item states are delete-inline by 
 
 Sub-agent inline report: completed (with REQ refs) · deferred · what's still imprecise · cross-cutting flags · files written. The report is where completion is visible; the todo file just shows what remains open.
 
-Sub-agents append team-leader inbox per spec mutation (following `procedures/notify-team-leader.md`) + one changelog line per material change (no trim — Phase 2 cleans up if count overshoots). REQ claims race-safe via `claim-req.sh`'s flock; changelog/team-leader-inbox appends are short enough that loss risk is acceptable.
+Sub-agents append team-leader inbox per spec mutation (following `skills/notify-team-leader.md`) + one changelog line per material change (no trim — Phase 2 cleans up if count overshoots). REQ claims race-safe via `claim-req.sh`'s flock; changelog/team-leader-inbox appends are short enough that loss risk is acceptable.
 
 ## Phase 2 — Synthesis + cleanup
 

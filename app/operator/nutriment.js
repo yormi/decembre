@@ -66,7 +66,7 @@ function captureCurrentSnapshot() {
 
 // Wire Bilan inputs (page is hidden by default; listeners are cheap to attach)
 ['nutr-target','nutr-solar-per-gram','nutr-phlocked',
- 'nutr-foliar-spray-count','nutr-foliar-surfactant',
+ 'nutr-foliar-surfactant',
  'nutr-l-transplant','nutr-l-target','nutr-l-days','nutr-l-density',
  'nutr-l-phlocked',
  'nutr-n-target','nutr-n-days','nutr-n-cells','nutr-n-trays','nutr-n-applications'].forEach(id => {

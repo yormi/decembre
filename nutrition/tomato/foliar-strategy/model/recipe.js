@@ -260,7 +260,9 @@ function computeFoliarRecipeForGap(gap, opts) {
   return recipe;
 }
 
-// REQ-198 — Day assignment across farm working days {Mon..Fri}.
+// REQ-198 — Day assignment across farm working days.
+// Source of truth for the working-day pool: window.Nutrition.FARM_WORKING_DAYS
+// (nutrition/spec.md § farm-working-days). Currently ['Mon','Tue','Wed','Thu','Fri'].
 // Pure: returns the array of weekday strings for a given sprayCount.
 //   0 → []           (no spray scheduled)
 //   1 → [Wed]        (mid-week default)
@@ -269,15 +271,21 @@ function computeFoliarRecipeForGap(gap, opts) {
 //   4 → [Mon, Tue, Thu, Fri]
 //   5 → [Mon, Tue, Wed, Thu, Fri]
 function foliarDaysForSprayCount(sprayCount) {
-  switch (sprayCount) {
-    case 0:  return [];
-    case 1:  return ['Wed'];
-    case 2:  return ['Mon', 'Thu'];
-    case 3:  return ['Mon', 'Wed', 'Fri'];
-    case 4:  return ['Mon', 'Tue', 'Thu', 'Fri'];
-    case 5:  return ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'];
-    default: return [];
-  }
+  const days = (window.Nutrition && window.Nutrition.FARM_WORKING_DAYS) || [];
+  // Index pattern per sprayCount across the 5-day working week (indices into
+  // FARM_WORKING_DAYS). Mid-week single, maximum-gap pair, evenly-spaced triple,
+  // skip-Wed quad, full week.
+  const PATTERN = {
+    0: [],
+    1: [2],
+    2: [0, 3],
+    3: [0, 2, 4],
+    4: [0, 1, 3, 4],
+    5: [0, 1, 2, 3, 4],
+  };
+  const indices = PATTERN[sprayCount];
+  if (!indices) return [];
+  return indices.map(function(i) { return days[i]; });
 }
 
 // REQ-195 / REQ-197 / REQ-198 — strategy aggregator. Calls

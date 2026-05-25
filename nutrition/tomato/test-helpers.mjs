@@ -62,6 +62,9 @@ const EXPOSE_NAMES = [
   'PRODUCT', 'PRODUCT_PCT', 'STORED_RECIPE',
   'TOMATO_NUMBER_BEDS', 'TOMATO_BED_AREA',
   'effectiveEfficiency', 'predictedCE',
+  // Cross-crop fertigation tank — pinned by nutrition/spec.md REQ-062
+  // (flat-object lettuce recipe, no parallel sub-tanks).
+  'LETTUCE',
   // Compost release feeds the supply chain (REQ-013/014)
   'COMPOST_RELEASE_PER_WEEK',
 ];

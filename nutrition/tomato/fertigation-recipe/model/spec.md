@@ -295,7 +295,7 @@ Specs that *consume* the fertigation output:
   K₂SO₄, MgSO₄·7H₂O, and Solubor (disodium octaborate tetrahydrate) are
   all on the certified-input list (CAN/CGSB-32.311 sodium borates).
 - **REQ-002** (`nutrition/spec.md`) — no forbidden products.
-- **REQ-061** (`requirements.md`) — foliar dose only when earlier channels
+- **REQ-061** (`spec.md`) — foliar dose only when earlier channels
   insufficient. Fertigation owns B as the single channel; foliar B = 0.
 
 ---

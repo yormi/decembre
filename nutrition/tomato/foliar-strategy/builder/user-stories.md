@@ -1,9 +1,12 @@
 # Tomate — foliar-strategy — builder
 
-UI invariants for the foliar block on the Tomato Nutrition admin
-page (Block 5 / 6 — "Foliaire"). Reads from the foliar-strategy
-model (`*/foliar-strategy/model/spec.md`). Page chrome / header /
-drift block in `nutrition/tomato/shell/spec.md`.
+## Problem
+
+The foliar block on the admin page needs a single operator-level lever — surfactant on / off — that reactively rewrites all per-element delivered numbers and the Efficacité column without manual recompute.
+
+## Solution
+
+Block 5 / 6 ("Foliaire") on the Tomato Nutrition admin page renders one operator input (surfactant checkbox) that propagates through `window.FoliarRecipeTomato.computeFoliarSupply` to drive contribution numbers and Efficacité reactively. Reads from the foliar-strategy model (`*/foliar-strategy/model/spec.md`). Page chrome / header / drift block in `nutrition/tomato/shell/spec.md`.
 
 ---
 
@@ -35,3 +38,10 @@ The Efficacité column on the foliar contribution block updates
 when the operator toggles the surfactant lever in Block 5. With
 surfactant engaged, foliar efficiency for routed elements is
 higher than without.
+
+---
+
+## Out of Scope
+
+- Spray-count input — retired 2026-05-24; frequency is now a model output (see `nutrition/tomato/foliar-strategy — frequency-is-model-output`).
+- Day-picker / recipe-on-off toggles on the builder — model owns recipe and frequency selection.

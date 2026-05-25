@@ -5,7 +5,7 @@ Semis laitue (lettuce nursery) nutrition specs: seedling tissue composition
 calculations.
 
 Cross-crop nutrition rules live in `nutrition/spec.md`. UI-side specs for
-the Semis subpage live in `nutrition/nursery/app/spec.md`.
+the Semis subpage live in `nutrition/nursery/app/user-stories.md`.
 
 No nursery-specific specs are wired today (2026-05-09). The supporting
 constants (`LETTUCE_NURSERY_TISSUE_DW`, `LETTUCE_NURSERY_DM_FRACTION`,

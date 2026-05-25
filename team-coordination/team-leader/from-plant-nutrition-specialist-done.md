@@ -8,7 +8,23 @@ Most recent at the top.
 
 ## Entries
 
-_(none — last trim cleared all closed entries.)_
+## 2026-05-24 21:24 — nutrition/tomato/foliar-strategy/model
+
+**Change type:** added, edited
+**REQs affected:** REQ-195 (added — multi-recipe strategy structure), REQ-196 (added — per-recipe weekly leaf-tolerance cap, oligo=1 Ca=3 cert 3), REQ-197 (added — `sprayCount = min(sprays-to-close-gap, leaf-tolerance-cap)` per recipe), REQ-198 (added — day-spread rule over `nutrition — farm-working-days`), REQ-115 (edited — returns `{doses, sprayCount}` bundle, opts `sprayCount` → `recipeKind`), REQ-116 (edited — reshaped around `computeFoliarStrategy(stage, gap)`), REQ-101 (edited — per-recipe coverage axis, Ca constants), REQ-103 (edited — `computeFoliarStrategy` added to namespace surface), REQ-112 (held transitionally — legacy override to avoid test churn this PR)
+**Summary:** Model contract reshaped per the 2026-05-24 PO grill: strategy now contains many recipes; frequency is model output not operator input; per-recipe leaf-tolerance cap bounds the model-computed weekly count; day assignments spread over the farm-working-days set.
+**Suggested waves:** test-writer · coder · pruner
+
+### Team-leader outcome (2026-05-24)
+Waves run: test-writer · coder · pruner (all three, foliar-strategy/model only — Guillaume scoped narrowly via option-2 override, deferred the five PO-channel siblings + Ca slot wiring + symbol rename).
+
+- **test-writer:** +359 lines on `model/spec.test.mjs` (542 → 901). 15 new red tests pinning the Wave-2 contract; 8 net-new green derivation worked-example assertions.
+- **coder:** `recipe.js` +~150 / −~57, `data.js` +35, `test-helpers.mjs` +11 (cross-realm `structuredClone` wrap on `computeFoliarStrategy` for jsdom→node Array deepEqual). 15 targeted REQ tests passing; `npm run check` green (transient REQ-158 hit on `var el` → `var element` fixed in-line).
+- **pruner:** zero deletions (every symbol traces to a test, internal caller, or external consumer). 4 borderline items surfaced for future review (FOLIAR_GAP_ELEMENTS.Mo carve-out leftover, AREA_M2 doc block, cap-binds defensive branch, `void` cross-bundle markers).
+
+Final state: `npm test` 347 / 342 pass / 1 fail / 4 todo · `npm run check` 161/0 READY · Node v24.15.0. The 1 failure is pre-existing `REQ-004 — Bilan reads TOMATO_FRUIT_EXPORT[element]` (`nutrition/tomato/shell/spec.test.mjs:716`) — surfaced separately, unrelated to this wave.
+
+Flags for follow-up: (a) symbol rename `FoliarRecipeTomato` → `FoliarStrategyTomato` deferred; (b) Ca recipe `data.js` entry + `computeFoliarSupply` Ca slot wiring gated on PO data; (c) coder loosened Cu luxury-cap guard `> 1.3 × gap` → `> 1.31 × gap` (1 % FP slack to admit derivation row-5 "1.30× exactly at cap" without firing) — possible drift from blueprint, specialist to verify.
 
 ## 2026-05-24 — Bulk archive — Phase 1-4 nutrition reorg (9 entries)
 

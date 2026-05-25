@@ -7,7 +7,7 @@ coverage bounds.
 Cross-crop nutrition rules (chemistry, products, organic cert, mass-balance
 framing) live in `nutrition/spec.md`. UI-side specs for the Tomato Nutrition
 admin page live in `nutrition/tomato/shell/spec.md` (page-shell orchestration
-+ layout) and `nutrition/tomato/{plant-needs,fertigation-recipe,sidedress-recipe,foliar-strategy}/builder/spec.md`
++ layout) and `nutrition/tomato/{plant-needs,fertigation-recipe,sidedress-recipe,foliar-strategy}/builder/user-stories.md`
 (per-block surface).
 
 ## Subprojects
@@ -28,8 +28,8 @@ admin page live in `nutrition/tomato/shell/spec.md` (page-shell orchestration
   bounded by per-recipe weekly leaf-tolerance cap, spreads sprays
   across the `nutrition — farm-working-days` set. Builder block
   carries surfactant lever only (sprayCount input retired 2026-05-24).
-  Layer files: `spec.md`, `model/spec.md`, `builder/spec.md`,
-  `procedure/spec.md`, `operator/spec.md`. Vocabulary in `CONTEXT.md`.
+  Layer files: `spec.md`, `model/spec.md`, `builder/user-stories.md`,
+  `procedure/user-stories.md`, `operator/user-stories.md`. Vocabulary in `CONTEXT.md`.
 
 The specs below cover the *coupling* between plant-needs and the supply
 chain (REQ-013, REQ-014) plus the demand-anchor source-of-truth invariant

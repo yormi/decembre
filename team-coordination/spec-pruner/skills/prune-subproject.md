@@ -8,7 +8,7 @@
 2. Sibling `derivation.md` + `learnings.md`
 3. `calc.js`, `model.js`, `data.js` in scope
 4. `*/app/` partial if present
-5. `requirements.md` (full) — for cross-app REQ traceability
+5. `spec.md` (full) — for cross-app REQ traceability
 
 ## Per-subproject phases
 
@@ -34,7 +34,7 @@
 ### C1 — <file>:<line-range>
 
 **What it does:** [one sentence]
-**Traces to REQ:** none in `<subproject>/spec.md` or `requirements.md`. [or: "supports REQ-NNN" — not a candidate]
+**Traces to REQ:** none in `<subproject>/spec.md` or `spec.md`. [or: "supports REQ-NNN" — not a candidate]
 **Used by:** [call sites with file:line, or "no caller found" — show the grep used]
 **Cascade if removed:** [observable behavior change]
 **My read:** [REMOVE / BORDERLINE / KEEP, surfaced for review]
@@ -83,7 +83,7 @@ Move first to `<subproject>/learnings.md` (create if missing), then delete:
 - `spec.md` — PO + specialist own those.
 - `STORED_RECIPE.tomato.fertigation` / `.sidedress` / `.foliaire` — `/retire-recipe` only.
 - `RECIPE_HISTORY` — audit trail.
-- Cross-app infrastructure for `requirements.md` REQs (REQ-005 page registry, `CROP_PAGES`, `setPage`, `syncHash`).
+- Cross-app infrastructure for `spec.md` REQs (REQ-005 page registry, `CROP_PAGES`, `setPage`, `syncHash`).
 - `working files/` — not production.
 - `data.js` calibration values that look unused — verify across the whole spec tree first.
 

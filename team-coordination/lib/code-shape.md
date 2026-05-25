@@ -1,6 +1,8 @@
-# Code shape — Elm-influenced JS
+# Code shape
 
 **Audience:** coder primary; test-writer (fixture code) + specialist (when sketching algorithm shape in `derivation.md`).
+
+## Elm-influenced JS
 
 Calc/model layers are pure (no I/O, no globals, no `Date.now`). Beyond purity, write JS in a shape that would translate mechanically to Elm later.
 
@@ -12,3 +14,20 @@ Calc/model layers are pure (no I/O, no globals, no `Date.now`). Beyond purity, w
 - **No nullable mixed-shape returns.** A function returns one shape, not "object or null or number." If it can return nothing, use Maybe.
 
 Lazy migration: existing code stays until next touched; when you edit a calc/model function, refactor its shape to match. No big-bang rewrite.
+
+## Purity + boundaries
+
+- **Pure functions** (`feedback_pure_code.md`): calc/model are pure — no I/O, no globals, no `Date.now()`. Side effects at thin edges (renderers/handlers).
+- **Model SRP** (`feedback_model_srp.md`): functions accept pre-normalized inputs and apply ONE rule. Shape detection / source selection / reshape live at the caller. No mode flags at the model boundary.
+
+## Comments + naming
+
+- **No trace comments** (`feedback_no_trace_comments.md`, CLAUDE.md 2026-05-12): trace lives in `<subproject>/derivation.md` + `learnings.md`. Don't add `// REQ-NNN: derived from X × Y`.
+- **No comments by default.** Only when WHY is non-obvious (hidden constraint, invariant, bug workaround). Never WHAT.
+- **Long variable names.** Spell out `temperature`, `request`, `index`. No `temp`, `req`, `idx`.
+
+## Scope + UI text
+
+- **Spec is floor and ceiling.** Build only what the test (via the spec) demands. No "nice to have", no future-proofing.
+- **French user-facing text** (REQ-001/006/007): CE not EC, Algue not Kelp.
+- **No narrative in operator UI** (`feedback_no_unspecced_narrative.md`): deterministic derivation from spec/data. No `// stable —`. Test asserts page content → render via deterministic helper, not hand-written string.

@@ -1,6 +1,6 @@
 // ─── yield-range/app/logic.js — Rendement semis admin page ─
 //
-// Spec: yield-range/app/spec.md (REQ-119 two inputs · REQ-120 capacité
+// Spec: yield-range/app/user-stories.md (REQ-119 two inputs · REQ-120 capacité
 // plafond display · REQ-121 chart with axis labels + reference line +
 // marker). Math contract: yield-range/spec.md (REQ-112 to REQ-118).
 //
@@ -138,7 +138,7 @@ function openDliModal() {
   //   bp[3]→[4]: saturation ramp 1.0 → 0.7
   //   bp[4]→[5]: saturation floor (0.7)
   // The labels match the f_light comment block in data.js and the spec table
-  // in yield-range/app/spec.md REQ-132.
+  // in yield-range/app/user-stories.md REQ-132.
   const fmtX = v => Number.isInteger(v) ? `${v}` : v.toFixed(1);
   const fmtY = v => v.toFixed(1).replace('.', ',');
   const rows = [];

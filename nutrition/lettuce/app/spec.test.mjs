@@ -1,4 +1,4 @@
-// Tests for nutrition/lettuce/app/spec.md.
+// Tests for nutrition/lettuce/app/user-stories.md.
 //
 // REQs covered (5): REQ-176, REQ-177, REQ-178, REQ-179, REQ-180.
 //

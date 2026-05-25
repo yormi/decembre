@@ -93,9 +93,9 @@ active lever sizing against what remains.
 
 ## Inherited specs
 
-- **REQ-005** (`requirements.md`) — URL hash routing for the crop
+- **REQ-005** (`spec.md`) — URL hash routing for the crop
   sub-toggle (`#admin/nutriment/nursery`).
-- **REQ-001** (`requirements.md`) — French CE in user-facing text.
+- **REQ-001** (`spec.md`) — French CE in user-facing text.
 - **REQ-060** (`nutrition/spec.md`) — narrative copy must not contradict
   current data; auto-derive or annotate `// stable —`.
 - **REQ-136** (`nutrition/spec.md`) — every contribution channel

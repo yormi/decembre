@@ -11,7 +11,7 @@ Question answered: **"how much of element X does a seedling need to take
 up this week to hit target weight T at density D over cycle C days?"**
 
 Out of scope: supply (substrate-contribution + fertigation sister
-subprojects); cell-volume feasibility (`nutrition/nursery/app/spec.md`);
+subprojects); cell-volume feasibility (`nutrition/nursery/app/user-stories.md`);
 per-stage demand within the cycle (flat — deferred until tissue-stratified
 data lands).
 

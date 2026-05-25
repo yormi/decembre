@@ -7,4 +7,4 @@ Multiple Claude sessions run in parallel; each snapshots at startup.
 3. **Trust the changelog over memory.** Conflicts → re-derive from current files.
 4. **If the 10 injected lines don't span back to your last touch-base,** read the full changelog and re-read shifted files.
 
-NOT worth logging: reads to answer a question, `check-requirements.sh` runs, cosmetic copy edits.
+NOT worth logging: reads to answer a question, `check-spec.sh` runs, cosmetic copy edits.

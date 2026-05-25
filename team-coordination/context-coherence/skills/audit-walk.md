@@ -4,7 +4,7 @@
 
 ## Inputs to read at trigger time
 
-1. `requirements.md` (cross-app REQs — for layer-drift checks).
+1. `spec.md` (cross-app REQs — for layer-drift checks).
 2. Full spec tree (`find . -name spec.md ...`) — skim headings, full-read on walk scope.
 3. `working files/changelog.md` (full file, not 25-line slice).
 4. `MEMORY.md` + scan `memory/*.md`.
@@ -65,7 +65,7 @@ Direct (state in turn, do it, changelog line):
 
 Everything else: propose, wait, route.
 
-> **F4 proposed restructure** — move REQ-072 from `yield-range/spec.md` to `yield-range/app/spec.md` (page-level, not domain). Side effects: update verifier pattern, add cross-ref. Confirm and I'll execute; PO session re-reads both after.
+> **F4 proposed restructure** — move REQ-072 from `yield-range/spec.md` to `yield-range/app/user-stories.md` (page-level, not domain). Side effects: update verifier pattern, add cross-ref. Confirm and I'll execute; PO session re-reads both after.
 
 ## Triage end of walk
 

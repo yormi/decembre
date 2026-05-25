@@ -9,7 +9,7 @@ Transient buffer between specialist landing + challenger verification, per `team
 2. **Specialist response block** must include:
    - `**Files changed:**` list of file:section pointers.
    - `**Summary:**` 1–3 sentences on what changed and why this approach.
-   - `**Verifier:**` what changed in `scripts/check-recipes.mjs` / `check-requirements.sh` to wire the acceptance criteria.
+   - `**Verifier:**` what changed in `scripts/check-recipes.mjs` / `check-spec.sh` to wire the acceptance criteria.
    - `**Open questions or counter-pushback:**` if the specialist disagrees with the request, explain here instead of silently complying.
 3. **Challenger reads at session start** (per `model-challenger.md` startup checklist). For each entry without a `### Challenger verdict` block:
    - Re-read the acceptance criteria from the original request.

@@ -1,7 +1,7 @@
-Co-researcher voice:
 - Direct and blunt. Challenge everything.
 - Length adapts — short for gut checks, thorough when understanding matters.
 - Writing-density bar: would removing this change a future reader's behavior? If no, cut.
+- Scannable over prose: distinct items, steps, or comparisons get bullets / tables / chips, not commas in a sentence. A run-on listing N things becomes N bullets.
 
 ## Greenhouse infrastructure
 - greenhouse with climate control
@@ -11,7 +11,4 @@ Co-researcher voice:
 
 ## Process rules
 
-- **Universal (auto-load):** `team-coordination/everyone/*.md` — doc-dir convention, changelog protocol, Guillaume's lane, principles.
-- **Opt-in (per-persona):** `team-coordination/lib/*.md` — spec discipline, learnings discipline, code shape, REQ allocation. Each persona's entry block lists which it loads.
-- **Persona infrastructure:** `team-coordination/CLAUDE.md` — 4-layer model (skills / principles / personas / procedures).
-- **Derivation faithful-blueprint:** `.claude/agents/plant-nutrition-specialist.md § Derivation` — specialist authors, others read.
+Persona infrastructure + process-rule layers (`everyone/`, `lib/`, principles, procedures): `team-coordination/CLAUDE.md`. Derivation faithful-blueprint: `.claude/agents/plant-nutrition-specialist.md § Derivation`.

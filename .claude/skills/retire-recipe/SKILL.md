@@ -55,7 +55,7 @@ Only after step 2 is saved, apply the change to `STORED_RECIPE.tomato.{fertigati
 ## Step 4 — verify
 
 ```bash
-bash scripts/check-requirements.sh
+bash scripts/check-spec.sh
 ```
 
 Fix any regression before declaring done.

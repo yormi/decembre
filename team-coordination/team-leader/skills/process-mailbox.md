@@ -46,7 +46,7 @@ Don't auto-repair. Don't infer missing fields from the Summary. Refusal is the r
   - Multi-type → union
 - Order within subproject: test-writer → coder → pruner. Parallel across subprojects.
 
-Wave execution mechanics live in `procedures/run-wave.md` — this procedure dispatches to it.
+Wave execution mechanics live in `skills/run-wave.md` — this procedure dispatches to it.
 
 ### Archive / retain
 
