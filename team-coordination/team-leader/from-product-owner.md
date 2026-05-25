@@ -23,6 +23,13 @@ A single turn that touches multiple subprojects writes one entry per subproject.
 
 ## Entries
 
+## 2026-05-24 23:30 — nutrition
+
+**Change type:** added
+**REQs affected:** predicted-ph-ce-shown-on-builder-blocks, predicted-ph-ce-clickable-modal, predicted-ph-ce-coloured-by-band-position
+**Summary:** Three sibling slugs added to `nutrition/spec.md`: every nutrition builder block shows predicted tank pH + CE next to its inputs; clicking a number opens a modal explaining the measurement point (water at dripper / soil root zone / lab sample), blue-pen mapping, and safe band for current crop × stage; numbers coloured green inside band / red outside / yellow within 10 % of band width from either edge. CE safe-band data already in `chemistry — REQ-024`; pH safe-band data not yet specified (specialist sibling work routed in parallel).
+**Suggested waves:** test-writer · coder · pruner
+
 ## 2026-05-24 23:00 — nutrition/tomato/foliar-strategy
 
 **Change type:** added

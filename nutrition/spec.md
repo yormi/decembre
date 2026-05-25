@@ -413,3 +413,27 @@ On the contribution-block gap-grid, the `Manque sortant` cell rendering 0 (gap c
 ## REQ-162 — Mois d'épuisement on the soil-bank block: SME-availability runway
 
 Every element row on the soil-bank block displays a Mois d'épuisement value equal to the Mehlich-3 reservoir divided by the weekly plant uptake currently sustainable at the measured SME plant-availability — the bank's runway at zero replenishment, with weekly draw throttled by current soil-solution availability.
+
+---
+
+## predicted-ph-ce-shown-on-builder-blocks
+
+Predicted tank pH and predicted CE appear next to the inputs of every
+dose-or-product editing block on every nutrition builder page.
+
+---
+
+## predicted-ph-ce-clickable-modal
+
+Clicking a displayed predicted pH or CE number opens a modal. The modal
+declares the measurement point the prediction targets (water at the dripper,
+soil root zone, or lab sample), how the blue lab pen maps to that point, and
+the safe band for the current crop and stage.
+
+---
+
+## predicted-ph-ce-coloured-by-band-position
+
+Each displayed predicted pH or CE number is rendered green when inside the
+safe band, red when outside, and yellow when its distance to the nearest
+band edge is at most 10 % of the band width.
