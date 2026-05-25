@@ -1,3 +1,45 @@
+// Predicted pH + CE modal (cross-cutting nutrition/spec.md §
+// predicted-ph-ce-clickable-modal). Single body-level dialog reused by every
+// builder block. Measurement point: foliar tank (cuve, REQ-025 / REQ-053).
+function ensurePredictedPhCeModal() {
+  if (document.getElementById('predicted-ph-ce-modal')) return;
+  const modal = document.createElement('div');
+  modal.id = 'predicted-ph-ce-modal';
+  modal.setAttribute('data-predicted-modal', '');
+  modal.className = 'predicted-ph-ce-modal';
+  modal.style.cssText = 'display:none; position:fixed; inset:0; background:rgba(0,0,0,0.35); z-index:9999; align-items:center; justify-content:center;';
+  modal.innerHTML = `
+    <div role="dialog" aria-modal="true" style="background:var(--card,#fff); color:var(--text,#111); max-width:520px; width:90%; padding:18px 20px; border-radius:8px; box-shadow:0 10px 40px rgba(0,0,0,0.3); font-size:13px; line-height:1.5;">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+        <strong style="font-size:14px;">CE / pH cuve foliaire prévus</strong>
+        <button type="button" data-close-modal aria-label="Fermer" style="background:none; border:none; font-size:18px; cursor:pointer;">×</button>
+      </div>
+      <div data-modal-body>
+        <p><strong>Point de mesure :</strong> cuve (tank) foliaire — la prédiction porte sur la solution dans la cuve, avant pulvérisation (REQ-025 : <code>predictedCE(recette, dilution=1.0)</code>).</p>
+        <p><strong>Stylo bleu :</strong> le stylo bleu de laboratoire mesure la CE / le pH directement dans la cuve foliaire — c'est le même point physique que la prédiction. Tremper le stylo dans la cuve après dissolution complète des sels ; comparer la lecture à la valeur prévue affichée.</p>
+        <p><strong>Bandes de sécurité (tomate) :</strong></p>
+        <ul style="margin:4px 0 0 16px;">
+          <li>CE cuve : 0 – <strong>8,0 mS/cm</strong> (cap de brûlure foliaire, REQ-025).</li>
+          <li>pH cuve : 5,0 – 7,0 (fenêtre d'absorption cuticulaire, REQ-053).</li>
+        </ul>
+        <p style="margin-top:8px; color:var(--text-muted,#666); font-size:12px;">Vert = à l'intérieur de la bande · Jaune = à moins de 10 % d'un bord · Rouge = hors bande.</p>
+      </div>
+    </div>`;
+  document.body.appendChild(modal);
+  modal.addEventListener('click', (ev) => {
+    if (ev.target === modal || (ev.target instanceof Element && ev.target.matches('[data-close-modal]'))) {
+      modal.style.display = 'none';
+      modal.removeAttribute('open');
+    }
+  });
+}
+function openPredictedPhCeModal(/* kind */) {
+  const modal = document.getElementById('predicted-ph-ce-modal');
+  if (!modal) return;
+  modal.style.display = 'flex';
+  modal.setAttribute('open', '');
+}
+
 function buildNutrimentTomato() {
   const PN = window.PlantNeedsTomato;
   const target  = parseFloat(document.getElementById('nutr-target').value)  || 1.5;
@@ -405,6 +447,9 @@ function buildNutrimentTomato() {
   });
   html3sd += renderGapGrid(gapAfterCompost, supply.sidedress, gapAfterSidedress, 'sidedress', sdDetails, 'sidedress', supply.sidedress.efficiency || {});
   document.getElementById('nutr-sidedress').innerHTML = html3sd;
+  if (window.SidedressBuilder && typeof window.SidedressBuilder.renderPredictedStrip === 'function') {
+    window.SidedressBuilder.renderPredictedStrip();
+  }
 
   // ─── Block 5: Fertigation (mass-balance — replaces what offtake removes
   //   after soil + compost + sidedress contributions). ───
@@ -535,6 +580,13 @@ function buildNutrimentTomato() {
   });
   html3 += renderGapGrid(gapAfterSidedress, supply.fert, gapAfterFert, 'fert', fertDetails, 'fert', supply.fert.efficiency || {});
   document.getElementById('nutr-fert').innerHTML = html3;
+  // Predicted-pH + predicted-CE chips (nutrition/spec.md cross-cutting:
+  // predicted-ph-ce-shown-on-builder-blocks). Renderer owned by the
+  // fertigation-recipe builder subproject. r carries the weekly tank totals
+  // (k_g_total, mg_g_total, sb_fert_g) the chip needs.
+  if (window.FertigationBuilder && typeof window.FertigationBuilder.renderFertigationPredictedChips === 'function') {
+    window.FertigationBuilder.renderFertigationPredictedChips(r, nutrStage);
+  }
 
   // ─── Block 6: Foliar (micros — bypass root lockout at pH 7,4) ───
   // Mass-balance numbering 2026-05-11: 1 besoin · 2 sol (banque) ·
@@ -639,7 +691,80 @@ function buildNutrimentTomato() {
     foliarDetails[element] = { cert: 3, cap };
   });
   html4 += renderGapGrid(gapAfterFert, supply.foliar, gapAfterFoliar, 'foliar', foliarDetails, 'foliar', supply.foliar.efficiency || {});
+
+  // ─── Predicted tank pH + CE chips (cross-cutting: predicted-ph-ce-*) ───
+  // Foliar measurement point is the TANK (REQ-025 evaluates predictedCE at
+  // dilution=1.0; REQ-053 declares foliar tank pH band [5.0, 7.0]). Recipe
+  // built from the current dose row state — same productId keys as
+  // foliarRows; masterVol = STORED_RECIPE.tomato.foliaire.masterVol L.
+  const foliarMasterVol = STORED_RECIPE.tomato.foliaire.masterVol || 15;
+  const FOLIAR_PRODUCT_KEY = {
+    MnSO4: 'MnSO4', ZnSO4: 'ZnSO4', Solubore: 'Solubore',
+    CuSO4: 'CuSO4', NaMoO4: 'NaMoO4', FeSO4: 'FeSO4-7H2O',
+  };
+  const foliarDoseG = {
+    MnSO4:    r.mnSO4_g     || 0,
+    ZnSO4:    r.znSO4_g     || 0,
+    Solubore: r.sb_g        || 0,
+    CuSO4:    r.cuSO4_g     || 0,
+    NaMoO4:   r.moNa_g      || 0,
+    FeSO4:    r.feApplied_g || r.feSO4_g || 0,
+  };
+  const tankRecipeForPredict = {};
+  Object.keys(foliarDoseG).forEach((id) => {
+    const grams = foliarDoseG[id];
+    if (!grams) return;
+    const key = FOLIAR_PRODUCT_KEY[id] || id;
+    tankRecipeForPredict[key] = (tankRecipeForPredict[key] || 0) + grams / foliarMasterVol;
+  });
+  const predictedCeFoliar = (typeof predictedCE === 'function')
+    ? predictedCE(tankRecipeForPredict, 1.0) : 0;
+  const predictedPhFoliar = (typeof predictedTankPh === 'function')
+    ? predictedTankPh(tankRecipeForPredict, 7.0) : 7.0;
+
+  // Band-state — green inside, red outside, yellow within 10% of band
+  // width from nearest edge (nutrition/spec.md § predicted-ph-ce-coloured-by-band-position).
+  function bandStateFor(value, lowerBound, upperBound) {
+    if (!isFinite(value)) return 'red';
+    if (value < lowerBound || value > upperBound) return 'red';
+    const width = upperBound - lowerBound;
+    const edge = width * 0.1;
+    if (value - lowerBound <= edge || upperBound - value <= edge) return 'yellow';
+    return 'green';
+  }
+  const BAND_COLOR = { green: '#2e7d32', yellow: '#b58900', red: '#c62828' };
+  const FOLIAR_CE_LOWER = 0,   FOLIAR_CE_UPPER = 8.0;   // REQ-025 tomato burn cap
+  const FOLIAR_PH_LOWER = 5.0, FOLIAR_PH_UPPER = 7.0;   // REQ-053 foliar tank
+  const ceBand = bandStateFor(predictedCeFoliar, FOLIAR_CE_LOWER, FOLIAR_CE_UPPER);
+  const phBand = bandStateFor(predictedPhFoliar, FOLIAR_PH_LOWER, FOLIAR_PH_UPPER);
+
+  const chipsHtml = `<div style="display:flex; gap:14px; flex-wrap:wrap; font-size:12px; margin-bottom:10px;">
+    <span>CE cuve prévue : <strong
+        data-predicted-ce
+        data-band-state="${ceBand}"
+        class="predicted-ce band-${ceBand}"
+        role="button" tabindex="0"
+        data-modal-target="predicted-ph-ce-modal"
+        data-kind="ce"
+        style="cursor:pointer; color:${BAND_COLOR[ceBand]};">${(predictedCeFoliar || 0).toFixed(2)} mS/cm</strong></span>
+    <span>pH cuve prévu : <strong
+        data-predicted-ph
+        data-band-state="${phBand}"
+        class="predicted-ph band-${phBand}"
+        role="button" tabindex="0"
+        data-modal-target="predicted-ph-ce-modal"
+        data-kind="ph"
+        style="cursor:pointer; color:${BAND_COLOR[phBand]};">${(predictedPhFoliar || 0).toFixed(1)}</strong></span>
+  </div>`;
+  html4 = chipsHtml + html4;
+
   document.getElementById('nutr-foliar').innerHTML = html4;
+  // Wire modal open on click — measurement point = foliar tank (cuve).
+  ensurePredictedPhCeModal();
+  const foliarBlock = document.getElementById('nutr-foliar');
+  foliarBlock.querySelectorAll('[data-predicted-ce], [data-predicted-ph]').forEach((node) => {
+    node.addEventListener('click', () => openPredictedPhCeModal(node.getAttribute('data-kind')));
+  });
 
   // ─── Block 7: Leviers (final residual + auto-derived per-element actions) ───
   // Mass-balance numbering (2026-05-11): the supply chain is sol (banque) →
