@@ -23,3 +23,14 @@ A single turn that touches multiple subprojects writes one entry per subproject.
 
 ## Entries
 
+## 2026-05-24 21:24 — nutrition/tomato/foliar-strategy/model
+
+**Change type:** added, edited
+**REQs affected:** REQ-195 (added — multi-recipe strategy structure), REQ-196 (added — per-recipe weekly leaf-tolerance cap, oligo=1 Ca=3 cert 3), REQ-197 (added — `sprayCount = min(sprays-to-close-gap, leaf-tolerance-cap)` per recipe), REQ-198 (added — day-spread rule over `nutrition — farm-working-days`), REQ-115 (edited — returns `{doses, sprayCount}` bundle, opts `sprayCount` → `recipeKind`), REQ-116 (edited — reshaped around `computeFoliarStrategy(stage, gap)`), REQ-101 (edited — per-recipe coverage axis, Ca constants), REQ-103 (edited — `computeFoliarStrategy` added to namespace surface), REQ-112 (held transitionally — legacy override to avoid test churn this PR)
+**Summary:** Model contract reshaped per the 2026-05-24 PO grill: strategy now contains many recipes; frequency is model output not operator input; per-recipe leaf-tolerance cap bounds the model-computed weekly count; day assignments spread over the farm-working-days set. Coder follow-up flagged: JS namespace `FoliarRecipeTomato` → `FoliarStrategyTomato`; Ca recipe `data.js` entry + `computeFoliarSupply` Ca slot wiring.
+**Suggested waves:** test-writer · coder · pruner
+
+**Mailbox entry written by PO on 2026-05-24 23:05** because spawned specialist agent completed without writing it (PO's spawn brief omitted the notify-team-leader step). Specialist's work is authoritative; this entry just relays it.
+
+
+
