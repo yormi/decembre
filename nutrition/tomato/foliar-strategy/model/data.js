@@ -39,6 +39,18 @@ const FOLIAR_COVERAGE_DEFAULT = 0.30;
 // regime.
 const FOLIAR_COVERAGE_WITH_YUCCA = 0.80;
 
+// Ca²⁺ cuticle coverage — half-of-sulfate at each surfactant state
+// (derivation.md § "Ca-specific cuticle coverage", Test 1 Path B 2026-05-24).
+// Ca²⁺ binds cuticle pectate at the deposition surface and lacks the sulfate
+// counter-ion shuttle; literature mid-band sits at ~0.50 × the sulfate-metal
+// coverage band. Cert 2 — no Décembre tissue measurement under Ca-foliar
+// regime yet; the 0.50 ratio is Schönherr 2000 + literature heuristic.
+// Currently unconsumed by computeFoliarSupply (Ca recipe data.js entry
+// gated on PO); exposed on the namespace so the half-of-sulfate invariant
+// is locked at the contract layer.
+const FOLIAR_COVERAGE_CA_NO_SURFACTANT   = 0.15;
+const FOLIAR_COVERAGE_CA_WITH_SURFACTANT = 0.40;
+
 // Per-element efficiency for the Efficacité column (REQ-157, REQ-170) —
 // share of applied foliar-strategy mass that becomes plant-available per
 // applied gram. Surfactant-aware per REQ-170: toggling the surfactant
@@ -161,4 +173,27 @@ const MIN_DOSE_G_PER_ELEMENT = {
   Fe: 0.5,
   Mo: 0.1,
   B:  0.5,
+};
+
+// REQ-196 — Weekly leaf-tolerance cap per recipe (sprays/week upper bound).
+// Bounds the model-computed weekly spray count (REQ-197) regardless of gap
+// size. Per-recipe; no aggregation across recipes. Anchors:
+//   oligo — 1, live STORED Wednesday-only cadence, cert 3 (derivation.md
+//           § "What dropping yucca cost").
+//   Ca    — 3, Test 1 Path C 2026-05-24 anchor, cert 3. Recipe data.js
+//           entry itself is GATED on PO; the cap is declared here so the
+//           contract shape (REQ-196 table) lands without the recipe.
+const WEEKLY_LEAF_TOLERANCE_CAP_BY_RECIPE = {
+  oligo: 1,
+  ca:    3,
+};
+
+// REQ-195 — Per-recipe target element set. Static gap allocation per
+// recipe definition. Oligo recipe targets Mn / Zn / Cu / Fe / B (the
+// cation-micro + B set the foliar tank delivers under REQ-061). Ca
+// recipe targets Ca (gated on PO data.js entry; declared for contract
+// shape).
+const FOLIAR_RECIPE_TARGETS = {
+  oligo: ['Mn', 'Zn', 'Cu', 'Fe', 'B'],
+  ca:    ['Ca'],
 };

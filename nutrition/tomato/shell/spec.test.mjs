@@ -711,9 +711,9 @@ describe('REQ-004 — Bilan reads from source-of-truth recipes', () => {
     assert.match(html, /BIOMASS_DEMAND\[stage\]/);
   });
 
-  test('REQ-004 — Bilan reads TOMATO_FRUIT_EXPORT[element] (fruit export per element)', () => {
+  test('REQ-004 — Bilan reads TOMATO_FRUIT_EXPORT[el] (fruit export per element)', () => {
     const html = readAppIndexHtml();
-    assert.match(html, /TOMATO_FRUIT_EXPORT\[element\]/);
+    assert.match(html, /TOMATO_FRUIT_EXPORT\[el\]/);
   });
 
   test('REQ-004 — runtime: calculateNutritionSupply returns supply.fert with K and Mg numbers', () => {

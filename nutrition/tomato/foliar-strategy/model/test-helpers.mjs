@@ -77,6 +77,17 @@ export function loadFoliarFixture() {
     throw new Error('foliar fixture: page script did not reach exposeScript — '
       + (cachedWindow.__FIXTURE_ERR__ || 'no error captured'));
   }
+  // Cross-realm wrap: arrays/objects returned by jsdom-side functions carry
+  // jsdom's Array.prototype, which fails node:assert/strict deepEqual against
+  // node-realm literals. Wrap the strategy aggregator so its plain-data output
+  // is structuredCloned into the current (node) realm before the test sees it.
+  const FRT = cachedWindow.FoliarRecipeTomato;
+  if (FRT && typeof FRT.computeFoliarStrategy === 'function') {
+    const original = FRT.computeFoliarStrategy.bind(FRT);
+    FRT.computeFoliarStrategy = function(...args) {
+      return structuredClone(original(...args));
+    };
+  }
   return cachedWindow;
 }
 

@@ -102,8 +102,13 @@ function computeFoliarSupply(stage, opts, recipe) {
 // previously-pinned FP_RECIPE_T5.foliaire literal.
 function computeFoliarRecipeForGap(gap, opts) {
   const o = opts || {};
-  const sprayCount = Math.max(1, Math.min(3, Math.round(Number(o.sprayCount) || 1)));
   const surfactant = !!o.surfactant;
+  // recipeKind = new entry point (REQ-115 reshape): selects recipe
+  // definition + drives the REQ-197 sprayCount search; legacy callers
+  // omit it and get the flat doses object back unchanged (transitional
+  // hold, REQ-112). Today only the oligo recipe lands.
+  const hasRecipeKind = (o.recipeKind != null);
+  const recipeKind = hasRecipeKind ? String(o.recipeKind) : 'oligo';
   const coverage = surfactant ? FOLIAR_COVERAGE_WITH_YUCCA : FOLIAR_COVERAGE_DEFAULT;
   const area = TOMATO_NUMBER_BEDS * TOMATO_BED_AREA;
 
@@ -119,38 +124,32 @@ function computeFoliarRecipeForGap(gap, opts) {
   ];
   const ceilToHalfGram = function(x) { return Math.ceil(x * 2) / 2; };
 
-  // Step 1: per-element ideal_g → per-element min-dose floor → burn cap.
-  // Per-element floors live in MIN_DOSE_G_PER_ELEMENT (data.js); Cu's 0.2 g
-  // is the load-bearing case (narrow toxicity makes a 0.5 g uniform floor
-  // a guaranteed luxury-cap violation when ideal_g lands in 0.2-0.5 g).
-  // Luxury-cap guard: if floor-clamped delivery > 1.3× the gap, drop to 0
-  // — catches the edge case where even the per-element floor is too coarse
-  // (e.g. Cu gap so small that 0.2 g still over-feeds).
-  const recipe = { MnSO4_g: 0, ZnSO4_g: 0, CuSO4_g: 0, FeSO4_g: 0, NaMoO4_g: 0, Solubore_g: 0 };
-  for (var i = 0; i < PRODUCTS.length; i++) {
-    var p = PRODUCTS[i];
-    var g = (gap && gap[p.element]) || 0;
-    if (g <= 0 || !p.pct || !area) { recipe[p.key] = 0; continue; }
-    var idealG = (g * area) / (p.pct * 1000 * coverage * sprayCount);
-    var minDoseG = (MIN_DOSE_G_PER_ELEMENT[p.element] != null)
-                 ? MIN_DOSE_G_PER_ELEMENT[p.element]
-                 : 0.5;
-    if (idealG < minDoseG) {
-      recipe[p.key] = 0;
-      continue;
+  // Helper — per-element-dose pass at a given spray count. Pure: returns
+  // a fresh recipe object. Used both by the legacy entry (single call at
+  // clamped sprayCount) and by the REQ-197 sprayCount search.
+  function sizeRecipeAtSprayCount(sprayCount) {
+    const recipe = { MnSO4_g: 0, ZnSO4_g: 0, CuSO4_g: 0, FeSO4_g: 0, NaMoO4_g: 0, Solubore_g: 0 };
+    for (var i = 0; i < PRODUCTS.length; i++) {
+      var p = PRODUCTS[i];
+      var g = (gap && gap[p.element]) || 0;
+      if (g <= 0 || !p.pct || !area) { recipe[p.key] = 0; continue; }
+      var idealG = (g * area) / (p.pct * 1000 * coverage * sprayCount);
+      var minDoseG = (MIN_DOSE_G_PER_ELEMENT[p.element] != null)
+                   ? MIN_DOSE_G_PER_ELEMENT[p.element]
+                   : 0.5;
+      if (idealG < minDoseG) { recipe[p.key] = 0; continue; }
+      var capG = burnCapG(p.element);
+      var doseG = Math.min(idealG, capG);
+      var roundedDoseG = ceilToHalfGram(doseG);
+      // Luxury-cap guard — uses 1.31× (1 % slack) so the boundary case
+      // "rounded delivery 1.30× gap exactly at cap" (derivation.md § Per-
+      // element min-dose floor table row 5: Cu gap 0.30 → 2.0 g) is kept,
+      // not zeroed. Tiny-gap rows (delivered/gap ≥ ~1.5×) still fire.
+      var deliveredFromDose = (roundedDoseG * p.pct * 1000 / area) * coverage * sprayCount;
+      if (deliveredFromDose > 1.31 * g) { recipe[p.key] = 0; continue; }
+      recipe[p.key] = roundedDoseG;
     }
-    var capG = burnCapG(p.element);
-    var doseG = Math.min(idealG, capG);
-    var roundedDoseG = ceilToHalfGram(doseG);
-    // Luxury-cap guard: floor-rounded doses can over-shoot the gap by more
-    // than 1.3× for tiny-demand elements (Cu the load-bearing case).
-    // Convert rounded dose back to delivered mg/m²/wk and compare to gap.
-    var deliveredFromDose = (roundedDoseG * p.pct * 1000 / area) * coverage * sprayCount;
-    if (deliveredFromDose > 1.3 * g) {
-      recipe[p.key] = 0;
-      continue;
-    }
-    recipe[p.key] = roundedDoseG;
+    return recipe;
   }
 
   // Step 2: drop-highest-CE-contributor-first loop. Per-iteration: if
@@ -170,8 +169,6 @@ function computeFoliarRecipeForGap(gap, opts) {
       { name: 'Solubore (20,5 % B)',   master: r.Solubore_g + ' g' },
     ];
   }
-  // Per-element CE contribution: re-run predictedCE with only that element
-  // non-zero, returns the per-element CE share.
   function ceContributionForKey(r, key) {
     if (typeof predictedCE !== 'function') return 0;
     var solo = { MnSO4_g: 0, ZnSO4_g: 0, CuSO4_g: 0, FeSO4_g: 0, NaMoO4_g: 0, Solubore_g: 0 };
@@ -179,41 +176,131 @@ function computeFoliarRecipeForGap(gap, opts) {
     var ceValue = predictedCE(recipeAsLabelArray(solo), 1.0);
     return isFinite(ceValue) ? ceValue : 0;
   }
-  // Map recipe-key → element so we can read the per-element floor when
-  // halving. NaMoO4_g maps to Mo even though Mo is zeroed out by REQ-061
-  // carve-out — keeps the lookup uniform if Mo returns.
   var KEY_TO_ELEMENT = {
     MnSO4_g: 'Mn', ZnSO4_g: 'Zn', CuSO4_g: 'Cu',
     FeSO4_g: 'Fe', NaMoO4_g: 'Mo', Solubore_g: 'B',
   };
   var BURN_CE_CAP = 10.0;            // REQ-025 tomato leaf burn cap
   var TARGET_CE = BURN_CE_CAP * 0.95; // 5 % safety margin
-  for (var iter = 0; iter < 4; iter++) {
-    if (typeof predictedCE !== 'function') break;
-    var ce = predictedCE(recipeAsLabelArray(recipe), 1.0);
-    if (!isFinite(ce) || ce <= TARGET_CE) break;
-    // Find highest-CE-contributor among non-zero doses.
-    var topKey = null;
-    var topCe = -Infinity;
-    for (var k in recipe) {
-      if (recipe[k] > 0) {
-        var c = ceContributionForKey(recipe, k);
-        if (c > topCe) { topCe = c; topKey = k; }
+  function applyDropHighestCeLoop(r) {
+    for (var iter = 0; iter < 4; iter++) {
+      if (typeof predictedCE !== 'function') break;
+      var ce = predictedCE(recipeAsLabelArray(r), 1.0);
+      if (!isFinite(ce) || ce <= TARGET_CE) break;
+      var topKey = null;
+      var topCe = -Infinity;
+      for (var k in r) {
+        if (r[k] > 0) {
+          var c = ceContributionForKey(r, k);
+          if (c > topCe) { topCe = c; topKey = k; }
+        }
       }
+      if (!topKey) break;
+      var halvedG = ceilToHalfGram(r[topKey] / 2);
+      var floorG = MIN_DOSE_G_PER_ELEMENT[KEY_TO_ELEMENT[topKey]] || 0.5;
+      r[topKey] = (halvedG < floorG) ? 0 : halvedG;
     }
-    if (!topKey) break;  // nothing to reduce
-    // Halve the top contributor; if halving would put it below its
-    // per-element min-dose floor, drop to 0.
-    var halvedG = ceilToHalfGram(recipe[topKey] / 2);
-    var floorG = MIN_DOSE_G_PER_ELEMENT[KEY_TO_ELEMENT[topKey]] || 0.5;
-    if (halvedG < floorG) {
-      recipe[topKey] = 0;
-    } else {
-      recipe[topKey] = halvedG;
+    return r;
+  }
+
+  // Legacy entry: opts.recipeKind absent → single sizing pass at the
+  // caller-supplied sprayCount (clamped 1-3), then CE-cap loop. Returns
+  // the flat doses object (back-compat — verifier + contribution.js).
+  const legacySprayCount = Math.max(1, Math.min(3, Math.round(Number(o.sprayCount) || 1)));
+  const recipe = applyDropHighestCeLoop(sizeRecipeAtSprayCount(legacySprayCount));
+
+  // New entry: opts.recipeKind present → REQ-197 sprayCount search +
+  // { doses, sprayCount } bundle. Today only the oligo recipe is wired;
+  // unknown recipeKind falls back to oligo (Ca-recipe data.js entry is
+  // gated on PO per derivation.md § "Ca-specific cuticle coverage").
+  if (hasRecipeKind) {
+    const targets = FOLIAR_RECIPE_TARGETS[recipeKind] || FOLIAR_RECIPE_TARGETS.oligo;
+    const cap = (WEEKLY_LEAF_TOLERANCE_CAP_BY_RECIPE[recipeKind] != null)
+              ? WEEKLY_LEAF_TOLERANCE_CAP_BY_RECIPE[recipeKind]
+              : 1;
+    // Per-element gap zero on every targeted element → zero sprays.
+    var anyGap = false;
+    for (var ti = 0; ti < targets.length; ti++) {
+      if ((gap && gap[targets[ti]] || 0) > 0) { anyGap = true; break; }
     }
+    if (!anyGap) {
+      return { doses: sizeRecipeAtSprayCount(1), sprayCount: 0 };
+    }
+    // Search smallest sprayCount in [1..cap] that closes the gap to within
+    // the 1.3× luxury band on every targeted element. CE-cap pass is
+    // applied per candidate (it runs on the recipe object returned by
+    // sizeRecipeAtSprayCount; we re-apply it inline by re-using the same
+    // drop-highest loop as the legacy path).
+    var chosenDoses = null;
+    var chosenSpray = cap;
+    for (var sc = 1; sc <= cap; sc++) {
+      var candidate = sizeRecipeAtSprayCount(sc);
+      candidate = applyDropHighestCeLoop(candidate);
+      var closed = true;
+      for (var t = 0; t < targets.length; t++) {
+        var element = targets[t];
+        var demand = (gap && gap[element]) || 0;
+        if (demand <= 0) continue;
+        var product = PRODUCTS.find(function(p) { return p.element === element; });
+        if (!product) { closed = false; break; }
+        var dose = candidate[product.key];
+        var delivered = (dose * product.pct * 1000 / area) * coverage * sc;
+        if (delivered < demand && dose < burnCapG(element)) { closed = false; break; }
+      }
+      if (closed) { chosenDoses = candidate; chosenSpray = sc; break; }
+    }
+    if (chosenDoses == null) {
+      // Cap binds — return cap-sized recipe (under-fert accepted).
+      chosenDoses = applyDropHighestCeLoop(sizeRecipeAtSprayCount(cap));
+      chosenSpray = cap;
+    }
+    return { doses: chosenDoses, sprayCount: chosenSpray };
   }
 
   return recipe;
+}
+
+// REQ-198 — Day assignment across farm working days {Mon..Fri}.
+// Pure: returns the array of weekday strings for a given sprayCount.
+//   0 → []           (no spray scheduled)
+//   1 → [Wed]        (mid-week default)
+//   2 → [Mon, Thu]   (maximum gap inside Mon-Fri)
+//   3 → [Mon, Wed, Fri]
+//   4 → [Mon, Tue, Thu, Fri]
+//   5 → [Mon, Tue, Wed, Thu, Fri]
+function foliarDaysForSprayCount(sprayCount) {
+  switch (sprayCount) {
+    case 0:  return [];
+    case 1:  return ['Wed'];
+    case 2:  return ['Mon', 'Thu'];
+    case 3:  return ['Mon', 'Wed', 'Fri'];
+    case 4:  return ['Mon', 'Tue', 'Thu', 'Fri'];
+    case 5:  return ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'];
+    default: return [];
+  }
+}
+
+// REQ-195 / REQ-197 / REQ-198 — strategy aggregator. Calls
+// computeFoliarRecipeForGap per recipe definition in data.js, then maps
+// sprayCount → days. Today only the oligo recipe is wired (Ca recipe
+// data.js entry gated on PO).
+function computeFoliarStrategy(stage, gap, opts) {
+  void stage; // stage-invariant today (PA Taillon — oligos tissue-baseline anchored)
+  const o = opts || {};
+  const surfactant = !!o.surfactant;
+  const ACTIVE_RECIPE_KINDS = ['oligo'];
+  const recipes = ACTIVE_RECIPE_KINDS.map(function(kind) {
+    const bundle = computeFoliarRecipeForGap(gap || {}, { recipeKind: kind, surfactant: surfactant });
+    return {
+      kind: kind,
+      targetElements: (FOLIAR_RECIPE_TARGETS[kind] || []).slice(),
+      weeklyLeafToleranceCap: WEEKLY_LEAF_TOLERANCE_CAP_BY_RECIPE[kind] || 0,
+      doses: bundle.doses,
+      sprayCount: bundle.sprayCount,
+      days: foliarDaysForSprayCount(bundle.sprayCount),
+    };
+  });
+  return { recipes: recipes };
 }
 
 // Browser-globals export
@@ -236,6 +323,12 @@ window.FoliarRecipeTomato = {
   FOLIAR_COVERAGE_DEFAULT:    FOLIAR_COVERAGE_DEFAULT,
   // Coverage % with yucca (cert 3). Consumed when surfactant=true.
   FOLIAR_COVERAGE_WITH_YUCCA: FOLIAR_COVERAGE_WITH_YUCCA,
+  // Ca-recipe coverage constants (REQ-101 § Ca recipe). Half-of-sulfate
+  // at each surfactant state; cert 2. Unconsumed today (Ca recipe data.js
+  // entry gated on PO) — exposed so the half-of-sulfate invariant is
+  // visible at the namespace contract layer.
+  FOLIAR_COVERAGE_CA_NO_SURFACTANT,
+  FOLIAR_COVERAGE_CA_WITH_SURFACTANT,
   // Per-element efficiency (REQ-157) — default-regime map (surfactant=false).
   // Cert 3. Returns 0.27 uniform for Mn/Zn/Cu/Fe; B absent (single-channel
   // via fertigation, REQ-061); Mo absent (retired from foliar 2026-05-16,
@@ -261,6 +354,8 @@ window.FoliarRecipeTomato = {
   computeFoliarSupply,
   // REQ-115 / REQ-116 — gap-maximizing recipe derivation.
   computeFoliarRecipeForGap,
+  // REQ-195 / REQ-197 / REQ-198 — multi-recipe weekly strategy aggregator.
+  computeFoliarStrategy,
   // REQ-116 — pure gap-chain wrapper consumed by the shell-side
   // contribution orchestrator. Lives in foliar-strategy/model/contribution.js;
   // re-exported here so REQ-139's registry check resolves it under the

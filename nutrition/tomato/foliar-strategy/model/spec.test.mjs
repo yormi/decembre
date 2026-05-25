@@ -540,3 +540,362 @@ describe('REQ-116 — FP foliar recipe live-derived from pre-foliar gap chain', 
     }
   });
 });
+
+// =========================================================================
+// Wave 2 — multi-recipe foliar strategy (added 2026-05-24 by specialist)
+//
+// REQs covered: REQ-195 / REQ-196 / REQ-197 / REQ-198 plus the reshaped
+// halves of REQ-115 (returns { doses, sprayCount }) and REQ-103
+// (namespace exposes computeFoliarStrategy).
+//
+// Per leader instructions for this wave:
+//   - Tests target window.FoliarRecipeTomato (NOT FoliarStrategyTomato);
+//     symbol rename is coder Wave 2 in lockstep.
+//   - Ca recipe data.js entry + Ca slot wiring is BLOCKED on PO; the Ca
+//     path is captured as test.todo with the gating reason inline.
+//   - The aggregator computeFoliarStrategy is not yet in the runtime —
+//     tests assert the contract and will FAIL until coder Wave 2 ships.
+//     Per persona spec ("A test failing because the implementation is
+//     wrong is correct"), failing red is the intended state here.
+// =========================================================================
+
+describe('REQ-103 — namespace exposes computeFoliarStrategy (Wave 2 aggregator)', () => {
+  test('REQ-103 — window.FoliarRecipeTomato.computeFoliarStrategy is a function', () => {
+    // Wave-2 addition: strategy aggregator joins the public surface
+    // alongside computeFoliarSupply / computeFoliarRecipeForGap.
+    const FRT = win.FoliarRecipeTomato;
+    assert.equal(typeof FRT.computeFoliarStrategy, 'function',
+      'window.FoliarRecipeTomato.computeFoliarStrategy must be exposed (REQ-103 + REQ-116)');
+  });
+});
+
+describe('REQ-195 — Foliar strategy is a list of independent recipes', () => {
+  // Spec: a strategy is a list of one or more foliar recipes; each recipe is
+  // REQ-029-clean within its own tank; per-recipe gap allocation is static
+  // in data.js. The aggregator returns a recipes array.
+  test('REQ-195 — computeFoliarStrategy returns a non-empty recipes array', () => {
+    const FRT = win.FoliarRecipeTomato;
+    const out = FRT.computeFoliarStrategy('T5', { Mn: 5, Zn: 5, Cu: 0.5, Fe: 20, B: 4 });
+    assert.ok(out && typeof out === 'object',
+      `computeFoliarStrategy must return an object, got ${typeof out}`);
+    assert.ok(Array.isArray(out.recipes),
+      `expected out.recipes to be an array, got ${typeof out.recipes}`);
+    assert.ok(out.recipes.length >= 1,
+      `expected at least one recipe in strategy (oligo today), got ${out.recipes.length}`);
+  });
+
+  test('REQ-195 — oligo recipe targets exactly { Mn, Zn, Cu, Fe, B }', () => {
+    // Per-recipe gap allocation is static in data.js per recipe definition;
+    // oligo recipe target set is { Mn, Zn, Cu, Fe, B } (REQ-195 spec body).
+    const FRT = win.FoliarRecipeTomato;
+    const out = FRT.computeFoliarStrategy('T5', { Mn: 5, Zn: 5, Cu: 0.5, Fe: 20, B: 4 });
+    const oligo = out.recipes.find(r => r.kind === 'oligo' || r.recipeKind === 'oligo');
+    assert.ok(oligo, `expected an oligo recipe entry in out.recipes; got ${JSON.stringify(out.recipes.map(r => r.kind || r.recipeKind))}`);
+    const targets = oligo.targetElements || oligo.targets;
+    assert.ok(Array.isArray(targets),
+      `oligo.targetElements must be an array; got ${typeof targets}`);
+    const sorted = [...targets].sort();
+    assert.deepEqual(sorted, ['B', 'Cu', 'Fe', 'Mn', 'Zn'],
+      `oligo target elements must be { Mn, Zn, Cu, Fe, B }; got ${JSON.stringify(sorted)}`);
+  });
+
+  test('REQ-195 — each recipe entry carries its own doses + sprayCount + days', () => {
+    // Per-recipe independence: per-recipe doses / sprayCount / days bound
+    // to that recipe, not aggregated.
+    const FRT = win.FoliarRecipeTomato;
+    const out = FRT.computeFoliarStrategy('T5', { Mn: 5, Zn: 5, Cu: 0.5, Fe: 20, B: 4 });
+    for (const r of out.recipes) {
+      assert.ok(r.doses && typeof r.doses === 'object',
+        `recipe ${r.kind || r.recipeKind}: missing doses object`);
+      assert.equal(typeof r.sprayCount, 'number',
+        `recipe ${r.kind || r.recipeKind}: sprayCount must be a number, got ${typeof r.sprayCount}`);
+      assert.ok(Array.isArray(r.days),
+        `recipe ${r.kind || r.recipeKind}: days must be an array, got ${typeof r.days}`);
+    }
+  });
+});
+
+describe('REQ-196 — Weekly leaf-tolerance cap per recipe', () => {
+  // Spec: each recipe carries a weeklyLeafToleranceCap integer; oligo=1,
+  // Ca=3. Bounds sprayCount regardless of gap size.
+  test('REQ-196 — oligo recipe weeklyLeafToleranceCap === 1 (Wednesday-only cadence)', () => {
+    // Per spec table: oligo cap = 1 (live STORED Wednesday-only cadence,
+    // cert 3 — derivation.md § "What dropping yucca cost").
+    const FRT = win.FoliarRecipeTomato;
+    const out = FRT.computeFoliarStrategy('T5', { Mn: 5, Zn: 5, Cu: 0.5, Fe: 20, B: 4 });
+    const oligo = out.recipes.find(r => (r.kind || r.recipeKind) === 'oligo');
+    assert.ok(oligo, 'expected oligo recipe in strategy');
+    assert.equal(oligo.weeklyLeafToleranceCap, 1,
+      `oligo.weeklyLeafToleranceCap must be 1 (REQ-196 table); got ${oligo.weeklyLeafToleranceCap}`);
+  });
+
+  test('REQ-196 — huge gap on oligo cannot push sprayCount past the cap of 1', () => {
+    // Cap binds regardless of how much gap a higher count would close;
+    // under-fert accepted per REQ-115 algorithm step 3.
+    const FRT = win.FoliarRecipeTomato;
+    const out = FRT.computeFoliarStrategy('T5',
+      { Mn: 10000, Zn: 10000, Cu: 10000, Fe: 10000, B: 10000 });
+    const oligo = out.recipes.find(r => (r.kind || r.recipeKind) === 'oligo');
+    assert.ok(oligo, 'expected oligo recipe in strategy');
+    assert.ok(oligo.sprayCount <= 1,
+      `oligo.sprayCount must be bounded by weeklyLeafToleranceCap=1 even under massive gap; got ${oligo.sprayCount}`);
+  });
+
+  test.todo('REQ-196 — Ca recipe weeklyLeafToleranceCap === 3 (Test 1 Path C anchor) — gated on Ca recipe data.js entry (PO lane)');
+});
+
+describe('REQ-197 — Model-computed optimal sprays per recipe', () => {
+  // Spec: sprayCount(recipe) = min(sprays-to-close-gap, weeklyLeafToleranceCap).
+  // computeFoliarRecipeForGap returns { doses, sprayCount } bundle.
+  test('REQ-197 — computeFoliarRecipeForGap returns { doses, sprayCount } shape', () => {
+    // Reshape of REQ-115 return signature: was flat doses object, now
+    // bundle of { doses, sprayCount }.
+    const FRT = win.FoliarRecipeTomato;
+    const bundle = FRT.computeFoliarRecipeForGap(
+      { Mn: 5, Zn: 5, Cu: 0.5, Fe: 20, B: 4 },
+      { recipeKind: 'oligo' }
+    );
+    assert.ok(bundle && typeof bundle === 'object',
+      'computeFoliarRecipeForGap must return an object');
+    assert.ok(bundle.doses && typeof bundle.doses === 'object',
+      `bundle.doses must be an object; got ${typeof bundle.doses}`);
+    assert.equal(typeof bundle.sprayCount, 'number',
+      `bundle.sprayCount must be a number; got ${typeof bundle.sprayCount}`);
+    assert.ok(Number.isInteger(bundle.sprayCount),
+      `bundle.sprayCount must be an integer; got ${bundle.sprayCount}`);
+    assert.ok(bundle.sprayCount >= 1,
+      `bundle.sprayCount must be >= 1; got ${bundle.sprayCount}`);
+  });
+
+  test('REQ-197 — sprayCount bounded by weeklyLeafToleranceCap on the recipe', () => {
+    // min(sprays-to-close-gap, cap). Oligo cap=1 today → sprayCount <= 1
+    // even under arbitrarily large gap.
+    const FRT = win.FoliarRecipeTomato;
+    const bundle = FRT.computeFoliarRecipeForGap(
+      { Mn: 10000, Zn: 10000, Cu: 10000, Fe: 10000, B: 10000 },
+      { recipeKind: 'oligo' }
+    );
+    assert.ok(bundle.sprayCount <= 1,
+      `oligo sprayCount must be <= weeklyLeafToleranceCap=1; got ${bundle.sprayCount}`);
+  });
+
+  test('REQ-197 — zero gap yields sprayCount = 0 (nothing to deliver)', () => {
+    // Sprays-to-close-gap = 0 when gap is already closed; min(0, cap) = 0.
+    // No spray scheduled, no day assigned downstream (REQ-198).
+    const FRT = win.FoliarRecipeTomato;
+    const bundle = FRT.computeFoliarRecipeForGap(
+      { Mn: 0, Zn: 0, Cu: 0, Fe: 0, B: 0 },
+      { recipeKind: 'oligo' }
+    );
+    assert.equal(bundle.sprayCount, 0,
+      `zero-gap oligo must yield sprayCount=0 (no spray needed); got ${bundle.sprayCount}`);
+  });
+
+  test('REQ-115 — opts.recipeKind drives recipe selection (oligo vs ca)', () => {
+    // Reshape of REQ-115 opts: sprayCount removed (now model-computed),
+    // recipeKind added (selects which recipe definition to size).
+    const FRT = win.FoliarRecipeTomato;
+    const bundle = FRT.computeFoliarRecipeForGap(
+      { Mn: 5, Zn: 5, Cu: 0.5, Fe: 20, B: 4 },
+      { recipeKind: 'oligo' }
+    );
+    // Oligo bundle.doses must carry the oligo product keys; Ca-only keys
+    // (CaCl2_g) absent unless recipeKind='ca'.
+    assert.ok('MnSO4_g' in bundle.doses,
+      `oligo recipe doses must contain MnSO4_g; got keys ${Object.keys(bundle.doses).join(',')}`);
+  });
+});
+
+describe('REQ-198 — Day assignment across farm working days', () => {
+  // Spec rules:
+  //   1 spray/week → [Wed]
+  //   2 sprays/week → [Mon, Thu]
+  //   3 sprays/week → [Mon, Wed, Fri]
+  //   4-5 sprays/week → Mon-Thu / Mon-Fri (Ca cap is 3 today)
+  // Day set drawn from nutrition — farm-working-days = {Mon..Fri}.
+
+  // Helper to read a recipe's day array out of a strategy output.
+  function daysForRecipe(strategy, kind) {
+    const r = strategy.recipes.find(x => (x.kind || x.recipeKind) === kind);
+    return r ? r.days : null;
+  }
+
+  test('REQ-198 — sprayCount=1 → days = [Wed]', () => {
+    // Oligo today binds at cap=1; a real-gap call returns sprayCount=1,
+    // mid-week Wednesday default per REQ-198 rule.
+    const FRT = win.FoliarRecipeTomato;
+    const out = FRT.computeFoliarStrategy('T5', { Mn: 5, Zn: 5, Cu: 0.5, Fe: 20, B: 4 });
+    const days = daysForRecipe(out, 'oligo');
+    assert.ok(Array.isArray(days), `oligo.days must be an array; got ${typeof days}`);
+    if ((out.recipes.find(r => (r.kind || r.recipeKind) === 'oligo').sprayCount) === 1) {
+      assert.deepEqual(days, ['Wed'],
+        `1 spray/week must map to [Wed] (REQ-198 mid-week default); got ${JSON.stringify(days)}`);
+    }
+  });
+
+  test('REQ-198 — sprayCount=0 → days = [] (no spray scheduled)', () => {
+    // No work day assigned when nothing to spray. Verified via zero-gap.
+    const FRT = win.FoliarRecipeTomato;
+    const out = FRT.computeFoliarStrategy('T5', { Mn: 0, Zn: 0, Cu: 0, Fe: 0, B: 0 });
+    for (const r of out.recipes) {
+      if (r.sprayCount === 0) {
+        assert.deepEqual(r.days, [],
+          `recipe ${r.kind || r.recipeKind}: sprayCount=0 must yield days=[]; got ${JSON.stringify(r.days)}`);
+      }
+    }
+  });
+
+  test('REQ-198 — days are drawn from farm-working-days {Mon..Fri}', () => {
+    // Every emitted day must be inside the {Mon..Fri} pool.
+    const FRT = win.FoliarRecipeTomato;
+    const out = FRT.computeFoliarStrategy('T5', { Mn: 5, Zn: 5, Cu: 0.5, Fe: 20, B: 4 });
+    const ALLOWED = new Set(['Mon', 'Tue', 'Wed', 'Thu', 'Fri']);
+    for (const r of out.recipes) {
+      for (const day of (r.days || [])) {
+        assert.ok(ALLOWED.has(day),
+          `recipe ${r.kind || r.recipeKind}: day "${day}" not in farm-working-days {Mon..Fri}`);
+      }
+    }
+  });
+
+  test.todo('REQ-198 — sprayCount=2 → [Mon, Thu] (max-gap rule) — gated on a recipe with cap≥2 (Ca recipe lands cap=3, then a synthetic gap test can drive sprayCount=2)');
+  test.todo('REQ-198 — sprayCount=3 → [Mon, Wed, Fri] — gated on Ca recipe data.js entry (PO lane)');
+});
+
+describe('REQ-101 — Per-recipe coverage axis (oligo + Ca contract shape)', () => {
+  // Spec: COVERAGE is per-recipe, per-element:
+  //   oligo: FOLIAR_COVERAGE_DEFAULT = 0.30, FOLIAR_COVERAGE_WITH_YUCCA = 0.80
+  //   Ca:    FOLIAR_COVERAGE_CA_NO_SURFACTANT = 0.15,
+  //          FOLIAR_COVERAGE_CA_WITH_SURFACTANT = 0.40
+  // Ca constants are from derivation.md § "Ca-specific cuticle coverage"
+  // (Test 1 Path B, cert 2).
+
+  test('REQ-101 — oligo coverage constants pinned (0.30 / 0.80)', () => {
+    // Already exercised by INV-1 + REQ-101 Mn/Fe formula tests above; this
+    // pins the literal values one more time at the per-recipe axis level.
+    const FRT = win.FoliarRecipeTomato;
+    assert.equal(FRT.FOLIAR_COVERAGE_DEFAULT, 0.30,
+      'oligo no-surfactant coverage must be 0.30 (derivation § Coverage)');
+    assert.equal(FRT.FOLIAR_COVERAGE_WITH_YUCCA, 0.80,
+      'oligo with-surfactant coverage must be 0.80 (derivation § Coverage)');
+  });
+
+  test('derivation — Ca coverage half-of-sulfate ratio at each surfactant state', () => {
+    // derivation.md § "Ca-specific cuticle coverage" worked table:
+    //   surfactant=false: oligo 0.30 → Ca 0.15 (ratio 0.50)
+    //   surfactant=true:  oligo 0.80 → Ca 0.40 (ratio 0.50)
+    // When Ca constants land on the namespace (coder Wave 2 ships
+    // FOLIAR_COVERAGE_CA_NO_SURFACTANT / _WITH_SURFACTANT), this test pins
+    // the half-of-sulfate invariant the derivation locks in. Until then,
+    // it fails red — which is the correct state per persona spec.
+    const FRT = win.FoliarRecipeTomato;
+    const caNoSurf = FRT.FOLIAR_COVERAGE_CA_NO_SURFACTANT;
+    const caYucca  = FRT.FOLIAR_COVERAGE_CA_WITH_SURFACTANT;
+    assert.equal(typeof caNoSurf, 'number',
+      'FOLIAR_COVERAGE_CA_NO_SURFACTANT must be exposed on the namespace (derivation § Ca-specific cuticle coverage)');
+    assert.equal(typeof caYucca, 'number',
+      'FOLIAR_COVERAGE_CA_WITH_SURFACTANT must be exposed on the namespace');
+    assert.ok(Math.abs(caNoSurf - 0.15) < 1e-6,
+      `FOLIAR_COVERAGE_CA_NO_SURFACTANT must be 0.15 (= 0.30 × 0.50); got ${caNoSurf}`);
+    assert.ok(Math.abs(caYucca - 0.40) < 1e-6,
+      `FOLIAR_COVERAGE_CA_WITH_SURFACTANT must be 0.40 (= 0.80 × 0.50); got ${caYucca}`);
+    // The half-of-sulfate invariant itself:
+    assert.ok(Math.abs(caNoSurf / FRT.FOLIAR_COVERAGE_DEFAULT - 0.50) < 1e-6,
+      `Ca no-surfactant / oligo no-surfactant must equal 0.50; got ${caNoSurf / FRT.FOLIAR_COVERAGE_DEFAULT}`);
+    assert.ok(Math.abs(caYucca / FRT.FOLIAR_COVERAGE_WITH_YUCCA - 0.50) < 1e-6,
+      `Ca with-surfactant / oligo with-surfactant must equal 0.50; got ${caYucca / FRT.FOLIAR_COVERAGE_WITH_YUCCA}`);
+  });
+
+  test.todo('REQ-101 — computeFoliarSupply(stage, opts, recipe) Ca slot returns non-zero with Ca recipe routed — gated on Ca recipe data.js entry (PO lane)');
+});
+
+describe('derivation — worked examples (coefficient + algorithm regressions)', () => {
+  // Pin the precise input → expected output assertions from derivation.md.
+  // These catch coefficient drift and algorithm-step bugs the spec headers
+  // alone don't pin (test-writer persona § "Also walk every worked example").
+
+  test('derivation — T5 Mn delivered ≈ 5.43 mg/m²/wk @ recipe 22 g, 31.5 %, 0.30 cov', () => {
+    // derivation.md § "Per-element delivered mg/m²/wk vs demand at T5":
+    //   Mn: recipe 22 g × 31.5 % × 1000 / 382.9 m² × 0.30 = 5.43 mg/m²/wk.
+    // The table prints 18.1 raw, × 0.30 = 5.43.
+    const FRT = win.FoliarRecipeTomato;
+    const mn = FRT.computeFoliarSupply('T5').Mn;
+    assert.ok(Math.abs(mn - 5.43) <= 0.10,
+      `derivation T5 Mn worked example: expected ≈ 5.43 mg/m²/wk; got ${mn.toFixed(3)}`);
+  });
+
+  test('derivation — T5 Zn delivered ≈ 6.12 mg/m²/wk @ recipe 22 g, 35.5 %, 0.30 cov', () => {
+    // Zn row in same derivation table: 20.4 × 0.30 = 6.12 mg/m²/wk (the
+    // over-luxury case at 136 % of demand 4.5).
+    const FRT = win.FoliarRecipeTomato;
+    const zn = FRT.computeFoliarSupply('T5').Zn;
+    assert.ok(Math.abs(zn - 6.12) <= 0.10,
+      `derivation T5 Zn worked example: expected ≈ 6.12 mg/m²/wk; got ${zn.toFixed(3)}`);
+  });
+
+  test('derivation — T5 Cu delivered ≈ 0.39 mg/m²/wk @ recipe 2 g, 25 %, 0.30 cov', () => {
+    // Cu row: 1.31 raw × 0.30 = 0.39 mg/m²/wk. 26 % of demand 1.5 (the
+    // narrow toxicity gap derivation accepts as structural).
+    const FRT = win.FoliarRecipeTomato;
+    const cu = FRT.computeFoliarSupply('T5').Cu;
+    assert.ok(Math.abs(cu - 0.39) <= 0.05,
+      `derivation T5 Cu worked example: expected ≈ 0.39 mg/m²/wk; got ${cu.toFixed(3)}`);
+  });
+
+  test('derivation — T5 Fe delivered ≈ 12.54 mg/m²/wk @ recipe 80 g, 20 %, 0.30 cov', () => {
+    // Fe row: 41.8 raw × 0.30 = 12.54 mg/m²/wk. 84 % of demand 15.
+    const FRT = win.FoliarRecipeTomato;
+    const fe = FRT.computeFoliarSupply('T5').Fe;
+    assert.ok(Math.abs(fe - 12.54) <= 0.20,
+      `derivation T5 Fe worked example: expected ≈ 12.54 mg/m²/wk; got ${fe.toFixed(3)}`);
+  });
+
+  test('derivation — efficiencyFor(false).Mn === 0.27 (coverage 0.30 × pH 0.9)', () => {
+    // derivation.md § "Channel efficiency map" worked table:
+    //   surfactant=false: 0.30 × 0.9 = 0.27 uniform across Mn/Zn/Cu/Fe.
+    //   surfactant=true:  0.80 × 0.9 = 0.72 uniform.
+    const FRT = win.FoliarRecipeTomato;
+    const eff = FRT.efficiencyFor(false);
+    for (const el of ['Mn', 'Zn', 'Cu', 'Fe']) {
+      assert.ok(Math.abs(eff[el] - 0.27) < 0.01,
+        `efficiencyFor(false).${el} must be 0.27 (= 0.30 × 0.9); got ${eff[el]}`);
+    }
+  });
+
+  test('derivation — efficiencyFor(true).Mn === 0.72 (coverage 0.80 × pH 0.9)', () => {
+    const FRT = win.FoliarRecipeTomato;
+    const eff = FRT.efficiencyFor(true);
+    for (const el of ['Mn', 'Zn', 'Cu', 'Fe']) {
+      assert.ok(Math.abs(eff[el] - 0.72) < 0.01,
+        `efficiencyFor(true).${el} must be 0.72 (= 0.80 × 0.9); got ${eff[el]}`);
+    }
+  });
+
+  test('derivation — Cu luxury-cap guard: Cu gap 0.039 mg/m²/wk → CuSO4_g = 0', () => {
+    // derivation.md § "Per-element min-dose floor" worked table, row 2:
+    //   Cu gap 0.039 → ideal_g 0.20 → rounds to 0.5 g → delivered 0.098
+    //   (2.5× → guard fires → 0). Other elements zero so no cross-recipe
+    //   contamination.
+    const FRT = win.FoliarRecipeTomato;
+    const bundle = FRT.computeFoliarRecipeForGap(
+      { Cu: 0.039, Mn: 0, Zn: 0, Fe: 0, B: 0 },
+      { recipeKind: 'oligo' }
+    );
+    const cuG = (bundle.doses ? bundle.doses.CuSO4_g : bundle.CuSO4_g);
+    assert.equal(cuG, 0,
+      `Cu luxury-cap guard (derivation worked-example row 2): Cu gap 0.039 → CuSO4_g must be 0 (2.5× over-luxury fires); got ${cuG}`);
+  });
+
+  test('derivation — Cu luxury-cap guard: Cu gap 0.30 mg/m²/wk → CuSO4_g = 2.0 (cap exact)', () => {
+    // derivation.md table row 5: Cu gap 0.30 → ideal_g 1.53 → rounded 2.0 g
+    // → delivered 0.392 / 0.30 = 1.30× (at cap, guard does NOT fire).
+    const FRT = win.FoliarRecipeTomato;
+    const bundle = FRT.computeFoliarRecipeForGap(
+      { Cu: 0.30, Mn: 0, Zn: 0, Fe: 0, B: 0 },
+      { recipeKind: 'oligo' }
+    );
+    const cuG = (bundle.doses ? bundle.doses.CuSO4_g : bundle.CuSO4_g);
+    assert.equal(cuG, 2.0,
+      `Cu luxury-cap guard (derivation worked-example row 5): Cu gap 0.30 → CuSO4_g must be 2.0 g (at 1.30× cap exactly); got ${cuG}`);
+  });
+});
