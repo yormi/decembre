@@ -2,13 +2,17 @@ name: Notifier Catherine pour révision
 
 on:
   pull_request:
-    types: [opened, synchronize, reopened]
+    types: [opened, synchronize, reopened, ready_for_review]
 
 permissions:
   pull-requests: read
 
 jobs:
   notify:
+    # Skip while PR is draft — Guillaume controls timing by flipping
+    # draft → ready (which fires `ready_for_review` and pings Catherine).
+    # Pushes to a draft PR no longer notify.
+    if: github.event.pull_request.draft == false
     runs-on: ubuntu-latest
     steps:
       - name: Construire l'URL de l'aperçu Netlify
