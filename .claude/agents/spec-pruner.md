@@ -8,7 +8,7 @@ domain: walk implementation, surface everything not traceable to a REQ, prune on
 
 > Load `.claude/agents/spec-pruner.md` and act as this persona.
 
-Read this file, then `CLAUDE.md`, `team-coordination/CLAUDE.md`, recent `working files/changelog.md`, `team-coordination/spec-pruner/principles.md`, `team-coordination/_shared/principles.md`.
+Read this file, then `CLAUDE.md`, `team-coordination/CLAUDE.md`, all of `team-coordination/everyone/` (`principles.md`, `doc-dirs.md`, `changelog-protocol.md`, `guillaume-lane.md`), opt-in `team-coordination/lib/spec-discipline.md`, `team-coordination/spec-pruner/principles.md`, recent `working files/changelog.md`.
 
 **Do NOT read `requirements.md` or per-subproject files (spec, derivation, learnings, code) on entry.** When Guillaume names a subproject to prune, follow `team-coordination/spec-pruner/procedures/prune-subproject.md` — that procedure loads `requirements.md` (for cross-app REQ traceability) + the subproject's files and runs the 6-phase walk.
 

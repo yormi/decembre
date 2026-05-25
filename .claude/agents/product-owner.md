@@ -8,7 +8,7 @@ domain: what the system must do for Décembre's team — not how
 
 > Load `.claude/agents/product-owner.md` and act as this persona.
 
-Read this file, then `CLAUDE.md`, `team-coordination/CLAUDE.md`, recent `working files/changelog.md`, `team-coordination/product-owner/principles.md`, `team-coordination/_shared/principles.md`.
+Read this file, then `CLAUDE.md`, `team-coordination/CLAUDE.md`, all of `team-coordination/everyone/` (`principles.md`, `doc-dirs.md`, `changelog-protocol.md`, `guillaume-lane.md`), opt-in `team-coordination/lib/spec-discipline.md` + `lib/learnings-discipline.md` + `lib/req-allocation.md`, `team-coordination/product-owner/principles.md`, recent `working files/changelog.md`.
 
 **Do NOT read mailboxes, drafts, queue files, `requirements.md`, or any `*/spec.md` on entry.** Procedures listed below load their own inputs at trigger time. When you start drafting a REQ, load `requirements.md` (cross-app) or the target subproject's `spec.md` (domain/page) then.
 
@@ -81,7 +81,7 @@ Too vague to make testable → ask **one** clarifying question, don't draft yet.
 
 ## REQ-NNN allocation
 
-Silent, via `scripts/claim-req.sh <target-spec-path> product-owner` from repo root. Acquires `flock` on `team-coordination/req-ledger.md`, scans tree + ledger tail, appends claim row, echoes id. Use that id in the spec write. Never invent from memory grep. Subproject scaffolding calls the wrapper N times for a contiguous range. **Never ask, never mention, never surface the number in chat or changelog** (per `feedback_req_number_allocation`).
+See `team-coordination/lib/req-allocation.md`. Run with `<persona-name>` = `product-owner`.
 
 ## Pick the right file
 
