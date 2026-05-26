@@ -35,7 +35,7 @@ default unless a page opts out (with reason).
 
 ---
 
-## REQ-001 — French "CE" for electrical conductivity
+## ui-language-ce-not-ec
 
 All user-facing UI text uses **"CE"** (Conductivité Électrique), not "EC".
 Out of scope: HTML/CSS/JS identifiers, code comments, lab-report quotes.
@@ -43,7 +43,7 @@ CE is feminine ("la CE"); no elision before consonant ("la CE", not "l'CE").
 
 ---
 
-## REQ-005 — URL hash reflects current page (and subpage)
+## url-hash-routing
 
 Every navigable page and every subpage selector that changes what the user is
 looking at MUST be encoded in the URL hash so hot-reload and bookmarks land on
@@ -64,14 +64,14 @@ the same view. Hash format is hierarchical: `#[admin/]page[/crop]`. Contract:
 
 ---
 
-## REQ-006 — "Algue" instead of "Kelp"
+## ui-language-algue-not-kelp
 
 All user-facing UI text uses **"Algue"** / "Algues" instead of "Kelp".
 Out of scope: HTML/CSS/JS identifiers and code comments.
 
 ---
 
-## REQ-007 — No English/horticulture jargon in user-facing text
+## ui-language-plain-french
 
 User-facing UI text must avoid English or specialist horticulture terms that an
 *ouvrier agricole québécois* wouldn't readily understand. Use plain French.
@@ -85,7 +85,7 @@ Extend via the `JARGON_DENY` array in `scripts/check-spec.sh`.
 
 ---
 
-## REQ-008 — ISO 8601 week numbering
+## iso-week-numbering
 
 `getWeekNumber()` returns the ISO 8601 week number of the current local date
 using the **Thursday-pivot algorithm** (Mondays start the week; week 1 contains
@@ -103,7 +103,7 @@ This shape handles year-rollover (e.g. Dec 29 2025 → ISO 2026-W01).
 
 ---
 
-## REQ-139 — App must call subproject namespace, no inline reimplementation
+## subproject-namespace-sole-source
 
 Every subproject under `nutrition/` and `yield-range/` that exposes a public
 computation through a `window.<Namespace>` (the `model.js` convention) is the
@@ -117,37 +117,38 @@ subproject; don't inline the arithmetic. Subprojects own both the sizer
 
 ---
 
-## REQ-144 — Operator-facing prose is a deterministic render of spec
+## operator-prose-is-deterministic-render
 
-Inside any DOM container carrying `data-prose-check="strict"`, every visible
-text node MUST have an ancestor element carrying a `data-prose-source`
-attribute whose value is one of:
+Inside any DOM container carrying `data-prose-check="strict"`, every
+visible text node MUST have an ancestor element carrying a
+`data-prose-source` attribute whose value is one of:
 
-- `"derived:<funcName>"` — the string is emitted by a function declared in
-  source (`function funcName(`, `const funcName = (`, etc.). The verifier
-  confirms `<funcName>` is declared somewhere in `app/`, `nutrition/`, or
-  `yield-range/`.
-- `"REQ-NNN"` — the string is a deterministic render of bytes owned by spec
-  entry `REQ-NNN`. The bytes live in a `Renders:` block inside that spec
-  entry; `scripts/build.mjs` parses every `render <key>` fenced block and
-  injects them into `dist/index.html` as `window.SPEC_STRINGS`. Runtime
-  helper `renderSpec(reqId, key, interp)` resolves lookup + optional `${var}`
-  substitution.
-- `"label"` — static UI scaffolding with no semantic claim (page titles,
-  section headers, column headers, button labels). Never used for advice,
-  interpretation, or warnings.
+- `"derived:<funcName>"` — the string is emitted by a function
+  declared in source (`function funcName(`, `const funcName = (`,
+  etc.). The verifier confirms `<funcName>` is declared somewhere in
+  `app/`, `nutrition/`, or `yield-range/`.
+- `"<slug>"` — the string is a deterministic render of bytes owned by
+  the spec entry headed `## <slug>`. The bytes live in a `Renders:`
+  block inside that spec entry; `scripts/build.mjs` parses every
+  `render <key>` fenced block and injects them into `dist/index.html`
+  as `window.SPEC_STRINGS`. Runtime helper `renderSpec(slug, key,
+  interp)` resolves lookup + optional `${var}` substitution.
+- `"label"` — static UI scaffolding with no semantic claim (page
+  titles, section headers, column headers, button labels). Never used
+  for advice, interpretation, or warnings.
 
-Enforcement is opt-in: REQ-144 applies only inside containers explicitly
-marked `data-prose-check="strict"`. New operator surfaces opt in from day
-one; existing containers migrate when materially touched. The verifier
-prints the count of opted-in containers so migration is visible.
+Enforcement is opt-in: this rule applies only inside containers
+explicitly marked `data-prose-check="strict"`. New operator surfaces
+opt in from day one; existing containers migrate when materially
+touched. The verifier prints the count of opted-in containers so
+migration is visible.
 
-**`Renders:` block convention** (consumed by `scripts/build.mjs`): inside a
-spec entry headed by `## REQ-NNN`, declare named render strings as fenced
-code blocks with the info string `render <key>`:
+**`Renders:` block convention** (consumed by `scripts/build.mjs`):
+inside a spec entry headed by `## <slug>`, declare named render strings
+as fenced code blocks with the info string `render <key>`:
 
 ````
-## REQ-NNN — title
+## <slug>
 
 **Renders:** (bytes owned by this entry)
 
@@ -160,14 +161,14 @@ Banque P "coffre" ; même au taux de drawdown actuel...
 ```
 ````
 
-The build groups blocks by nearest preceding `^## REQ-NNN` header, emits
-`window.SPEC_STRINGS = { 'REQ-NNN': { 'key': '...' } }` via the
+The build groups blocks by nearest preceding `^## <slug>` header,
+emits `window.SPEC_STRINGS = { '<slug>': { 'key': '...' } }` via the
 `<!-- @spec-strings -->` marker, and fails on duplicate keys within or
 across entries.
 
 ---
 
-## REQ-158 — Identifier names in project text are unabbreviated
+## identifiers-unabbreviated
 
 Every function name, variable name, and object-property name in JS source
 under `app/`, `nutrition/`, `yield-range/`, plus identifier references in

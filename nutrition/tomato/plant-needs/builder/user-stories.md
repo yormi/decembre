@@ -7,19 +7,19 @@ page (Block 1 — "Besoin du plant"). Reads from the plant-needs model
 
 ---
 
-## REQ-108 — Block 1 demand sourced from `PlantNeedsTomato`
+## block-1-demand-from-plant-needs-tomato
 
-**Statement:** Block 1 reads its per-element demand by calling
+Block 1 reads its per-element demand by calling
 `window.PlantNeedsTomato.calcNutrDemand(target, stage, transpFactor)`.
 No bare-global access to `BIOMASS_DEMAND` or `TOMATO_FRUIT_EXPORT` in
 the Block 1 render path.
 
 ---
 
-## REQ-109 — Block 1 row click opens cert + calculation modal
+## block-1-row-opens-pourquoi-modal
 
-**Statement:** Every element key in `PN.TOMATO_FRUIT_EXPORT` is rendered
-as a clickable row in `#nutr-needs`. Clicking a row opens the pourquoi
+Every element key in `PN.TOMATO_FRUIT_EXPORT` is rendered as a
+clickable row in `#nutr-needs`. Clicking a row opens the pourquoi
 modal showing **exactly three pieces of content**:
 
 1. The cert badge for `(stage, el)` via `PN.certFor(stage, el)`.
@@ -32,16 +32,16 @@ tissue-test caveats, no transpiration-coupling notes — those live in
 
 ---
 
-## REQ-110 — Block 1 reactive to `target` and `stage` changes
+## block-1-reactive-to-target-and-stage
 
-**Statement:** Changing `nutr-target` or activating a different stage
-button re-renders Block 1 with new per-element numbers.
+Changing `nutr-target` or activating a different stage button
+re-renders Block 1 with new per-element numbers.
 
 ---
 
-## REQ-111 — Block 1 row layout: 4 columns (Él. / Fruit / Biomasse / Total)
+## block-1-row-four-columns
 
-**Statement:** Each row in `#nutr-needs` displays 4 columns: element
-symbol, fruit-export term (mg/m²/wk), biomass term (mg/m²/wk), total
+Each row in `#nutr-needs` displays 4 columns: element symbol,
+fruit-export term (mg/m²/wk), biomass term (mg/m²/wk), total
 (mg/m²/wk). Numbers come from `PN.calcNutrDemand(...)` returning the
 `{fruit, biomass, total}` shape per element.

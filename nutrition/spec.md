@@ -20,7 +20,7 @@ Cross-crop subprojects:
 
 ---
 
-## REQ-002 — Ecocert-only product mentions
+## ecocert-only-products
 
 Recommendations or product mentions surfaced to the team must be Ecocert
 Canada (CAN/CGSB-32.310/311) compliant. Non-approved alternatives must not
@@ -28,7 +28,7 @@ appear in the app, even for "what-if" framing.
 
 ---
 
-## REQ-009 — Weekly solar radiation matches 20-year averages
+## solar-by-week-20yr-average
 
 The `SOLAR_BY_WEEK` array in `index.html` MUST contain the published 20-year-average
 weekly solar radiation values for Quebec City greenhouse, J/cm²/week, for ISO
@@ -61,7 +61,7 @@ Delivery splits into two computation paths:
 
 ---
 
-## REQ-011 — Channel-role coverage for every crop's demand elements
+## channel-role-coverage
 
 For every crop with a defined biomass-demand table at
 `nutrition/<crop>/plant-needs/model/data.js`, the file
@@ -73,7 +73,7 @@ sum to 1.0 ± 0.05.
 
 ---
 
-## REQ-017 — pH-aware effective efficiency
+## ph-aware-effective-efficiency
 
 Soil-applied channels (fertigation, sidedress, frontload) compute supply as
 `recipe_mass × base_efficiency × phResponse[phClass](currentSoilPh)`. The
@@ -82,7 +82,7 @@ any product.
 
 ---
 
-## REQ-194 — Foliar-uptake pH application
+## foliar-uptake-ph-multiplier
 
 When computing `effectiveEfficiency` for any foliar-channel product, the
 result MUST be multiplied by `foliarPhResponse(sprayPh)` in addition to the
@@ -91,7 +91,7 @@ leaf-surface field modifiers (yucca, window timing). The curve is defined at
 
 ---
 
-## REQ-018 — No "decorative" products at current pH
+## no-decorative-products-at-current-ph
 
 For every product in an active recipe, `effectiveEff(product, element,
 currentSoilPh) ≥ 0.05`. Products below 5% effective efficiency must be removed
@@ -99,7 +99,7 @@ from the recipe or flagged with `decorative: { reason: '...' }`.
 
 ---
 
-## REQ-020 — Lockout gate on passive supply
+## passive-supply-lockout-gate
 
 When `currentSoilPh > 6.8`, passive soil supply for P, Mn, Zn (Mehlich-3 bank
 × annual fraction) is gated to ≤ SME-derived mass-flow value. The bank cannot
@@ -107,7 +107,7 @@ When `currentSoilPh > 6.8`, passive soil supply for P, Mn, Zn (Mehlich-3 bank
 
 ---
 
-## REQ-060 — Narrative copy must not contradict current data
+## narrative-derived-from-live-data
 
 User-facing narrative copy in admin diagnostic pages (Nutrition, Banque sol,
 Phase 1 comparison) MUST NOT contradict the current state of the data tables
@@ -123,7 +123,7 @@ auto-derivation rule.
 
 ---
 
-## REQ-061 — Prioritize earliest channel in replenishment chain
+## replenishment-cascade-earliest-first
 
 When the model allocates offtake replenishment across channels, it must prefer
 the **earliest** channel in the application sequence and only cascade to later
@@ -157,7 +157,7 @@ at the team's smallest reliable barrel weight (0.5 g/week sodium molybdate ≈
 
 ---
 
-## REQ-062 — Single fertigation tank per week
+## single-fertigation-tank-per-week
 
 The team workflow allows at most ONE fertigation tank preparation per
 week. `TOMATO_STAGES` (or its successor `computeStageRecipe`) MUST
@@ -190,7 +190,7 @@ actions on specific days.
 
 ---
 
-## REQ-136 — Contribution channel return shape: `details` per element
+## contribution-channel-details-payload
 
 Every contribution-channel function (compost release, substrate release,
 sidedress supply, fertigation supply, foliar supply, front-load supply, …)
@@ -254,38 +254,40 @@ Backwards compatibility: existing callers reading `perTray_mg[el]` or
 
 ---
 
-## REQ-157 — Per-element channel efficiency exposure
+## channel-efficiency-capability-map
 
 Every contribution-channel function (compost release, substrate release,
 sidedress supply, fertigation supply, foliar supply, front-load supply,
-nursery substrate, nursery fertigation) MUST expose a per-element `efficiency`
-map alongside its existing flat mg map (`perTray_mg` / `perM2_mg`) and
-`details` payload (REQ-136). The map declares the channel's CAPABILITY: for
-every element the channel is structurally able to deliver under current
-soil / pH / coverage conditions, `efficiency[element]` is a number in
-`[0, 1]` — the share of applied product mass that would be plant-available
-for that element IF the channel were dosed for it. Elements outside the
-channel's capability are absent from the map; the gap-grid renderer
-(REQ-156) treats absence as `—`. Whether the channel actually doses the
-element this call is reflected in the `Apport ici` column, not here.
-Amended 2026-05-16 per Guillaume's direct ruling: capability view, not
-per-call realized view.
+nursery substrate, nursery fertigation) MUST expose a per-element
+`efficiency` map alongside its existing flat mg map (`perTray_mg` /
+`perM2_mg`) and `details` payload
+(`contribution-channel-details-payload`). The map declares the channel's
+CAPABILITY: for every element the channel is structurally able to
+deliver under current soil / pH / coverage conditions, `efficiency[element]`
+is a number in `[0, 1]` — the share of applied product mass that would
+be plant-available for that element IF the channel were dosed for it.
+Elements outside the channel's capability are absent from the map; the
+gap-grid renderer (`efficacite-column-capability`) treats absence as
+`—`. Whether the channel actually doses the element this call is
+reflected in the `Apport ici` column, not here.
 
 ---
 
-## REQ-137 — Contribution-block gap-grid table
+## contribution-block-gap-grid
 
-Every contribution channel block on every Nutrition admin page renders, as
-the immediate next sibling of its recipe table (REQ-152), a 6-column
-gap-grid: Él. / Manque entrant / Efficacité / Apport ici / Manque sortant /
-icon. Color coding ✅🟢🟡🔴 by residual ratio. The grid receives a
-per-element `details {cert, cap}` payload (REQ-136).
+Every contribution channel block on every Nutrition admin page renders,
+as the immediate next sibling of its recipe table
+(`contribution-block-recipe-table`), a 6-column gap-grid: Él. / Manque
+entrant / Efficacité / Apport ici / Manque sortant / icon. Color
+coding ✅🟢🟡🔴 by residual ratio. The grid receives a per-element
+`details {cert, cap}` payload (`contribution-channel-details-payload`).
 
 ---
 
-## REQ-138 — `Apport ici` cell + cap-emoji interactivity
+## apport-ici-clickable-cert-and-cap-modals
 
-In every contribution block (REQ-137), the `Apport ici` cell of each element
+In every contribution block (`contribution-block-gap-grid`), the
+`Apport ici` cell of each element
 row:
 
 1. **Is clickable per (row, column)** — every click opens a modal
@@ -350,38 +352,39 @@ full 3-row breakdown. Tooltip and modal share the same three strings.
 
 ---
 
-## REQ-156 — Efficacité column semantics
+## efficacite-column-capability
 
-In every contribution-block gap-grid (REQ-137), the Efficacité cell of each
-element row displays, as an integer percent, the channel's per-element
-plant-available efficiency under current soil / pH / coverage conditions —
-independent of whether the channel actually doses that element this call.
-The cell renders `—` only when the element falls outside the channel's
-capability map (the channel is structurally unable to deliver it). Amended
-2026-05-16 per Guillaume's direct ruling to show capability efficiency
-always, so operators see what each channel could deliver if dosed; the
-`Apport ici` column carries the per-call realized mg.
+In every contribution-block gap-grid (`contribution-block-gap-grid`),
+the Efficacité cell of each element row displays, as an integer
+percent, the channel's per-element plant-available efficiency under
+current soil / pH / coverage conditions — independent of whether the
+channel actually doses that element this call. The cell renders `—`
+only when the element falls outside the channel's capability map (the
+channel is structurally unable to deliver it). The `Apport ici` column
+carries the per-call realized mg.
 
 ---
 
 ## Inherited / dependent specs
 
-- REQ-060 — `cap.reason` strings count as narrative copy and must be
-  auto-derived from the data (not hand-written per element). The cert
-  explainer table is the only stable copy here; reason strings come
-  out of the cap-detection function that produced the cap.
-- REQ-029a/b/c — `precipitation` caps cite the Ksp pair or
-  TAG_INCOMPATIBILITY rule that fired, by REQ number.
-- REQ-018 — `decorative` flag (effectiveEff < 5%) maps to `cap.kind =
-  'other'` with the spec ID as reason.
-- Per-channel specs that introduce caps (REQ-021 fertigation
-  solubility, REQ-024 CE envelope, REQ-025 foliar burn cap, REQ-098
-  nursery CE cap, REQ-094 substrate front-load cap) MUST emit the
-  corresponding `cap` object when their threshold binds.
+- `narrative-derived-from-live-data` — `cap.reason` strings count as
+  narrative copy and must be auto-derived from the data (not
+  hand-written per element). The cert explainer table is the only
+  stable copy here; reason strings come out of the cap-detection
+  function that produced the cap.
+- `nutrition/chemistry — *-029a/b/c` (model layer) — `precipitation`
+  caps cite the Ksp pair or TAG_INCOMPATIBILITY rule that fired.
+- `no-decorative-products-at-current-ph` — `decorative` flag
+  (effectiveEff < 5%) maps to `cap.kind = 'other'` with the slug as
+  reason.
+- Per-channel model specs that introduce caps (fertigation solubility,
+  CE envelope, foliar burn cap, nursery CE cap, substrate front-load
+  cap) MUST emit the corresponding `cap` object when their threshold
+  binds.
 
 ---
 
-## REQ-152 — Contribution-block recipe table
+## contribution-block-recipe-table
 
 On every Nutrition admin page, each contribution channel block (excluding the
 Tomato Sol soil-bank block) MUST render, between its title and gap-grid, a
@@ -392,25 +395,28 @@ B · Mo), elements at 0 % omitted. Quantité is the channel-native dose.
 
 ---
 
-## REQ-159 — Elemental mass in nutrition tables is in milligrams
+## elemental-mass-in-mg
 
 Every nutrition-table column expressing an elemental-mass quantity (demand, contribution, gap, soil reservoir, supply) renders in milligrams (mg). Recipe-product mass tables — Block 7 / 8 « Recette stockée vs calculée (drift) » and any other table whose cells are product masses such as K₂SO₄ g — are out of scope; product masses remain in g or kg.
 
 ---
 
-## REQ-160 — Column-header unit declaration
+## column-header-unit-declaration
 
 Every nutrition-table column whose cells share a unit declares that unit once in the column header. Cells contain only the numeric value (or `0`, `—`, `0 %`). Applies to all nutrition tables: contribution-block gap-grid, soil-bank block, fertigation / foliar / sidedress recipe tables, Salanova subpage tables, nursery subpage tables.
 
 ---
 
-## REQ-161 — Bare 0 communicates coverage; no parenthetical
+## manque-sortant-zero-bare
 
-On the contribution-block gap-grid, the `Manque sortant` cell rendering 0 (gap closed by the channel) displays the digit `0` only — color-coded per the three-tier scheme (REQ-016) — with no `(couvert)` or equivalent annotation.
+On the contribution-block gap-grid, the `Manque sortant` cell
+rendering 0 (gap closed by the channel) displays the digit `0` only —
+color-coded per the project's three-tier scheme — with no `(couvert)`
+or equivalent annotation.
 
 ---
 
-## REQ-162 — Mois d'épuisement on the soil-bank block: SME-availability runway
+## mois-depuisement-sme-runway
 
 Every element row on the soil-bank block displays a Mois d'épuisement value equal to the Mehlich-3 reservoir divided by the weekly plant uptake currently sustainable at the measured SME plant-availability — the bank's runway at zero replenishment, with weekly draw throttled by current soil-solution availability.
 

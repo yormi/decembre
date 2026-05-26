@@ -5,22 +5,20 @@ specs live in `nutrition/lettuce/spec.md`; chemistry / cross-crop rules
 in `nutrition/spec.md`; model-side demand/supply in
 `nutrition/lettuce/plant-needs/spec.md`.
 
-Allocate new REQ-NNN via `scripts/claim-req.sh <spec-path> <persona>`.
-
 ---
 
-## REQ-176 — Salanova Bilan header inputs are exactly five scalars
+## bilan-header-inputs-are-five-scalars
 
 The Salanova Bilan accepts exactly five operator inputs in the header
 card: `transplantG` (g/head), `targetG` (g/head), `cycleDays` (days),
-`density` (plants/m²), `phLocked` (boolean). Every other displayed number
-is derived from these + source-of-truth constants. No front-load input —
-the weekly feather-meal rate ships as a planted-in default and is not
-weekly-tuned by the operator.
+`density` (plants/m²), `phLocked` (boolean). Every other displayed
+number is derived from these + source-of-truth constants. No
+front-load input — the weekly feather-meal rate ships as a planted-in
+default and is not weekly-tuned by the operator.
 
 ---
 
-## REQ-177 — Plant-need block demand source
+## plant-need-block-demand-source
 
 The Salanova plant-need block reads its per-element demand by calling
 `window.PlantNeedsLettuce.calculateLettuceNutritionDemand(transplantG,
@@ -30,23 +28,23 @@ render path.
 
 ---
 
-## REQ-178 — Plant-need block row layout: 2 columns (Él. / Besoin)
+## plant-need-row-two-columns
 
 Each row in the Salanova plant-need block displays exactly 2 columns:
-element symbol and total weekly demand (mg/m²/wk). No fruit/biomass split
-— Salanova demand has no flowering transition and is monotonic in mass
-gain per `nutrition/lettuce/plant-needs/spec.md` REQ-166.
+element symbol and total weekly demand (mg/m²/wk). No fruit/biomass
+split — Salanova demand has no flowering transition and is monotonic
+in mass gain per `nutrition/lettuce/plant-needs/spec.md`.
 
 ---
 
-## REQ-179 — Plant-need row click opens cert + calculation modal
+## plant-need-row-opens-pourquoi-modal
 
 Every element in `LETTUCE_TISSUE_DW` is rendered as a clickable row in
 the Salanova plant-need block. Clicking a row opens the pourquoi modal
 showing **exactly three pieces of content**:
 
 1. The cert badge for the element (cert 4 macros, cert 3 micros — per
-   `nutrition/lettuce/plant-needs/spec.md` REQ-168).
+   `nutrition/lettuce/plant-needs/spec.md`).
 2. The demand equation (formula symbolically — `demand[el] = …`).
 3. The plugged-in numbers (formula with current values substituted).
 
@@ -56,10 +54,10 @@ tissue-test caveats — those live in
 
 ---
 
-## REQ-180 — Plant-need block reactive to demand-side header inputs
+## plant-need-reactive-to-header-inputs
 
 Mutating any of the four demand-side header inputs (`transplantG`,
 `targetG`, `cycleDays`, `density`) re-renders the Salanova plant-need
-block with new per-element numbers. The `phLocked` toggle is supply-side
-per `nutrition/lettuce/plant-needs/spec.md` REQ-167 and does not enter
-the demand block render.
+block with new per-element numbers. The `phLocked` toggle is
+supply-side per `nutrition/lettuce/plant-needs/spec.md` and does not
+enter the demand block render.

@@ -6,11 +6,11 @@ apport ici / manque sortant) with color coding, gap-chain ordering.
 
 Crop-side recipe specs live in `nutrition/nursery/spec.md`; chemistry /
 cross-crop rules in `nutrition/spec.md`. Cross-crop URL hash routing
-(REQ-005) covers subpage crop-toggle behavior.
+(`spec — url-hash-routing`) covers subpage crop-toggle behavior.
 
 ---
 
-## REQ-130 — Block 1 (Besoins) layout
+## block-1-besoins-layout
 
 Block 1 renders a 3-column table — one row per demand element,
 columns:
@@ -27,7 +27,7 @@ Blocks 2/3 where the gap-chain math needs them.
 
 ---
 
-## REQ-127 — Block 2 (Réserve substrat) layout
+## block-2-substrat-layout
 
 The Block 2 card body has two visual zones in this order:
 
@@ -52,15 +52,14 @@ The Block 2 card body has two visual zones in this order:
 
 ---
 
-## REQ-128 — Block 3 (Fertigation) layout
+## block-3-fertigation-layout
 
-Block 3 mirrors REQ-127's two-zone layout:
+Block 3 mirrors `block-2-substrat-layout`'s two-zone layout:
 
 1. **Recipe header** — scannable per-tray dose list (one product per
    `<strong>` block) + the per-fertigation CE and tank-pH readout with
-   green/red color depending on whether the cap (REQ-098) and envelope
-   (REQ-099) are met. Frequency annotation `×N/sem` from the
-   `nutr-n-applications` input (REQ-122 consumer).
+   green/red color depending on whether the cap and envelope are met.
+   Frequency annotation `×N/sem` from the `nutr-n-applications` input.
 
 2. **Gap-grid table** via `renderGapGrid` — same 6-column shape as
    Block 2. The fertigation contribution column shows weekly delivery
@@ -71,7 +70,7 @@ not per-element gaps.
 
 ---
 
-## REQ-129 — Gap chain order: demand → substrate → fertigation → leviers
+## gap-chain-order
 
 The Block 2 + Block 3 + Block 4 gap chain runs in a fixed order:
 
@@ -85,31 +84,31 @@ Block 2 displays `(demand, substrate, gapAfterSubstrate)`.
 Block 3 displays `(gapAfterSubstrate, fertigation, gapAfterFert)`.
 Block 4 (leviers) reads `gapAfterFert` as residual.
 
-The order is **substrate first, fertigation second**, NOT the other way.
-Substrate is passive supply present from day 1; fertigation is the
-active lever sizing against what remains.
+The order is **substrate first, fertigation second**, NOT the other
+way. Substrate is passive supply present from day 1; fertigation is
+the active lever sizing against what remains.
 
 ---
 
 ## Inherited specs
 
-- **REQ-005** (`spec.md`) — URL hash routing for the crop
+- `spec — url-hash-routing` — URL hash routing for the crop
   sub-toggle (`#admin/nutriment/nursery`).
-- **REQ-001** (`spec.md`) — French CE in user-facing text.
-- **REQ-060** (`nutrition/spec.md`) — narrative copy must not contradict
-  current data; auto-derive or annotate `// stable —`.
-- **REQ-136** (`nutrition/spec.md`) — every contribution channel
-  function returns `details{el: {cert, cap}}` alongside its flat mg
-  map. `SubstrateContributionNursery` and `FertigationNursery` MUST
-  conform when REQ-136 is wired.
-- **REQ-137** (`nutrition/spec.md`) — recipe header + 6-col gap-grid
-  layout (Block 2 + Block 3 use this, per REQ-127 / REQ-128 above).
-  REQ-127 / REQ-128 are crop-specific extensions of REQ-137.
-- **REQ-156** (`nutrition/spec.md`) — Efficacité column displays the
-  share of applied product mass plant-available per element; `—` when
-  no product routes the element.
-- **REQ-138** (`nutrition/spec.md`) — Apport ici cells clickable for
-  cert modal; cap emojis (🔥💧❗) clickable for cap-reason modal.
-  Modal is scoped per (block, element, click target) — never aggregates
-  across elements or blocks. Implementation pending; deferred until
-  REQ-136 lands so the `details.cap` map is populated.
+- `spec — ui-language-ce-not-ec` — French CE in user-facing text.
+- `nutrition/spec — narrative-derived-from-live-data` — narrative
+  copy must not contradict current data; auto-derive.
+- `nutrition/spec — contribution-channel-details-payload` — every
+  contribution channel function returns `details{el: {cert, cap}}`
+  alongside its flat mg map. `SubstrateContributionNursery` and
+  `FertigationNursery` MUST conform when wired.
+- `nutrition/spec — contribution-block-gap-grid` — recipe header +
+  6-col gap-grid layout (Block 2 + Block 3 use this).
+  `block-2-substrat-layout` / `block-3-fertigation-layout` are
+  crop-specific extensions.
+- `nutrition/spec — efficacite-column-capability` — Efficacité column
+  displays the share of applied product mass plant-available per
+  element; `—` when no product routes the element.
+- `nutrition/spec — apport-ici-clickable-cert-and-cap-modals` — Apport
+  ici cells clickable for cert modal; cap emojis (🔥💧❗) clickable
+  for cap-reason modal. Modal is scoped per (block, element, click
+  target) — never aggregates across elements or blocks.

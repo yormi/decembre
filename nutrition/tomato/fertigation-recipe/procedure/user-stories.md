@@ -8,7 +8,7 @@ card shape, anchor placements) live in `operator/user-stories.md`. Model claims
 
 ---
 
-## REQ-182 — stage-from-iso-week
+## stage-from-iso-week
 
 The current tomato production stage is resolved automatically from the
 current ISO week. The resolution is the sole source of the stage value
@@ -16,7 +16,7 @@ consumed by every procedure step on the page; no operator override.
 
 ---
 
-## REQ-183 — stored-recipe-is-sole-source
+## stored-recipe-is-sole-source
 
 All gram quantities shown on the page come exclusively from the
 locked stored fertigation recipe for the current stage — for every
@@ -26,7 +26,7 @@ top of stored values.
 
 ---
 
-## REQ-185 — dosatron-verification-in-first-prep-step
+## dosatron-verification-in-first-prep-step
 
 The first weekly preparation step includes a verification that the
 Dosatron injection ratio is set to 2 % (silver ring on the unit).
@@ -35,7 +35,7 @@ the ring shows a different ratio he resets it to 2 %.
 
 ---
 
-## REQ-186 — steps-from-structured-source
+## steps-from-structured-source
 
 Every step in both cards renders deterministically from a structured
 data source (title, description, optional amount, optional
@@ -43,7 +43,7 @@ data source (title, description, optional amount, optional
 
 ---
 
-## REQ-187 — pourquoi-included-only-above-importance-bar
+## pourquoi-included-only-above-importance-bar
 
 A "Pourquoi" explanation is included on a step only when skipping
 the step causes meaningful damage to equipment, recipe quality, or
@@ -52,7 +52,7 @@ Educational or decorative rationales are omitted.
 
 ---
 
-## REQ-188 — stock-volume-calc-quarter-bucket
+## stock-volume-calc-quarter-bucket
 
 The weekly stock-barrel water volume consumed by the preparation
 card is computed as a single litre value, rounded up to the nearest
@@ -61,7 +61,7 @@ fertigation-recipe model spec.
 
 ---
 
-## REQ-190 — prep-completion-slack-post
+## prep-completion-slack-post
 
 The last step of the Lundi-matin preparation instructs the operator
 to post a record (date, stage, quantities) to the team Slack
@@ -69,7 +69,7 @@ channel `#recherche-et-developpement`.
 
 ---
 
-## REQ-191 — empty-barrel-slack-post
+## empty-barrel-slack-post
 
 The daily verification card instructs the operator, when the stock
 barrel is found empty, to post `Solution tomate vide - [Jour]` to

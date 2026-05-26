@@ -28,13 +28,17 @@ specs in `yield-range/app/user-stories.md`.
 - `transplantWeightG` — weight at day `nurseryDays` (g/plant)
 - `harvestWeightG` — weight at day `nurseryDays + fieldDays` (g/plant)
 - `daysToTransplantPotential` — first integer day in nursery where
-  W(d) ≥ 0.95 × `nurseryCanopyCapG`, or `null` if not reached (REQ-117)
+  W(d) ≥ 0.95 × `nurseryCanopyCapG`, or `null` if not reached
+  (`days-to-potential-by-regime`)
 - `daysToHarvestPotential` — first integer day in field where
-  W(d) ≥ 0.95 × `fieldCanopyCapG`, or `null` if not reached (REQ-117)
+  W(d) ≥ 0.95 × `fieldCanopyCapG`, or `null` if not reached
+  (`days-to-potential-by-regime`)
 - `trajectory` — array of `{ day, weight_g, regime }` from day 0
-  through day `nurseryDays + fieldDays` (REQ-118)
-- `annualYieldKg` — annual harvested kg/year at steady state (REQ-175)
-- `bottleneckStage` — `'nursery' | 'field'` (REQ-175)
+  through day `nurseryDays + fieldDays` (`trajectory-output-shape`)
+- `annualYieldKg` — annual harvested kg/year at steady state
+  (`annual-yield-from-throughput`)
+- `bottleneckStage` — `'nursery' | 'field'`
+  (`annual-yield-from-throughput`)
 
 ### Assumptions
 - Trays packed end-to-end throughout the nursery regime; field at
@@ -52,7 +56,7 @@ specs in `yield-range/app/user-stories.md`.
 
 ---
 
-## REQ-112 — Canopy cap is the operative ceiling
+## canopy-cap-is-ceiling
 
 The growth ceiling is `canopyCapG`, a density-driven biomass
 asymptote derived from Salanova breeder data. The Hochmuth root-volume
@@ -60,7 +64,7 @@ cap (cellVol × 1.6) is NOT used as the prediction ceiling.
 
 ---
 
-## REQ-113 — Best non-light conditions assumed
+## best-non-light-conditions
 
 The integration applies no stress multipliers other than
 `f_light(dliPerPlant)`. No `f_Tday`, `f_Tnight`, `f_CE`, `f_VPD`,
@@ -68,16 +72,17 @@ The integration applies no stress multipliers other than
 
 ---
 
-## REQ-114 — DLI = annual sun (transmitted) + LED contribution
+## dli-annual-sun-plus-led
 
 Bench DLI is `DLI_SUN_GH_ANNUAL_AVG_QC + (LED_PPFD × ledHours × 3600
 / 1e6)`, where `DLI_SUN_GH_ANNUAL_AVG_QC = DLI_SUN_OUTDOOR_QC_ANNUAL
-× GH_LIGHT_TRANSMISSION_DOUBLE_POLY` (see REQ-131). All constants
-live in `data.js`. No seasonal sun lookup; single annual constant.
+× GH_LIGHT_TRANSMISSION_DOUBLE_POLY` (see
+`double-poly-transmission-decomposed`). All constants live in
+`data.js`. No seasonal sun lookup; single annual constant.
 
 ---
 
-## REQ-131 — Double-poly transmission decomposed in data.js
+## double-poly-transmission-decomposed
 
 Bench sun DLI is computed as `DLI_SUN_OUTDOOR_QC_ANNUAL ×
 GH_LIGHT_TRANSMISSION_DOUBLE_POLY`. Both constants are declared
@@ -85,7 +90,7 @@ explicitly in `data.js`; no hardcoded post-transmission value.
 
 ---
 
-## REQ-115 — Logistic growth, no decay
+## logistic-growth-no-decay
 
 Daily integration:
 `W(d+1) = W(d) × (1 + RGR_MAX × (1 − W/canopyCapG) × f_light(dliPerPlant(d)))`.
@@ -93,7 +98,7 @@ No senescence branch, no decay, no negative-growth flip.
 
 ---
 
-## REQ-116 — Packed-canopy spacing always applied
+## packed-canopy-spacing
 
 Per-plant DLI is `dliBenchAvg × spacing_factor(d)`, where
 `spacing_factor` is `1.0` for `d ≤ 14`, linearly interpolated between
@@ -102,7 +107,7 @@ input.
 
 ---
 
-## REQ-117 — Days-to-potential outputs (both regimes)
+## days-to-potential-by-regime
 
 `daysToTransplantPotential` = first integer day `d ∈ [1, nurseryDays]`
 where `W(d) ≥ 0.95 × nurseryCanopyCapG`, or `null` if the nursery
@@ -116,7 +121,7 @@ is shared.
 
 ---
 
-## REQ-118 — Trajectory output for chart
+## trajectory-output-shape
 
 Output `trajectory` is an array of `{ day, weight_g, regime }` from
 day 0 through day `nurseryDays + fieldDays` inclusive
@@ -129,24 +134,26 @@ is repurposed as a sanity ceiling on the sum `nurseryDays + fieldDays`
 
 ---
 
-## REQ-171 — Two-regime growth integrator
+## two-regime-integrator
 
 Daily integration spans nursery + field in a single loop running from
 `day = 1` through `day = nurseryDays + fieldDays`. For
 `day ≤ nurseryDays`, the step uses the nursery canopy cap (from
-`CANOPY_CAP_BY_PLATEAU[plateauSize]`, REQ-172) and the nursery
-per-plant DLI share (`NURSERY_SPACING_PACKED`, REQ-116). For
-`day > nurseryDays`, the step uses the field canopy cap (from
-`fieldCanopyCapByDensity(fieldDensityHeadsPerM2)`, REQ-173) and the
-field per-plant DLI share (`perPlantDliShareField(weight,
-fieldDensityHeadsPerM2)`, REQ-174). `RGR_MAX`, `f_light`, and the
-multiplicative logistic update of REQ-115 are unchanged across the
-regime boundary. The function exposes `transplantWeightG`,
-`harvestWeightG`, and the full per-day trajectory tagged with regime.
+`CANOPY_CAP_BY_PLATEAU[plateauSize]`, `nursery-canopy-cap-by-plateau`)
+and the nursery per-plant DLI share (`NURSERY_SPACING_PACKED`,
+`packed-canopy-spacing`). For `day > nurseryDays`, the step uses the
+field canopy cap (from `fieldCanopyCapByDensity(fieldDensityHeadsPerM2)`,
+`field-canopy-cap-by-density`) and the field per-plant DLI share
+(`perPlantDliShareField(weight, fieldDensityHeadsPerM2)`,
+`field-per-plant-dli-share`). `RGR_MAX`, `f_light`, and the
+multiplicative logistic update of `logistic-growth-no-decay` are
+unchanged across the regime boundary. The function exposes
+`transplantWeightG`, `harvestWeightG`, and the full per-day trajectory
+tagged with regime.
 
 ---
 
-## REQ-172 — Nursery canopy cap by tray cells
+## nursery-canopy-cap-by-plateau
 
 `CANOPY_CAP_BY_PLATEAU` covers all four `plateauSize` values:
 `{ 18: 69, 24: 52, 32: 39, 50: 25 }` (g/plant). Each entry is
@@ -169,7 +176,7 @@ anchor.
 
 ---
 
-## REQ-173 — Field canopy cap by density
+## field-canopy-cap-by-density
 
 `fieldCanopyCapByDensity(fieldDensityHeadsPerM2)` returns the per-plant
 cap (g) at a given field spacing:
@@ -188,7 +195,7 @@ cohort weight at the operational density.
 
 ---
 
-## REQ-174 — Field per-plant DLI share
+## field-per-plant-dli-share
 
 `perPlantDliShareField(weightG, fieldDensityHeadsPerM2)` returns the
 share of bench DLI a single plant integrates as effective input
@@ -206,7 +213,7 @@ empirical: 200 g head ≈ 30 cm rosette ≈ 700 cm² projected leaf
 area). Share holds at `1.0` until the rosette covers the per-plant
 bench footprint (`w × d × LEAF_PROJECTED_AREA_M2_PER_G ≥ 1.0`), then
 decays as `1 / leaf_cover`. Floor `0.40` mirrors
-`NURSERY_SPACING_PACKED` (REQ-116) — at full canopy closure, plants
+`NURSERY_SPACING_PACKED` (`packed-canopy-spacing`) — at full canopy closure, plants
 still integrate ~40 % of bench DLI via gaps, sunflecks, and scattered
 radiation. Cert 2 on both the leaf-area-per-gram constant and the
 floor value; refinement trigger is cohort leaf-area measurement or
@@ -214,7 +221,7 @@ Beer-Lambert canopy modelling.
 
 ---
 
-## REQ-175 — Throughput-bounded annual yield output
+## annual-yield-from-throughput
 
 `annualYieldKg` is computed at steady state from the throughput
 balance between nursery output and field intake:
@@ -252,17 +259,18 @@ Model plan in `working files/yield-range-extension-draft.md` —
 function signature, two-stage integrator, throughput formula,
 constant list, settled + open inputs, and requirement queue.
 
-Settled 2026-05-17: `bench_dli_mol_per_m2_per_day` (REQ-114 formula
-preserved, `ledHours` stays a dynamic operator input up to 18);
+Settled 2026-05-17: `bench_dli_mol_per_m2_per_day` (`dli-annual-sun-plus-led`
+formula preserved, `ledHours` stays a dynamic operator input up to 18);
 nursery cap basis (breeder-anchored, 50-cell = 25 g pinned; other
 trays scaled by geometric proportion); `per_plant_dli_share_field`
 shape (1.0 until rosette covers spacing, then decays with 0.40 floor,
 cert 2).
 
-REQ landing gated on the marketability constraint on head size
+Extension landing gated on the marketability constraint on head size
 (commercial input — does 200 g matter or is 150-160 g sellable?
 yield/m² ≈ flat across 25-50 heads/m² so density choice is
-commercial, not biological). When that lands, the extension claims
-a contiguous REQ block (regime-switch integrator, `annual_yield_kg`
-output, nursery + field cap accessors, `per_plant_dli_share_field`,
-`canopy_geometry`) through `scripts/claim-req.sh`.
+commercial, not biological). When that lands, the extension claims a
+contiguous block of ledger ids (regime-switch integrator,
+`annual_yield_kg` output, nursery + field cap accessors,
+`per_plant_dli_share_field`, `canopy_geometry`) through
+`scripts/claim-req.sh`.

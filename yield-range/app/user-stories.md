@@ -12,7 +12,7 @@ Admin page. Salanova nursery only. French UI text.
 
 ---
 
-## REQ-119 — Two inputs
+## two-inputs
 
 The page provides exactly two inputs:
 1. **Plateau** — toggle 18 / 24 / 32 / 50 (cells per tray)
@@ -22,16 +22,16 @@ No other operator-facing inputs.
 
 ---
 
-## REQ-120 — Capacité plafond is shown as a labeled numeric display
+## capacite-plafond-labeled-number
 
 The page renders the canopy ceiling as a labeled number:
 `Capacité plafond: X g/plant` (where X is the math model's
 `canopyCapG`). Separate display from the chart's reference line in
-REQ-121.
+`growth-chart`.
 
 ---
 
-## REQ-121 — Growth chart of head weight vs days from germination
+## growth-chart
 
 The page renders a chart with:
 - x-axis labeled **`Jours depuis germination`** (range 0–49, integer)
@@ -44,7 +44,7 @@ The page renders a chart with:
 
 ---
 
-## REQ-132 — Clickable DLI display with f_light response modal
+## clickable-dli-display-with-f-light-modal
 
 The page renders a clickable element showing the current bench DLI
 (`DLI banc: X.X mol/m²/j`). Clicking it opens a modal showing the
@@ -63,7 +63,7 @@ values for context.
 
 ---
 
-## REQ-133 — Peak potential day shown next to Capacité plafond
+## peak-potential-day-shown
 
 The Capacité plafond card displays both `canopyCapG` AND
 `daysToPotential` in a single line: `Capacité plafond: X g/plant · pic
@@ -71,7 +71,7 @@ The Capacité plafond card displays both `canopyCapG` AND
 
 ---
 
-## REQ-134 — Bench DLI shown as integer in the page card
+## bench-dli-shown-as-integer
 
 Bench DLI shown in the page card (`#yr-dli-value`) is rounded to the
 nearest integer with `Math.round()`. The modal context line keeps one
@@ -79,7 +79,7 @@ decimal for transparency.
 
 ---
 
-## REQ-135 — Bench DLI colour-coded by f_light zone (young-plant indicator)
+## bench-dli-colour-coded
 
 The bench DLI display value (`#yr-dli-value`) text colour is set based
 on `f_light(dliBenchAvg)`: green if ≥ 0.95, yellow if 0.7–0.95, red if
@@ -88,15 +88,18 @@ reflects what young, pre-canopy-closure plants (d ≤ 14) experience —
 at that stage `spacing_factor = 1.0` so per-plant DLI equals bench
 DLI. Late-cycle reality (per-plant after canopy closure at d ≥ 28,
 bench × 0.40) is surfaced in the modal context line, not in this
-colour. Mirrors the project's 3-tier convention (REQ-016).
+colour. Three-tier convention.
 
 ---
 
 ## Inherited
 
-Cross-app conventions (REQ-001, REQ-005, REQ-006, REQ-007) apply by
-default per the root `CLAUDE.md` "Conventions inherited by every page"
-section. This page does not deviate.
+Cross-app conventions (`spec — ui-language-ce-not-ec`,
+`spec — url-hash-routing`, `spec — ui-language-algue-not-kelp`,
+`spec — ui-language-plain-french`) apply by default per the root
+`CLAUDE.md` "Conventions inherited by every page" section. This page
+does not deviate.
 
-- All math-model REQs (REQ-112 to REQ-118) must be satisfied by the
-  underlying functions before the page renders meaningful predictions.
+- All math-model rules in `yield-range/spec.md` must be satisfied by
+  the underlying functions before the page renders meaningful
+  predictions.

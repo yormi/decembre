@@ -32,23 +32,24 @@ admin page live in `nutrition/tomato/shell/spec.md` (page-shell orchestration
   `procedure/user-stories.md`, `operator/user-stories.md`. Vocabulary in `CONTEXT.md`.
 
 The specs below cover the *coupling* between plant-needs and the supply
-chain (REQ-013, REQ-014) plus the demand-anchor source-of-truth invariant
-(REQ-033). Channel-role coverage (REQ-011) lives in `nutrition/spec.md`
-as a cross-crop rule.
+chain (`under-fert-guard`, `luxury-feeding-guard`) plus the
+demand-anchor source-of-truth invariant (`tomato-removal-biased-high`).
+Channel-role coverage lives in `nutrition/spec —
+channel-role-coverage` as a cross-crop rule.
 
 ---
 
-## REQ-013 — Flux supply ≥ demand × 0.9 (under-fert guard)
+## under-fert-guard
 
 For every (flux element × stage), `Σ(channel_supply) ≥ 0.9 ×
 demand_total[stage, element]`. Channel supply uses pH-aware effective
-efficiency (REQ-017). Below 0.9 requires explicit `acceptedDeficit: {
-reason: '...' }` annotation on the stage entry — silent failure not
-allowed.
+efficiency (`nutrition/spec — ph-aware-effective-efficiency`). Below
+0.9 requires explicit `acceptedDeficit: { reason: '...' }` annotation
+on the stage entry — silent failure not allowed.
 
 ---
 
-## REQ-014 — Flux supply ≤ demand × 1.3 (luxury / waste guard)
+## luxury-feeding-guard
 
 For every (flux element × stage), `Σ(channel_supply) ≤ 1.3 ×
 demand_total`. Above 1.3× = luxury feeding, antagonism risk, waste, or
@@ -56,7 +57,7 @@ burn risk.
 
 ---
 
-## REQ-033 — TOMATO_REMOVAL biased toward high end of published references
+## tomato-removal-biased-high
 
 For every macro element with multi-source published demand data (N, P, K,
 Mg), the value used in `TOMATO_REMOVAL` is at or above the inter-source
@@ -75,5 +76,6 @@ allowed.
 | Mg      | 0.54      | 0.67           | 0.5             | 0.57              |
 
 **Scope:** Applies to the demand-side anchor (`TOMATO_REMOVAL`,
-`TOMATO_FRUIT_EXPORT`, `BIOMASS_DEMAND`). Recipe-side coverage of demand
-is REQ-013/REQ-014's responsibility (deferred to Phase 2.5).
+`TOMATO_FRUIT_EXPORT`, `BIOMASS_DEMAND`). Recipe-side coverage of
+demand is the responsibility of `under-fert-guard` /
+`luxury-feeding-guard` (deferred to Phase 2.5).
