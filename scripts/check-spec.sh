@@ -253,42 +253,12 @@ else
   printf "  Install Node.js + run \`npm install\` to enable REQ-010+ verification.\n"
 fi
 
-# ─── REQ-coverage tally ───
-# Count distinct REQs documented across spec.md + every nutrition
-# domain spec.md vs distinct REQs actually checked by either the bash script
-# or the node verifier. Self-updating: as new REQs are added or wired, the
-# ratio reflects the truth on next run.
-#
-# Spec files scanned (deduplicated by REQ id, since each id is unique across
-# the global pool):
-#   - spec.md (cross-app)
-#   - nutrition/spec.md (cross-crop nutrition)
-#   - nutrition/<crop>/spec.md (crop-specific nutrition)
-#   - nutrition/<crop>/app/spec.md (crop-specific Nutrition admin UI)
-DOCUMENTED_REQS=$(
-  {
-    grep -hE '^## REQ-' spec.md 2>/dev/null
-    # find -L follows symlinks but here all are real files; -name 'spec.md'
-    # picks up spec.md at every depth under nutrition/.
-    find nutrition -name 'spec.md' -type f -exec grep -hE '^## REQ-' {} + 2>/dev/null
-  } | grep -oE 'REQ-[0-9]+[a-z]*' | sort -u | wc -l
-)
-WIRED_REQS=$(
-  {
-    # bash REQ section headers: `echo "REQ-NNN ..."`
-    grep -oE 'echo "REQ-[0-9]+[a-z]*' scripts/check-spec.sh 2>/dev/null
-    # node REQ section headers: `header('REQ-NNN ...')` or `header("REQ-NNN ...")`
-    grep -oE "header\([\"']REQ-[0-9]+[a-z]*" scripts/check-recipes.mjs 2>/dev/null
-  } | grep -oE 'REQ-[0-9]+[a-z]*' | sort -u | wc -l
-)
-DEFERRED_REQS=$((DOCUMENTED_REQS - WIRED_REQS))
-
 # ─── Ledger coverage (soft, informational) ───
-# Counts spec REQs that have no row in team-coordination/req-ledger.md.
+# Counts spec REQs that have no row in team/req-ledger.md.
 # Pre-wrapper REQs (everything before REQ-155) don't have ledger rows by
 # construction; the count is informational, not a failure. Drift up over
 # time = wrapper bypass; drift down = backfill.
-LEDGER_FILE="team-coordination/req-ledger.md"
+LEDGER_FILE="team/req-ledger.md"
 if [ -f "$LEDGER_FILE" ]; then
   SPEC_REQS=$(
     {
@@ -325,8 +295,6 @@ else
     echo "  (Node failures listed in the node-verifier section above.)"
   fi
 fi
-printf "    REQs wired: %d/%d (%d deferred or manual-review)\n" \
-  "$WIRED_REQS" "$DOCUMENTED_REQS" "$DEFERRED_REQS"
 printf "    REQs un-ledgered: %s (informational; pre-wrapper or bypass)\n" \
   "$UNLEDGERED"
 echo "════════════════════════════════════════════════════════════"

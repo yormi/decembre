@@ -171,23 +171,7 @@ across entries.
 
 Every function name, variable name, and object-property name in JS source
 under `app/`, `nutrition/`, `yield-range/`, plus identifier references in
-backticks inside `spec.md` files and `team-coordination/**` markdown, MUST be
+backticks inside `spec.md` files and `team/**` markdown, MUST be
 a full word — no abbreviations. The verifier maintains a denylist with a
 whitelist for domain terms (`cert`, `cap`, `pH`, unit suffixes `mg` / `kg` /
 `g` / `L` / `m²`, and `REQ-NNN` identifiers).
-
----
-
-## REQ-coverage tally — verifier conventions
-
-The release-candidate validator prints `REQs wired: X/Y` by string-matching:
-
-- **Documented (Y)**: `^## REQ-` headers across `spec.md` and
-  `nutrition/**/spec.md` (deduplicated). Every spec MUST start with
-  `## REQ-NNN — title` (NNN = digits, optional letter suffix like `029a`).
-- **Wired (X)**: scanned for these exact patterns:
-  - bash (`scripts/check-spec.sh`): `echo "REQ-NNN — ..."`
-  - node (`scripts/check-recipes.mjs`): `header('REQ-NNN — ...')` or
-    `header("REQ-NNN — ...")`
-
-Stick to these patterns so the tally stays accurate.
