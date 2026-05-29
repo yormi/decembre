@@ -16,10 +16,23 @@
       </button>
     </div>
 
-    <!-- Spray B (CaCl₂ anti-BER) removed from program 2026-05-06.
-         Single foliar spray (oligos) every Wednesday morning. BER prevention
-         relies on ventilation + humidity management; if BER appears, an
-         external CaCl₂ application can be made event-driven (not in app). -->
+    <!-- Spray selector — restored 2026-05-28 after Spray B re-introduction
+         (CaCl₂·2H₂O 100 g / 15 L, 2×/sem, anti-botrytis). Picks which recipe
+         sheet is visible under Application > step 2 + drives the day label in
+         "Quand pulvériser". Default = day-of-week heuristic (Mon/Thu → B, else
+         A). Auto-hidden when STORED.foliaire has only one non-empty key. -->
+    <div class="card" id="spray-selector-card">
+      <div id="spray-btn-row" style="display:flex; gap:6px; margin-bottom:8px;">
+        <button onclick="setSpray('A')" class="stage-btn active" id="spray-btn-A" data-spray="A">
+          <span class="stage-label">Spray A</span>
+        </button>
+        <button onclick="setSpray('B')" class="stage-btn" id="spray-btn-B" data-spray="B">
+          <span class="stage-label">Spray B</span>
+        </button>
+      </div>
+      <div id="spray-schedule-note" style="font-size:11px; color:var(--text-muted); margin-bottom:12px; text-align:center;">—</div>
+      <div class="warning-box" style="margin-top:0;"><strong>⚠  Mélanger Spray A et Spray B = réaction chimique qui bouche les buses</strong></div>
+    </div>
 
     <!-- Calendrier card with this-week recommendation -->
     <div class="card">
@@ -68,7 +81,7 @@
           <span class="step-number">3</span>
           <div class="step-title">Bien secouer</div>
           <div style="font-size:11.5px; color:var(--text-muted); margin-top:5px; line-height:1.4;">
-            Pourquoi : sans agitation, les sels coulent au fond et risquent de boucher la buse pendant la pulvérisation.
+            ⚠️ Les sels non-dissous risquent de boucher buse pendant le spray
           </div>
         </li>
         <li class="step-item">
@@ -76,49 +89,44 @@
           <div class="step-title">Pulvériser</div>
           <div class="step-desc">Couvrir dessus et dessous des feuilles. Brume fine, sans ruissellement.</div>
           <div style="font-size:11.5px; color:var(--text-muted); margin-top:5px; line-height:1.4;">
-            Pourquoi : le dessous des feuilles absorbe mieux que le dessus.
+            🌿 le dessous des feuilles absorbe mieux que le dessus.
+          </div>
+          <div style="font-size:11.5px; color:var(--text-muted); margin-top:3px; line-height:1.4;">
+            🦠 Insister sur les tiges → résistance botrytis.
           </div>
         </li>
         <li class="step-item">
           <span class="step-number">5</span>
           <div class="step-title">Rincer le sac à dos à l'eau claire</div>
           <div style="font-size:11.5px; color:var(--text-muted); margin-top:5px; line-height:1.4;">
-            Pourquoi : les résidus de sels concentrés peuvent boucher les buses ou contaminer le prochain mélange.
+            ⚠️ Les résidus contaminent prochain mélange et bouche buse.
           </div>
         </li>
         <li class="step-item">
           <span class="step-number">6</span>
-          <div class="step-title">Signer le registre</div>
-          <div class="step-desc">Date, spray (A ou B), culture.</div>
+          <div class="step-title">Écrire <strong>immédiatement</strong> sur Slack</div>
+          <div class="step-desc">
+            <ul style="margin:4px 0 0; padding-left:18px;">
+              <li>Poster sur <strong>#recherche-et-developpement</strong></li>
+              <li>Date, spray, culture</li>
+              <li>Pour analyse rapide</li>
+            </ul>
+          </div>
         </li>
       </ol>
-    </div>
-
-    <!-- Weekly spray calendar — operator/user-stories.md § weekly-calendar-rendered.
-         Renders one [data-foliar-calendar-slot] per day across all recipes
-         in computeFoliarStrategy().recipes. Read-only — model decides what
-         gets sprayed and when (no day-picker, no recipe toggle). -->
-    <div class="card">
-      <div class="card-title">Calendrier hebdo</div>
-      <div data-foliar-calendar id="foliar-calendar" style="display:flex; flex-direction:column; gap:8px;"></div>
     </div>
 
     <div class="card">
       <div class="card-title">Signes à surveiller</div>
       <div style="font-size:13px; line-height:1.6;">
-        <div style="color:var(--accent-lettuce); font-weight:600; margin-bottom:6px;">✓ Bons signes (1-2 semaines)</div>
-        <ul style="color:var(--text-muted); margin:0 0 12px 16px; padding:0;">
-          <li>Verdissement des feuilles (zones interveinal)</li>
-          <li>Nouvelle croissance plus saine que l'ancienne</li>
-          <li>Apex vert foncé, fermeture des grappes en fleur</li>
+        <ul style="color:var(--text-muted); list-style:none; margin:0 0 12px 0; padding:0;">
+          <li style="padding:2px 0;"><span style="color:var(--accent-tomato); font-weight:700; margin-right:8px;">✗</span>Brûlure foliaire (taches brunes)</li>
+          <li style="padding:2px 0;"><span style="color:var(--accent-tomato); font-weight:700; margin-right:8px;">✗</span>Toxicité bore (marges brunes, vieilles feuilles)</li>
+          <li style="padding:2px 0;"><span style="color:var(--accent-tomato); font-weight:700; margin-right:8px;">✗</span>Toxicité cuivre (taches noires, nécrose)</li>
         </ul>
-        <div style="color:var(--accent-tomato); font-weight:600; margin-bottom:6px;">⚠ Signaux d'alarme</div>
-        <ul style="color:var(--text-muted); margin:0 0 0 16px; padding:0;">
-          <li>Brûlure foliaire (taches brunes) → diluer de 50%</li>
-          <li>Toxicité bore (marges brunes, vieilles feuilles) → réduire Solubore</li>
-          <li>Toxicité cuivre (taches noires, nécrose) → réduire CuSO₄ de moitié</li>
-          <li>Aucune réponse après 3 semaines → vérifier produits et couverture</li>
-        </ul>
+        <div style="font-size:12px; color:var(--text-muted);">
+          → Reporter sur Slack <strong>#recherche-et-developpement</strong>
+        </div>
       </div>
     </div>
   </div>

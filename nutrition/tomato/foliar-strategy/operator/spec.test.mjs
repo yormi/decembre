@@ -2,9 +2,7 @@
 // nutrition/tomato/foliar-strategy/operator/user-stories.md against the rendered DOM.
 //
 // SLUG coverage:
-//   recipe-sheet-per-recipe   — one weighing block per recipe in the strategy
-//   weekly-calendar-rendered  — operator surface includes the spray calendar
-//                               derived from procedure/model output
+//   recipe-sheet-per-recipe   — one weighing block per STORED.foliaire key
 //   no-frequency-input        — no operator-side sprayCount / frequency input
 //
 // Framework: node:test only. Reuses the jsdom fixture from
@@ -33,38 +31,33 @@ const FORBIDDEN_FREQUENCY_FRAGMENTS = [
 ];
 
 describe('recipe-sheet-per-recipe — one weighing block per foliar recipe', () => {
-  test('recipe-sheet-per-recipe — DOM weighing-block count equals strategy.recipes.length', () => {
-    // Trigger the renderer so #foliar-strategy gets populated. buildFoliar
-    // reads STORED_RECIPE.tomato.foliaire (oligo recipe today). When the
-    // multi-recipe DOM loop ships in Wave 2, the renderer will emit one
-    // recipe-sheet container per recipe in computeFoliarStrategy output.
-    const FoliarRecipeTomato = win.FoliarRecipeTomato;
-    const strategy = FoliarRecipeTomato.computeFoliarStrategy('T5', SAMPLE_GAP);
-    const recipeCount = strategy.recipes.length;
-    assert.ok(recipeCount >= 1,
-      `strategy must contain ≥1 recipe; got ${recipeCount}`);
+  test('recipe-sheet-per-recipe — DOM weighing-block count equals STORED.foliaire non-empty key count', () => {
+    // Operator surface reads STORED_RECIPE.tomato.foliaire directly (same
+    // pattern as fertigation + sidedress operator pages). One [data-recipe-sheet]
+    // per non-empty top-level key (A oligos + B Ca²⁺ today).
+    const stored = win.STORED_RECIPE && win.STORED_RECIPE.tomato && win.STORED_RECIPE.tomato.foliaire;
+    assert.ok(stored, 'STORED_RECIPE.tomato.foliaire must be defined');
+    const storedKindCount = ['A', 'B'].filter(k => Array.isArray(stored[k]) && stored[k].length > 0).length;
+    assert.ok(storedKindCount >= 1,
+      `STORED.foliaire must hold ≥1 non-empty recipe key; got ${storedKindCount}`);
 
     if (typeof win.buildFoliar === 'function') {
       win.buildFoliar();
     }
 
-    // A recipe-sheet block is the rendered weighing container per recipe.
-    // Wave 2 contract: each block is a [data-recipe-sheet] node (or class
-    // .recipe-sheet) emitted by the renderer, one per strategy.recipes.
     const document = win.document;
     const recipeSheets = document.querySelectorAll(
       '[data-recipe-sheet], .recipe-sheet'
     );
-    assert.equal(recipeSheets.length, recipeCount,
-      `DOM weighing-block count (${recipeSheets.length}) must equal `
-      + `strategy.recipes.length (${recipeCount}); when only oligo ships, `
-      + `count = 1; when Ca lands, count = 2.`);
+    assert.equal(recipeSheets.length, storedKindCount,
+      `DOM weighing-block count (${recipeSheets.length}) must equal STORED non-empty `
+      + `recipe count (${storedKindCount}).`);
   });
 
-  test('recipe-sheet-per-recipe — each weighing block carries product list + predicted CE + predicted pH + surfactant flag', () => {
+  test('recipe-sheet-per-recipe — each weighing block carries product list (no predicted CE/pH/surfactant on operator)', () => {
     // Spec: "Each block shows the product list with weighing quantities for
-    // one tank, predicted CE, predicted tank pH, and the recipe's surfactant
-    // requirement (yes / no)."
+    // one tank. Predicted CE, predicted tank pH, and the surfactant flag are
+    // NOT surfaced on the operator page (builder-only)."
     if (typeof win.buildFoliar === 'function') {
       win.buildFoliar();
     }
@@ -80,78 +73,12 @@ describe('recipe-sheet-per-recipe — one weighing block per foliar recipe', () 
       );
       assert.ok(products.length >= 1,
         `recipe-sheet must list ≥1 product; got ${products.length}`);
-      const predictedCE = sheet.querySelector(
-        '[data-predicted-ce], .predicted-ce'
-      );
-      assert.ok(predictedCE,
-        'recipe-sheet must render predicted CE (per operator/user-stories.md § recipe-sheet-per-recipe)');
-      const predictedPh = sheet.querySelector(
-        '[data-predicted-ph], .predicted-ph'
-      );
-      assert.ok(predictedPh,
-        'recipe-sheet must render predicted tank pH');
-      const surfactantFlag = sheet.querySelector(
-        '[data-surfactant], .surfactant-flag'
-      );
-      assert.ok(surfactantFlag,
-        'recipe-sheet must render surfactant requirement (yes / no)');
-    }
-  });
-});
-
-describe('weekly-calendar-rendered — operator surface renders the weekly spray calendar', () => {
-  test('weekly-calendar-rendered — a calendar surface exists in the operator DOM', () => {
-    if (typeof win.buildFoliar === 'function') {
-      win.buildFoliar();
-    }
-    const document = win.document;
-    // Wave 2 contract: a single calendar container holding per-day slots.
-    const calendar = document.querySelector(
-      '[data-foliar-calendar], #foliar-calendar, .foliar-calendar'
-    );
-    assert.ok(calendar,
-      'operator surface must include a weekly spray calendar container '
-      + '(per operator/user-stories.md § weekly-calendar-rendered)');
-  });
-
-  test('weekly-calendar-rendered — calendar slot count reflects computeFoliarStrategy day assignments', () => {
-    const FoliarRecipeTomato = win.FoliarRecipeTomato;
-    const strategy = FoliarRecipeTomato.computeFoliarStrategy('T5', SAMPLE_GAP);
-    const expectedSlotCount = strategy.recipes.reduce(
-      (sum, recipe) => sum + recipe.days.length, 0);
-
-    if (typeof win.buildFoliar === 'function') {
-      win.buildFoliar();
-    }
-    const document = win.document;
-    const slots = document.querySelectorAll(
-      '[data-foliar-calendar-slot], .foliar-calendar-slot'
-    );
-    assert.equal(slots.length, expectedSlotCount,
-      `calendar slot count (${slots.length}) must match the sum of `
-      + `recipe.days lengths across strategy.recipes (${expectedSlotCount}); `
-      + `procedure produces per-day assignments — operator renders them 1:1.`);
-  });
-
-  test('weekly-calendar-rendered — each calendar slot names a recipe (per procedure § one-recipe-per-spray)', () => {
-    if (typeof win.buildFoliar === 'function') {
-      win.buildFoliar();
-    }
-    const document = win.document;
-    const slots = document.querySelectorAll(
-      '[data-foliar-calendar-slot], .foliar-calendar-slot'
-    );
-    assert.ok(slots.length >= 1,
-      'no calendar slots found — Wave 2 DOM contract not yet shipped');
-    for (const slot of slots) {
-      const recipeLabel = slot.querySelector(
-        '[data-calendar-recipe], .calendar-recipe'
-      );
-      assert.ok(recipeLabel,
-        'each calendar slot must name exactly one recipe '
-        + '(per procedure/user-stories.md § one-recipe-per-spray)');
-      assert.ok(recipeLabel.textContent.trim().length > 0,
-        'calendar-slot recipe label must be non-empty text');
+      assert.equal(sheet.querySelector('[data-predicted-ce], .predicted-ce'), null,
+        'predicted CE must NOT appear on operator recipe-sheet');
+      assert.equal(sheet.querySelector('[data-predicted-ph], .predicted-ph'), null,
+        'predicted pH must NOT appear on operator recipe-sheet');
+      assert.equal(sheet.querySelector('[data-surfactant], .surfactant-flag'), null,
+        'surfactant flag must NOT appear on operator recipe-sheet');
     }
   });
 });

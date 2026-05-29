@@ -89,9 +89,13 @@ function buildTensio() {
     </div>`;
   document.getElementById('tensio-success').innerHTML = successHTML;
 
-  // Vigor note — merged into vigor card (tomato only)
+  // Vigor note — merged into vigor card (tomato only). Split on the em-dash
+  // so the strategy name (clause before "—") is bold, the explanation plain.
   if (currentCrop === 'tomato') {
+    const splitAt = v.note.indexOf('—');
+    const strategyName = splitAt >= 0 ? v.note.slice(0, splitAt).trim() : v.note;
+    const explanation  = splitAt >= 0 ? v.note.slice(splitAt + 1).trim()  : '';
     document.getElementById('vigor-note').innerHTML =
-      `<div style="font-size:12px; color:#8a5a1e; background:var(--warning-bg); border:1.5px solid #f0c899; border-radius:var(--radius-sm); padding:10px 12px; line-height:1.4;">${v.note}</div>`;
+      `<div style="font-size:12px; color:#8a5a1e; background:var(--warning-bg); border:1.5px solid #f0c899; border-radius:var(--radius-sm); padding:10px 12px; line-height:1.4;"><strong>${strategyName}</strong>${explanation ? ' — ' + explanation : ''}</div>`;
   }
 }

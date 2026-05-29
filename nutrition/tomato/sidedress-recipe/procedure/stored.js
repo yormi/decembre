@@ -12,5 +12,5 @@ window.STORED_RECIPE.tomato.sidedress = {
   T2: { actisol_g: 180, farine_g:  267 },  // sem 3-6 (4 sem)
   T3: { actisol_g: 467, farine_g:  695 },  // sem 7-9 (3 sem)
   T4: { actisol_g: 755, farine_g: 1125 },  // sem 10-18 (9 sem)
-  T5: { actisol_g: 900, farine_g: 1341 },  // sem 19+ (runs to crop-out, typically ~8-10 sem) — pleine production
+  T5: { actisol_g: 0,   farine_g: 2000 },  // sem 19+ — Actisol retiré 2026-05-28 (alignement REQ-089 / Ca-saturation) ; farine bumpée 1341 → 2000 g/planche pour vigueur additionnelle
 };

@@ -1,10 +1,14 @@
 // Hand-stored fertigation recipe (PA Taillon, Climax Conseils, April 8 2026).
 // Source PDF: farm info/fertigation oligos éléments tomate avril.pdf.
-// Tank 170 L diluted at 2% Dosatron → 8 517 L solution/week. Area 382,6 m²
-// (7 planches × 54,7 m²). Per-stage T1-T5 = grams to dissolve in the master
-// tank for ONE week. Oligos constant across stages (PA's design — anchored
-// on tissue baseline, not yield-scaled). K and Mg ramp with stage yield.
-// T6 retired 2026-05-07 (RECIPE_HISTORY entry); T1-T5 only.
+// T5 revu 2026-05-28 : stratégie anti-botrytis — cuve maître 170 L → 110 L
+// sur cycle 5 jours (Dosatron 2% inchangé) ; la dose hebdomadaire complète
+// est livrée en 5 jours, jours 6-7 fertigation à eau claire. Mg/K coupés
+// pour libérer l'absorption de Ca (antagonisme cationique). Borax remis
+// (cicatrisation lésions vs propagation botrytis). T1-T4 inchangés.
+// Area 382,6 m² (7 planches × 54,7 m²). Per-stage T1-T5 = grams to dissolve
+// in the master tank for ONE week. Oligos constant across stages (PA's
+// design — anchored on tissue baseline, not yield-scaled). K and Mg ramp
+// with stage yield. T6 retired 2026-05-07 (RECIPE_HISTORY entry); T1-T5 only.
 //
 // EDITS REQUIRE /retire-recipe SKILL FIRST. Path `STORED_RECIPE.tomato.fertigation`
 // preserved verbatim; the skill greps for this identifier.
@@ -16,6 +20,6 @@ window.STORED_RECIPE.tomato.fertigation = {
   T2: { mgSulfate: 873,  kSulfate: 1297, feSulfate: 20, znSulfate: 4, mnSulfate: 7, cuSulfate: 1, borax: 9, naMolybdate: 1 },
   T3: { mgSulfate: 723,  kSulfate: 1689, feSulfate: 20, znSulfate: 4, mnSulfate: 7, cuSulfate: 1, borax: 9, naMolybdate: 1 },
   T4: { mgSulfate: 1171, kSulfate: 2929, feSulfate: 20, znSulfate: 4, mnSulfate: 7, cuSulfate: 1, borax: 9, naMolybdate: 1 },
-  // T5 revu PA Taillon 2026-05-23 : Mg/K doublés pour pic de production, borax retiré (B couvert via foliaire Solubore).
-  T5: { mgSulfate: 2800, kSulfate: 7000, feSulfate: 20, znSulfate: 4, mnSulfate: 7, cuSulfate: 1, naMolybdate: 1 },
+  // T5 revu 2026-05-28 : Mg/K coupés (antagonisme cationique sur Ca vs botrytis), borax remis 11 g (cicatrisation lésions). Cuve maître 110 L / cycle 5 jours.
+  T5: { mgSulfate: 1000, kSulfate: 5500, feSulfate: 20, znSulfate: 4, mnSulfate: 7, cuSulfate: 1, borax: 11, naMolybdate: 1 },
 };

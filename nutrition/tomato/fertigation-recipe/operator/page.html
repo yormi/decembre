@@ -23,19 +23,7 @@
         <span class="param-label">Dosatron</span>
         <span class="param-value">2%</span>
       </div>
-      <div class="param-row" id="param-multipliers">
-        <span class="param-label">K₂SO₄</span>
-        <span class="param-value">1×</span>
-      </div>
-      <div class="param-row" id="param-multipliers-mg">
-        <span class="param-label">MgSO₄</span>
-        <span class="param-value">1.5×</span>
-      </div>
-      <div class="param-row">
-        <span class="param-label">Radiation moyenne</span>
-        <span class="param-value" id="param-radiation">—</span>
-      </div>
-      <div style="font-size:12px; color:var(--text-muted); line-height:1.5; margin-top:10px; padding-top:10px; border-top:1px solid var(--border);">
+      <div style="font-size:12px; color:var(--text-muted); line-height:1.5; margin-top:10px;">
         <div class="card-title" style="margin-bottom:10px;">Stade de croissance</div>
         <div class="stage-selector">
           <button class="stage-btn" data-stage="T1"><span class="stage-label">T1</span><span class="stage-weeks">Sem 51–2</span></button>
@@ -74,9 +62,6 @@
     <!-- Monday Morning -->
     <div class="card">
       <div class="card-title">🌅 Lundi matin — préparer la solution</div>
-      <div style="font-size:12px; color:var(--text-muted); margin-bottom:12px;">
-        <strong style="color:var(--text);">Une fois par semaine.</strong> Ne pas conserver plus de 7 jours — risque de précipitation et croissance microbienne dans le baril.
-      </div>
       <ol class="steps-list" id="steps-list"></ol>
     </div>
 
@@ -90,44 +75,32 @@
         <li class="step-item">
           <span class="step-number">1</span>
           <div class="step-title">Le baril est-il vide ?</div>
-          <div class="step-desc">Regarder dans le baril de la solution stock. Si non vide → rien à faire, journée normale.</div>
-        </li>
-        <li class="step-item step-acid">
-          <span class="step-number">2</span>
-          <div class="step-title">Si vide : fermer les valves du Dosatron, ouvrir le bypass</div>
-          <div class="step-desc">Fermer les deux valves d'isolation du Dosatron (entrée et sortie), puis ouvrir la valve du bypass.</div>
-          <div style="font-size:11.5px; color:var(--text-muted); margin-top:5px; line-height:1.4;">
-            Pourquoi : sans stock, le Dosatron tourne à vide et s'use. Le bypass laisse passer l'eau directement aux plants en attendant le prochain mélange.
+          <div class="step-desc">
+            <ul style="margin:4px 0 0; padding-left:18px;">
+              <li>Regarder dans le baril de la solution stock</li>
+              <li>Si non vide → rien à faire, journée normale</li>
+            </ul>
           </div>
         </li>
         <li class="step-item step-acid">
+          <span class="step-number">2</span>
+          <div class="step-title">Si vide : fermer valves Dosatron, ouvrir bypass</div>
+        </li>
+        <li class="step-item step-acid">
           <span class="step-number">3</span>
-          <div class="step-title">Si vide : écrire sur Slack</div>
-          <div class="step-desc">Canal <strong>#recherche-et-developpement</strong>. Format : <em>"Solution [tomate/laitue] vide - [Jour]"</em>.<br>Exemple : <em>"Solution tomate vide - Mardi"</em>.</div>
-          <div style="font-size:11.5px; color:var(--text-muted); margin-top:5px; line-height:1.4;">
-            Pourquoi : ça nous dit que le volume de la recette est trop petit. Plus on a de données (quel jour ça vide), plus on ajuste les bons volumes la semaine suivante.
+          <div class="step-title">Si vide : écrire <strong>immédiatement</strong> sur Slack</div>
+          <div class="step-desc">
+            <ul style="margin:4px 0 0; padding-left:18px;">
+              <li>Canal <strong>#recherche-et-developpement</strong></li>
+              <li>Format : <em>"Solution [tomate/laitue] vide - [Jour]"</em></li>
+              <li>Ex : <em>"Solution tomate vide - Mardi"</em></li>
+              <li>Pour ajuster rapidement</li>
+            </ul>
           </div>
         </li>
       </ol>
     </div>
 
-    <div class="card">
-      <div class="card-title">✓ Bien réglé quand</div>
-
-      <div style="font-size:11px; text-transform:uppercase; letter-spacing:1.5px; color:var(--text-muted); font-weight:600; margin-bottom:8px;">Sur les plants</div>
-      <div style="font-size:12px; color:var(--text-muted); line-height:1.7; margin-bottom:14px;">
-        <div style="padding:4px 0;">🌿 <strong style="color:var(--text);">Apex vert foncé :</strong> le fer circule. Si vert pâle/jaune → renforcer le spray foliaire et vérifier l'application du soufre.</div>
-        <div style="padding:4px 0;">🍃 <strong style="color:var(--text);">Nouvelles feuilles plus larges que les anciennes :</strong> le manganèse et le zinc se débloquent (Mn → photosynthèse, Zn → expansion foliaire). Si même taille ou plus petites → soufre n'a pas encore agi sur le pH.</div>
-        <div style="padding:4px 0;">📏 <strong style="color:var(--text);">Diamètre de tige en hausse :</strong> mesurer chaque semaine au même endroit. La tendance doit monter. Stagnant après 2 semaines → revoir les doses.</div>
-        <div style="padding:4px 0;">🩹 <strong style="color:var(--text);">Plaies de taille sèches en 2-3 jours :</strong> le plant est assez fort pour cicatriser. Si les plaies restent molles ou développent du duvet gris → nutrition et/ou irrigation à revoir.</div>
-      </div>
-
-      <div style="font-size:11px; text-transform:uppercase; letter-spacing:1.5px; color:var(--text-muted); font-weight:600; margin-bottom:8px;">Sur le système</div>
-      <div style="font-size:12px; color:var(--text-muted); line-height:1.7;">
-        <div style="padding:4px 0;">💧 <strong style="color:var(--text);">Pas de dépôt blanc au fond du stock :</strong> si oui → le K₂SO₄ n'a pas dissous. Plus d'eau chaude la prochaine fois.</div>
-        <div style="padding:4px 0;">📋 <strong style="color:var(--text);">Stock vide en ~2-3 jours :</strong> si le stock dure toute la semaine → les plants ne boivent pas assez, vérifier l'irrigation.</div>
-      </div>
-    </div>
     </div><!-- end fert-field-content -->
 
     <!-- Semis laitue (nursery) content, shown when crop=nursery -->

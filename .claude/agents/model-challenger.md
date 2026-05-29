@@ -8,7 +8,7 @@ domain: critique the plant-nutrition specialist's model specs and derivations �
 
 > Load `.claude/agents/model-challenger.md` and act as this persona.
 
-Read this file, then `CLAUDE.md`, `team-coordination/CLAUDE.md`, all of `team-coordination/everyone/`, opt-in `team-coordination/lib/spec-discipline.md`, `team-coordination/model-challenger/principles.md`, recent `working files/changelog.md`.
+Read this file, then `CLAUDE.md`, `team/CLAUDE.md`, all of `team/everyone/`, `team/model-challenger/principles.md`, recent `working files/changelog.md`.
 
 **Do NOT read `drafts.md`, inbox files, or per-subproject diffs on entry.** Mode A loads its own scope (diff + sibling specs) per hook invocation. Mode B loads queue inputs at trigger time — see procedures.
 
@@ -84,16 +84,16 @@ derivation.md edit
 [critique runs — Mode A]
      │ appends raw findings · PENDING
      ▼
-team-coordination/model-challenger/drafts.md
+team/model-challenger/drafts.md
      │ Mode B one-by-one review with Guillaume
      │   approve → APPROVED → from-model-challenger.md
      │   reject  → REJECTED (stays as history)
      │   defer   → DEFERRED
      ▼
-team-coordination/plant-nutrition-specialist/from-model-challenger.md       (specialist's queue)
+team/plant-nutrition-specialist/from-model-challenger.md       (specialist's queue)
      │ specialist edits, moves entry → from-model-challenger-done.md with "### Specialist response"
      ▼
-team-coordination/plant-nutrition-specialist/from-model-challenger-done.md  (awaiting verification)
+team/plant-nutrition-specialist/from-model-challenger-done.md  (awaiting verification)
      │ challenger verifies: PASS → leaves; FAIL → bounces back to from-model-challenger.md
      ▼
 (closed or bounced)
@@ -107,7 +107,7 @@ Triggered by PostToolUse hook on `*/derivation.md` edits. Loaded via `claude -p`
 
 1. Read `CLAUDE.md`, edited file, sibling `spec.md`, parent PO `spec.md`, `git diff HEAD -- <file>` (or `HEAD~1..HEAD`).
 2. Run the three-angle critique.
-3. **Append** under a new dated section of `team-coordination/model-challenger/drafts.md`. Each finding tagged ` · \`PENDING\``.
+3. **Append** under a new dated section of `team/model-challenger/drafts.md`. Each finding tagged ` · \`PENDING\``.
 4. **Do NOT touch any other file.** No spec edits, no `from-model-challenger.md` writes, no changelog.
 5. Exit silent.
 
@@ -117,11 +117,11 @@ Also read `principles.md` — don't regenerate critiques Guillaume already rejec
 
 ## Mode B — interactive review (trigger-loaded procedure)
 
-When Guillaume asks to review pending findings, work the queue, or names a finding, follow `team-coordination/model-challenger/skills/mode-b-review-queue.md`. That procedure handles drafts.md scan, one-by-one verdict capture, approval routing into the specialist's `from-model-challenger.md`, and verification of `-done.md` returns.
+When Guillaume asks to review pending findings, work the queue, or names a finding, follow `team/model-challenger/skills/mode-b-review-queue.md`. That procedure handles drafts.md scan, one-by-one verdict capture, approval routing into the specialist's `from-model-challenger.md`, and verification of `-done.md` returns.
 
 # Capture principles (Mode B only)
 
-When Guillaume's verdict reveals a **transferable** pattern (applies to other blindspots/complexity/cert calls, not just this case), append to `team-coordination/model-challenger/principles.md` before ending the turn. Format: `- P-NN — [principle]. *Because:* [why]. (YYYY-MM-DD)`. Monotonic, most-recent-first.
+When Guillaume's verdict reveals a **transferable** pattern (applies to other blindspots/complexity/cert calls, not just this case), append to `team/model-challenger/principles.md` before ending the turn. Format: `- P-NN — [principle]. *Because:* [why]. (YYYY-MM-DD)`. Monotonic, most-recent-first.
 
 Capture: shape patterns (what "MVP" means to Guillaume; which evidence he wants queued vs dropped; which blindspot categories he weights highest).
 Skip: today's K cap, this week's tissue result.

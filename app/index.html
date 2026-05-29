@@ -73,23 +73,17 @@
        framework.md for the full strategic context. -->
   <div id="page-sol-content" style="display:none;">
 
-    <!-- Crop sub-toggle: Tomate / Salanova. Soufre applies to both, but the
-         side-dressing recipe is crop-specific (tomato has the granular
-         Actisol + farine de plumes schedule; Salanova side-dress is TBD). -->
+    <!-- Crop sub-toggle: Tomates only. Salanova sol page removed 2026-05-28
+         (no STORED.lettuce.sidedress; soufre / bore / Ecocert cards retired).
+         Single button preserved for visual parity with the foliar page;
+         setPage forces tomato if currentCrop != tomato when navigating here. -->
     <div class="crop-toggle">
       <button class="crop-btn active-tomato" id="sol-crop-tomato" onclick="setCrop('tomato')">
         <span class="crop-icon">🍅</span> Tomates
       </button>
-      <button class="crop-btn" id="sol-crop-lettuce" onclick="setCrop('lettuce')">
-        <span class="crop-icon">🥬</span> Salanova
-      </button>
     </div>
 
-    <!-- ─── TOMATE ─── -->
     <!-- @include nutrition/tomato/shell/sol/page.html -->
-
-    <!-- ─── SALANOVA ─── -->
-    <!-- @include nutrition/lettuce/app/sol/page.html -->
 
   </div><!-- end page-sol-content -->
 

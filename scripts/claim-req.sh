@@ -6,7 +6,7 @@
 # Stderr:  diagnostics on misuse
 #
 # Closes the parallel-session collision pattern documented in
-# team-coordination/plant-nutrition-specialist/from-model-challenger-done.md
+# team/plant-nutrition-specialist/from-model-challenger-done.md
 # (C3 entry). Acquires an exclusive flock on the
 # ledger, scans the spec tree + ledger tail for the highest REQ-NNN, computes
 # next, appends a claim row, releases the lock. The lock release is implicit
@@ -21,7 +21,7 @@ fi
 
 target_path="$1"
 persona="$2"
-ledger="team-coordination/req-ledger.md"
+ledger="team/req-ledger.md"
 
 if [ ! -f "$ledger" ]; then
   echo "Ledger missing: $ledger (run from repo root)" >&2

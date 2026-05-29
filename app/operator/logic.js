@@ -19,9 +19,8 @@ function setCrop(crop) {
   setCropBtn('irr-crop-tomato', crop === 'tomato', 'tomato');
   setCropBtn('irr-crop-lettuce', crop === 'lettuce', 'lettuce');
   setCropBtn('irr-crop-nursery', crop === 'nursery', 'nursery');
-  // Sol page: 2 buttons (no nursery — soil amendments don't apply to seedling trays)
+  // Sol page: 1 button (tomato-only since 2026-05-28 — Salanova sol removed).
   setCropBtn('sol-crop-tomato', crop === 'tomato', 'tomato');
-  setCropBtn('sol-crop-lettuce', crop === 'lettuce', 'lettuce');
 
   const isField = crop === 'tomato' || crop === 'lettuce';
 
@@ -33,11 +32,10 @@ function setCrop(crop) {
   document.getElementById('irr-field-content').style.display = isField ? 'block' : 'none';
   document.getElementById('irr-nursery-content').style.display = crop === 'nursery' ? 'block' : 'none';
 
-  // Toggle tomato vs lettuce content inside the sol (soil) page
+  // Sol page is tomato-only (Salanova sol page removed 2026-05-28 — no
+  // STORED.lettuce.sidedress; soufre / bore / Ecocert cards retired).
   const solTomato = document.getElementById('sol-tomato-content');
-  const solLettuce = document.getElementById('sol-lettuce-content');
   if (solTomato) solTomato.style.display = crop === 'tomato' ? 'block' : 'none';
-  if (solLettuce) solLettuce.style.display = crop === 'lettuce' ? 'block' : 'none';
 
   // Set accent color CSS variables
   const r = document.documentElement.style;
@@ -102,8 +100,9 @@ function setPage(page) {
   if (page === 'foliar' && (currentCrop === 'nursery' || currentCrop === 'lettuce')) {
     setCrop('tomato');
   }
-  // Sol page doesn't apply to nursery (soil amendments are for field beds, not trays).
-  if (page === 'sol' && currentCrop === 'nursery') {
+  // Sol page is tomato-only (Salanova / nursery don't apply — Salanova page
+  // removed 2026-05-28; nursery uses seedling watering, not field amendments).
+  if (page === 'sol' && currentCrop !== 'tomato') {
     setCrop('tomato');
   }
   // Subtle text-only Semaine + Diagnostic buttons: darken color when active

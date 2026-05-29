@@ -61,47 +61,33 @@ function toggleMissedWindow() {
   chevron.style.transform = isOpen ? 'rotate(0deg)' : 'rotate(180deg)';
 }
 
-// Per-recipe-kind label → operator-facing display name. Kept here (not in
-// data.js) because it is operator-surface presentation, not model state.
-const FOLIAR_RECIPE_KIND_LABEL = {
-  oligo: 'Foliaire (oligos)',
-  ca:    'Foliaire (Ca²⁺)',
+// STORED key → operator-facing day list. Mirrors the model's
+// foliarDaysForSprayCount output (A=1/sem Wed; B=2/sem Mon+Thu). Kept here
+// as a small display map so the selector card can show "Spray X : <jour>"
+// without pulling the full computeFoliarStrategy() return.
+const FOLIAR_RECIPE_DAYS_LABEL = {
+  A: 'mercredi matin',
+  B: 'lundi + jeudi matin',
 };
 
-// Per-recipe-kind product-row metadata. Maps the dose-key on
-// computeFoliarRecipeForGap output to the human-readable label string that
-// matches the STORED recipe naming convention. Kept in sync with the
-// recipeAsLabelArray helper inside model/recipe.js.
-const FOLIAR_DOSE_LABELS = {
-  MnSO4_g:    'MnSO₄ (31,5 % Mn)',
-  ZnSO4_g:    'ZnSO₄ (35,5 % Zn)',
-  CuSO4_g:    'CuSO₄ (25 % Cu)',
-  FeSO4_g:    'FeSO₄·7H₂O (20 % Fe)',
-  NaMoO4_g:   'NaMolybdate (39,6 % Mo)',
-  Solubore_g: 'Solubore (20,5 % B)',
-};
+// Selector state — restored 2026-05-28 with Spray B re-introduction.
+// null at boot; first buildFoliar() resolves it via getRecommendedFoliarSpray().
+// Operator can override via setSpray().
+let currentFoliarSpray = null;
 
-// Convert the model's flat doses object into the label-array shape that
-// predictedCE / predictedTankPh consume (and that the operator surface
-// renders one row per product).
-function foliarDosesToLabelArray(doses) {
-  const rows = [];
-  for (const key in FOLIAR_DOSE_LABELS) {
-    const grams = (doses && doses[key]) || 0;
-    if (grams > 0) {
-      rows.push({ name: FOLIAR_DOSE_LABELS[key], master: grams + ' g' });
-    }
-  }
-  return rows;
+function setSpray(kind) {
+  currentFoliarSpray = kind;
+  document.querySelectorAll('[data-spray]').forEach(b =>
+    b.classList.toggle('active', b.dataset.spray === kind));
+  buildFoliar();
 }
 
-// Default operator-surface gap — non-zero on every foliar element so the
-// strategy's per-recipe weekly-leaf-tolerance cap binds (sprayCount = cap)
-// rather than collapsing to zero. The live gap chain lives in
-// shell/contribution-orchestrator.js (FP mode); the operator surface here
-// is a read-only view of "the recipe + its weekly cadence" — actual
-// gap-closure math runs on the strategy page.
-const FOLIAR_OPERATOR_DEFAULT_GAP = { Mn: 1, Zn: 1, Cu: 1, Fe: 1, B: 1, Ca: 1 };
+// Pick the spray that fires today (or fall back to A on idle days).
+// Mon (1) or Thu (4) → B; else → A. Lines up with the model day map above.
+function getRecommendedFoliarSpray() {
+  const day = new Date().getDay(); // Sun=0..Sat=6
+  return (day === 1 || day === 4) ? 'B' : 'A';
+}
 
 function buildFoliar() {
   const crop = currentCrop === 'tomato' ? 'tomato' : 'lettuce';
@@ -122,61 +108,55 @@ function buildFoliar() {
     const mn = totalMinutes % 60;
     return `${hr}h${String(mn).padStart(2, '0')}`;
   };
-  document.getElementById('foliar-when').textContent = `Mercredi am · entre ${fmtH(startH)} et ${fmtH(endH)}`;
+  // Recipe-sheet section — read directly from STORED (same pattern as
+  // fertigation + sidedress operator pages). A = oligos, B = Ca²⁺.
+  // Strip the "(XX.X% El)" assay parentheses on the operator surface — the
+  // % is audit-trail info, not weighing-relevant; STORED stays canonical.
+  const stripAssay = (name) => name.replace(/\s*\([^)]*\)\s*/g, '').trim();
+  const stored = (window.STORED_RECIPE && window.STORED_RECIPE.tomato && window.STORED_RECIPE.tomato.foliaire) || {};
+  const presentKinds = ['A', 'B'].filter(k => Array.isArray(stored[k]) && stored[k].length > 0);
 
-  // Strategy = list of recipes the model says are active this week. Today
-  // only oligo lands; Ca enters the list when the recipe's data.js entry
-  // ships (gated on PO data). The renderer loops generically.
-  const stage = (typeof currentStage !== 'undefined' && currentStage) ? currentStage : 'T5';
-  const strategy = window.FoliarRecipeTomato.computeFoliarStrategy(stage, FOLIAR_OPERATOR_DEFAULT_GAP);
+  // Selector visibility — hide the whole card when only one kind exists.
+  // Force currentFoliarSpray to a present kind on first paint (or if the
+  // active one was retired).
+  const selectorCard = document.getElementById('spray-selector-card');
+  if (selectorCard) selectorCard.style.display = presentKinds.length > 1 ? '' : 'none';
+  if (!presentKinds.includes(currentFoliarSpray)) {
+    currentFoliarSpray = presentKinds.includes(getRecommendedFoliarSpray())
+      ? getRecommendedFoliarSpray() : (presentKinds[0] || 'A');
+    document.querySelectorAll('[data-spray]').forEach(b =>
+      b.classList.toggle('active', b.dataset.spray === currentFoliarSpray));
+  }
 
-  // ── Recipe-sheet section — one [data-recipe-sheet] per active recipe ──
+  // Schedule note on the selector card.
+  const scheduleNoteParts = presentKinds.map(k =>
+    `Spray ${k} ${FOLIAR_RECIPE_DAYS_LABEL[k] || ''}`.trim());
+  const scheduleNote = document.getElementById('spray-schedule-note');
+  if (scheduleNote) scheduleNote.textContent = scheduleNoteParts.join(' · ');
+
+  // Day label for the active spray, in the "Quand pulvériser" card.
+  const activeDayLabel = FOLIAR_RECIPE_DAYS_LABEL[currentFoliarSpray] || '';
+  document.getElementById('foliar-when').textContent =
+    `${activeDayLabel ? activeDayLabel.charAt(0).toUpperCase() + activeDayLabel.slice(1) : ''} · entre ${fmtH(startH)} et ${fmtH(endH)}`;
+
   let sheetsHtml = '';
-  strategy.recipes.forEach((recipe) => {
-    const rows = foliarDosesToLabelArray(recipe.doses);
-    const ce  = (typeof predictedCE === 'function')      ? predictedCE(rows, 1.0)       : 0;
-    const pH  = (typeof predictedTankPh === 'function')  ? predictedTankPh(rows, 7.0)   : 0;
-    const surfactant = !!(recipe.doses && recipe.doses.surfactant);
-    const kindLabel = FOLIAR_RECIPE_KIND_LABEL[recipe.kind] || recipe.kind;
+  presentKinds.forEach((kind) => {
+    const rows = stored[kind];
+    const visible = (kind === currentFoliarSpray);
 
     let productRows = '';
     rows.forEach((item) => {
       productRows += `<div data-recipe-product style="display:flex; justify-content:space-between; align-items:center; padding:8px 0; border-bottom:1px solid var(--border);">
         <div style="flex:1; min-width:0;">
-          <div style="font-weight:600; font-size:13px;">${item.name}</div>
+          <div style="font-weight:600; font-size:13px;">${stripAssay(item.name)}</div>
         </div>
         <span class="step-amount" style="margin:0; flex-shrink:0;">${item.master}</span>
       </div>`;
     });
 
-    sheetsHtml += `<div data-recipe-sheet data-recipe-kind="${recipe.kind}" style="margin-bottom:14px;">
-      <div style="font-size:11px; text-transform:uppercase; letter-spacing:1px; color:var(--text-muted); font-weight:600; margin-bottom:6px;">${kindLabel}</div>
+    sheetsHtml += `<div data-recipe-sheet data-recipe-kind="${kind}" style="margin-bottom:14px; ${visible ? '' : 'display:none;'}">
       <div>${productRows}</div>
-      <div style="display:flex; gap:12px; flex-wrap:wrap; font-size:12px; color:var(--text-muted); margin-top:8px;">
-        <span>CE prévue : <strong data-predicted-ce style="color:var(--text);">${(ce || 0).toFixed(2)} mS/cm</strong></span>
-        <span>pH cuve prévu : <strong data-predicted-ph style="color:var(--text);">${(pH || 0).toFixed(1)}</strong></span>
-        <span>Tensioactif : <strong data-surfactant style="color:var(--text);">${surfactant ? 'oui' : 'non'}</strong></span>
-      </div>
     </div>`;
   });
   document.getElementById('foliar-strategy').innerHTML = sheetsHtml;
-
-  // ── Calendar section — one [data-foliar-calendar-slot] per recipe-day ──
-  // Day codes are EN (Mon/Tue/…); display labels are FR. Map for the operator
-  // surface; the model stays language-neutral.
-  const DAY_LABEL_FR = { Mon: 'Lundi', Tue: 'Mardi', Wed: 'Mercredi', Thu: 'Jeudi', Fri: 'Vendredi' };
-  let calendarHtml = '';
-  strategy.recipes.forEach((recipe) => {
-    const kindLabel = FOLIAR_RECIPE_KIND_LABEL[recipe.kind] || recipe.kind;
-    recipe.days.forEach((day) => {
-      calendarHtml += `<div data-foliar-calendar-slot style="display:flex; justify-content:space-between; align-items:center; padding:10px 12px; background:var(--accent-active-light); border:1.5px solid var(--accent-active-border); border-radius:var(--radius-sm);">
-        <span style="font-weight:600; font-size:13px;">${DAY_LABEL_FR[day] || day}</span>
-        <span data-calendar-recipe style="font-size:12px; color:var(--text-muted);">${kindLabel}</span>
-      </div>`;
-    });
-  });
-  if (!calendarHtml) {
-    calendarHtml = `<div style="font-size:12px; color:var(--text-muted); padding:8px 0;">Aucune pulvérisation cette semaine.</div>`;
-  }
-  document.getElementById('foliar-calendar').innerHTML = calendarHtml;
 }

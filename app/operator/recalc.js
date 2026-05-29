@@ -126,9 +126,6 @@ function autoStage() {
   document.querySelectorAll('[data-stage]').forEach(b => b.classList.toggle('active', b.dataset.stage === currentStage));
   document.getElementById('stage-auto-label').innerHTML =
     `Semaine <strong style="color:var(--text);">${week}</strong> → stade <strong style="color:var(--text);">${currentStage}</strong> (automatique)`;
-
-  // Show radiation
-  document.getElementById('param-radiation').textContent = getSolarRad() + ' J/cm²/jour';
 }
 
 // Nursery (semis laitue) — per-tray watering recipe.

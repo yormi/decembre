@@ -13,12 +13,17 @@
 // 1 decimal between 1-10 g, integer above 10 g). Sole consumer of this shape.
 function fmt(g) { if (g >= 1000) return (g / 1000).toFixed(2) + ' kg'; if (g < 10 && g > 0) return g.toFixed(1) + ' g'; return Math.round(g) + ' g'; }
 
-// updateStockVol() removed April 26, 2026 — stock volume now displayed inline in step 2
-// Formula preserved in getStockVol(): weeklyL = (2 mL/J/cm²/m² × radiation × area × 7 days) / 1000
-// Stock = (weeklyL / 3) × (Dosatron ratio / 100)
+// Stock barrel is sized to cover DAYS_PER_FILL days of Dosatron pull at
+// the configured dilution ratio (2 %). Bumped 2026-05-28 from implicit
+// ~2.33-day sizing (weeklyL/3) to explicit 5-day fills — operator mixes
+// less often per week, bigger barrel each time.
+// Formula:
+//   dailyL  = (2 mL/J/cm²/m² × daily radiation × area) / 1000
+//   stockL  = dailyL × DAYS_PER_FILL × (Dosatron ratio / 100)
+const DAYS_PER_FILL = 5;
 function getStockVol() {
-  const weeklyL = (2 * getSolarRad() * getTotalArea() * 7) / 1000;
-  return (weeklyL / 3) * (getRatio() / 100);
+  const dailyL = (2 * getSolarRad() * getTotalArea()) / 1000;
+  return dailyL * DAYS_PER_FILL * (getRatio() / 100);
 }
 
 // CITRIC ACID REMOVED FROM FERTIGATION (April 26, 2026)
@@ -63,61 +68,64 @@ function buildSteps() {
   const ratio = getRatio();
   const n = getNutrients();
 
-  // Always show radiation in Configuration card (moved from "Cette semaine" card)
-  document.getElementById('param-radiation').textContent = getSolarRad() + ' J/cm²/jour';
+  // Display the stock volume as chaudières (20 L each) rounded to the nearest
+  // quarter — L + chaudières both shown was redundant; chaudières is the
+  // physical action (operator fills buckets, not measures volumes).
+  const buckets = Math.round((stockVol / 20) * 4) / 4;
+  const bucketsString = Number.isInteger(buckets) ? String(buckets) : buckets.toString().replace('.', ',');
+  const bucketLabel = buckets === 1 ? '1 chaudière' : `${bucketsString} chaudières`;
+  const volumeBadge = `${bucketLabel} de 20 L`;
 
-  // Hide multiplier rows for lettuce (uses fixed recipe, no stage multipliers)
-  if (currentCrop === 'lettuce') {
-    document.getElementById('param-multipliers').style.display = 'none';
-    document.getElementById('param-multipliers-mg').style.display = 'none';
-  } else {
-    document.getElementById('param-multipliers').style.display = '';
-    document.getElementById('param-multipliers-mg').style.display = '';
-  }
-
-  // Format stock volume in 20L buckets (each barrel of input water = 20L)
-  // Round up to nearest 0.5 bucket to avoid awkward fractions
-  const buckets = Math.ceil((stockVol / 20) * 2) / 2;
-  const bucketLabel = buckets === 1 ? '1 chaudière' : `${buckets} chaudières`;
-  const volumeBadge = `${Math.round(stockVol)} L · ${bucketLabel} de 20 L`;
+  // K + Mg collapsed into a single weighing-table step (2026-05-28), matching
+  // the foliar spray sheet pattern. Fe stays as its own step on lettuce —
+  // operationally the "en dernier" timing makes it a separate action.
+  const ingredients = [
+    { name: 'Sulfate de potassium 0-0-50', amount: fmt(n.kSulfate) },
+    { name: 'Sulfate de magnésium',        amount: fmt(n.mgSulfate) },
+  ];
 
   const steps = [
-    { number: 1, title: 'Laver le matériel', desc: 'Rincer le baril, le tube + filtre d\'aspiration du Dosatron, et le filtre en aval du Dosatron.', why: 'Résidus de la semaine précédente = précipités, dépôts microbiens, et contamination. Un filtre obstrué fausse le ratio Dosatron.', acid: false },
-    { number: 2, title: 'Remplir la solution', desc: `Remplir le baril avec ${Math.round(stockVol)} L d'eau (${bucketLabel} de 20 L). C'est ⅓ du volume d'irrigation hebdomadaire — les nutriments sont concentrés dans les premiers shots de la semaine.`, amount: volumeBadge, acid: false },
-    { number: 3, title: 'Sulfate de potassium 0-0-50', desc: 'Dissoudre dans l\'eau chaude d\'abord — le K₂SO₄ se dissout lentement à froid. ⚠️ Ne pas dépasser 100 g/L dans la solution — au-delà, il précipite et bouche les goutteurs.', amount: fmt(n.kSulfate), acid: false },
-    { number: 4, title: 'Sulfate de magnésium', desc: 'Très soluble — mélanger directement. Le Mg est essentiel à la photosynthèse.', amount: fmt(n.mgSulfate), acid: false },
+    { number: 1, title: 'Laver le matériel', desc: 'Rincer baril + tube/filtre d\'aspiration Dosatron + filtre aval.', why: 'Résidus = filtre obstrué & mauvaise fertilisation', acid: false },
+    { number: 2, title: 'Remplir la solution', desc: '', amount: volumeBadge, acid: false },
+    { number: 3, title: 'Ajouter les produits', desc: '', ingredients, acid: false },
   ];
 
   if (currentCrop === 'tomato') {
     steps.push(
-      { number: 5, title: 'Brasser', desc: 'Bien mélanger jusqu\'à dissolution complète. Vérifier qu\'il n\'y a pas de dépôt au fond.', acid: false },
-      { number: 6, title: 'Écrire sur #recherche-et-developpement (Slack)', desc: 'Après la préparation, poster sur <strong>#recherche-et-developpement</strong> : date, stade, quantités. Sert de registre pour la certification biologique (Ecocert) et de suivi d\'équipe.', acid: false },
+      { number: 4, title: 'Brasser', desc: 'Mélanger jusqu\'à dissolution complète. Vérifier : aucun dépôt au fond.', acid: false },
+      { number: 5, title: 'Écrire <strong>immédiatement</strong> sur Slack', desc: '<ul style="margin:4px 0 0; padding-left:18px;"><li>Poster sur <strong>#recherche-et-developpement</strong></li><li>Date, quantités</li><li>Pour analyse rapide</li></ul>', acid: false },
     );
   } else {
     steps.push(
-      { number: 5, title: 'Sulfate de fer (FeSO₄·7H₂O)', desc: 'Ajouter <strong>en dernier</strong>, juste avant de fermer le baril. La solution prend une teinte vert pâle. Si elle devient brun-orange en cours de semaine = oxydation (utiliser quand même mais l\'efficacité diminue).', why: 'Recharge en fer pour les cycles laitue qui s\'étirent au-delà de 3 semaines (la pouponnière charge les plants pour ~3 semaines de production). Fe²⁺ s\'oxyde rapidement à l\'air et au pH du sol — d\'où "en dernier" + baril fermé.', amount: fmt(n.feSulfate), acid: false },
-      { number: 6, title: 'Brasser', desc: 'Bien mélanger. Vérifier qu\'il n\'y a pas de dépôt au fond.', acid: false },
-      { number: 7, title: 'Écrire sur #recherche-et-developpement (Slack)', desc: 'Après la préparation, poster sur <strong>#recherche-et-developpement</strong> : date, quantités. Sert de registre pour la certification biologique (Ecocert) et de suivi d\'équipe.', acid: false },
+      { number: 4, title: 'Sulfate de fer (FeSO₄·7H₂O)', desc: 'Ajouter <strong>en dernier</strong>, juste avant de fermer le baril. La solution prend une teinte vert pâle. Si elle devient brun-orange en cours de semaine = oxydation (utiliser quand même mais l\'efficacité diminue).', why: 'Recharge en fer pour les cycles laitue qui s\'étirent au-delà de 3 semaines (la pouponnière charge les plants pour ~3 semaines de production). Fe²⁺ s\'oxyde rapidement à l\'air et au pH du sol — d\'où "en dernier" + baril fermé.', amount: fmt(n.feSulfate), acid: false },
+      { number: 5, title: 'Brasser', desc: 'Bien mélanger. Vérifier qu\'il n\'y a pas de dépôt au fond.', acid: false },
+      { number: 6, title: 'Écrire sur #recherche-et-developpement (Slack)', desc: 'Après la préparation, poster sur <strong>#recherche-et-developpement</strong> : date, quantités. Sert de registre pour la certification biologique (Ecocert) et de suivi d\'équipe.', acid: false },
     );
   }
 
   document.getElementById('steps-list').innerHTML = steps.map(s => {
-    let subHTML = '';
-    if (s.sub) {
-      subHTML = '<div style="margin-top:6px;">' + s.sub.map(item =>
-        `<div style="display:flex; justify-content:space-between; padding:3px 0; font-size:12px;">
-          <span style="color:var(--text-muted)">${item.name}</span>
-          <span class="step-amount" style="margin:0;">${item.amount}</span>
+    let ingredientsHTML = '';
+    if (s.ingredients) {
+      // Visual match with the foliar spray recipe-sheet table — same row
+      // shape (product name flex-1, dose right-aligned, border-bottom).
+      // No data-recipe-sheet / data-recipe-product attrs to avoid inflating
+      // the foliar test's [data-recipe-sheet] count.
+      ingredientsHTML = '<div style="margin-top:10px;">' + s.ingredients.map(item =>
+        `<div style="display:flex; justify-content:space-between; align-items:center; padding:8px 0; border-bottom:1px solid var(--border);">
+          <div style="flex:1; min-width:0;">
+            <div style="font-weight:600; font-size:13px;">${item.name}</div>
+          </div>
+          <span class="step-amount" style="margin:0; flex-shrink:0;">${item.amount}</span>
         </div>`
       ).join('') + '</div>';
     }
     return `<li class="step-item ${s.acid ? 'step-acid' : ''}">
       <span class="step-number">${s.number}</span>
       <div class="step-title">${s.title}</div>
-      <div class="step-desc">${s.desc}</div>
-      ${s.why ? `<div style="font-size:11.5px; color:var(--text-muted); margin-top:5px; line-height:1.4;">Pourquoi : ${s.why}</div>` : ''}
-      ${s.amount && !s.sub ? `<span class="step-amount">${s.amount}</span>` : ''}
-      ${subHTML}
+      ${s.desc ? `<div class="step-desc">${s.desc}</div>` : ''}
+      ${s.why ? `<div style="font-size:11.5px; color:var(--text-muted); margin-top:5px; line-height:1.4;">⚠️ ${s.why}</div>` : ''}
+      ${s.amount && !s.ingredients ? `<span class="step-amount">${s.amount}</span>` : ''}
+      ${ingredientsHTML}
     </li>`;
   }).join('');
 }

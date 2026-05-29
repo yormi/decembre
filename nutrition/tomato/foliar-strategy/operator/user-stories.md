@@ -12,19 +12,13 @@ A read-only operator surface with two views: **recipe sheet** (per-recipe weighi
 
 ## recipe-sheet-per-recipe
 
-The recipe sheet renders one block per foliar recipe currently
-in the strategy. Each block shows the product list with weighing
-quantities for one tank, predicted CE, predicted tank pH, and
-the recipe's surfactant requirement (yes / no).
-
----
-
-## weekly-calendar-rendered
-
-The weekly calendar renders the per-day assignments produced by
-`nutrition/tomato/foliar-strategy/procedure — weekly-calendar-derived-from-model`.
-Each calendar slot names the recipe to spray that day and links
-to the recipe block on the same page.
+The recipe sheet renders one block per non-empty recipe key in
+`STORED_RECIPE.tomato.foliaire` (today: `A` oligos + `B` Ca²⁺).
+Each block shows the product list with weighing quantities exactly
+as stored — operator page is a direct view of the hand-stored
+recipe (same pattern as fertigation + sidedress operator pages),
+not a derivation from the model strategy. Predicted CE, predicted
+tank pH, and the surfactant flag are NOT surfaced (builder-only).
 
 ---
 

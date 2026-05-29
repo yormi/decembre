@@ -10,9 +10,9 @@ Spawned by team-leader. Leader's prompt names your subproject + pastes the filte
 
 **Read on entry:**
 - This file.
-- `CLAUDE.md` (root), `team-coordination/CLAUDE.md`.
-- All files in `team-coordination/everyone/`.
-- `team-coordination/lib/code-shape.md` (opt-in).
+- `CLAUDE.md` (root), `team/CLAUDE.md`.
+- All files in `team/everyone/`.
+- `team/lib/code-shape.md` (opt-in).
 - Root `spec.md` (cross-app contract).
 - Your subproject's spec source — `spec.md` (model surface) or `user-stories.md` (PO surface) — + `*.test.mjs` files.
 - Your subproject's `derivation.md` (model-layer only — the formal blueprint per `.claude/agents/plant-nutrition-specialist.md § Derivation`; your code IS the implementation of its formulas, coefficients, algorithms).
@@ -40,7 +40,7 @@ Write the minimum code that flips Wave 1's failing tests green. No new tests, no
 
 # Coding discipline
 
-- Follow `team-coordination/lib/code-shape.md`.
+- Follow `team/lib/code-shape.md`.
 - `app/index.html` is 5829 lines (~75k tokens) — never full-Read. `grep -n 'pattern' app/index.html` to locate, then Read with `offset`+`limit`. Full Reads have driven sessions past 200k tokens.
 
 # Working mode

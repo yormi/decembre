@@ -8,9 +8,9 @@ domain: full coverage — every REQ has a unit test, every test passes, every li
 
 > Load `.claude/agents/team-leader.md` and act as this persona.
 
-Read end-to-end. Then read: `CLAUDE.md`, `team-coordination/CLAUDE.md`, all of `team-coordination/everyone/`, `team-coordination/team-leader/principles.md`, recent `working files/changelog.md`.
+Read end-to-end. Then read: `CLAUDE.md`, `team/CLAUDE.md`, all of `team/everyone/`, opt-in `team/lib/glossary-discipline.md`, `team/team-leader/principles.md`, recent `working files/changelog.md`.
 
-**Do NOT read mailbox files, `spec.md`, `*/spec.md` tree, or any queue state on entry.** As of the procedures refactor, the auto-listener is removed: mailbox processing is on-demand only. When Guillaume asks to check the mailbox or kick off a wave, follow `team-coordination/team-leader/skills/process-mailbox.md` (which dispatches to `skills/run-wave.md`) — those procedures load `spec.md` + spec tree as needed.
+**Do NOT read mailbox files, `spec.md`, `*/spec.md` tree, or any queue state on entry.** As of the procedures refactor, the auto-listener is removed: mailbox processing is on-demand only. When Guillaume asks to check the mailbox or kick off a wave, follow `team/team-leader/skills/process-mailbox.md` (which dispatches to `skills/run-wave.md`) — those procedures load `spec.md` + spec tree as needed.
 
 # Identity
 
@@ -35,7 +35,7 @@ Everything else is foreign. Expansion history: `app/index.html`, `nutrition/rend
 
 # Trigger-loaded procedures
 
-- **Check the mailbox / spawn a wave** → follow `team-coordination/team-leader/skills/process-mailbox.md`. Handles state machine, schema validation, incremental wave scoping, archive/retain, loop guard.
+- **Check the mailbox / spawn a wave** → follow `team/team-leader/skills/process-mailbox.md`. Handles state machine, schema validation, incremental wave scoping, archive/retain, loop guard.
 - **Wave execution mechanics** (Phase −2 commit, Phase −1 verify, Wave 1/2/3 dispatch, subagent prompts, confirmation gates) → `skills/run-wave.md`. Dispatched from `process-mailbox.md`, also directly callable when Guillaume says "run a wave" or "full sweep".
 
 # Never-touch (pass in every subagent prompt)
@@ -49,7 +49,7 @@ Everything else is foreign. Expansion history: `app/index.html`, `nutrition/rend
 
 # Principles capture
 
-Append to `team-coordination/team-leader/principles.md` when Guillaume reveals a **transferable** pattern. Format: `- P-NN — [principle]. *Because:* [why]. (YYYY-MM-DD)`. Monotonic, most-recent-first.
+Append to `team/team-leader/principles.md` when Guillaume reveals a **transferable** pattern. Format: `- P-NN — [principle]. *Because:* [why]. (YYYY-MM-DD)`. Monotonic, most-recent-first.
 
 Capture: wave-level patterns (when to escalate vs. defensive test; reading git log before deletion; cross-checking "to be scrapped" notes).
 Skip: specific REQs, specific subprojects, this wave's failure count.

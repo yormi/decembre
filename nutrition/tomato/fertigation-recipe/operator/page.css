@@ -1,4 +1,4 @@
-  /* Param rows — used in fertigation page (ratio/multipliers/radiation summary) */
+  /* Param rows — used in fertigation page (Dosatron ratio) */
   .param-row { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid var(--border); font-size: 13px; }
   .param-row:last-child { border-bottom: none; }
   .param-row .param-label { color: var(--text-muted); }

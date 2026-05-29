@@ -11,4 +11,4 @@
 
 ## Process rules
 
-Persona infrastructure + process-rule layers (`everyone/`, `lib/`, principles, procedures): `team-coordination/CLAUDE.md`. Derivation faithful-blueprint: `.claude/agents/plant-nutrition-specialist.md § Derivation`.
+Persona infrastructure + process-rule layers (`everyone/`, `lib/`, principles, procedures): `team/CLAUDE.md`. Derivation faithful-blueprint: `.claude/agents/plant-nutrition-specialist.md § Derivation`.

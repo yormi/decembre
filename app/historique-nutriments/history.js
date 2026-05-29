@@ -49,6 +49,40 @@
 // It also serves as the team-visible audit trail for organic certification.
 const RECIPE_HISTORY = [
   {
+    retired: '2026-05-28',
+    recipe: 'STORED_RECIPE.tomato.{fertigation, sidedress, foliaire}',
+    summary: 'Stratégie anti-botrytis T5 : Mg/K coupés (antagonisme Ca), borax remis, farine bump, spray B CaCl₂ ré-ajouté',
+    reason: 'Pivot stratégique vers défense Ca contre botrytis. (1) Fertigation T5 : MgSO₄ 2800 → 1000 g et K₂SO₄ 7000 → 5500 g — Mg et K en excès gênent l\'absorption racinaire du Ca (antagonisme cationique au membrane). Borax remis à 11 g (était retiré 2026-05-23) — B aide à la cicatrisation des lésions, bon contre la propagation botrytis. Cuve maître 170 L → 110 L sur cycle 5 jours (au lieu de 7) : assure que la dose hebdomadaire complète est livrée pendant les 5 premiers jours ; jours 6-7 fertigation à eau claire. Oligos Fe / Zn / Mn / Cu / Mo inchangés. (2) Sidedress T5 : Actisol 5-3-2 retiré (était déjà gaté par REQ-089 sur sol Ca-saturé — STORED s\'aligne désormais sur FP_RECIPE_T5) ; farine de plumes 1341 → 2000 g par planche pour vigueur additionnelle. (3) Foliaire : spray B CaCl₂·2H₂O 100 g / 15 L réintroduit (cible REQ-025 burn cap 0,67 %), 2×/semaine, sans surfactant — coverage cuticulaire ~0.15, livraison ~17 mg Ca/m²/sem, bypass des obstacles racinaires de Ca pour défense botrytis. Source CaCl₂ vérifiée Ecocert (était la raison du retrait 2026-05-06). Modèle Ca recipe (data.js + computeFoliarSupply) reste gated/todo — STORED audit-trail ouvert avant le pipeline de rendu. T1-T4 inchangés sur les trois canaux — pivot appliqué seulement au stage courant T5.',
+    replacedBy: 'STORED_RECIPE.tomato.fertigation.T5 = { mgSulfate: 1000, kSulfate: 5500, feSulfate: 20, znSulfate: 4, mnSulfate: 7, cuSulfate: 1, borax: 11, naMolybdate: 1 } (cuve 110 L / 5 jours) ; STORED_RECIPE.tomato.sidedress.T5 = { actisol_g: 0, farine_g: 2000 } ; STORED_RECIPE.tomato.foliaire.B = [{ name: \'CaCl₂·2H₂O\', master: \'100 g\', note: \'Ecocert vérifié ; 2×/sem ; sans surfactant — coverage 0.15\' }].',
+    fullSnapshot: {
+      fertigation: {
+        T1: { mgSulfate: 276,  kSulfate: 410,  feSulfate: 20, znSulfate: 4, mnSulfate: 7, cuSulfate: 1, borax: 9, naMolybdate: 1 },
+        T2: { mgSulfate: 873,  kSulfate: 1297, feSulfate: 20, znSulfate: 4, mnSulfate: 7, cuSulfate: 1, borax: 9, naMolybdate: 1 },
+        T3: { mgSulfate: 723,  kSulfate: 1689, feSulfate: 20, znSulfate: 4, mnSulfate: 7, cuSulfate: 1, borax: 9, naMolybdate: 1 },
+        T4: { mgSulfate: 1171, kSulfate: 2929, feSulfate: 20, znSulfate: 4, mnSulfate: 7, cuSulfate: 1, borax: 9, naMolybdate: 1 },
+        T5: { mgSulfate: 2800, kSulfate: 7000, feSulfate: 20, znSulfate: 4, mnSulfate: 7, cuSulfate: 1, naMolybdate: 1 },
+      },
+      sidedress: {
+        T1: { actisol_g: 57,  farine_g:   84 },
+        T2: { actisol_g: 180, farine_g:  267 },
+        T3: { actisol_g: 467, farine_g:  695 },
+        T4: { actisol_g: 755, farine_g: 1125 },
+        T5: { actisol_g: 900, farine_g: 1341 },
+      },
+      foliaire: {
+        masterVol: 15, backpacks: 1, area: '383 m²',
+        A: [
+          { name: 'MnSO₄ (31.5% Mn)', master: '22 g' },
+          { name: 'ZnSO₄ (35.5% Zn)', master: '22 g' },
+          { name: 'Solubore (20.5% B)', master: '7 g' },
+          { name: 'CuSO₄ (25% Cu)', master: '2 g', note: 'réduit 4→2 g 2026-05-05 — toxicité Cu observée (taches noires) sans yucca, local pooling concentre ~150-200 ppm Cu effective' },
+          { name: 'Molybdate de sodium (39.6% Mo)', master: '1 g' },
+          { name: 'FeSO₄·7H₂O (20% Fe)', master: '80 g' },
+        ],
+      },
+    },
+  },
+  {
     retired: '2026-05-23',
     recipe: 'STORED_RECIPE.tomato.fertigation.T5',
     summary: 'T5 revu PA Taillon : MgSO₄ 1396→2800 g, K₂SO₄ 3489→7000 g, borax retiré',

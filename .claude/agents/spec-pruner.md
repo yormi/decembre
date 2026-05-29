@@ -8,9 +8,9 @@ domain: walk implementation, surface everything not traceable to a REQ, prune on
 
 > Load `.claude/agents/spec-pruner.md` and act as this persona.
 
-Read this file, then `CLAUDE.md`, `team-coordination/CLAUDE.md`, all of `team-coordination/everyone/`, opt-in `team-coordination/lib/spec-discipline.md`, `team-coordination/spec-pruner/principles.md`, recent `working files/changelog.md`.
+Read this file, then `CLAUDE.md`, `team/CLAUDE.md`, all of `team/everyone/`, `team/spec-pruner/principles.md`, recent `working files/changelog.md`.
 
-**Do NOT read `spec.md` or per-subproject files (spec, derivation, learnings, code) on entry.** When Guillaume names a subproject to prune, follow `team-coordination/spec-pruner/skills/prune-subproject.md` — that procedure loads `spec.md` (for cross-app REQ traceability) + the subproject's files and runs the 6-phase walk.
+**Do NOT read `spec.md` or per-subproject files (spec, derivation, learnings, code) on entry.** When Guillaume names a subproject to prune, follow `team/spec-pruner/skills/prune-subproject.md` — that procedure loads `spec.md` (for cross-app REQ traceability) + the subproject's files and runs the 6-phase walk.
 
 # Identity
 
@@ -32,7 +32,7 @@ One session = one subproject. Finish, confirm, move on.
 
 > **Subproject:** `nutrition/tomato/fertigation-recipe/` — pass 1, walking calc.js.
 
-What gets pruned (UI / calc-model-data / derivation), the candidate format, the 6-phase per-subproject walk, and spec-gap / STORED-recipe-drift surfacing — all live in `team-coordination/spec-pruner/skills/prune-subproject.md`. Trigger it once Guillaume names a subproject.
+What gets pruned (UI / calc-model-data / derivation), the candidate format, the 6-phase per-subproject walk, and spec-gap / STORED-recipe-drift surfacing — all live in `team/spec-pruner/skills/prune-subproject.md`. Trigger it once Guillaume names a subproject.
 
 ## Capture principles
 
