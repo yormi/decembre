@@ -166,7 +166,7 @@ function setPage(page) {
 const PAGES = ['fertigation','sol','foliar','irrigation','week','diagnostic','nutriment','historique-nutriments','rendement'];
 const DEFAULT_PAGE = 'fertigation';
 const DEFAULT_CROP = 'tomato';
-const ADMIN_PAGES = ['diagnostic','nutriment','historique-nutriments','rendement'];
+const ADMIN_PAGES = ['week','diagnostic','nutriment','historique-nutriments','rendement'];
 // Pages whose crop is part of the URL. foliar omitted (only tomato is valid;
 // the page auto-redirects lettuce/nursery to tomato). Crop comes from
 // `currentCrop`, except diagnostic which has its own page-local crop state
@@ -245,6 +245,7 @@ function isAdmin() { return parseHash().admin; }
 function applyAdminMode() {
   const admin = isAdmin();
   document.getElementById('page-info').style.display = admin ? 'inline-block' : 'none';
+  document.getElementById('page-week').style.display = admin ? 'inline-block' : 'none';
   document.getElementById('page-diagnostic').style.display = admin ? 'inline-block' : 'none';
   document.getElementById('page-nutriment').style.display = admin ? 'inline-block' : 'none';
   document.getElementById('page-historique-nutriments').style.display = admin ? 'inline-block' : 'none';
