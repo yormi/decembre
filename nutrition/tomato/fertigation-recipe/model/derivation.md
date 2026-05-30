@@ -10,8 +10,8 @@ For each stage `T1..T5`, fertigation = plant demand inflated by per-element upta
 
 Two corrections on top of pure offtake:
 
-1. **Compost release is current-week supply, not a bank.** Subtract it (REQ-098). 2026-05-12 amendment that dropped this term was a category error, reverted 2026-05-15 per B1-REV (see `learnings.md`).
-2. **Bed → plant transfer < 100 %** at Décembre soil (pH 7.28, Ca 10 989 kg/ha). `PH_UPTAKE_FACTOR_AT_CURRENT_SOIL` inflates demand so plant uptake equals demand after the discount. Factor applies uniformly to all bed sources, so it pulls out as a single division on the demand term (REQ-155, added 2026-05-15 per B2-REV).
+1. **Compost release is current-week supply, not a bank.** Subtract it (`mass-balance-derivation`). 2026-05-12 amendment that dropped this term was a category error, reverted 2026-05-15 per B1-REV (see `learnings.md`).
+2. **Bed → plant transfer < 100 %** at Décembre soil (pH 7.28, Ca 10 989 kg/ha). `PH_UPTAKE_FACTOR_AT_CURRENT_SOIL` inflates demand so plant uptake equals demand after the discount. Factor applies uniformly to all bed sources, so it pulls out as a single division on the demand term (`uptake-efficiency-factor`, added 2026-05-15 per B2-REV).
 
 ```
 totalArea_m2          = TOMATO_NUM_BEDS × TOMATO_BED_AREA  // 7 × 54.7 = 382.9 m²
@@ -47,7 +47,7 @@ Implemented in `calc.js` — `computeStageRecipe(stage)` returns `{ kSulfate, mg
 
 ## T5 refined target — mass-balance output
 
-`FP_RECIPE_T5.fertigation` at T5 is the live `computeStageRecipe('T5')` reshape, wired at boot by `wireFpFertigation()`. REQ-154: `FIRST_PRINCIPLES_T5_FERTIGATION` equals function output by construction.
+`FP_RECIPE_T5.fertigation` at T5 is the live `computeStageRecipe('T5')` reshape, wired at boot by `wireFpFertigation()`. `fp-target-mirrors-sizer`: `FIRST_PRINCIPLES_T5_FERTIGATION` equals function output by construction.
 
 ```js
 {
@@ -72,11 +72,11 @@ Stored-vs-FP drift values at Block 7/8 (informational; STORED moves on operator 
 | Mg      | 855             | 0.85          | 1 006         | 0           | 500       | 506             | MgSO₄·7H₂O **1 963** |
 | B       | 4.5             | 0.80          | 5.625         | 0           | 0         | 5.625           | Solubore **11**      |
 
-\* Actisol K passed through at 0.85 mineralization efficiency. REQ-089 / SME P-lockout governs whether Actisol stays as the sidedress vehicle; formula does not gate Actisol K to zero.
+\* Actisol K passed through at 0.85 mineralization efficiency. `nutrition/tomato/sidedress-recipe/model — ca-aware-product-gate` / SME P-lockout governs whether Actisol stays as the sidedress vehicle; formula does not gate Actisol K to zero.
 
 #### Active-channels sum vs REQ-013 / REQ-014 envelope at T5
 
-Active-channels sum = compost + sidedress + fertigation + foliar (REQ-013 / REQ-014 in `nutrition/tomato/spec.md`). Foliar K / Mg / B = 0 (foliar carries Mn / Zn / Cu / Fe only; B is single-channel fertigation per REQ-061). Bank K + Mg mass-flow is **outside** the sum by REQ-141 architectural choice.
+Active-channels sum = compost + sidedress + fertigation + foliar (REQ-013 / REQ-014 in `nutrition/tomato/spec.md`). Foliar K / Mg / B = 0 (foliar carries Mn / Zn / Cu / Fe only; B is single-channel fertigation per REQ-061). Bank K + Mg mass-flow is **outside** the sum by `nutrition/soil-contribution — only-ca-p-participate-in-gap-chain` architectural choice.
 
 | Element | Compost | Sidedress | Fertigation | Foliar | Active sum (bed) | Demand | Bed-side ratio | Plant-side ratio (× uptake factor) |
 |---------|---------|-----------|-------------|--------|------------------|--------|----------------|-------------------------------------|
@@ -84,24 +84,24 @@ Active-channels sum = compost + sidedress + fertigation + foliar (REQ-013 / REQ-
 | Mg      | 500     | 0         | 506         | 0      | 1 006            | 855    | **1.18×**      | 1.00× (1 006 × 0.85 = 855)          |
 | B       | 0       | 0         | 5.89        | 0      | 5.89             | 4.5    | **1.31×**      | 1.05× (5.89 × 0.80 = 4.71)          |
 
-All three elements land plant-side at 1.00-1.05× demand by construction of the uptake-factor-inflated sizer (REQ-155), well inside REQ-014's 1.3× cap. Bed-side ratio for B nicks 1.3× at the boundary; plant-side is the comparison REQ-013 / REQ-014 actually use (channel supply uses pH-aware effective efficiency per REQ-017, and uptake factor inflates demand uniformly across bed sources).
+All three elements land plant-side at 1.00-1.05× demand by construction of the uptake-factor-inflated sizer (`uptake-efficiency-factor`), well inside REQ-014's 1.3× cap. Bed-side ratio for B nicks 1.3× at the boundary; plant-side is the comparison REQ-013 / REQ-014 actually use (channel supply uses pH-aware effective efficiency per REQ-017, and uptake factor inflates demand uniformly across bed sources).
 
-T1-T2 Mg is the only cell where the active-channels sum runs hot vs demand: at T1, compost Mg 500 × 0.85 = 425 mg/m²/wk plant-side vs demand 175 → **2.43× demand** (REQ-014 cap breach). Fertigation Mg = 0 at those stages; the overshoot comes entirely from compost release. Acceptable under REQ-098 reversal framing — compost-release surplus accumulates in the soil-bank Mg pool by design (already 1 646 kg/ha pre-existing pool; the calcitic-lime compost amendment is the root cause, not a recipe-side fix). Operator-side does not size against T1-T2 Mg cap.
+T1-T2 Mg is the only cell where the active-channels sum runs hot vs demand: at T1, compost Mg 500 × 0.85 = 425 mg/m²/wk plant-side vs demand 175 → **2.43× demand** (REQ-014 cap breach). Fertigation Mg = 0 at those stages; the overshoot comes entirely from compost release. Acceptable under `mass-balance-derivation` reversal framing — compost-release surplus accumulates in the soil-bank Mg pool by design (already 1 646 kg/ha pre-existing pool; the calcitic-lime compost amendment is the root cause, not a recipe-side fix). Operator-side does not size against T1-T2 Mg cap.
 
 ### Solubore — single-channel B at T5
 
-Solubor / disodium octaborate tetrahydrate (Na₂B₈O₁₃·4H₂O, 20.5 % B mass — Eti Maden Etidot-67; supplier link in `nutrition/doc/context.md`). Non-ionic in solution, bypasses pH lockout (REQ-018 OK). 11 g × 20.5 % B / 382.9 m² × 1000 ≈ 5.89 mg/m²/wk B delivered to bed — covers the per-element table's 5.625 mg/m²/wk demand_to_bed (plant demand 4.5 mg/m²/wk ÷ REQ-155 B uptake factor 0.80). Single-channel (REQ-061: foliar B = 0).
+Solubor / disodium octaborate tetrahydrate (Na₂B₈O₁₃·4H₂O, 20.5 % B mass — Eti Maden Etidot-67; supplier link in `nutrition/doc/context.md`). Non-ionic in solution, bypasses pH lockout (REQ-018 OK). 11 g × 20.5 % B / 382.9 m² × 1000 ≈ 5.89 mg/m²/wk B delivered to bed — covers the per-element table's 5.625 mg/m²/wk demand_to_bed (plant demand 4.5 mg/m²/wk ÷ `uptake-efficiency-factor` B uptake factor 0.80). Single-channel (REQ-061: foliar B = 0).
 
 ---
 
-## Uptake-efficiency factor (REQ-155)
+## Uptake-efficiency factor (`uptake-efficiency-factor`)
 
 Supply formula prior to 2026-05-15 implicitly assumed `delivered_to_bed = taken_up_by_plant`. That conflated:
 
 - **Dripper-line non-precipitation** — defended by chemistry (K₂SO₄ / MgSO₄·7H₂O dissociate cleanly at water-pH 6.2; Solubor hydrolyzes to H₃BO₃, non-ionic and non-precipitating in the dripper line).
 - **Root-zone uptake at Décembre soil** (pH 7.28, Ca 10 989 kg/ha, CEC 28-33 meq/100g, Ca-saturated) — not defended by chemistry, actively discounted by literature.
 
-REQ-155 makes the root-zone discount explicit. Factor applies uniformly to all bed sources (root competes with Ca-saturated CEC regardless of ion origin), so it pulls out as a single division on demand.
+`uptake-efficiency-factor` makes the root-zone discount explicit. Factor applies uniformly to all bed sources (root competes with Ca-saturated CEC regardless of ion origin), so it pulls out as a single division on demand.
 
 **Per-element factors (cert 2, literature mid-band):**
 
@@ -111,20 +111,20 @@ REQ-155 makes the root-zone discount explicit. Factor applies uniformly to all b
 | Mg      | 0.85   | Same competition, sharper (Mg²⁺ smaller divalent) + dripper-bed equilibration time. Literature 10-25 %; mid 15 %.        |
 | B       | 0.80   | Ca-rich pH>7 soil B adsorption to Fe/Al oxides + Ca-borate complexes. Literature 15-25 %; mid 20 %. Molecular-form pKa discount at pH 7.3 negligible (borate fraction ~1 %). |
 
-Full mechanism + stacked-cert caveat + refinement priority order: `learnings.md` REQ-155 entry.
+Full mechanism + stacked-cert caveat + refinement priority order: `learnings.md` `uptake-efficiency-factor` entry.
 
 **Refinement triggers — symmetric per P-03:**
 
 - **Upward (validation per element).** Tissue `predicted_uptake = delivered × phUptakeFactor[el]` within ±20 % → cert 2 → 3. Within ±10 % → 3 → 4. Refit independently per element.
 - **Downward (factor too generous).** Measured uptake < 50 % of predicted → refit downward (e.g., K 0.90 → 0.70). Most likely downward refits: B (Ca-borate more aggressive than literature) or Mg (dripper-bed equilibration shorter than assumed).
 - **Lateral (modest refit).** 30-50 % off in either direction → refit within mid-band literature range (K 0.85-0.95, Mg 0.75-0.90, B 0.75-0.85); cert stays 2.
-- **Symmetric extension — Ca entry candidate.** The 2026-05-22 TOM #1 T5 tissue panel surfaced a Ca tissue gap (3.46 % vs floor 4.00 %) that REQ-081 transpiration-coupling alone doesn't fully explain — the operator's cold-leaf observation confirms healthy mid-day transpiration at the leaf-end, pointing at the root-uptake side. Candidate mechanism: K⁺ + Mg²⁺ fertigation flux (K₂SO₄ 3 489 g + MgSO₄ 1 396 g/wk) competes with Ca²⁺ at the root-membrane transporters — the **reverse direction** of the antagonism this constant currently encodes. Adding a `Ca` entry (probable starting value 0.85-0.90, cert 2 mid-band, mirroring K's discount magnitude) would require n ≥ 2 stage-tagged cohort tissue + paired Mehlich-3 + STORED-recipe traces to validate. Full hypothesis trace + STORED-side operator triage (MgSO₄ trim candidate) in `nutrition/tomato/doc/tomato-t5-tissue-analysis-2026-05-23.md` § 4.7. Hypothesis-stage only — no constant change until cohort validation lands.
+- **Symmetric extension — Ca entry candidate.** The 2026-05-22 TOM #1 T5 tissue panel surfaced a Ca tissue gap (3.46 % vs floor 4.00 %) that `nutrition/tomato/plant-needs/model — ca-mg-biomass-transpiration-coupled` transpiration-coupling alone doesn't fully explain — the operator's cold-leaf observation confirms healthy mid-day transpiration at the leaf-end, pointing at the root-uptake side. Candidate mechanism: K⁺ + Mg²⁺ fertigation flux (K₂SO₄ 3 489 g + MgSO₄ 1 396 g/wk) competes with Ca²⁺ at the root-membrane transporters — the **reverse direction** of the antagonism this constant currently encodes. Adding a `Ca` entry (probable starting value 0.85-0.90, cert 2 mid-band, mirroring K's discount magnitude) would require n ≥ 2 stage-tagged cohort tissue + paired Mehlich-3 + STORED-recipe traces to validate. Full hypothesis trace + STORED-side operator triage (MgSO₄ trim candidate) in `nutrition/tomato/doc/tomato-t5-tissue-analysis-2026-05-23.md` § 4.7. Hypothesis-stage only — no constant change until cohort validation lands.
 
 ---
 
 ## Channel efficiency map (REQ-157)
 
-`window.FertigationRecipeTomato.efficiency` (REQ-157, exposed via model.js) declares the per-element **channel → bed** delivery fraction at current soil pH 7.4 — distinct from REQ-155's bed → plant uptake-factor.
+`window.FertigationRecipeTomato.efficiency` (REQ-157, exposed via model.js) declares the per-element **channel → bed** delivery fraction at current soil pH 7.4 — distinct from `uptake-efficiency-factor`'s bed → plant uptake-factor.
 
 | Element | Value | Source                                                          |
 |---------|-------|-----------------------------------------------------------------|
@@ -139,13 +139,13 @@ Elements absent from the map: N (sidedress channel), P / Ca ({P, Ca}-only bank c
 
 **Mo carve-out (REQ-061 amendment 2026-05-16).** Cation micros (Mn / Zn / Cu / Fe) stay on foliar because the foliar route bypasses pH lockout at the root. Mo is an anion (molybdate, MoO₄²⁻) — at our pH 7.4 it is *more* plant-available from the soil/dripper line, not less, so the foliar-bypass argument doesn't apply. Sodium molybdate joined the fertigation barrel at the team's smallest reliable barrel weight (0.5 g/week → roughly 0.5 mg Mo/m²/sem, about 7× peak demand, well within Mo's wide tolerance band). Foliar's Mo entry retired in lockstep. Stored-recipe moves on both channels gated on `/retire-recipe` audit.
 
-**Mo algorithmic detail.** Mo is NOT mass-balance-derived like K / Mg / B. `computeStageRecipe(stage).naMolybdate` returns a **flat 0.5 g/wk** for every stage T1-T5 (pin in `calc.js`), bypassing the demand → uptake-factor → compost-subtract → product-mass chain. Rationale: peak Mo demand is ~0.07 mg/m²/wk (cert 1, micro-demand from `BIOMASS_DEMAND`); demand-driven sizing would land at fractional milligrams of sodium molybdate per week, well below the team's smallest reliable weighing increment (0.5 g). Flat 0.5 g/wk is the floor the operator can actually deliver. Even at 7× peak demand the dose stays well inside Mo's tolerance band (Mo deficiency below ~0.1 mg/kg DW tissue, toxicity above ~100 mg/kg; ~3-order-of-magnitude window). Cert 2 — operator-floor anchor, not field-measured. REQ-155 uptake factor entry is absent for Mo because no demand-side division applies; for parity with the REQ-157 channel→bed map (Mo = 1.00), if Mo were ever lifted into the mass-balance branch a default uptake factor of 1.00 is the right starting point (anion, no Ca competition argument, fully soluble at pH ≥ 7).
+**Mo algorithmic detail.** Mo is NOT mass-balance-derived like K / Mg / B. `computeStageRecipe(stage).naMolybdate` returns a **flat 0.5 g/wk** for every stage T1-T5 (pin in `calc.js`), bypassing the demand → uptake-factor → compost-subtract → product-mass chain. Rationale: peak Mo demand is ~0.07 mg/m²/wk (cert 1, micro-demand from `BIOMASS_DEMAND`); demand-driven sizing would land at fractional milligrams of sodium molybdate per week, well below the team's smallest reliable weighing increment (0.5 g). Flat 0.5 g/wk is the floor the operator can actually deliver. Even at 7× peak demand the dose stays well inside Mo's tolerance band (Mo deficiency below ~0.1 mg/kg DW tissue, toxicity above ~100 mg/kg; ~3-order-of-magnitude window). Cert 2 — operator-floor anchor, not field-measured. `uptake-efficiency-factor` uptake factor entry is absent for Mo because no demand-side division applies; for parity with the REQ-157 channel→bed map (Mo = 1.00), if Mo were ever lifted into the mass-balance branch a default uptake factor of 1.00 is the right starting point (anion, no Ca competition argument, fully soluble at pH ≥ 7).
 
-**Mo and the FP-pin (REQ-154).** `naMolybdate` propagates through `wireFpFertigation()` into `FIRST_PRINCIPLES_T5_FERTIGATION['NaMolybdate']` and `FP_RECIPE_T5.fertigation['NaMolybdate']` at boot exactly like Solubore — by construction the constants equal `computeStageRecipe('T5').naMolybdate = 0.5`. The flat-floor model is the FP target; STORED moves on operator timing via `/retire-recipe`. No "Mo FP literal" hand-coded anywhere — same pin-by-construction discipline as K / Mg.
+**Mo and the FP-pin (`fp-target-mirrors-sizer`).** `naMolybdate` propagates through `wireFpFertigation()` into `FIRST_PRINCIPLES_T5_FERTIGATION['NaMolybdate']` and `FP_RECIPE_T5.fertigation['NaMolybdate']` at boot exactly like Solubore — by construction the constants equal `computeStageRecipe('T5').naMolybdate = 0.5`. The flat-floor model is the FP target; STORED moves on operator timing via `/retire-recipe`. No "Mo FP literal" hand-coded anywhere — same pin-by-construction discipline as K / Mg.
 
 ---
 
-## Supply derivation — `computeFertigationSupply` (REQ-151)
+## Supply derivation — `computeFertigationSupply` (`per-element-supply`)
 
 Given a recipe in g per total tomato area per week, returns mg per m² per week per element.
 
@@ -170,7 +170,7 @@ Soil channels apply pH-aware effective efficiency (REQ-017). Fertigation skips i
 
 ### Caller-side reshape patterns
 
-Function accepts ONE canonical shape: `{ kSulfate_g, mgSulfate_g, solubore_g }`. Callers reshape from upstream source; function never branches on source. Shape-arg decision: `learnings.md` REQ-151 entry.
+Function accepts ONE canonical shape: `{ kSulfate_g, mgSulfate_g, solubore_g }`. Callers reshape from upstream source; function never branches on source. Shape-arg decision: `learnings.md` `per-element-supply` entry.
 
 ```js
 // Stored mode
@@ -188,7 +188,7 @@ Omitting `recipe` defaults to the stored reshape (one-arg convenience for admin 
 
 ### Why flat return (no `details`)
 
-REQ-136 requires per-element `{cert, cap}` alongside flat `mg` map. For fertigation, cap detection depends on pH state + sourced elements (caller context, not model). Matches `computeFoliarSupply` precedent — flat return; details composed in `nutrition/tomato/shell/logic.js`. Unified retrofit is a separate REQ. Full options + rationale: `learnings.md` REQ-151 `details` entry.
+REQ-136 requires per-element `{cert, cap}` alongside flat `mg` map. For fertigation, cap detection depends on pH state + sourced elements (caller context, not model). Matches `computeFoliarSupply` precedent — flat return; details composed in `nutrition/tomato/shell/logic.js`. Unified retrofit is a separate REQ. Full options + rationale: `learnings.md` `per-element-supply` `details` entry.
 
 ### Cert table
 
@@ -196,13 +196,13 @@ REQ-136 requires per-element `{cert, cap}` alongside flat `mg` map. For fertigat
 |---------|------|------------------------------------------------------------|
 | K       | 4    | K₂SO₄ structural, organic-cert-listed, sulfate dissociates cleanly. |
 | Mg      | 4    | MgSO₄·7H₂O same product class.                            |
-| B       | 3    | Solubore single-channel (REQ-061); dose = mass-balance output (REQ-098) × REQ-155 B uptake factor 0.80 (cert 2 mid-band). Effective cert min over stack = 3 (product chemistry + organic-cert listing cert 4; biomass.B demand cert 2-3; uptake factor cert 2). Not field-measured at Décembre yet — refinement via foliar B test per REQ-155 trigger. |
+| B       | 3    | Solubore single-channel (REQ-061); dose = mass-balance output (`mass-balance-derivation`) × `uptake-efficiency-factor` B uptake factor 0.80 (cert 2 mid-band). Effective cert min over stack = 3 (product chemistry + organic-cert listing cert 4; biomass.B demand cert 2-3; uptake factor cert 2). Not field-measured at Décembre yet — refinement via foliar B test per `uptake-efficiency-factor` trigger. |
 
 ---
 
 ## Per-stage values
 
-Sidedress K credit = `STORED_RECIPE.tomato.sidedress[stage].actisol_g × PRODUCT_PCT.Actisol_K × SIDEDRESS_MIN_EFF.Actisol_K (0.85) × 1000 / SIDEDRESS_AREA_PER_PLANCHE (54.7)`. Compost K/Mg credits constant: 400 / 500 mg/m²/wk (`COMPOST_RELEASE_PER_WEEK.K = 0.40`, `.Mg = 0.50`). Uptake factors (K 0.90, Mg 0.85, B 0.80) per REQ-155 inflate demand before subtraction.
+Sidedress K credit = `STORED_RECIPE.tomato.sidedress[stage].actisol_g × PRODUCT_PCT.Actisol_K × SIDEDRESS_MIN_EFF.Actisol_K (0.85) × 1000 / SIDEDRESS_AREA_PER_PLANCHE (54.7)`. Compost K/Mg credits constant: 400 / 500 mg/m²/wk (`COMPOST_RELEASE_PER_WEEK.K = 0.40`, `.Mg = 0.50`). Uptake factors (K 0.90, Mg 0.85, B 0.80) per `uptake-efficiency-factor` inflate demand before subtraction.
 
 | Stage | yield | K demand | K demand_to_bed | − sd  | − compost K | kSulfate g | Mg demand | Mg demand_to_bed | − compost Mg | mgSulfate g | B demand | B demand_to_bed | solubore g |
 |-------|-------|----------|-----------------|-------|-------------|------------|-----------|------------------|--------------|-------------|----------|-----------------|------------|
@@ -214,7 +214,7 @@ Sidedress K credit = `STORED_RECIPE.tomato.sidedress[stage].actisol_g × PRODUCT
 
 (T1-T4 B columns approximate — biomass.B precision not pinned; T5 row is verifier-authoritative. Recomputed 2026-05-15.)
 
-T5 values match `FP_RECIPE_T5.fertigation` by construction (REQ-154); `wireFpFertigation()` writes constants from `computeStageRecipe('T5')` at script load. REQ-098 verifies formula; REQ-154 verifies constants equal function output; REQ-155 verifies uptake factor.
+T5 values match `FP_RECIPE_T5.fertigation` by construction (`fp-target-mirrors-sizer`); `wireFpFertigation()` writes constants from `computeStageRecipe('T5')` at script load. REQ-098 verifies formula; REQ-154 verifies constants equal function output; REQ-155 verifies uptake factor.
 
 `STORED_RECIPE.tomato.fertigation` is operational (hand-weighed, `/retire-recipe` governed). This subproject defines only the **first-principles target**. Stored-vs-FP gap surfaces at Block 7/8 as the drift gauge.
 
@@ -222,9 +222,9 @@ T5 values match `FP_RECIPE_T5.fertigation` by construction (REQ-154); `wireFpFer
 
 ## Caveats
 
-- **Compost release IS subtracted** (REQ-098 reverted 2026-05-15 per B1-REV). At T1-T3, compost Mg (500 mg/m²/wk) exceeds plant Mg demand → fertigation Mg = 0; surplus accumulates in bank by design. Full amendment-then-reversal cycle: `learnings.md`.
+- **Compost release IS subtracted** (`mass-balance-derivation` reverted 2026-05-15 per B1-REV). At T1-T3, compost Mg (500 mg/m²/wk) exceeds plant Mg demand → fertigation Mg = 0; surplus accumulates in bank by design. Full amendment-then-reversal cycle: `learnings.md`.
 - **B is stage-aware now** (post-B2-REV) but treated as roughly flat 4-5 mg/m²/wk T1-T5; T5 row is authoritative, T1-T4 approximate. Extend `computeStageRecipe` if flowering-phase B demand spikes.
-- **FP target cannot drift from model** (REQ-154 boot-pinning). PA Taillon's April 2026 Mg anchor (1 379 g) recovered by physics pre-B2-REV: demand 855 − compost 500 = 355 mg/m²/wk → 1 378 g MgSO₄·7H₂O. Post-B2-REV the anchor no longer matches (uptake factor inflates). Stored-vs-FP drift resolved through `/retire-recipe`, not hand-locked FP overrides.
+- **FP target cannot drift from model** (`fp-target-mirrors-sizer` boot-pinning). PA Taillon's April 2026 Mg anchor (1 379 g) recovered by physics pre-B2-REV: demand 855 − compost 500 = 355 mg/m²/wk → 1 378 g MgSO₄·7H₂O. Post-B2-REV the anchor no longer matches (uptake factor inflates). Stored-vs-FP drift resolved through `/retire-recipe`, not hand-locked FP overrides.
 - **Total area hardcoded** at `TOMATO_NUM_BEDS × TOMATO_BED_AREA = 382.9 m²`. Bed reconfiguration → both constants drift in lockstep.
 - **Sulfate-form S over-supply at T5 is a known characteristic, not a dosing error.** K₂SO₄ (3 489 g) + MgSO₄·7H₂O (1 396 g) at T5 deliver ~2 200 mg S/m²/wk via sulfate chemistry vs tomato demand ~600 mg/m²/wk (+300 %). Confirmed by 2026-05-22 tissue panel (TOM #1 S = 2.29 % vs ceiling 0.70 %, +227 %). The over-supply is structural to the sulfate-based salt choice — any K dose bump compounds it mathematically. Trade-off acknowledged in PA Taillon's April 2026 recipe design: sulfate forms are organic-cert-listed, cheap, and dissociate cleanly at pH ≥ 6.2; alternative low-S K salts (KCl) are also cert-listed but introduce Cl management. Tissue validation in `nutrition/tomato/doc/tomato-t5-tissue-analysis-2026-05-23.md`.
 
@@ -237,7 +237,7 @@ T5 values match `FP_RECIPE_T5.fertigation` by construction (REQ-154); `wireFpFer
 - **PA Taillon recommends model-input change** → edit `TOMATO_FRUIT_EXPORT`, `BIOMASS_DEMAND`, `RECIPE_INPUTS.stageYield`, or sidedress mineralization (not the output). FP target recomputes automatically.
 - **Sidedress switches to alfalfa default** → verify `SIDEDRESS_MIN_EFF.Actisol_K = 0.85` still applies if `eff` changes for alfalfa.
 - **B becomes stage-aware** → extend `computeStageRecipe` return shape if flowering-phase B spikes beyond 4-5 mg/m²/wk steady-state.
-- **Uptake factor refinement** — per REQ-155 symmetric triggers above.
+- **Uptake factor refinement** — per `uptake-efficiency-factor` symmetric triggers above.
 
 ---
 

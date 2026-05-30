@@ -36,6 +36,26 @@ admin page live in `nutrition/tomato/shell/spec.md` (page-shell orchestration
   rejected. Greenfield — spec entries blocked on the soil-root-zone
   target band + the carbonate measurement. No code yet.
 
+**Specialist note (2026-05-30):** `soil-root-zone-ph-band` does not yet
+exist and both crops' `soil-ph/model/` are blocked on it for the
+correction endpoint. Recommend the PO write the entry. Proposed tomato
+band, **Mehlich-3 water pH scale** (the soil-bed measure the correction
+anchors on per the soil-ph `pH scale` rule):
+
+- **Target band 6.4 – 6.8**, operational midpoint ~6.6.
+- **Hard floor 6.2** — below = over-corrected; Mn/Zn-availability climbs
+  into watch range on this calcareous mineral soil.
+- Basis: peak soil-P availability + restored Fe/Mn/Zn cation uptake sit
+  ~6.2–6.8; 6.8 ceiling = "good enough, stop dosing"; the 6.2 floor
+  keeps margin above toxicity. cert 3 (extension P/micro availability
+  curves for calcareous mineral soils; not Décembre-tissue-calibrated).
+- SME root-zone secondary equivalent ≈ 6.1–6.5 (~0.3 unit below
+  Mehlich-3 water; never mix the two scales in one calculation).
+
+The lettuce sibling (`nutrition/lettuce/spec.md`) needs the parallel
+entry — slightly tighter, salt-sensitive, floor 6.0; recommended there
+in a separate note.
+
 The specs below cover the *coupling* between plant-needs and the supply
 chain (`under-fert-guard`, `luxury-feeding-guard`) plus the
 demand-anchor source-of-truth invariant (`tomato-removal-biased-high`).

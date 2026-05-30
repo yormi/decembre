@@ -92,7 +92,7 @@ entry (zero is acceptable; `undefined` is not).
 
 ---
 
-## REQ-165 — Public API namespace `window.PlantNeedsLettuce`
+## public-api-namespace
 
 At runtime, `window.PlantNeedsLettuce` exists and exposes:
 
@@ -109,7 +109,7 @@ At runtime, `window.PlantNeedsLettuce` exists and exposes:
 
 ---
 
-## REQ-166 — Demand scales linearly with mass gain and inversely with cycle length
+## demand-scales-with-mass-and-cycle
 
 For every element in `LETTUCE_TISSUE_DW`, doubling `(targetG − transplantG)`
 or `density` doubles the per-element demand; doubling `cycleDays` halves it
@@ -122,7 +122,7 @@ Hochmuth + Sonneveld leafy-greens norms).
 
 ---
 
-## REQ-167 — Supply composition is soil + fertigation + front-load
+## supply-composition-soil-fert-frontload
 
 For every element in `LETTUCE_TISSUE_DW`, `total[element] = soil[element]
 + fert[element] + frontload[element]` (exactly, no rounding). Soil mass-flow
@@ -137,7 +137,7 @@ peer-reviewed; refinement triggers in derivation.md).
 
 ---
 
-## REQ-168 — Demand certainty floor
+## demand-certainty-floor
 
 Per-element demand inherits cert from `LETTUCE_TISSUE_DW`. Macros (N, P, K,
 Ca, Mg): cert 4. Micros (Fe, Mn, Zn, B, Cu, Mo): cert 3. Surfaced per element
@@ -148,7 +148,7 @@ integrator (`nutrition/lettuce/app/logic.js` once carved out).
 
 ---
 
-## REQ-169 — Canopy factor bounded `[0.2, 0.7]`
+## canopy-factor-bounded
 
 For every supply call, `canopyFactor = clamp(currentG / targetG × 0.7, 0.2, 0.7)`.
 Bounded so stunted plants (very small `currentG`) keep a minimum mass-flow
@@ -174,7 +174,7 @@ supply lockout discounts.
 - **REQ-020** (`nutrition/spec.md`) — pH-locked soil-solution cap for P/Mn/Zn
   when `phLocked = true`.
 - **REQ-157** (`nutrition/spec.md`) — channel efficiency map exposed alongside
-  supply. Front-load `efficiency.N` set when N > 0 (REQ-167 supply output).
+  supply. Front-load `efficiency.N` set when N > 0 (`supply-composition-soil-fert-frontload` supply output).
 
 Specs that *consume* demand/supply output:
 

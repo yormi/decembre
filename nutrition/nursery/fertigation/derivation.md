@@ -75,7 +75,7 @@ DW per plant per week = 90 × LETTUCE_NURSERY_DM_FRACTION × (7 / 35)
 | Ca | 2.0 %  | 25.2 | 1 260 |
 | Mg | 0.4 %  | 5.04 | 252   |
 
-REQ-100 inline-fallback target is **2 800 mg N / tray / week**, deliberately
+`n-supply-half-demand-floor` inline-fallback target is **2 800 mg N / tray / week**, deliberately
 conservative vs calculated 3 150 during 90 g calibration phase. Cert 3
 across the board.
 
@@ -103,7 +103,7 @@ alone — see `learnings.md`.
 Constraints:
 - **CE** ≤ 3.0 mS/cm (REQ-098)
 - **pH** ∈ [4.5, 6.5] (REQ-099)
-- **N supply** ≥ 1 400 mg/tray (50 % of inline 2 800, REQ-100)
+- **N supply** ≥ 1 400 mg/tray (50 % of inline 2 800, `n-supply-half-demand-floor`)
 - **P supply** ≥ 158 mg/tray (50 % of 315, REQ-101)
 
 Mass-flow per knob (per tray, per week, mg element):
@@ -126,7 +126,7 @@ Kelp   Z g/L:  K = Z × 1.25 × 0.01   × 1000 = 12.5 Z
 
 Search heuristic: lock Z = 2 g/L; solve {X, Y} for max(N supply) subject to
 CE ≤ 3.0 and P ≥ 158. Picked `X = 7, Y = 6, Z = 2`:
-- N 1 463 mg = 52 % of 2 800 target (clears REQ-100, edge-close).
+- N 1 463 mg = 52 % of 2 800 target (clears `n-supply-half-demand-floor`, edge-close).
 - P 170 mg = 54 % of 315 (clears REQ-101 with room).
 - CE 2.55 + 0.10 baseline = 2.65 mS/cm (~0.4 mS/cm head-room under 3.0 cap).
 - pH 5.25 (centre of [4.5, 6.5]).
@@ -168,8 +168,8 @@ Recompute recipe or ecFactor calibration when:
    → push doses up. Ca <1.5 % or Mg <0.3 % → source organic supplement.
 4. **Manufacturer EC datasheet.** Acadie technical sheet conductivity per
    dilution would replace single-point calibration.
-5. **Tray-finishing pilot results (90 g → 110 g).** REQ-100 / REQ-101
+5. **Tray-finishing pilot results (90 g → 110 g).** `n-supply-half-demand-floor` / REQ-101
    thresholds + default doses shift in lockstep.
 6. **`nutrition/nursery/plant-needs` lands.** When
-   `window.PlantNeedsNursery.demandPerTray('N')` is wired, REQ-100 reads
+   `window.PlantNeedsNursery.demandPerTray('N')` is wired, `n-supply-half-demand-floor` reads
    dynamically; inline 2 800 fallback retires.

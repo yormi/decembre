@@ -16,7 +16,7 @@ demand[el] = TOMATO_FRUIT_EXPORT[el] × yieldKgPerM2 × 1 000  +  BIOMASS_DEMAND
 Implemented in `nutrition/tomato/plant-needs/calc.js`:
 
 ```js
-const TRANSP_COUPLED_BIOMASS = { Ca: true, Mg: true };  // REQ-081
+const TRANSP_COUPLED_BIOMASS = { Ca: true, Mg: true };  // ca-mg-biomass-transpiration-coupled
 
 function calcNutrDemand(yieldKgPerM2, stage, transpFactor = 1.0) {
   const out = {};
@@ -138,7 +138,7 @@ the named source — don't bump cert without addressing it.
 | T4 macros (N / P / K / Ca / Mg)                 | T5 × 0.85 extrapolation — no independent stage-stratified data for T4                 |
 | T1-T5 micros (Fe / Mn / Zn / B / Cu / Mo) — fruit term | `TOMATO_FRUIT_EXPORT` 60 % default split (Yara fruit-vs-canopy data gap for micros)   |
 | T1-T5 micros — biomass term                     | `TOMATO_REMOVAL` micros are extrapolated whole-plant estimates (no peer-reviewed source) |
-| Ca / Mg biomass (any stage)                     | `transpFactor` coupling cert ceiling — REQ-081 is cert 4 mechanism, but the input `transpFactor` itself is operator-supplied (cert 2-3 transpiration-to-yield ratio) |
+| Ca / Mg biomass (any stage)                     | `transpFactor` coupling cert ceiling — `ca-mg-biomass-transpiration-coupled` is cert 4 mechanism, but the input `transpFactor` itself is operator-supplied (cert 2-3 transpiration-to-yield ratio) |
 
 ### T4 cert-1 — load-bearing for the Bilan modal
 
@@ -173,7 +173,7 @@ cert 1 with transparent operator surfacing is the right floor.
 
 ## Caveats
 
-- **Transpiration coupling — Ca and Mg only (REQ-081, applied 2026-05-09).**
+- **Transpiration coupling — Ca and Mg only (`ca-mg-biomass-transpiration-coupled`, applied 2026-05-09).**
   Ca/Mg biomass × `transpFactor` (current ÷ target yield, floor 0.4); Ca
   is xylem-only, Mg partly xylem. N/P/K/micros unscaled — phloem
   redistribution and active transport decouple them weekly.
@@ -245,7 +245,7 @@ multiplier 1.3, transpFactor 1.0).
 | N       | 4050   | 3638             | -10 %       | déficient       | ✓ supply short → tissue below floor |
 | P       | 660    | ~67              | **-90 %**   | déficient       | ✓ lockout fully visible             |
 | K       | 6000   | ~6000 (no luxury) | ±0 %      | at floor        | ✓ supply ≈ demand, no reserve       |
-| Ca      | 2250   | ~2250 (transp-capped) | ±0 %  | déficient       | ✓ REQ-081 coupling caps uptake      |
+| Ca      | 2250   | ~2250 (transp-capped) | ±0 %  | déficient       | ✓ `ca-mg-biomass-transpiration-coupled` coupling caps uptake |
 | Mg      | 855    | 1715             | +101 %      | mid-suff        | ✓ over-supplied, no def             |
 | S       | ~600   | ~2400            | +300 %      | élevé           | ✓ K2SO4 + MgSO4 over-deliver        |
 | Mn      | 7.5    | 11.6             | +55 %       | élevé           | ✓ (or contamination)                |
@@ -323,7 +323,7 @@ yield-impact) and P-08 (no PA-asks): default plan, no fork to Guillaume.
 **Yield-impact assessment.** Micros are foliar-channel routed per
 `CHANNEL_ROLE` (Fe / Mn / Zn / B / Cu / Mo all foliar-only at Décembre's
 current high-pH lockout regime). Foliar dose is capped by burn ceiling
-(REQ-115 in `nutrition/tomato/foliar-strategy/spec.md`), not by
+(`nutrition/tomato/foliar-strategy/model — gap-maximizing-recipe`), not by
 plant-demand readout. So cert-1 micros in `BIOMASS_DEMAND` drive the
 Bilan delivered-vs-demand gap visualization but do NOT drive operator
 weighing — the foliar recipe is independently capped. **Low yield-impact**

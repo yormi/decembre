@@ -62,7 +62,7 @@ and `keys(TOMATO_DEMAND_CERT[stage]) ⊆ keys(TOMATO_FRUIT_EXPORT)`.
 
 ---
 
-## REQ-081 — Ca and Mg biomass demand coupled to transpiration
+## ca-mg-biomass-transpiration-coupled
 
 For elements `Ca` and `Mg`, the biomass term is multiplied by
 `transpFactor`. N, P, K, and micros are not. Fruit-export term is never
@@ -72,7 +72,7 @@ scaled.
 
 ---
 
-## REQ-082 — Stage-transition continuity
+## stage-transition-continuity
 
 For every adjacent stage pair `(Tn, Tn+1)` and every element in
 `BIOMASS_DEMAND`, `|demand[Tn+1] − demand[Tn]| / demand[Tn] ≤ 2.5`.
@@ -81,7 +81,7 @@ For every adjacent stage pair `(Tn, Tn+1)` and every element in
 
 ---
 
-## REQ-083 — Public API namespace `window.PlantNeedsTomato`
+## plant-needs-tomato-namespace
 
 At runtime, `window.PlantNeedsTomato` exists and exposes:
 

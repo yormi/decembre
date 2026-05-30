@@ -47,7 +47,7 @@ pulled from upstream — see derivation.
 All masses in **g per planche per week** (planche area =
 `SIDEDRESS_AREA_PER_PLANCHE`). `chosen` is the selected product key;
 `g_per_planche` is its dose. Per-product fields hold 0 for unselected.
-`actisol_g` stays 0 in the Ca-aware variant (REQ-089 gate).
+`actisol_g` stays 0 in the Ca-aware variant (`ca-aware-product-gate` gate).
 
 ---
 
@@ -66,7 +66,7 @@ returns numeric per-product fields and `g_per_planche`. No `undefined`,
 
 ---
 
-## REQ-087 — Mass-balance: chosen product sized to N gap after compost
+## mass-balance-sizes-product-to-n-gap
 
 For each stage, given the chosen product `p = SIDEDRESS_PRODUCTS[chosen]`:
 
@@ -88,7 +88,7 @@ itself structural, cert 4).
 
 ---
 
-## REQ-088 — Public API namespace `window.SidedressRecipeTomato`
+## public-api-namespace
 
 At runtime, `window.SidedressRecipeTomato` exists and exposes:
 
@@ -112,7 +112,7 @@ macros absent (no routing under current product mix).
 
 ---
 
-## REQ-089 — Ca-aware product gate
+## ca-aware-product-gate
 
 The product chosen by `computeStageSidedress(stage, product)` must have
 `SIDEDRESS_PRODUCTS[chosen].ca_pct === 0`. Any product with `ca_pct > 0`
@@ -131,16 +131,16 @@ gate generalizes beyond Actisol-specific lock).
 
 Sidedress consumes plant-needs and compost-contribution outputs:
 
-- **REQ-083** (`nutrition/tomato/plant-needs/spec.md`) —
+- **`nutrition/tomato/plant-needs/model — plant-needs-tomato-namespace`** —
   `PlantNeedsTomato.demandTotal` canonical demand source.
-- **REQ-080** (`nutrition/compost-contribution/spec.md`) —
+- **`nutrition/compost-contribution — public-api-namespace`** —
   `CompostContribution.releasePerWeek` canonical compost source.
 
 Specs that *consume* sidedress output:
 
 - **REQ-013 / REQ-014** (`nutrition/tomato/spec.md`) — supply chain bounds.
   Sidedress N is one of four channels summed against demand.
-- **REQ-022** (`nutrition/spec.md`) — every product Ecocert-allowed.
+- **`nutrition/chemistry — every-product-ecocert-allowed`** — every product Ecocert-allowed.
   Farine de plumes 13-0-0 ✓. Eco-luzerne 3-0.5-2 CAN/CGSB-32.311
   status unverified — no certificate on file under `nutrition/doc/` as
   of the last scan; directory `nutrition/doc/eco-luzerne-3-0-5-2/` has

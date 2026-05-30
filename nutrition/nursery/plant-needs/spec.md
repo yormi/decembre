@@ -53,7 +53,7 @@ Ca, Mg, Fe, Mn, Zn, B, Cu, Mo`.
 
 ---
 
-## REQ-090 — Demand linear in target weight
+## demand-linear-in-target-weight
 
 For every element, `calcNurseryDemand(2 g, days, cells)` returns exactly
 2× the value of `calcNurseryDemand(1 g, days, cells)` on both
@@ -63,7 +63,7 @@ For every element, `calcNurseryDemand(2 g, days, cells)` returns exactly
 
 ---
 
-## REQ-091 — Demand inverse-linear in cycle length
+## demand-inverse-linear-in-cycle-length
 
 For every element, `calcNurseryDemand(g, 70, cells).perTray_mg` is exactly
 half of `calcNurseryDemand(g, 35, cells).perTray_mg`.
@@ -72,7 +72,7 @@ half of `calcNurseryDemand(g, 35, cells).perTray_mg`.
 
 ---
 
-## REQ-092 — N demand per plant in 50-70 mg/wk band at defaults
+## nitrogen-demand-in-band-at-defaults
 
 At default targets (90 g, 35 d, 50 cells), the N entry of
 `calcNurseryDemand(...).perPlant_mg` falls in `[50, 70]` mg/wk.
@@ -83,7 +83,7 @@ Numerically: `90 × 0.07 × (7/35) × 0.05 × 1000 = 63 mg/plant/wk`.
 
 ---
 
-## REQ-093 — Public API namespace `window.PlantNeedsNursery`
+## public-api-namespace
 
 At runtime, `window.PlantNeedsNursery` exists and exposes:
 
@@ -113,6 +113,6 @@ Sonneveld) with cert 2-3 caps.
 
 ## Inherited specs
 
-- **REQ-022** (`nutrition/spec.md`) — Every product Ecocert-allowed.
+- **nutrition/chemistry — every-product-ecocert-allowed** — Every product Ecocert-allowed.
   Plant-needs declares no products; consumers satisfy this on demand →
   recipe translation.

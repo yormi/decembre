@@ -17,9 +17,9 @@ The model answers two questions:
 
 1. **Sizing** — `computeStageRecipe(stage)` returns grams of K₂SO₄ +
    MgSO₄·7H₂O (and Solubore at T5) per tomato bed-area per week to
-   replenish offtake net of sidedress and compost (REQ-098).
+   replenish offtake net of sidedress and compost (`mass-balance-derivation`).
 2. **Supply** — `computeFertigationSupply(stage, opts, recipe)` returns
-   mg/m²/wk of each element delivered to the bed (REQ-151).
+   mg/m²/wk of each element delivered to the bed (`per-element-supply`).
 
 Out of scope: `STORED_RECIPE.tomato.fertigation`, barrel-mixing/injection
 schedule, `LUXURY_FACTOR` cap on `supply.soil` (consumer-side concern on
@@ -56,7 +56,7 @@ All four masses in **grams of product per total tomato area per week**
 `kSulfate` = K₂SO₄, `mgSulfate` = MgSO₄·7H₂O, `solubore` = Solubor
 (disodium octaborate tetrahydrate, Na₂B₈O₁₃·4H₂O, 20.5 % B mass),
 `naMolybdate` = sodium molybdate (Na₂MoO₄·2H₂O). K + Mg + Solubore are
-mass-balance-derived per REQ-098 / REQ-155. Sodium molybdate is a flat
+mass-balance-derived per `mass-balance-derivation` / `uptake-efficiency-factor`. Sodium molybdate is a flat
 0.5 g/wk floor across all stages T1-T5 (operator-weighing floor, not
 demand-driven) per the REQ-061 Mo carve-out 2026-05-16 — rationale in
 `derivation.md` "Mo algorithmic detail".
@@ -78,7 +78,7 @@ negative values.
 
 ---
 
-## REQ-098 — Mass-balance derivation matches the formula
+## mass-balance-derivation
 
 For each stage and each element, `computeStageRecipe(stage)` returns
 values that match the mass-balance derivation:
@@ -117,7 +117,8 @@ mg_needed_mg/m²/wk    = max(0, mg_offtake − mg_compost)   // sidedress carrie
 mgSulfate_g_total     = round(mg_needed / 1000 / PRODUCT_PCT.MgSO4_Mg × total_area)
 ```
 
-N stays with sidedress (organic-N concentrate, REQ-087); micros stay
+N stays with sidedress (organic-N concentrate,
+`nutrition/tomato/sidedress-recipe/model — mass-balance-sizes-product-to-n-gap`); micros stay
 with foliar (cuticle uptake bypasses soil lockout); B is the one micro
 on fertigation (single-channel, REQ-061) and is fixed at T5 by refined
 target (see derivation).
@@ -128,7 +129,7 @@ min = 2-3; formula application cert 4).
 
 ---
 
-## REQ-099 — Public API namespace `window.FertigationRecipeTomato`
+## public-api-namespace
 
 At runtime, `window.FertigationRecipeTomato` exists and exposes:
 
@@ -142,28 +143,28 @@ At runtime, `window.FertigationRecipeTomato` exists and exposes:
 soil pH 7.4 chemistry (channel → bed axis). K/Mg follow the
 `soluble-cation` PH_RESPONSE curve; B follows `borate` (non-ionic, flat
 at 1.0). Orthogonal bed → plant uptake-inefficiency axis is
-`PH_UPTAKE_FACTOR_AT_CURRENT_SOIL` (REQ-155).
+`PH_UPTAKE_FACTOR_AT_CURRENT_SOIL` (`uptake-efficiency-factor`).
 
-REQ-099 covers the sizer surface. Supply-side `computeFertigationSupply`
-is asserted independently by REQ-151. `FIRST_PRINCIPLES_T5` mirrors the
+`public-api-namespace` covers the sizer surface. Supply-side `computeFertigationSupply`
+is asserted independently by `per-element-supply`. `FIRST_PRINCIPLES_T5` mirrors the
 wired `FP_RECIPE_T5.fertigation` shape: `K2SO4`, `MgSO4-7H2O`, `Solubore`,
 `NaMolybdate`. All four are populated by `wireFpFertigation()` at boot
-from `computeStageRecipe('T5')` per REQ-154; `NaMolybdate` is the Mo
+from `computeStageRecipe('T5')` per `fp-target-mirrors-sizer`; `NaMolybdate` is the Mo
 carve-out per REQ-061 amendment 2026-05-16, flat-floor not mass-balance.
 
 **Cert:** 5 (structural assertion).
 
 ---
 
-## REQ-154 — `FIRST_PRINCIPLES_T5_FERTIGATION` mirrors `computeStageRecipe('T5')` by construction
+## fp-target-mirrors-sizer
 
 **Statement:** At runtime, after `wireFpFertigation()` runs at script load,
 `FIRST_PRINCIPLES_T5_FERTIGATION` equals `computeStageRecipe('T5')` by
 construction across all four keys:
 
-- `K2SO4` ≡ `computeStageRecipe('T5').kSulfate` (mass-balance per REQ-098)
-- `MgSO4-7H2O` ≡ `computeStageRecipe('T5').mgSulfate` (mass-balance per REQ-098)
-- `Solubore` ≡ `computeStageRecipe('T5').solubore` (mass-balance per REQ-098 / REQ-155)
+- `K2SO4` ≡ `computeStageRecipe('T5').kSulfate` (mass-balance per `mass-balance-derivation`)
+- `MgSO4-7H2O` ≡ `computeStageRecipe('T5').mgSulfate` (mass-balance per `mass-balance-derivation`)
+- `Solubore` ≡ `computeStageRecipe('T5').solubore` (mass-balance per `mass-balance-derivation` / `uptake-efficiency-factor`)
 - `NaMolybdate` ≡ `computeStageRecipe('T5').naMolybdate` (flat 0.5 g/wk floor per REQ-061 Mo carve-out)
 
 The same four values propagate to `FP_RECIPE_T5.fertigation` in the same
@@ -171,7 +172,7 @@ boot pass, so the FP target read by Block 7/8 drift gauges, the Banque
 sol view, and the consumer-side cascade is a deterministic function of
 `computeStageRecipe` — not a hand-locked agronomist anchor on any product.
 
-**Rationale:** Closes the loop opened by REQ-098 — without this pin
+**Rationale:** Closes the loop opened by `mass-balance-derivation` — without this pin
 the constants could drift from the function (REQ-098 verifier tests the
 function, not the constants). Historical PA Taillon FP anchor (K 5 167 /
 Mg 1 379 / Solubore 9 from April 2026) preserved in `learnings.md` for
@@ -186,7 +187,7 @@ of K2SO4 / MgSO4-7H2O / Solubore / NaMolybdate between constant and
 
 ---
 
-## REQ-155 — Per-element bed→plant uptake-efficiency factor applied to fertigation sizing
+## uptake-efficiency-factor
 
 **Statement:** Fertigation sizing accounts for bed → plant uptake
 inefficiency at current Décembre soil chemistry (pH 7.28, Ca 10 989 kg/ha)
@@ -209,7 +210,7 @@ Default factors (cert 2 across the board, refit on tissue correlation):
 
 Function implements K + Mg + B (Solubore) branches at full mass-balance —
 uptake factor inflates demand for each. Return shape: `{ kSulfate,
-mgSulfate, solubore }` in grams (rounded). REQ-154 boot-pin propagates
+mgSulfate, solubore }` in grams (rounded). `fp-target-mirrors-sizer` boot-pin propagates
 all three into `FIRST_PRINCIPLES_T5_FERTIGATION` and `FP_RECIPE_T5.fertigation`.
 
 **Verification:** `scripts/check-recipes.mjs` REQ-098 block applies
@@ -223,7 +224,7 @@ bumps cert 2 → 3; ±10 % → 4. Each element refines independently.
 
 ---
 
-## REQ-151 — `computeFertigationSupply(stage, opts, recipe)` delivers per-element supply
+## per-element-supply
 
 **Statement:** `computeFertigationSupply(stage, opts = {}, recipe?)`
 returns the per-element fertigation supply in mg/m²/wk delivered to the
@@ -275,10 +276,10 @@ blacklist catches new inline drift on the exact formula shape).
 
 Fertigation consumes plant-needs, sidedress, and stored-recipe outputs:
 
-- **REQ-083** (`nutrition/tomato/plant-needs/spec.md`) —
+- **`nutrition/tomato/plant-needs/model — plant-needs-tomato-namespace`** —
   `PlantNeedsTomato.demandTotal` is the canonical demand source
   (`TOMATO_FRUIT_EXPORT`, `BIOMASS_DEMAND`).
-- **REQ-087 / REQ-088** (`nutrition/tomato/sidedress-recipe/spec.md`) —
+- **`nutrition/tomato/sidedress-recipe/model — mass-balance-sizes-product-to-n-gap` / `public-api-namespace`** —
   sidedress contribution subtracted in the K offtake.
 
 Specs that *consume* the fertigation output:
@@ -286,12 +287,12 @@ Specs that *consume* the fertigation output:
 - **REQ-013 / REQ-014** (`nutrition/tomato/spec.md`) — supply chain bounds.
   Fertigation K, Mg, B are channels summed against demand. The supply
   sum is **active-channels only**: compost + sidedress + fertigation +
-  foliar. The soil-bank K + Mg mass-flow delivery declared in REQ-141
-  (`nutrition/soil-contribution/spec.md`) is **not** in the sum by
+  foliar. The soil-bank K + Mg mass-flow delivery declared in
+  `nutrition/soil-contribution — only-ca-p-participate-in-gap-chain` is **not** in the sum by
   architectural choice — bank K + Mg sit outside the sizer as operator-
   side headroom (see `nutrition/soil-contribution/learnings.md` for the
   rejected path-1 subtract-bank-from-sizer alternative).
-- **REQ-022** (`nutrition/spec.md`) — every product is Ecocert-allowed.
+- **`nutrition/chemistry — every-product-ecocert-allowed`** — every product is Ecocert-allowed.
   K₂SO₄, MgSO₄·7H₂O, and Solubor (disodium octaborate tetrahydrate) are
   all on the certified-input list (CAN/CGSB-32.311 sodium borates).
 - **REQ-002** (`nutrition/spec.md`) — no forbidden products.

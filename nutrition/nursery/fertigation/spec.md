@@ -46,7 +46,7 @@ stalls microbes (>6.5) or cooks substrate (<4.5). Cert 4.
 
 ---
 
-## REQ-100 — Default recipe N supply ≥ 50 % of nursery demand
+## n-supply-half-demand-floor
 
 **Statement:** `nurseryRecipeSupply(NURSERY_RECIPE_DEFAULT, NURSERY_FERTIGATION_DEFAULTS.trayVolumeL).perTray_mg.N`
 ≥ `0.5 × demandPerTray_N_mg`.
@@ -75,18 +75,18 @@ poisson 2-4-0.5 is P workhorse — 1.75 % P (label 4 % P₂O₅) is 4× Ocean's.
 
 ---
 
-## REQ-102 — `NURSERY_PRODUCTS` schema is complete and organic-only
+## products-schema-complete-organic-only
 
 **Statement:** Every entry in `NURSERY_PRODUCTS` has:
-- `mode` ∈ {`flux`, `concentration`}        (mirrors REQ-010)
-- `organicAllowed: true`                    (mirrors REQ-022)
-- `ecFactor: <number>`                      (mirrors REQ-023; explicit 0 OK)
-- `phContribution: <number>`                (mirrors REQ-053 schema half)
-- `ions:        {…}` non-empty              (mirrors REQ-029a)
-- `chemistryTags: […]` non-empty            (mirrors REQ-029a)
+- `mode` ∈ {`flux`, `concentration`}        (mirrors nutrition/chemistry — recipe-mode-per-product)
+- `organicAllowed: true`                    (mirrors nutrition/chemistry — every-product-ecocert-allowed)
+- `ecFactor: <number>`                      (mirrors nutrition/chemistry — ec-factor-covers-every-product; explicit 0 OK)
+- `phContribution: <number>`                (mirrors nutrition/chemistry — predicted-tank-ph-within-envelope schema half)
+- `ions:        {…}` non-empty              (mirrors nutrition/chemistry — product-declares-ions-and-chemistry-tags)
+- `chemistryTags: […]` non-empty            (mirrors nutrition/chemistry — product-declares-ions-and-chemistry-tags)
 
 **Rationale:** Global REQ-022 / 023 / 029a / 053-schema checks scan
-`PRODUCT[*]`, not `NURSERY_PRODUCTS`. REQ-102 is the local mirror that
+`PRODUCT[*]`, not `NURSERY_PRODUCTS`. `products-schema-complete-organic-only` is the local mirror that
 closes the loophole. Cert 5 — pure schema check.
 
 ---
@@ -104,7 +104,7 @@ fertigation card. Loud-failure by analogy to REQ-080-class checks. Cert 5.
 
 ---
 
-## REQ-122 — Recipe supply scales linearly with applicationsPerWeek
+## supply-scales-linearly-with-applications
 
 **Statement:** `nurseryRecipeSupply(recipe, trayVolumeL, applicationsPerWeek)`
 accepts a fourth integer `applicationsPerWeek ∈ [1, 7]` (default `1`) and
@@ -120,7 +120,7 @@ each bucket under cap while multiplying weekly supply.
 
 ---
 
-## REQ-123 — `minApplicationsPerWeek` solves for 100 % coverage
+## min-applications-solves-full-coverage
 
 **Statement:** `minApplicationsPerWeek(recipe, demandPerTray, trayVolumeL,
 ceCap)` returns smallest integer `N ∈ [1, 7]` such that
@@ -135,14 +135,14 @@ already covered.
 
 ---
 
-## REQ-124 — Element classification: sourced vs unsourced
+## elements-sourced-vs-unsourced
 
 **Statement:** `nurseryElementsBySource(recipe, demandPerTray)` returns
 `{ sourced: string[], unsourced: string[] }`. **Sourced** iff at least one
 product in `recipe` has `base[el] > 0` and a non-zero dose — recipe
 delivers any positive amount per fertigation. Otherwise **unsourced**.
 Whether per-fert supply is *enough* (at any frequency ≤ 7) is a separate
-question answered by `minApplicationsPerWeek` (REQ-123 returns `null` for
+question answered by `minApplicationsPerWeek` (`min-applications-solves-full-coverage` returns `null` for
 dose-bound elements).
 
 **Rationale:** Two distinct failure modes need different interventions:
@@ -156,7 +156,7 @@ Literal "any source" semantics keeps these distinguishable.
 
 ---
 
-## REQ-125 — EC cap respected per-fertigation, not per-week
+## ec-cap-per-fertigation-not-per-week
 
 **Statement:** `nurseryRecipeCE(recipe, dilution)` is a function of recipe
 composition and dilution only. It does NOT take `applicationsPerWeek` as
@@ -170,7 +170,7 @@ the two would silently break the cap.
 
 ---
 
-## REQ-126 — `applicationsPerWeek` is a positive integer
+## applications-per-week-positive-integer
 
 **Statement:** Every API consuming `applicationsPerWeek` (REQ-112, REQ-113)
 accepts only integers in `[1, 7]`. Non-integer or out-of-range rejected

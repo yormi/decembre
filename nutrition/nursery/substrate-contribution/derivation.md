@@ -40,7 +40,7 @@ for slider purposes.
 
 ## Why the front-load cap = 9 g (germination protection)
 
-Codified as `LIMITS.maxFeatherMealPerTrayG` (REQ-094). Salanova
+Codified as `LIMITS.maxFeatherMealPerTrayG` (`feather-meal-front-load-cap`). Salanova
 germination drops above ~9 g/tray (salt + ammonia pulse from week-1
 mineralization inhibits radicle emergence in peat). Empirical Décembre
 operator note + Sonneveld & Voogt peat salt-sensitivity guidance
@@ -170,7 +170,7 @@ peat plug; < 10 % leaching loss absorbed within cert-2 band.
 - **Release curves flat across batches/seasons.** No Q10 multiplier —
   nursery sits in heated greenhouse, narrow temp band. Add multiplier
   if team runs un-heated batches.
-- **Linearity (REQ-095).** OM2 and feather meal treated as independent
+- **Linearity (`linear-in-feather-meal-input`).** OM2 and feather meal treated as independent
   additive contributions. Real biology has small interaction (more FM →
   more microbial activity → faster OM2 mineralization); below cert-2
   noise floor.

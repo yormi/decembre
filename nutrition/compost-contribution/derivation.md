@@ -51,7 +51,7 @@ Values in `g/m²/wk`. Calculation: `(applied_g_m² × year1_fraction / 52) × 1.
 
 Stored column → `window.CompostContribution.releasePerWeek`.
 Theoretical column → `theoreticalReleasePerWeek(el)`.
-REQ-079 asserts stored ∈ `[0.5×, 1.5×]` × theoretical.
+`release-values-within-mass-balance-band` asserts stored ∈ `[0.5×, 1.5×]` × theoretical.
 
 ---
 

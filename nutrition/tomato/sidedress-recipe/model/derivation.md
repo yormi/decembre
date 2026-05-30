@@ -5,7 +5,7 @@ How the model is built. Spec in `spec.md`; rejected alternatives in
 
 ---
 
-## Mass-balance derivation (REQ-087)
+## Mass-balance derivation (`mass-balance-sizes-product-to-n-gap`)
 
 For each stage `T1..T5` and chosen product `p = SIDEDRESS_PRODUCTS[chosen]`:
 
@@ -30,7 +30,7 @@ plumes 13-0-0, alfalfa 3-0.5-2) are the natural carrier. K / P / Ca /
 Mg / micros rejected — see `learnings.md`.
 
 Output shape carries `actisol_g`, `farine_g`, `alfalfa_g` fields;
-`actisol_g` hard-zeroed by REQ-089 (Ca-bearing). `farine_g` and
+`actisol_g` hard-zeroed by `ca-aware-product-gate` (Ca-bearing). `farine_g` and
 `alfalfa_g` mutually exclusive — operator picks via `product` arg.
 
 ---
@@ -107,7 +107,7 @@ in the Caveats list below (no cold-season scalar wired today).
   range pick.
 - **Actisol 0.60 (N) — cert 3.** Composted manure pellet — slower
   than feather meal because the N is already partly stabilized.
-  Operationally gated out by REQ-089 today; cert kept at 3 so the value
+  Operationally gated out by `ca-aware-product-gate` today; cert kept at 3 so the value
   is defensible if Ca-saturation drops and the product re-enters.
 
 ---
@@ -121,15 +121,15 @@ per-element delivery fraction the channel currently routes.
 |---------|-------|---------------------------------------------------------|
 | N       | 0.70  | `SIDEDRESS_PRODUCTS.FarinePlumes.efficiency` (cert 3)   |
 
-K and P absent — REQ-089 gate locks Actisol out on Ca-saturated soil
+K and P absent — `ca-aware-product-gate` gate locks Actisol out on Ca-saturated soil
 (`Actisol.ca_pct = 0.03 > 0`), so its K (0.85) and P (0.50) contributions
 are zero by construction. FarinePlumes is N-only by label (13-0-0). If
-Actisol re-enters the channel (soil Ca drops, REQ-089 gate releases),
+Actisol re-enters the channel (soil Ca drops, `ca-aware-product-gate` gate releases),
 this map gains K and P entries — needs a derivation update in lockstep.
 
 **Refinement triggers:**
 
-- **REQ-089 gate releases** → Actisol may re-enter the channel; map
+- **`ca-aware-product-gate` gate releases** → Actisol may re-enter the channel; map
   gains K (0.85) + P (0.50, possibly lower with pH-lockout multiplier).
   Concrete observable: Mehlich-3 Ca < 7 500 kg/ha (back near
   pre-greenhouse 5 956 kg/ha baseline; current 10 989 kg/ha tomato +
@@ -172,7 +172,7 @@ that policy — adding more N at T1 / T2 would deepen the same excess.
 - **Eco-luzerne organic-cert unverified at this level.** Alfalfa
   branch remains non-default until a CAN/CGSB-32.311 certificate is
   filed under `nutrition/doc/eco-luzerne-3-0-5-2/` (directory does
-  not yet exist as of last scan; REQ-022 inheritance). Filesystem-
+  not yet exist as of last scan; `nutrition/chemistry — every-product-ecocert-allowed` inheritance). Filesystem-
   conditioned, no calendar.
 - **No cold-season scalar.** Mineralization slows ~30-50 % below 12 °C
   soil. Greenhouse stays warm through T3-T5; add temperature factor to
@@ -188,14 +188,14 @@ that policy — adding more N at T1 / T2 would deepen the same excess.
   certificate filed under `nutrition/doc/eco-luzerne-3-0-5-2/`. Mass
   dose grows ~5× (3 % vs 13 % N); re-validate inventory + storage.
   STORED swap gated by `/retire-recipe` audit cycle.
-- **New Ca-bearing organic-N product surfaces.** No code change — REQ-089
+- **New Ca-bearing organic-N product surfaces.** No code change — `ca-aware-product-gate`
   rejects automatically via `ca_pct > 0` in `SIDEDRESS_PRODUCTS` entry.
 - **Tissue petiole NO₃-N outside 800-1 200 ppm.** Adjust chosen
   product's `eff` (most-uncertain input) and re-derive.
 - **2026-05-23 refit — FarinePlumes.eff 0.75 → 0.70.** Single-cohort
   refit triggered by TOM #1 T5 tissue panel (leaf N 2.27 % vs lab
   floor 3.10 %, -27 % of floor). STORED at T5 (Farine 1 341 g + Actisol
-  900 g per planche; Actisol gated out by REQ-089) delivered ~2.39 g
+  900 g per planche; Actisol gated out by `ca-aware-product-gate`) delivered ~2.39 g
   N/m²/wk under the old 0.75 eff vs T5 demand 4.05 g N/m²/wk; tissue
   signal pointed to 0.75 being optimistic for Décembre conditions.
   Moved to lit floor 0.70 — cert held at 3 since the value still sits

@@ -23,10 +23,10 @@ by `/retire-recipe`, not by this spec.
 The model answers two questions:
 
 1. **"What recipes do we spray this week, how many times each, and on
-   which days?"** — the strategy output (REQ-195 / REQ-197 / REQ-198).
+   which days?"** — the strategy output (`strategy-is-independent-recipes` / `model-computed-spray-count` / `sprays-spread-across-farm-working-days`).
 2. **"How much of element X arrives at the plant per m² per week from
    recipe R at stage S, after cuticle-coverage losses?"** — the
-   per-recipe delivery model (REQ-101 / REQ-115).
+   per-recipe delivery model (`coverage-discount-on-delivery` / `gap-maximizing-recipe`).
 
 Out of scope: backpack dose (`STORED_RECIPE.tomato.foliaire`),
 supply-vs-demand check (REQ-013/014 in `nutrition/tomato/spec.md`), FP
@@ -70,7 +70,7 @@ returns per-element mg/m²/wk delivered for ONE recipe:
 
 **Strategy output** — `computeFoliarStrategy(stage, gap)` returns the
 weekly plan: list of recipes, sprays/week per recipe, day-of-week per
-spray (REQ-195 / REQ-197 / REQ-198).
+spray (`strategy-is-independent-recipes` / `model-computed-spray-count` / `sprays-spread-across-farm-working-days`).
 
 Masses are mg per m² per week at tomato bed area
 (`TOMATO_NUM_BEDS × TOMATO_BED_AREA = 382.9 m²`). Macros (other than Ca
@@ -97,7 +97,7 @@ and at strategy-aggregate level.
 
 ---
 
-## REQ-101 — Coverage discount applied to foliar delivery
+## coverage-discount-on-delivery
 
 For each element and stage, per recipe:
 
@@ -115,7 +115,7 @@ where `COVERAGE` is the per-recipe, per-element coverage:
   cuticle coverage").
 
 `sprayCount` per recipe is the model-computed weekly spray count
-(REQ-197), bounded by the weekly leaf-tolerance cap (REQ-196).
+(`model-computed-spray-count`), bounded by the weekly leaf-tolerance cap (`weekly-leaf-tolerance-cap`).
 
 **Cert:** 3 for the sulfate-metal regime (literature mid-band 25-40 %
 without surfactant; pinned at 0.30 as working assumption, not measured
@@ -126,7 +126,7 @@ refinement triggers.
 
 ---
 
-## REQ-103 — Public API namespace `window.FoliarRecipeTomato`
+## public-api-namespace
 
 At runtime, `window.FoliarRecipeTomato` exists and exposes:
 
@@ -153,7 +153,7 @@ four cation-micro oligos (Mn / Zn / Cu / Fe); B absent because
 single-channel by REQ-061 (fertigation owns B); Mo absent because
 retired from foliar 2026-05-16 (REQ-061 carve-out, fertigation owns Mo).
 
-`efficiencyFor(surfactant)` (REQ-170) is the surfactant-aware variant of
+`efficiencyFor(surfactant)` (`surfactant-aware-efficiency-map`) is the surfactant-aware variant of
 the same contract: returns the per-element map for the given lever
 state. `efficiencyFor(false)` equals `efficiency` (back-compat).
 `efficiencyFor(true)` returns 0.72 uniform across Mn/Zn/Cu/Fe.
@@ -162,7 +162,7 @@ state. `efficiencyFor(false)` equals `efficiency` (back-compat).
 
 ---
 
-## REQ-195 — Foliar strategy is a list of independent recipes
+## strategy-is-independent-recipes
 
 A foliar strategy for the tomato crop is a list of one or more **foliar
 recipes**. Each recipe is REQ-029-clean within its own tank (no
@@ -175,8 +175,8 @@ The model treats recipes independently:
 - Per-recipe gap allocation (which elements each recipe targets) is
   static, set in `data.js` per recipe definition (oligo recipe targets
   Mn / Zn / Cu / Fe / B; Ca recipe targets Ca).
-- Per-recipe delivery (REQ-101), burn cap (REQ-115), weekly
-  leaf-tolerance cap (REQ-196), and spray count (REQ-197) are computed
+- Per-recipe delivery (`coverage-discount-on-delivery`), burn cap (`gap-maximizing-recipe`), weekly
+  leaf-tolerance cap (`weekly-leaf-tolerance-cap`), and spray count (`model-computed-spray-count`) are computed
   per recipe in isolation.
 - No joint cross-recipe optimization, no joint operator-load cap across
   recipes (see `learnings.md` for the rejected joint-load alternative
@@ -188,11 +188,11 @@ clean).
 
 ---
 
-## REQ-196 — Weekly leaf-tolerance cap per recipe
+## weekly-leaf-tolerance-cap
 
 Each recipe carries a `weeklyLeafToleranceCap` integer (sprays/week
 upper bound) declared in `data.js`. This cap bounds the model's
-recommended weekly spray count (REQ-197) regardless of how much of the
+recommended weekly spray count (`model-computed-spray-count`) regardless of how much of the
 nutrient gap a higher count would close. Per-recipe, no aggregation
 across recipes.
 
@@ -201,19 +201,19 @@ Initial values:
 | Recipe | Cap (sprays/wk) | Anchor                                                  | Cert |
 |--------|----------------:|---------------------------------------------------------|-----:|
 | oligo  | 1               | Live STORED Wednesday-only cadence; see `derivation.md` § "What dropping yucca cost" | 3 |
-| Ca     | 3               | Test 1 Path C 2026-05-24 anchor (CaCl₂·2H₂O burn-cap math, REQ-025 9 mS/cm tank CE under 10 mS/cm cap); see `derivation.md` § "Per-element burn cap" Ca row | 3 |
+| Ca     | 3               | Test 1 Path C 2026-05-24 anchor (CaCl₂·2H₂O burn-cap math, `nutrition/chemistry — foliar-ce-under-burn-cap` 9 mS/cm tank CE under 10 mS/cm cap); see `derivation.md` § "Per-element burn cap" Ca row | 3 |
 
 The cap models cumulative cuticle-damage risk on sprays/week —
-distinct from the in-tank predicted-CE burn cap (REQ-025), which
+distinct from the in-tank predicted-CE burn cap (`nutrition/chemistry — foliar-ce-under-burn-cap`), which
 governs concentration *within* one tank.
 
 **Cert:** 3 (oligo cap matches multi-week no-burn empirical track at
-Décembre; Ca cap follows from REQ-025 dose math, not yet field-tested
+Décembre; Ca cap follows from `nutrition/chemistry — foliar-ce-under-burn-cap` dose math, not yet field-tested
 across multiple weeks of 3-spray cadence at Décembre).
 
 ---
 
-## REQ-197 — Model-computed optimal sprays per recipe
+## model-computed-spray-count
 
 For each recipe in the strategy, the model computes the recommended
 weekly spray count as:
@@ -224,10 +224,10 @@ sprayCount(recipe) = min(sprays-to-close-gap, weeklyLeafToleranceCap(recipe))
 
 where `sprays-to-close-gap` is the smallest integer N such that
 delivering N sprays of the recipe (at its per-element burn-cap-clipped
-dose per REQ-115) closes the per-recipe element gap to within the
+dose per `gap-maximizing-recipe`) closes the per-recipe element gap to within the
 luxury-cap band (≤ 1.3× of demand on each element the recipe targets).
 
-`computeFoliarRecipeForGap` (REQ-115) returns this `sprayCount` alongside
+`computeFoliarRecipeForGap` (`gap-maximizing-recipe`) returns this `sprayCount` alongside
 the per-element grams. The strategy aggregator
 `computeFoliarStrategy(stage, gap)` invokes
 `computeFoliarRecipeForGap` per recipe definition in `data.js` and
@@ -237,7 +237,7 @@ collects the per-recipe `sprayCount` values into the weekly plan.
 
 ---
 
-## REQ-198 — Day assignment across farm working days
+## sprays-spread-across-farm-working-days
 
 For each recipe with `sprayCount(recipe) ≥ 1`, the model picks specific
 days from `nutrition — farm-working-days` (Mon-Fri at Décembre,
@@ -253,7 +253,7 @@ Rules:
   exceeds 5 today).
 
 When two recipes land on the same day, both run that day in separate
-tanks — recipes are independently REQ-029-clean (REQ-195), and the
+tanks — recipes are independently REQ-029-clean (`strategy-is-independent-recipes`), and the
 operator runs them as two separate sprays.
 
 **Cert:** 4 (structural — even-spread rule is deterministic; cap on
@@ -261,19 +261,19 @@ farm working days lives in `nutrition/spec.md`).
 
 ---
 
-## REQ-115 — `computeFoliarRecipeForGap(gap, opts)` builds gap-maximizing recipe
+## gap-maximizing-recipe
 
 `computeFoliarRecipeForGap(gap, { surfactant = false, recipeKind = 'oligo' } = {})`
 returns a foliar recipe per 15 L master tank, sized to maximize coverage
 of `gap` (per-element residual mg/m²/wk) subject to per-element burn
-cap, per-tank predicted-CE cap (REQ-025), and an operational dosing
+cap, per-tank predicted-CE cap (`nutrition/chemistry — foliar-ce-under-burn-cap`), and an operational dosing
 floor. Output:
 
 ```js
 {
   doses: { MnSO4_g, ZnSO4_g, CuSO4_g, FeSO4_g, NaMoO4_g, Solubore_g,
            CaCl2_g /* when recipeKind = 'ca' */ },
-  sprayCount: number,  // REQ-197: min(sprays-to-close-gap, weeklyLeafToleranceCap)
+  sprayCount: number,  // model-computed-spray-count: min(sprays-to-close-gap, weeklyLeafToleranceCap)
 }
 ```
 
@@ -285,7 +285,7 @@ downstream consumer compatibility.)
 1. For each element in the recipe's target set (`oligo` →
    `{Mn, Zn, Cu, Fe, B}`; `ca` → `{Ca}`) with `gap[el] > 0`:
    - `ideal_g = gap[el] × area_m² / (element_pct × 1000 × coverage × sprayCount)`
-     where `sprayCount` is iterated upward from 1 (REQ-197 search).
+     where `sprayCount` is iterated upward from 1 (`model-computed-spray-count` search).
    - If `ideal_g < MIN_DOSE_G_PER_ELEMENT[el]` → `0` (per-element
      operational floor; Cu = 0.2 g, others = 0.5 g — narrow Cu toxicity
      forces a tighter floor to avoid a 2.5× luxury feed when ideal_g
@@ -296,12 +296,12 @@ downstream consumer compatibility.)
      is too coarse for a tiny gap; see `derivation.md` § "Per-element
      min-dose floor" worked-example table for the Cu fire range).
 2. Compute `predictedCE` on the proposed recipe. If
-   `predictedCE > REQ-025 cap × 0.95`: drop the highest-CE-contributor's
+   `predictedCE > nutrition/chemistry — foliar-ce-under-burn-cap cap × 0.95`: drop the highest-CE-contributor's
    dose first (Fe is the typical mass-dominant case under FeSO₄·7H₂O);
    re-round, recompute CE. Preserves pH-locked micros (Mn / Cu / B) that
    have no alternative channel under REQ-061 cascade order. Bound at 4
    iterations to guarantee termination.
-3. **REQ-197 spray-count search.** Try `sprayCount = 1, 2, … ,
+3. **`model-computed-spray-count` spray-count search.** Try `sprayCount = 1, 2, … ,
    weeklyLeafToleranceCap(recipe)`. Return the smallest `sprayCount`
    at which the recipe's delivered mg/m²/wk closes the gap to within
    the luxury-cap band on every targeted element. If even at
@@ -310,7 +310,7 @@ downstream consumer compatibility.)
 4. Return `{ doses, sprayCount }`.
 
 **Surfactant scope — coverage axis only:** affects penetration/coverage
-(REQ-101 0.30 → 0.80 with yucca for sulfate metals; 0.15 → 0.40 for
+(`coverage-discount-on-delivery` 0.30 → 0.80 with yucca for sulfate metals; 0.15 → 0.40 for
 Ca, cert 3 / cert 2 — see `derivation.md`). Does NOT affect burn cap:
 `burnCapG(el) = BURN_CAP_BASE_G[el]` regardless of surfactant flag.
 Rejected per-element-multiplier alternative in `learnings.md`.
@@ -325,13 +325,13 @@ cert 2** for transferability (see `derivation.md`):
   STORED 22 g (held since 2026-04-29 restructure with no burn observed
   under Wednesday-AM operator timing); cert 2 reflects non-portability
   to ops with different timing / volume regimes.
-- **Ca** — Ca burn cap 100 g/15 L cert 3 from REQ-025 dose math;
-  sprayCount cap at 3 (REQ-196) cert 3 from same math, not multi-week
+- **Ca** — Ca burn cap 100 g/15 L cert 3 from `nutrition/chemistry — foliar-ce-under-burn-cap` dose math;
+  sprayCount cap at 3 (`weekly-leaf-tolerance-cap`) cert 3 from same math, not multi-week
   field-tested yet.
 
 ---
 
-## REQ-116 — FP foliar strategy is live-derived from current residual gap
+## fp-strategy-live-derived
 
 At Bilan render time, the FP-mode foliar strategy shown in Block 5 (and
 consumed by Block 7 drift gauge vs `STORED_RECIPE.tomato.foliaire`) is
@@ -346,7 +346,7 @@ any upstream supply or operator lever changes.
 
 ---
 
-## REQ-112 — `computeFoliarSupply` accepts spray count + surfactant (legacy override)
+## supply-accepts-spray-count-surfactant
 
 Function signature is
 `computeFoliarSupply(stage, { sprayCount = 1, surfactant = false } = {}, recipe?)`.
@@ -364,23 +364,23 @@ coverage_factor = surfactant ? FOLIAR_COVERAGE_WITH_YUCCA : FOLIAR_COVERAGE_DEFA
 `computeFoliarSupply(stage)` without opts returns today's numbers exactly.
 
 **Status: legacy override.** Under the multi-recipe strategy model
-(REQ-195 / REQ-197), `sprayCount` is computed by the model
-(REQ-197) and passed *into* `computeFoliarSupply` by
-`computeFoliarStrategy`, not supplied by the caller. REQ-112 retains
+(`strategy-is-independent-recipes` / `model-computed-spray-count`), `sprayCount` is computed by the model
+(`model-computed-spray-count`) and passed *into* `computeFoliarSupply` by
+`computeFoliarStrategy`, not supplied by the caller. `supply-accepts-spray-count-surfactant` retains
 the opts-driven signature as a transitional back-compat surface for
 the in-flight rename / FP-mode call sites. Callers should migrate to
 `computeFoliarStrategy(stage, gap)` for the recipe + count + days
 bundle; direct `computeFoliarSupply` calls with explicit
-`sprayCount` remain valid but bypass REQ-197's cap-enforcement.
+`sprayCount` remain valid but bypass `model-computed-spray-count`'s cap-enforcement.
 
 Out of scope: burn-cap warning when surfactant=false but recipe sized
-with surfactant in mind — that's `/retire-recipe` + REQ-025 territory.
+with surfactant in mind — that's `/retire-recipe` + `nutrition/chemistry — foliar-ce-under-burn-cap` territory.
 
 **Cert:** 5 (structural).
 
 ---
 
-## REQ-170 — Surfactant-aware foliar efficiency map
+## surfactant-aware-efficiency-map
 
 `window.FoliarRecipeTomato.efficiencyFor(surfactant)` returns the
 per-element efficiency map at the given surfactant lever state.
@@ -403,16 +403,16 @@ needs Décembre tissue correlation to bump cert 3 → 4. See `derivation.md`
 
 Consumed by foliar:
 
-- **REQ-083** (`nutrition/tomato/plant-needs/spec.md`) — `PlantNeedsTomato.demandTotal` is canonical demand source.
-- **nutrition — farm-working-days** (`nutrition/spec.md`) — cross-crop set of weekdays the operator may run sprays; consumed by REQ-198.
+- **`nutrition/tomato/plant-needs/model — plant-needs-tomato-namespace`** — `PlantNeedsTomato.demandTotal` is canonical demand source.
+- **nutrition — farm-working-days** (`nutrition/spec.md`) — cross-crop set of weekdays the operator may run sprays; consumed by `sprays-spread-across-farm-working-days`.
 
 Consume foliar output or govern tank behavior:
 
 - **REQ-013 / REQ-014** (`nutrition/tomato/spec.md`) — supply chain bounds; foliar is one of four channels. Mn / Zn / Fe / Cu have no other channel while pH ≥ 7.
 - **REQ-018** (`nutrition/spec.md`) — no decorative products at current pH; coverage discount cuts headline to ~30 %, fires if a product drops below 5 % effective after coverage.
-- **REQ-022** (`nutrition/spec.md`) — Ecocert-allowed only. MnSO₄ / ZnSO₄ / CuSO₄ / Solubore / Na molybdate / FeSO₄·7H₂O all on CAN/CGSB-32.310/311. CaCl₂·2H₂O reactivated 2026-05-24 for Test 1 Path B (food-grade vendor + product Ecocert-verified by operator); Ca recipe routes via REQ-195 when its `data.js` entry lands.
-- **REQ-025** (`nutrition/spec.md`) — foliar tank predicted CE under burn cap (10 mS/cm tomato); wired in `scripts/check-recipes.mjs`. Anchors the Ca recipe's per-tank dose ceiling and REQ-196's weekly Ca leaf-tolerance cap.
-- **REQ-029** (`nutrition/spec.md`) — in-tank ion-precipitation clean. Each recipe in the strategy (REQ-195) is REQ-029-clean independently within its own tank.
-- **REQ-053 / REQ-055** (`nutrition/spec.md`) — predicted tank pH + cuticle-pH multiplier. Tank pH ~5 (sulfate dominant), within `foliarPhResponse` peak 5.5-6.0.
+- **`nutrition/chemistry — every-product-ecocert-allowed`** — Ecocert-allowed only. MnSO₄ / ZnSO₄ / CuSO₄ / Solubore / Na molybdate / FeSO₄·7H₂O all on CAN/CGSB-32.310/311. CaCl₂·2H₂O reactivated 2026-05-24 for Test 1 Path B (food-grade vendor + product Ecocert-verified by operator); Ca recipe routes via `strategy-is-independent-recipes` when its `data.js` entry lands.
+- **`nutrition/chemistry — foliar-ce-under-burn-cap`** — foliar tank predicted CE under burn cap (10 mS/cm tomato); wired in `scripts/check-recipes.mjs`. Anchors the Ca recipe's per-tank dose ceiling and `weekly-leaf-tolerance-cap`'s weekly Ca leaf-tolerance cap.
+- **`nutrition/chemistry — in-tank-ksp-precipitation-guard`** — in-tank ion-precipitation clean. Each recipe in the strategy (`strategy-is-independent-recipes`) is REQ-029-clean independently within its own tank.
+- **`nutrition/chemistry — predicted-tank-ph-within-envelope` / `nutrition/chemistry — foliar-uptake-ph-curve`** — predicted tank pH + cuticle-pH multiplier. Tank pH ~5 (sulfate dominant), within `foliarPhResponse` peak 5.5-6.0.
 - **REQ-061** (`nutrition/spec.md`) — cascade order. Foliar carries residual gap; Mn / Zn / Fe / Cu have no other channel today (sulfates precipitate at root-zone pH 7.4), so foliar IS the earliest active channel for those — verifier accommodates.
-- **REQ-062** (`nutrition/spec.md`) — single fertigation tank per week (foliar-singleton half retired 2026-05-17). Foliar-frequency now governed by REQ-197 (model-computed, bounded by REQ-196 weekly leaf-tolerance cap) in this subproject; no cross-crop singleton constraint on foliar.
+- **REQ-062** (`nutrition/spec.md`) — single fertigation tank per week (foliar-singleton half retired 2026-05-17). Foliar-frequency now governed by `model-computed-spray-count` (model-computed, bounded by `weekly-leaf-tolerance-cap` weekly leaf-tolerance cap) in this subproject; no cross-crop singleton constraint on foliar.

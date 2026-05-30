@@ -9,7 +9,7 @@ historical hold/decision detail in `learnings.md`.
 
 Foliar dose is pinned from above by three constraints, not by demand:
 
-1. **Salt burn on leaf surface** (REQ-025 cross-crop). Cuticle scorches
+1. **Salt burn on leaf surface** (`nutrition/chemistry — foliar-ce-under-burn-cap` cross-crop). Cuticle scorches
    above ~10 mS/cm tomato.
 2. **Local-pool toxicity without surfactant** (audit, 2026-05-05).
    Without yucca, droplets bead; runoff concentrates in leaf axils. Cu
@@ -17,7 +17,7 @@ Foliar dose is pinned from above by three constraints, not by demand:
    22 g/15 L by Décembre-internal observation (no burn at this dose
    under Wednesday-AM operator timing since the 2026-04-29 restructure).
 3. **Cuticle absorption ceiling**. Uptake plateaus once leaf surface
-   saturates; REQ-101's 30 % coverage already accounts for it.
+   saturates; `coverage-discount-on-delivery`'s 30 % coverage already accounts for it.
 
 `FP_RECIPE_T5.foliaire` mirrors `STORED_RECIPE.tomato.foliaire` —
 subproject *models the delivery* under coverage, doesn't *derive the
@@ -100,14 +100,14 @@ regime; the 0.50 sulfate-ratio is literature-mid-band heuristic
 surfactant-assisted regimes close the gap). Cert bump to 3 if the
 Test 1 week-4 tissue panel correlates predicted within ±20 %.
 
-**Spec status.** REQ-101 covers the per-recipe coverage axis: the
+**Spec status.** `coverage-discount-on-delivery` covers the per-recipe coverage axis: the
 sulfate-cation-micro recipe (`FOLIAR_COVERAGE_DEFAULT` /
 `FOLIAR_COVERAGE_WITH_YUCCA`) and the Ca recipe
 (`FOLIAR_COVERAGE_CA_NO_SURFACTANT` /
 `FOLIAR_COVERAGE_CA_WITH_SURFACTANT`) each declare their own
 coverage values. Remaining gate is *implementation*: the Ca recipe
 needs a `data.js` entry (target element set `{Ca}`, dose anchor
-100 g/15 L CaCl₂·2H₂O, weekly leaf-tolerance cap 3 per REQ-196,
+100 g/15 L CaCl₂·2H₂O, weekly leaf-tolerance cap 3 per `weekly-leaf-tolerance-cap`,
 surfactant required) before `computeFoliarSupply(stage, opts, recipe)`
 can route a non-zero Ca output. Until that entry lands, the function
 returns `Ca: 0` and the constants above sit unused by the runtime.
@@ -118,7 +118,7 @@ Coder lane.
 ## Per-element burn cap — `BURN_CAP_BASE_G`
 
 Maximum cuticle-safe per-element load per 15 L master tank, used by
-`computeFoliarRecipeForGap` (REQ-115) to clip the per-element ideal
+`computeFoliarRecipeForGap` (`gap-maximizing-recipe`) to clip the per-element ideal
 gram. Sourced from extension mid-band guidance (Sonneveld 2009, Yara
 crop-nutrition foliar tables, Cornell / U. Delaware / U. Missouri
 extension publications): 0.1-0.3 % MnSO₄, 0.05-0.1 % CuSO₄, etc.
@@ -131,7 +131,7 @@ extension publications): 0.1-0.3 % MnSO₄, 0.05-0.1 % CuSO₄, etc.
 | Fe      | 80       | Extension mid-band; high-mass dose, well below tank-CE bound | 3 |
 | Mo      | 2        | Sonneveld 50-200 mg/L band; seldom binding              | 3    |
 | B       | 9        | Solubore (Na₂B₈O₁₃·4H₂O, 20.5 % B); non-ionic           | 3    |
-| Ca      | 100      | CaCl₂·2H₂O (27.3 % Ca); 0.67 % solution ≈ 9 mS/cm under REQ-025 tomato 10 mS/cm cap with 10 % safety margin (Test 1 Path B 2026-05-24) | 3 |
+| Ca      | 100      | CaCl₂·2H₂O (27.3 % Ca); 0.67 % solution ≈ 9 mS/cm under `nutrition/chemistry — foliar-ce-under-burn-cap` tomato 10 mS/cm cap with 10 % safety margin (Test 1 Path B 2026-05-24) | 3 |
 
 **Cu certainty exception (cert 2, divergence BELOW extension mid-band).**
 The 2 g/15 L Cu value didn't come from extension mid-band — extension
@@ -231,7 +231,7 @@ significant luxury, on any element.
 
 ## CE-cap algorithm — drop highest-CE-contributor first (was: proportional scaling)
 
-When predicted tank CE exceeds REQ-025's 10 mS/cm burn cap × 0.95 safety
+When predicted tank CE exceeds `nutrition/chemistry — foliar-ce-under-burn-cap`'s 10 mS/cm burn cap × 0.95 safety
 margin, the recipe needs reducing. The 2026-05-16 algorithm change
 replaces "scale all non-zero doses proportionally" with "drop the
 highest-CE-contributor first."
@@ -262,15 +262,15 @@ collapse the channel for moderate CE excess.
 `predictedCE(recipeAsLabelArray(recipeWithOnlyEl), 1.0)` — re-runs the
 tank CE function with one element at a time non-zero, then ranks by
 the per-element CE. Same `predictedCE` function used for the bound
-check, so this stays consistent with REQ-025's tank-CE model.
+check, so this stays consistent with `nutrition/chemistry — foliar-ce-under-burn-cap`'s tank-CE model.
 
 ---
 
-## Channel efficiency map (REQ-157 + REQ-170 surfactant-aware)
+## Channel efficiency map (REQ-157 + `surfactant-aware-efficiency-map` surfactant-aware)
 
 `window.FoliarRecipeTomato.efficiency` (REQ-157) declares the per-element
 delivery fraction at the default no-surfactant regime and default spray
-tank pH. `window.FoliarRecipeTomato.efficiencyFor(surfactant)` (REQ-170)
+tank pH. `window.FoliarRecipeTomato.efficiencyFor(surfactant)` (`surfactant-aware-efficiency-map`)
 declares the same shape but reactive to the surfactant lever — the
 Block 5 toggle that the page-side REQ-163 reads.
 
@@ -436,7 +436,7 @@ Schema carries N / P / K / Ca / Mg as explicit zeros:
   cross-linking (Conway/Sams; Volpin & Elad — cert 4 mechanism).
   **Dose:** 100 g CaCl₂·2H₂O per 15 L tank, 2 sprays/wk indiscriminate
   on foliage + fruit + stems, separate tank from oligo spray
-  (REQ-029 — Ca²⁺ + SO₄²⁻ → gypsum precipitation). **Delivered:**
+  (`nutrition/chemistry — in-tank-ksp-precipitation-guard` — Ca²⁺ + SO₄²⁻ → gypsum precipitation). **Delivered:**
   ~56 mg Ca/m²/wk at Path B (~18 % of canopy gap; Path C 3×/wk closes
   ~27 %). **Schema status:** `computeFoliarSupply` still returns
   `Ca: 0` — Ca slot is open in handoff item 5, pending PO call on the
@@ -461,12 +461,12 @@ chain stays uniform.
 - **Coverage discount is global, not per-element.** Dominant effect is
   droplet retention (product-agnostic). Per-element tuning deferred
   until tissue data points to drift.
-- **No spray-pH multiplier here.** REQ-055's `foliarPhResponse(tankPh)`
+- **No spray-pH multiplier here.** `nutrition/chemistry — foliar-uptake-ph-curve`'s `foliarPhResponse(tankPh)`
   is separate, applied in `effectiveEff` inside `app/index.html`.
   Combined: real_uptake = label_dose × element_pct × coverage ×
   foliarPhResponse(tankPh). Spray pH ~5.0 → `foliarPhResponse(5.0) ≈ 0.9`
-  → another ~10 % shave. REQ-101 covers coverage axis only.
-- **Burn cap depends on water hardness + temp.** REQ-025's 10 mS/cm
+  → another ~10 % shave. `coverage-discount-on-delivery` covers coverage axis only.
+- **Burn cap depends on water hardness + temp.** `nutrition/chemistry — foliar-ce-under-burn-cap`'s 10 mS/cm
   conservative across summer GH. Cold-AM: +1-2 mS/cm headroom; hot-PM:
   could burn ~8 mS/cm. Wednesday-AM operator timing pins the safer end.
 - **No pH coupling.** Soil pH crisis doesn't change foliar — cuticle
@@ -482,7 +482,7 @@ chain stays uniform.
   Cu/Mn/Zn). Cu toxicity-bound (less coverage-sensitive); Mn cleanest
   signal. Three paths, paired per P-03:
   - **Upward.** Measured Mn correlates predicted within ±20 % → 30 %
-    coverage anchored. Raise REQ-101 cert 3 → 4 (mirror to data.js
+    coverage anchored. Raise `coverage-discount-on-delivery` cert 3 → 4 (mirror to data.js
     + parallel cert-bump for with-surfactant value 0.80 if a surfactant-
     on tissue period is also in the data).
   - **Lateral.** Correlation 30-50 % off either way → midpoint wrong for
@@ -495,7 +495,7 @@ chain stays uniform.
     fertigation Mn / Zn / Cu route, depends on soil pH < ~7.0 (REQ-018 /
     `effectiveEff` gate).
 
-  Until tissue data lands, REQ-101 stays cert 3 (no Décembre tissue
+  Until tissue data lands, `coverage-discount-on-delivery` stays cert 3 (no Décembre tissue
   correlation yet); hold rationale in `learnings.md`.
 - **Solubor moved fully to fertigation.** Already conceptual
   (`FP_RECIPE_T5.foliar.Solubore = 0`); STORED still carries 7 g. Next
@@ -515,8 +515,8 @@ chain stays uniform.
   → REQ-018 passes for fertigation Mn; operator decision lands in
   `/retire-recipe`.
 - **Spray B reintroduces foliar Ca.** If BER persists, foliar CaCl₂
-  event-driven returns — reactivates `foliar.Ca`. Verify REQ-029 (Ca²⁺ ×
-  PO₄³⁻ separation) + REQ-022 (Ecocert-listed CaCl₂).
+  event-driven returns — reactivates `foliar.Ca`. Verify `nutrition/chemistry — in-tank-ksp-precipitation-guard` (Ca²⁺ ×
+  PO₄³⁻ separation) + `nutrition/chemistry — every-product-ecocert-allowed` (Ecocert-listed CaCl₂).
 
 ---
 

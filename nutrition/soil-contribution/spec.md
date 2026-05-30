@@ -22,7 +22,7 @@ one entry.
 Per call: `crop` (string), `element` (string), and — for
 `weeklyContribution` only — `demand_mg_per_m2_per_week` (number).
 `monthsToDepletion(crop, element)` takes no demand argument; the runway is
-SME-derived (REQ-164).
+SME-derived (`sme-soil-solution-wired-per-crop-element`).
 
 Constants (declared in `data.js`):
 - `SOIL_BANK_MG_M2[crop][el]` — Mehlich-3 reservoir in mg/m² (kg/ha × 100).
@@ -88,7 +88,7 @@ Same single-cert transferability scale as `nutrition/tomato/plant-needs/spec.md`
 
 ---
 
-## REQ-140 — Bank is a per-crop Mehlich-3 reservoir in mg/m²
+## bank-per-crop-mehlich3-reservoir
 
 **Statement:** `SOIL_BANK_MG_M2` is a two-level object keyed by crop slug
 (`tomato`, `lettuce`, …) then by element symbol. Values are in mg/m²,
@@ -106,7 +106,7 @@ arithmetic = 5; DL-ceiling values cert 2.
 
 ---
 
-## REQ-141 — Only Ca + P from the soil bank participate in the gap chain (active-channels-only K + Mg)
+## only-ca-p-participate-in-gap-chain
 
 **Statement:** `weeklyContribution(crop, el, demand_mg)` returns non-zero
 **only** when `SOIL_CONTRIBUTING[el] === true`. Otherwise returns `0` and
@@ -151,7 +151,7 @@ sizer; "path 1") archived in `learnings.md`.
 
 ---
 
-## REQ-142 — Months-to-depletion = bank ÷ min(mass-flow, plant peak demand)
+## months-to-depletion-clamped-by-peak-demand
 
 **Statement:** `monthsToDepletion(crop, el)` returns `null` when
 `el ∈ TURNOVER_BOUND_ELEMENTS` (N today — the Mehlich-3 pool is
@@ -179,7 +179,7 @@ lettuce, cert 1-2 micros — inherits from plant-needs).
 
 ---
 
-## REQ-143 — Public API on `window.SoilContribution`
+## public-api-on-soil-contribution-namespace
 
 **Statement:** `window.SoilContribution` exists at runtime and exposes
 `BANK_MG_M2`, `CONTRIBUTING`, `WEEKS_PER_MONTH`, `SME_SOIL_SOLUTION_PPM`,
@@ -187,14 +187,16 @@ lettuce, cert 1-2 micros — inherits from plant-needs).
 `monthsToDepletion`, `renderGrid`. Consumers MUST reach for the namespace,
 not bare module-scope constants/functions, so internals can be reshaped
 (per-bed scaling, seasonal factor, depth-resolved bank) without breaking
-call sites. Same discipline as REQ-080 / REQ-097 / REQ-103; REQ-139 enforces
+call sites. Same discipline as `nutrition/compost-contribution — public-api-namespace` /
+`nutrition/nursery/substrate-contribution — public-api-namespace` /
+`nutrition/tomato/foliar-strategy/model — public-api-namespace`; REQ-139 enforces
 no-inline-reimplementation at verifier level.
 
 **Cert:** 5 (structural).
 
 ---
 
-## REQ-164 — SME soil-solution data wired per crop, per element on the gap grid
+## sme-soil-solution-wired-per-crop-element
 
 **Statement:** `SME_SOIL_SOLUTION_PPM[crop][el]` is a two-level object
 keyed by crop slug then by element symbol. Values are direct ppm readings
@@ -227,11 +229,11 @@ spec stands alone without grepping `logic.js`):
 
 | Element | Key | Routing rationale |
 |---|---|---|
-| Ca | `Ca` | CONTRIBUTING; bank-routed (REQ-141) |
+| Ca | `Ca` | CONTRIBUTING; bank-routed (`only-ca-p-participate-in-gap-chain`) |
 | P  | `P`  | CONTRIBUTING; bank-routed despite pH-lockout (only viable channel) |
 | K  | `K-fert-routed`  | measured bank; active channel = fertigation K₂SO₄ |
 | Mg | `Mg-fert-routed` | measured bank; active channel = fertigation MgSO₄ |
-| N  | `N-not-mehlich`  | turnover-bound; runway null (REQ-142) |
+| N  | `N-not-mehlich`  | turnover-bound; runway null (`months-to-depletion-clamped-by-peak-demand`) |
 | Fe, Mn, Zn, B, Cu | `micros-foliar-routed` | measured bank, plant-available fraction throttled by pH 7.4; active channel = foliar (REQ-061 cascade; CHANNEL_ROLE in `nutrition/tomato/channel-role.js` routes Fe/Mn/Zn/Cu = `{foliar:1.0}` and B = `{foliar:0.5, passive:0.5}`) |
 | Mo | `default-not-mehlich` | not on Mehlich-3 panel; active channel = fertigation Na molybdate (REQ-061 anion carve-out) |
 

@@ -71,7 +71,7 @@ in lockstep.
 
 ---
 
-## REQ-079 — Release values are within sanity band of mass-balance
+## release-values-within-mass-balance-band
 
 For every element `el`, `COMPOST_RELEASE_PER_WEEK[el]` falls within
 `[0.5×, 1.5×]` of the theoretical value computed by
@@ -86,7 +86,7 @@ derivation).
 
 ---
 
-## REQ-080 — Public API namespace `window.CompostContribution`
+## public-api-namespace
 
 At runtime, `window.CompostContribution` exists and exposes:
 

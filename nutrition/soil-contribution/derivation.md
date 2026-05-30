@@ -5,7 +5,7 @@ Rejected alternatives + historical decisions go to `learnings.md`.
 
 ---
 
-## Weekly uptake — bank ÷ min(mass-flow, plant peak demand) — REQ-142, REQ-164
+## Weekly uptake — bank ÷ min(mass-flow, plant peak demand) — months-to-depletion-clamped-by-peak-demand, sme-soil-solution-wired-per-crop-element
 
 The depletion-runway denominator landed in two passes:
 
@@ -176,7 +176,7 @@ runway months = 211 840 / (4 385 × 4.333…) ≈ 11 months
 K runway unchanged by the clamp at our T5 demand model. SME-throttled
 delivery is the gate for K despite the Ca-saturation regime. K is the
 element to watch on this bed — but the bank refill story comes from K₂SO₄
-fertigation per REQ-141 (Ca + P only routed via soil bank; K via active
+fertigation per `only-ca-p-participate-in-gap-chain` (Ca + P only routed via soil bank; K via active
 channels).
 
 ### Lettuce: clamp inert everywhere
@@ -188,7 +188,7 @@ by the clamp; the formula reduces to the prior SME-throttled form.
 
 ---
 
-## Soil-bank mg/m² conversion — REQ-140
+## Soil-bank mg/m² conversion — bank-per-crop-mehlich3-reservoir
 
 Two reporting conventions on the Berger Mehlich-3 panel; both convert
 to mg/m² for consumer arithmetic parity with the rest of the weekly
@@ -214,7 +214,7 @@ Mehlich-3 panel; routes via fertigation per the REQ-061 Mo carve-out).
 
 ---
 
-## CONTRIBUTING scoping — REQ-141
+## CONTRIBUTING scoping — only-ca-p-participate-in-gap-chain
 
 Today's set: `{P: true, Ca: true}`. K and Mg have measured banks but are
 routed via fertigation (K₂SO₄ + MgSO₄); counting them via the soil bank

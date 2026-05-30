@@ -23,7 +23,7 @@ substrate/product selection (operational).
 - `week` (1-5).
 - `featherMealPerTrayG` — front-load rate g/tray. Defaults to
   `NURSERY_FEATHER_MEAL_DEFAULT_G_PER_TRAY` (= 9 g). Capped by
-  `LIMITS.maxFeatherMealPerTrayG` (REQ-094).
+  `LIMITS.maxFeatherMealPerTrayG` (`feather-meal-front-load-cap`).
 
 ### Output
 
@@ -74,7 +74,7 @@ contributes only the `N` channel.
 
 ---
 
-## REQ-094 — Feather meal front-load cap (germination protection)
+## feather-meal-front-load-cap
 
 `LIMITS.maxFeatherMealPerTrayG ≤ 9`. Substrate front-load capped at
 9 g feather meal per tray; higher risks germination loss in Salanova.
@@ -83,7 +83,7 @@ contributes only the `N` channel.
 
 ---
 
-## REQ-095 — Linearity in feather meal input
+## linear-in-feather-meal-input
 
 For any week `w`,
 `theoreticalSubstrateReleasePerWeek(w, 2X).N − theoreticalSubstrateReleasePerWeek(w, X).N`
@@ -95,7 +95,7 @@ rate doubles.
 
 ---
 
-## REQ-096 — Cycle-average matches mass-balance
+## cycle-average-matches-mass-balance
 
 `cycleAverageReleasePerTray(fmG).N ≈ (fmG × FEATHER_MEAL_LABEL_PCT.N ×
 FEATHER_MEAL_MINERALIZATION_FRAC × 1000) / weeksInCycle + (OM2 N
@@ -105,7 +105,7 @@ contribution avg)` within ±10 %.
 
 ---
 
-## REQ-097 — Public API namespace `window.SubstrateContributionNursery`
+## public-api-namespace
 
 At runtime, `window.SubstrateContributionNursery` exists and exposes:
 

@@ -49,7 +49,7 @@ frontload[el] = (el === 'N') ? frontload_g_per_m2 × FarinePlumes_N × efficienc
 total[el]     = soil[el] + fert[el] + frontload[el]
 ```
 
-`canopyFactor = clamp(currentG / targetG × 0.7, 0.2, 0.7)` (REQ-169).
+`canopyFactor = clamp(currentG / targetG × 0.7, 0.2, 0.7)` (`canopy-factor-bounded`).
 Smaller plants pull less per m² (less canopy area + less transpiration);
 mature plants saturate at 0.7.
 
@@ -120,7 +120,7 @@ in cool greenhouse soil; literature says 4-6 weeks at warm-soil. We assume
 4 to stay conservative on weekly supply (over-estimates the rate, which
 under-estimates the residual gap → operator sees the real shortfall sooner).
 
-Frontload is N-only by REQ-167. The supply implementation reinforces this
+Frontload is N-only by `supply-composition-soil-fert-frontload`. The supply implementation reinforces this
 in two ways: (a) the frontload object is initialised with every element
 in `LETTUCE_TISSUE_DW` set to 0 (explicit zero, not undefined — keeps
 INV-1 element-coverage invariant intact); (b) only `frontload.N` is then

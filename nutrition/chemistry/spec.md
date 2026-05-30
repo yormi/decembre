@@ -15,16 +15,16 @@ elements`.
 
 ---
 
-## REQ-010 — Recipe mode declared per product
+## recipe-mode-per-product
 
 Every product entry in `PRODUCT` has `mode: 'flux' | 'concentration'`.
 Flux-mode products participate in the demand-supply balance (REQ-013/014).
 Concentration-mode products participate in the tank-concentration envelope
-(REQ-015).
+(concentration-dose-within-band).
 
 ---
 
-## REQ-015 — Concentration-driven dose within efficacy/safety band
+## concentration-dose-within-band
 
 For every concentration-mode product in any recipe, the in-tank concentration
 of its active element falls within `[efficacy_min, safety_max]` declared in
@@ -32,14 +32,14 @@ of its active element falls within `[efficacy_min, safety_max]` declared in
 
 ---
 
-## REQ-019 — `PRODUCT.phClass` covers every claimed element
+## phclass-covers-every-element
 
 For every product in `PRODUCT`, every element in its `base` map has a
 corresponding `phClass` (uniform string or per-element object).
 
 ---
 
-## REQ-021 — Solubility cap per fertigation product
+## solubility-cap-per-product
 
 For every fertigation barrel recipe, in-barrel concentration of each product
 ≤ `SOLUBILITY_CAP[product]` g/L water at the relevant temperature (cold-water
@@ -47,7 +47,7 @@ cap, since winter mornings are the binding case).
 
 ---
 
-## REQ-022 — Every product is Ecocert-allowed
+## every-product-ecocert-allowed
 
 Every entry in `PRODUCT` has `organicAllowed: true` (CAN/CGSB-32.310/311).
 Build fails if any active recipe references a product where this is false or
@@ -55,7 +55,7 @@ unset.
 
 ---
 
-## REQ-023 — `EC_FACTOR` covers every product
+## ec-factor-covers-every-product
 
 Every product in `PRODUCT` has an entry in `EC_FACTOR` (mS/cm per g/L, at 20°C
 clean water reference). Non-ionic products (Solubore, yucca, fish hydrolysate)
@@ -63,7 +63,7 @@ MUST have explicit `0.0` value with a comment, not be missing.
 
 ---
 
-## REQ-024 — Predicted CE within crop-stage band
+## predicted-ce-within-crop-stage-band
 
 For every fertigation recipe (crop × stage), `predictedCE(recipe,
 dosatronDilution, waterCE)` falls within `[CE_min[crop, stage], CE_max[crop,
@@ -79,7 +79,7 @@ Bands (mS/cm at 25°C):
 
 ---
 
-## REQ-025 — Foliar tank CE under burn cap
+## foliar-ce-under-burn-cap
 
 For every foliar recipe, `predictedCE(recipe, dilution=1.0)` <
 `FOLIAR_BURN_CAP[crop]`. Default cap: 8.0 mS/cm tomato, 5.0 mS/cm lettuce.
@@ -87,7 +87,7 @@ Cert 3.
 
 ---
 
-## REQ-029 — In-tank Ksp check (precipitation guard)
+## in-tank-ksp-precipitation-guard
 
 For every recipe (any tank), the predicted concentrations of the following
 cation × anion pairs stay below their solubility-product threshold at the
@@ -106,7 +106,7 @@ tank's working temperature:
 
 ---
 
-## REQ-029a — Every product declares `ions` and `chemistryTags`
+## product-declares-ions-and-chemistry-tags
 
 Every entry in `PRODUCT` declares two fields:
 - `ions: { ... }` — mass fraction (g per g of product) of each dissociation
@@ -120,7 +120,7 @@ Build fails if either field is missing or empty.
 
 ---
 
-## REQ-029b — Every (cation × anion) pair across all products is classified
+## every-cation-anion-pair-classified
 
 The union of cations declared across all `PRODUCT[*].ions` × the union of
 anions across all `PRODUCT[*].ions` produces a set of pairs. Every pair must
@@ -134,7 +134,7 @@ pair.
 
 ---
 
-## REQ-029c — Every `chemistryTags` value is classified
+## every-chemistry-tag-classified
 
 Every distinct tag appearing in any `PRODUCT[*].chemistryTags` array must be
 referenced by at least one rule in `TAG_INCOMPATIBILITIES` (as a forbidden
@@ -144,7 +144,7 @@ comment).
 
 ---
 
-## REQ-030 — `INCOMPATIBLE_RECIPES` declared
+## incompatible-recipes-declared
 
 A constant `INCOMPATIBLE_RECIPES` lists pairs of recipe IDs that must never
 share a tank. Examples today:
@@ -156,7 +156,7 @@ card.
 
 ---
 
-## REQ-031 — `MIX_ORDER` declared per multi-product recipe
+## mix-order-per-multi-product-recipe
 
 Every recipe with two or more products has a `mixOrder` array specifying the
 dissolution order. The team-facing recipe page renders the steps in this
@@ -170,7 +170,7 @@ order. Defaults documented in the recipe header:
 
 ---
 
-## REQ-032 — Stock barrel time-stability
+## stock-barrel-time-stability
 
 Every fertigation stock recipe declares a `maxStableHours` field. The
 team-facing recipe page shows stock age (since last mix) and warns if age >
@@ -186,7 +186,7 @@ limit.
 
 ---
 
-## REQ-053 — Predicted tank pH within compartment envelope
+## predicted-tank-ph-within-envelope
 
 For every tank recipe (fertigation stock, fertigation at dripper, foliar,
 nursery), `predictedTankPh(recipe, waterPh)` falls within
@@ -205,10 +205,10 @@ Bands:
 
 ---
 
-## REQ-054 — Chelate stability pH range respected
+## chelate-stability-ph-range-respected
 
 Every chelate-tagged product in `PRODUCT` declares `stablePhRange: [min,
-max]`. Predicted tank pH (per REQ-053) must be inside the range of every
+max]`. Predicted tank pH (per predicted-tank-ph-within-envelope) must be inside the range of every
 chelate present in the recipe; build fails otherwise.
 
 Reference values:
@@ -222,7 +222,7 @@ Reference values:
 
 ---
 
-## REQ-055 — Foliar uptake pH curve
+## foliar-uptake-ph-curve
 
 `foliarPhResponse(sprayPh)` returns a uptake-multiplier value per the curve
 below (cert 3). The application rule wiring this curve into the foliar
