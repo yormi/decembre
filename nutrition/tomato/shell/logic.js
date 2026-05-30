@@ -1,6 +1,6 @@
 // Predicted pH + CE modal (cross-cutting nutrition/spec.md §
 // predicted-ph-ce-clickable-modal). Single body-level dialog reused by every
-// builder block. Measurement point: foliar tank (cuve, REQ-025 / REQ-053).
+// builder block. Measurement point: foliar tank (cuve, foliar-uptake-ph-curve / predicted-tank-ph-within-envelope).
 function ensurePredictedPhCeModal() {
   if (document.getElementById('predicted-ph-ce-modal')) return;
   const modal = document.createElement('div');
@@ -15,12 +15,12 @@ function ensurePredictedPhCeModal() {
         <button type="button" data-close-modal aria-label="Fermer" style="background:none; border:none; font-size:18px; cursor:pointer;">×</button>
       </div>
       <div data-modal-body>
-        <p><strong>Point de mesure :</strong> cuve (tank) foliaire — la prédiction porte sur la solution dans la cuve, avant pulvérisation (REQ-025 : <code>predictedCE(recette, dilution=1.0)</code>).</p>
+        <p><strong>Point de mesure :</strong> cuve (tank) foliaire — la prédiction porte sur la solution dans la cuve, avant pulvérisation (foliar-uptake-ph-curve : <code>predictedCE(recette, dilution=1.0)</code>).</p>
         <p><strong>Stylo bleu :</strong> le stylo bleu de laboratoire mesure la CE / le pH directement dans la cuve foliaire — c'est le même point physique que la prédiction. Tremper le stylo dans la cuve après dissolution complète des sels ; comparer la lecture à la valeur prévue affichée.</p>
         <p><strong>Bandes de sécurité (tomate) :</strong></p>
         <ul style="margin:4px 0 0 16px;">
-          <li>CE cuve : 0 – <strong>8,0 mS/cm</strong> (cap de brûlure foliaire, REQ-025).</li>
-          <li>pH cuve : 5,0 – 7,0 (fenêtre d'absorption cuticulaire, REQ-053).</li>
+          <li>CE cuve : 0 – <strong>8,0 mS/cm</strong> (cap de brûlure foliaire, foliar-uptake-ph-curve).</li>
+          <li>pH cuve : 5,0 – 7,0 (fenêtre d'absorption cuticulaire, predicted-tank-ph-within-envelope).</li>
         </ul>
         <p style="margin-top:8px; color:var(--text-muted,#666); font-size:12px;">Vert = à l'intérieur de la bande · Jaune = à moins de 10 % d'un bord · Rouge = hors bande.</p>
       </div>
@@ -46,10 +46,10 @@ function buildNutrimentTomato() {
   const solarPerGram = parseFloat(document.getElementById('nutr-solar-per-gram').value) || 7;
   const phLocked = document.getElementById('nutr-phlocked').checked;
 
-  // REQ-104: header inputs are exactly five scalars (target, solarPerGram,
+  // header-inputs-five-scalars: header inputs are exactly five scalars (target, solarPerGram,
   // stage, phLocked, recipeMode). The "current yield" input was retired
   // 2026-05-09 — page now answers "what's needed at target", not "what's
-  // needed given current canopy". REQ-081 Ca/Mg biomass × transpFactor
+  // needed given current canopy". ca-mg-biomass-transpiration-coupled Ca/Mg biomass × transpFactor
   // still applies, but transpFactor pins to 1.0 (full-canopy assumption).
   // Re-add a transpFactor knob if mid-cycle stunted-plant correction
   // becomes operationally important.
@@ -71,7 +71,7 @@ function buildNutrimentTomato() {
   // grid hand `pqKeyPrefix` so rows get a click handler.
   window.currentPourquoi = {};
 
-  // Product registry for the REQ-152 recipe tables. Composition values are
+  // Product registry for the contribution-block-recipe-table recipe tables. Composition values are
   // mass fractions (label-stated %). Source: PRODUCT_PCT + compost label
   // (window.CompostContribution.COMPOST_LABEL_PCT).
   const PRODUCT_REGISTRY = {
@@ -115,10 +115,10 @@ function buildNutrimentTomato() {
     compostMg[element] = (gPerWk != null ? gPerWk : 0) * 1000;
   });
 
-  // Block 2 — soil bank residual. Per REQ-141: only Ca and P contribute to
+  // Block 2 — soil bank residual. Per only-ca-p-participate-in-gap-chain: only Ca and P contribute to
   // the gap chain (Mehlich-3 vault is large enough to carry the plant's full
   // weekly need for years/decades); other elements pass through unchanged
-  // and render as disabled rows. Per REQ-142: months-to-depletion is
+  // and render as disabled rows. Per months-to-depletion-clamped-by-peak-demand: months-to-depletion is
   // surfaced for any element with bank data, regardless of participation.
   const SC = window.SoilContribution;
   const soilMg = {};
@@ -144,7 +144,7 @@ function buildNutrimentTomato() {
     gapAfterFoliar[element]    = Math.max(0, gapAfterFert[element]      - (supply.foliar[element]     || 0));
   });
 
-  // ─── Light-limited yield ceiling (header card) — REQ-105 ───
+  // ─── Light-limited yield ceiling (header card) — light-ceiling-from-operator-j-per-g ───
   //   weekly_J_cm² = getSolarRad() (daily) × 7
   //   ceiling kg/m²/wk = weekly_J_cm² ÷ (solarPerGram × 1000)
   // solarPerGram is operator-set (default 7 J/g ≈ 14 g/MJ at canopy).
@@ -163,7 +163,7 @@ function buildNutrimentTomato() {
   const ceilingCard = document.getElementById('nutr-light-ceiling');
   ceilingCard.style.background   = ceilingBg;
   ceilingCard.style.borderColor  = ceilingBord;
-  // REQ-105: ⚠ message rendered ONLY when target > ceiling. Paired with the
+  // light-ceiling-from-operator-j-per-g: ⚠ message rendered ONLY when target > ceiling. Paired with the
   // orange-bg color flip above so both visual signals appear together.
   const ceilingWarn = document.getElementById('nutr-light-ceiling-warning');
   if (ceilingWarn) {
@@ -176,7 +176,7 @@ function buildNutrimentTomato() {
     }
   }
 
-  // REQ-107: products-in-play list retired 2026-05-09 — replaced by the
+  // recipe-mode-toggle-fp-left-default-right: products-in-play list retired 2026-05-09 — replaced by the
   // per-block product names that already appear inline in each Block 1-5
   // card body. Header stays minimal.
 
@@ -195,7 +195,7 @@ function buildNutrimentTomato() {
   let html1 = `<div style="font-size:12px;">${block1HeaderRow}`;
   order.forEach(element => {
     const b = demandBreakdown[element];
-    // REQ-109: modal exposes only cert + equation + plugged numbers.
+    // Modal exposes only cert + equation + plugged numbers.
     // Per-element interpretation prose is intentionally omitted — it lives
     // in nutrition/tomato/plant-needs/derivation.md (single source).
     const fxG = fruitExport_g[element];
@@ -282,7 +282,7 @@ function buildNutrimentTomato() {
 
   // ─── Block 3: Compost résiduel (Savaria ORGANIMIX, fall 2025) ───
   // Reads window.CompostContribution.releasePerWeek (g/m²/wk per element) —
-  // single source of truth (REQ-004, REQ-080). Annual mineralization ×
+  // single source of truth (bilan-reads-source-of-truth-recipes, public-api-namespace). Annual mineralization ×
   // seasonal Q10 boost; declines over 18-24 months as the compost ages out.
   // First active replenishment channel after the soil-bank tap (Block 2):
   // soil → compost → sidedress → fertigation → foliar.
@@ -326,7 +326,7 @@ function buildNutrimentTomato() {
       interpretation: note
     });
   });
-  // REQ-136..138 (4-field schema 2026-05-11) — compost block.
+  // contribution-channel-details-payload / contribution-block-gap-grid / apport-ici-clickable-cert-and-cap-modals (4-field schema 2026-05-11) — compost block.
   const compostDetails = {};
   ['N','P','K','Ca','Mg','Fe','Mn','Zn','B','Cu','Mo'].forEach(element => {
     const cert = element === 'Mg' ? 1 : (element === 'Ca' ? 3 : 2);
@@ -358,14 +358,14 @@ function buildNutrimentTomato() {
     }
     compostDetails[element] = { cert, cap };
   });
-  // REQ-157 — compost channel efficiency is specialist-scope (model-layer);
+  // channel-efficiency-capability-map — compost channel efficiency is specialist-scope (model-layer);
   // pass {} for now so all cells render `—` until the specialist ships
   // window.CompostContribution.efficiency.
   html3c += renderGapGrid(gapAfterSoil, compostMg, gapAfterCompost, 'compost', compostDetails, 'compost', {});
   document.getElementById('nutr-compost').innerHTML = html3c;
 
   // ─── Block 4: Engrais sol granulaire (Actisol + farine de plumes) ───
-  // Reads STORED_RECIPE.tomato.sidedress[stage] source-of-truth (REQ-004).
+  // Reads STORED_RECIPE.tomato.sidedress[stage] source-of-truth (bilan-reads-source-of-truth-recipes).
   // Per-element supply computed in calculateNutritionSupply (supply.sidedress) using
   // PRODUCT_PCT analysis × SIDEDRESS_MINIMUM_EFFICIENCY mineralization × pH-lockout
   // factor for P. Second replenishment channel in the mass-balance gap chain.
@@ -414,7 +414,7 @@ function buildNutrimentTomato() {
       interpretation: `Les produits granulaires actifs (Actisol 5-3-2 + farine de plumes 13-0-0) ne livrent que N/P/K. ${element} doit venir d'un autre canal (compost, fertigation, foliaire).`
     });
   });
-  // REQ-136..138 (4-field schema) — sidedress block.
+  // contribution-channel-details-payload / contribution-block-gap-grid / apport-ici-clickable-cert-and-cap-modals (4-field schema) — sidedress block.
   const sdDetails = {};
   ['N','P','K','Ca','Mg','Fe','Mn','Zn','B','Cu','Mo'].forEach(element => {
     let cap;
@@ -503,7 +503,7 @@ function buildNutrimentTomato() {
       cert: 3,
       equation: `fert[B] = Solubore_g × Solubore_B_analysis / area × 1000`,
       plugged: `${sb_fert_g} g × ${PRODUCT_PCT.Solubore_B} × 1000 / ${r.area.toFixed(0)} m² = <strong>${supply.fert.B.toFixed(2)} mg B/m²/sem</strong>`,
-      interpretation: `Acide borique (Solubore 20-B) — non-ionique, 100 % d'efficacité au pH 7,4 (REQ-018 OK, pas de Ksp). Seul micro qui traverse le baril sans pertes chimiques. Ecocert validé 2026-05-08. Foliaire B = 0 (canal unique : la fertigation porte tout le B).`
+      interpretation: `Acide borique (Solubore 20-B) — non-ionique, 100 % d'efficacité au pH 7,4 (no-decorative-products-at-current-ph OK, pas de Ksp). Seul micro qui traverse le baril sans pertes chimiques. Ecocert validé 2026-05-08. Foliaire B = 0 (canal unique : la fertigation porte tout le B).`
     });
   }
   // Other elements: register a generic "not in fertigation" entry so a row
@@ -529,7 +529,7 @@ function buildNutrimentTomato() {
       interpretation: reason
     });
   });
-  // REQ-136..138 (4-field schema) — fertigation block.
+  // contribution-channel-details-payload / contribution-block-gap-grid / apport-ici-clickable-cert-and-cap-modals (4-field schema) — fertigation block.
   const fertDetails = {};
   ['N','P','K','Ca','Mg','Fe','Mn','Zn','B','Cu','Mo'].forEach(element => {
     const supplied = (supply.fert[element] || 0) > 0;
@@ -632,7 +632,7 @@ function buildNutrimentTomato() {
     equation: 'foliar[Ca] = 0 (Spray B retiré 2026-05-06)',
     plugged: 'Apport foliaire Ca = 0 mg/m²/sem',
 
-    interpretation: `Spray B retiré 2026-05-06 — Ecocert input listing non vérifié (REQ-002). Prévention BER désormais via ventilation + humidité (le Ca xylémique suit le flux de transpiration). Si BER persiste, application externe événementielle hors app.`
+    interpretation: `Spray B retiré 2026-05-06 — Ecocert input listing non vérifié (ecocert-only-products). Prévention BER désormais via ventilation + humidité (le Ca xylémique suit le flux de transpiration). Si BER persiste, application externe événementielle hors app.`
   });
   // Reasons below are stable — domain chemistry (foliar inefficiency for N/P).
   ['N','P','K','Mg'].forEach(element => {
@@ -650,7 +650,7 @@ function buildNutrimentTomato() {
           : `${element} couvert par fertigation + sol ; foliaire pas nécessaire.`
     });
   });
-  // REQ-136..138 (4-field schema) — foliar block.
+  // contribution-channel-details-payload / contribution-block-gap-grid / apport-ici-clickable-cert-and-cap-modals (4-field schema) — foliar block.
   const foliarDetails = {};
   ['N','P','K','Ca','Mg','Fe','Mn','Zn','B','Cu','Mo'].forEach(element => {
     const supplied = (supply.foliar[element] || 0) > 0;
@@ -693,8 +693,8 @@ function buildNutrimentTomato() {
   html4 += renderGapGrid(gapAfterFert, supply.foliar, gapAfterFoliar, 'foliar', foliarDetails, 'foliar', supply.foliar.efficiency || {});
 
   // ─── Predicted tank pH + CE chips (cross-cutting: predicted-ph-ce-*) ───
-  // Foliar measurement point is the TANK (REQ-025 evaluates predictedCE at
-  // dilution=1.0; REQ-053 declares foliar tank pH band [5.0, 7.0]). Recipe
+  // Foliar measurement point is the TANK (foliar-uptake-ph-curve evaluates predictedCE at
+  // dilution=1.0; predicted-tank-ph-within-envelope declares foliar tank pH band [5.0, 7.0]). Recipe
   // built from the current dose row state — same productId keys as
   // foliarRows; masterVol = STORED_RECIPE.tomato.foliaire.masterVol L.
   const foliarMasterVol = STORED_RECIPE.tomato.foliaire.masterVol || 15;
@@ -733,8 +733,8 @@ function buildNutrimentTomato() {
     return 'green';
   }
   const BAND_COLOR = { green: '#2e7d32', yellow: '#b58900', red: '#c62828' };
-  const FOLIAR_CE_LOWER = 0,   FOLIAR_CE_UPPER = 8.0;   // REQ-025 tomato burn cap
-  const FOLIAR_PH_LOWER = 5.0, FOLIAR_PH_UPPER = 7.0;   // REQ-053 foliar tank
+  const FOLIAR_CE_LOWER = 0,   FOLIAR_CE_UPPER = 8.0;   // foliar-uptake-ph-curve tomato burn cap
+  const FOLIAR_PH_LOWER = 5.0, FOLIAR_PH_UPPER = 7.0;   // predicted-tank-ph-within-envelope foliar tank
   const ceBand = bandStateFor(predictedCeFoliar, FOLIAR_CE_LOWER, FOLIAR_CE_UPPER);
   const phBand = bandStateFor(predictedPhFoliar, FOLIAR_PH_LOWER, FOLIAR_PH_UPPER);
 
@@ -809,7 +809,7 @@ function buildNutrimentTomato() {
   }
 
   let html5 = '';
-  // REQ-014 — surface bank-loading over-supply for the current stage. When
+  // luxury-feeding-guard — surface bank-loading over-supply for the current stage. When
   // ACCEPTED_EXCESSES has entries matching nutrStage, warn the operator that
   // the over-supply is by-design (residual compost > vegetative demand) and
   // not a recipe error. Bank loads in vegetative stages, draws down through
@@ -849,7 +849,7 @@ function buildNutrimentTomato() {
   }
   document.getElementById('nutr-missing').innerHTML = html5;
 
-  // ─── Phase 1 model — drift detection (REQ-153) ───
+  // ─── Phase 1 model — drift detection (stored-vs-computed-drift-block) ───
   // Renders stored-vs-computed recipe deltas. Admin-only block; doesn't
   // change any team-facing surface. Fenced as a visible "this is the model
   // talking, not the operations recipe".
@@ -907,7 +907,7 @@ function syncNutrRecipeModeUI() {
   storedBtn.style.color      = isFp ? 'var(--text-muted)' : 'var(--bg)';
   fpBtn.style.background     = isFp ? 'var(--text)' : 'var(--input-bg)';
   fpBtn.style.color          = isFp ? 'var(--bg)' : 'var(--text-muted)';
-  // REQ-107: helper note text retired 2026-05-09 — toggle + active-state
+  // recipe-mode-toggle-fp-left-default-right: helper note text retired 2026-05-09 — toggle + active-state
   // styling carry the mode signal; further description belongs downstream.
   if (note) note.innerHTML = '';
 }

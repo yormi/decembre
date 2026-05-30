@@ -329,7 +329,7 @@ setPage(currentPage); // shows the right page
 renderDiag(); // pre-render the diagnostic page so it's ready when opened
 applyAdminMode(); // reveal admin buttons if URL has #admin
 
-// Window-global identifier surface (REQ-005). Inline `onclick=` handlers and
+// Window-global identifier surface (url-hash-routing). Inline `onclick=` handlers and
 // other scripts reach these via `window.<name>` — classic-script function
 // declarations already attach to window, but explicit assignment documents
 // the contract.

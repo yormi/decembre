@@ -6,7 +6,7 @@
 // Sidedress is the granular pre-application of organic N to soil per
 // tomato production stage. Multi-product table (SIDEDRESS_PRODUCTS)
 // declares chemistry + mineralization per product; computeStageSidedress
-// picks any Ca-free product (REQ-089). Default = farine de plumes 13-0-0;
+// picks any Ca-free product (ca-aware-product-gate). Default = farine de plumes 13-0-0;
 // Eco-luzerne 3-0.5-2 is the alfalfa alternative (also Ca-free).
 
 // Planche area used to convert per-m² doses to per-planche doses for the
@@ -16,7 +16,7 @@ const SIDEDRESS_AREA_PER_PLANCHE = 54.7;  // m²
 
 // SIDEDRESS_PRODUCTS — per-product chemistry + mineralization efficiency.
 //
-// `ca_pct` is the gate REQ-089 enforces: products with `ca_pct > 0` cannot
+// `ca_pct` is the gate ca-aware-product-gate enforces: products with `ca_pct > 0` cannot
 // be selected by computeStageSidedress while soil is Ca-saturated. Generalizes
 // the previous Actisol-specific lock — any future Ca-bearing product
 // (Selectus 4-2-5 with 3.7-4.5% Ca, certain frass blends, lime-amended
@@ -56,10 +56,10 @@ const SIDEDRESS_MINIMUM_EFFICIENCY = {
   FarinePlumes_N: SIDEDRESS_PRODUCTS.FarinePlumes.efficiency,
 };
 
-// Per-element efficiency for the Efficacité column (REQ-157) — share of
+// Per-element efficiency for the Efficacité column (channel-efficiency-capability-map) — share of
 // applied sidedress-product mass that releases as plant-available form
 // per applied gram, at the channel level. Only the FP-default product
-// (FarinePlumes, after REQ-089 Ca-aware gate locks out Actisol on the
+// (FarinePlumes, after ca-aware-product-gate locks out Actisol on the
 // current Ca-saturated soil) contributes; FarinePlumes is N-only by
 // label (13-0-0), so only N is routed.
 //
@@ -71,9 +71,9 @@ const SIDEDRESS_MINIMUM_EFFICIENCY = {
 //       n ≥ 5 trigger still open for further downward refit.)
 //
 // Elements absent from the map (K / P / Mg / micros) are not routed at
-// the current channel state — REQ-089 gates Actisol out so its K (0.85)
+// the current channel state — ca-aware-product-gate gates Actisol out so its K (0.85)
 // and P (0.50) contributions are zero by construction. If Actisol re-
-// enters the channel (soil Ca drops, REQ-089 gate releases), this map
+// enters the channel (soil Ca drops, ca-aware-product-gate releases), this map
 // would gain K + P entries. Refinement triggers in derivation.md.
 const SIDEDRESS_EFFICIENCY_AT_CURRENT_PRODUCTS = {
   N: 0.70,
@@ -83,7 +83,7 @@ const SIDEDRESS_EFFICIENCY_AT_CURRENT_PRODUCTS = {
 // in the {actisol_g, farine_g, alfalfa_g, chosen} schema. T1-T5 entries are
 // populated by `wireFpSidedress` IIFE in calc.js at script load. Single
 // source of truth = computeStageSidedress. Not consumed by
-// calculateNutritionSupply (stored recipe remains REQ-004 source-of-truth
+// calculateNutritionSupply (stored recipe remains bilan-reads-source-of-truth-recipes source-of-truth
 // for the Bilan supply numbers).
 const FIRST_PRINCIPLES_SIDEDRESS = {
   // T1, T2, T3, T4, T5 filled in by wireFpSidedress(); see calc.js.

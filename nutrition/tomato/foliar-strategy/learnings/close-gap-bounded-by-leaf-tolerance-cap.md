@@ -32,7 +32,7 @@ cap = 3 (per Path C anchor in the historical foliar derivation).
 For oligo recipe the cap = whatever the existing STORED cadence
 implies (Wednesday-only = 1).
 
-The leaf-tolerance cap is **distinct from REQ-025** (in-tank EC
+The leaf-tolerance cap is **distinct from foliar-ce-under-burn-cap** (in-tank EC
 limit, which bounds *dose per tank*, not sprays per week). Both
 constraints fire; specialist's model/spec.md carries the formal
 contract.

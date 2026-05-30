@@ -1,7 +1,7 @@
 // Public API for the Salanova plant-needs model.
 //
 // Spec:    nutrition/lettuce/plant-needs/spec.md
-// REQ-165: this namespace exists at runtime with the keys below.
+// public-api-namespace: this namespace exists at runtime with the keys below.
 //
 // Consumers (Salanova subpage builder, recipe calculators) should never read
 // the underlying globals directly — go through `window.PlantNeedsLettuce` so
@@ -16,7 +16,7 @@ window.PlantNeedsLettuce = {
   LETTUCE_FRONTLOAD_DEFAULTS,
   SME_LETTUCE_PPM,
 
-  // Pure-function layer (REQ-166 demand, REQ-167 supply composition).
+  // Pure-function layer (demand-scales-with-mass-and-cycle, supply-composition-soil-fert-frontload).
   calculateLettuceNutritionDemand,
   calculateLettuceNutritionSupply,
 };

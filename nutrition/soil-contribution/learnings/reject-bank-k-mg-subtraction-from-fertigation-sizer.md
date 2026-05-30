@@ -15,12 +15,12 @@ demand_Mg_net = max(0, demand_Mg - compost_Mg - sidedress_Mg - SME_Mg × transpi
 with `SME_K`, `SME_Mg`, `TRANSPIRATION_L_PER_M2_PER_WEEK[crop]` pulled
 from `window.SoilContribution`. Operator-visible effect: FP K target at
 T5 would drop from ~4 953 g to ~880 g; FP Mg target would drop from
-~1 963 g to ~120 g (once REQ-155 uptake factors still apply); Block 7/8
+~1 963 g to ~120 g (once uptake-efficiency-factor still apply); Block 7/8
 drift gauge would flip from STORED-under-FP to STORED-over-FP for K + Mg.
 
 **Decision (2026-05-17):** rejected. Adopted "path 2" — keep
 `computeStageRecipe` as-is, declare the architectural choice in REQ-141
-+ derivation explicitly: fertigation sizing covers the active-channels
++ derivation explicitly in only-ca-p-participate-in-gap-chain: fertigation sizing covers the active-channels
 delivery share (compost + sidedress + fertigation), the soil bank's
 K + Mg mass-flow contribution is operator-side headroom outside the
 sizer's scope. Guillaume direct ruling — STORED is operator lane per
@@ -38,8 +38,8 @@ pressuring STORED via FP target shifts.
 2. **Bank-as-headroom is real.** The K bank delivers ~4 385 mg/m²/wk
    via mass-flow at current SME × transpiration. That delivery is
    really happening at the root surface and explains why the team
-   operates fine when fertigation output runs below the REQ-013 0.9×
-   floor on K. Documenting that headroom explicitly (in REQ-141 +
+   operates fine when fertigation output runs below the under-fert-guard 0.9×
+   floor on K. Documenting that headroom explicitly (in only-ca-p-participate-in-gap-chain +
    derivation) is more honest than implementing a sizer subtraction
    that doubles the same fact.
 3. **Antagonism risk in Path 1.** If the sizer subtracts bank K from

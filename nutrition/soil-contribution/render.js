@@ -10,7 +10,7 @@
 //
 // Pourquoi entries are registered by the caller (page logic.js) under the
 // key `soil.${el}` — `renderGrid` emits the click handlers but never
-// writes interpretation prose itself (REQ-060 inheritance).
+// writes interpretation prose itself (narrative-derived-from-live-data inheritance).
 
 function soilRenderGrid(gapsIn, soilMg, gapsOut, monthsToDepletion) {
   const order = ['N','P','K','Ca','Mg','Fe','Mn','Zn','B','Cu','Mo'];

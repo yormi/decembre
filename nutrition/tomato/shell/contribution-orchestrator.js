@@ -5,7 +5,7 @@
 // foliaire} (live operational state) or FP_RECIPE_T5 + computeStageRecipe
 // (first-principles target) per the `recipeMode` argument, runs the gap
 // chain (compost → sidedress → fertigation → foliar) for FP mode's
-// REQ-116 gap-derived foliar recipe via deriveFoliarRecipeFromGap, and
+// fp-strategy-live-derived gap-derived foliar recipe via deriveFoliarRecipeFromGap, and
 // returns the per-channel + total supply ledger consumed by
 // buildNutrimentTomato in nutrition/tomato/shell/logic.js + the Block 7
 // drift gauge.
@@ -17,7 +17,7 @@
 //
 // DOM reads (spray count, surfactant) + cross-channel concerns
 // (LUXURY_FACTOR demand cap on supply.soil, FP-vs-stored selection,
-// REQ-116 FP_RECIPE_T5.foliar mutation, page-local nutrStage /
+// fp-strategy-live-derived FP_RECIPE_T5.foliar mutation, page-local nutrStage /
 // nutrRecipeMode state, statusFor render helper) stay HERE — orchestrator
 // layer is allowed to read inputs and mutate page state; pure model
 // files are not.
@@ -102,7 +102,7 @@ function calculateNutritionSupply(stage, phLocked, transpFactor, targetYield, re
   const { k_g_total, mg_g_total, sb_fert_g } = fert._raw;
   void sb_fert_g;
 
-  // ─── REQ-116 — FP foliar recipe live-derived from the pre-foliar gap.
+  // ─── fp-strategy-live-derived — FP foliar recipe live-derived from the pre-foliar gap.
   // In FP mode, BEFORE building the foliar branch, compute the FP-side
   // sidedress contribution + assemble pre-foliar fertigation map, then
   // call the pure deriveFoliarRecipeFromGap and mutate FP_RECIPE_T5.foliar
@@ -110,7 +110,7 @@ function calculateNutritionSupply(stage, phLocked, transpFactor, targetYield, re
   //
   // Stored mode is untouched — STORED_RECIPE.tomato.foliaire.A is
   // /retire-recipe-governed and not derived. Spec:
-  // nutrition/tomato/foliar-strategy/spec.md → REQ-116.
+  // nutrition/tomato/foliar-strategy/spec.md → fp-strategy-live-derived.
   if (mode === 'fp') {
     const fertPre = { K: fertK, Mg: fertMg };
     if (fertB > 0) fertPre.B = fertB;
@@ -132,7 +132,7 @@ function calculateNutritionSupply(stage, phLocked, transpFactor, targetYield, re
     const foliarOptsFp = {
       surfactant: surfactantInpFp ? surfactantInpFp.checked : false,
     };
-    // Call via window.FoliarRecipeTomato so REQ-139's registry check
+    // Call via window.FoliarRecipeTomato so subproject-namespace-sole-source's registry check
     // resolves the consumer surface (orchestrator) → namespace
     // (foliar-strategy subproject). The bare function is reachable in
     // the same script bundle but routing through the namespace keeps
@@ -247,7 +247,7 @@ function calculateNutritionSupply(stage, phLocked, transpFactor, targetYield, re
   // delivery (no mixing-factor discount; concept retired 2026-05-10).
   fert.efficiency = window.FertigationRecipeTomato.efficiency;
 
-  // REQ-157 + REQ-163 — surfactant-aware foliar efficiency map.
+  // channel-efficiency-capability-map — surfactant-aware foliar efficiency map.
   const surfactantInputForEfficiency = document.getElementById('nutr-foliar-surfactant');
   const surfactantOnForEfficiency = surfactantInputForEfficiency ? surfactantInputForEfficiency.checked : false;
   foliar.efficiency = window.FoliarRecipeTomato.efficiencyFor(surfactantOnForEfficiency);

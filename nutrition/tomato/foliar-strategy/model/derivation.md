@@ -274,7 +274,7 @@ check, so this stays consistent with `nutrition/chemistry — foliar-ce-under-bu
 delivery fraction at the default no-surfactant regime and default spray
 tank pH. `window.FoliarRecipeTomato.efficiencyFor(surfactant)` (`surfactant-aware-efficiency-map`)
 declares the same shape but reactive to the surfactant lever — the
-Block 5 toggle that the page-side REQ-163 reads.
+Block 5 toggle that the page-side reads.
 
 Formula: `efficiency(surfactant) = coverage × foliarPhResponse(sprayPh)`
 

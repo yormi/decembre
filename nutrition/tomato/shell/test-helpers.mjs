@@ -61,15 +61,15 @@ export function loadTomatoApp() {
 }
 
 // Read the source of the tomato/app/logic.js partial — used by source-grep
-// REQs (REQ-106, REQ-108) that pin call-shape patterns regardless of what
-// the assembled artifact happens to render today.
+// specs (fp-recipe-mode-locks-t5 + others) that pin call-shape patterns
+// regardless of what the assembled artifact happens to render today.
 export function readLogicJs() {
   return readFileSync(join(HERE, 'logic.js'), 'utf8');
 }
 
-// Read dist/index.html (the assembled artifact) for cross-file REQs
-// (REQ-106 default-mode declaration, REQ-113 listener wiring array,
-// REQ-004 source-of-truth references in calculateNutritionSupply).
+// Read dist/index.html (the assembled artifact) for cross-file specs
+// (fp-recipe-mode-locks-t5 default-mode declaration, listener wiring array,
+// bilan-reads-source-of-truth-recipes references in calculateNutritionSupply).
 // After the Stage 7 carve, those identifiers live in partials that
 // app/index.html @includes — the assembled dist file is the single
 // concatenated text where the source-grep patterns resolve.
@@ -80,7 +80,7 @@ export function readAppIndexHtml() {
 
 // Override one element of FP_RECIPE_T5.fertigation at runtime and force a
 // re-render of #nutr-phase1 (Block 8 drift gauge). Returns a restore() that
-// puts the original value back. Used by REQ-153 to set up an FP / Stored
+// puts the original value back. Used by stored-vs-computed-drift-block to set up an FP / Stored
 // ratio of exactly 1.5 for one element without ever touching STORED_RECIPE
 // (which is read-only per test-writer hard constraints).
 //

@@ -6,12 +6,12 @@
 // the partial pages.
 //
 // Registry repopulated each builder render; keys: `${blockId}.${element}`,
-// `${blockId}.cell.${element}` (REQ-138 cell click), `${blockId}.cap.${element}.${kind}`
-// (REQ-138 cap-emoji click).
+// `${blockId}.cell.${element}` (apport-ici-clickable-cert-and-cap-modals cell click), `${blockId}.cap.${element}.${kind}`
+// (apport-ici-clickable-cert-and-cap-modals cap-emoji click).
 //
-// Depends on: renderSpec (lib/spec-strings.js) — REQ-144 interpretation prose.
+// Depends on: renderSpec (lib/spec-strings.js) — operator-prose-is-deterministic-render interpretation prose.
 
-// REQ-003 — collapsed <details> "Pourquoi cette dose?" expander. Still used by
+// Collapsed <details> "Pourquoi cette dose?" expander. Still used by
 // nutrition/lettuce/app/logic.js's lever recommendation card; Bilan tables use
 // the modal flow (registerPourquoi / showPourquoi) below.
 function pourquoiExpander(equationHtml, pluggedHtml, interpretationHtml) {
@@ -35,12 +35,12 @@ function showPourquoi(key) {
   document.getElementById('pq-modal-eq').innerHTML = d.equation || '';
   document.getElementById('pq-modal-plugged').innerHTML = d.plugged || '';
 
-  // Interpretation: REQ-144 — must be a deterministic render of spec.
+  // Interpretation: operator-prose-is-deterministic-render — must be a deterministic render of spec.
   // Accepted shapes:
-  //   { req: 'REQ-NNN', key: 'name', interpolation?: { ... } } — spec-anchored prose
-  //                                                       (REQ owns the bytes)
+  //   { requirementId, key: 'name', interpolation?: { ... } } — spec-anchored prose
+  //                                                       (spec owns the bytes)
   //   undefined / null / ''                            — empty interpretation
-  // Plain-string form is deprecated (REQ-144). Pass it through with a
+  // Plain-string form is deprecated (operator-prose-is-deterministic-render). Pass it through with a
   // console warning so legacy registrations don't break, but new code
   // MUST use the { requirementId, key } shape.
   const interpretationElement = document.getElementById('pq-modal-interpolation');
@@ -52,7 +52,7 @@ function showPourquoi(key) {
     interpretationElement.innerHTML = text;
     interpretationElement.setAttribute('data-prose-source', d.interpretation.requirementId);
   } else {
-    console.warn('showPourquoi: legacy string interpretation for key', key, '— migrate to { requirementId, key } per REQ-144');
+    console.warn('showPourquoi: legacy string interpretation for key', key, '— migrate to { requirementId, key } per operator-prose-is-deterministic-render');
     interpretationElement.innerHTML = String(d.interpretation);
     interpretationElement.removeAttribute('data-prose-source');
   }
@@ -67,11 +67,11 @@ document.addEventListener('keydown', (e) => {
   if (e.key === 'Escape') closePourquoi();
 });
 
-// REQ-138 — Per-(block, element) modal for cell clicks. Reuses showPourquoi
+// apport-ici-clickable-cert-and-cap-modals — Per-(block, element) modal for cell clicks. Reuses showPourquoi
 // modal markup; the key shape is `${blockId}.cell.${element}` so each block keeps
 // its own modal entry per element (no aggregation across elements/blocks).
 // Falls back to legacy `${blockId}.${element}` key for tomato blocks that
-// pre-date REQ-138 (compost.N, sidedress.K, fert.Mg, foliar.Mn, etc.).
+// pre-date apport-ici-clickable-cert-and-cap-modals (compost.N, sidedress.K, fert.Mg, foliar.Mn, etc.).
 function showCellCert(blockId, element) {
   const newKey = blockId + '.cell.' + element;
   const legacyKey = blockId + '.' + element;
@@ -90,7 +90,7 @@ function showCellCert(blockId, element) {
   showPourquoi(newKey);
 }
 
-// REQ-138 — Per-(block, element, capKind) modal for cap-emoji clicks. Distinct
+// apport-ici-clickable-cert-and-cap-modals — Per-(block, element, capKind) modal for cap-emoji clicks. Distinct
 // key shape from cell modals (`${blockId}.cap.${element}.${kind}`) so cell-click
 // and emoji-click never collide.
 function showCapReason(blockId, element, kind) {

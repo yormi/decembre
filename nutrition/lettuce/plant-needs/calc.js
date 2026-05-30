@@ -58,7 +58,7 @@ function calculateLettuceNutritionSupply(currentG, targetG, density, phLocked, f
     const ppm = (dependencies.smeLettucePpm && dependencies.smeLettucePpm[element]) || 0;
     let mass = ppm * flowL * canopyFactor;
     if (phLocked && (element === 'P' || element === 'Mn' || element === 'Zn')) {
-      mass = Math.min(mass, 100);     // REQ-020 lockout gate
+      mass = Math.min(mass, 100);     // passive-supply-lockout-gate
     }
     if (phLocked && element === 'Fe') {
       mass *= 0.15;                    // pH 7.4 root reductase suppressed (cert 3)
@@ -82,7 +82,7 @@ function calculateLettuceNutritionSupply(currentG, targetG, density, phLocked, f
   const featherMealEfficiency = dependencies.featherMealMineralizationEfficiency;
   frontload.N = (frontload_g_per_m2 || 0) * productPct.FarinePlumes_N
               * featherMealEfficiency * 1000 / fmWeeks;
-  // REQ-157 — per-element efficiency for front-load channel. Farine de plumes
+  // channel-efficiency-capability-map — per-element efficiency for front-load channel. Farine de plumes
   // is N-only (13-0-0); efficiency = mineralization rate distributed over
   // the release window.
   frontload.efficiency = {};

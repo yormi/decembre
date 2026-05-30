@@ -3,8 +3,8 @@
 // Spec:        nutrition/tomato/sidedress-recipe/spec.md
 // Derivation:  nutrition/tomato/sidedress-recipe/derivation.md
 //
-// REQ-087: g_per_planche sized to the N gap left after compost residual.
-// REQ-089: Ca-aware product gate — chosen product must have ca_pct === 0.
+// mass-balance-sizes-product-to-n-gap: g_per_planche sized to the N gap left after compost residual.
+// ca-aware-product-gate: chosen product must have ca_pct === 0.
 
 // computeStageSidedress(stage, product = 'FarinePlumes') — N-only mass-balance.
 //   N_offtake_mg/m²/wk = TOMATO_FRUIT_EXPORT.N × stageYield × 1000 + BIOMASS_DEMAND[stage].N
@@ -14,7 +14,7 @@
 //   g_per_planche      = round(g_per_m² × SIDEDRESS_AREA_PER_PLANCHE)
 //
 // `product` must be a key of SIDEDRESS_PRODUCTS whose ca_pct === 0
-// (REQ-089 Ca-aware gate). Passing a Ca-bearing product (e.g. 'Actisol' while
+// (ca-aware-product-gate). Passing a Ca-bearing product (e.g. 'Actisol' while
 // soil is Ca-saturated) makes the function fall back to all-zeros — the gate
 // closes silently rather than throws, so the bank-trajectory display can still
 // render with a warning rather than crashing.
@@ -24,13 +24,13 @@
 // where `chosen` is the product key, `g_per_planche` is the dose for the
 // chosen product, and the per-product fields hold 0 for unselected products.
 // Flat fields preserve backwards-compat with callers reading
-// `recipe.actisol_g` / `recipe.farine_g`. `chosen` is what REQ-089 verifier reads.
+// `recipe.actisol_g` / `recipe.farine_g`. `chosen` is what the ca-aware-product-gate verifier reads.
 function computeStageSidedress(stage, product) {
   const chosen = product || 'FarinePlumes';
   const empty  = { actisol_g: 0, farine_g: 0, alfalfa_g: 0, chosen, g_per_planche: 0 };
 
   const spec = SIDEDRESS_PRODUCTS[chosen];
-  // Ca-aware gate (REQ-089). Caller cannot bypass — a Ca-bearing product
+  // Ca-aware gate (ca-aware-product-gate). Caller cannot bypass — a Ca-bearing product
   // returns all-zeros even if explicitly requested. Soil is Ca-saturated
   // (10 989 kg/ha tomato per Berger Apr 2026); adding Ca extends the pH crisis.
   if (!spec || (spec.ca_pct || 0) > 0) {
@@ -84,7 +84,7 @@ function computeStageSidedress(stage, product) {
 // Public API for the tomate sidedress-recipe model.
 //
 // Spec:    nutrition/tomato/sidedress-recipe/spec.md
-// REQ-088: this namespace exists at runtime with the keys below.
+// public-api-namespace: this namespace exists at runtime with the keys below.
 //
 // Consumers (Banque sol page, future per-stage drift gauges, recipe
 // calculators) should reach for
@@ -94,18 +94,18 @@ function computeStageSidedress(stage, product) {
 window.SidedressRecipeTomato = {
   // Planche area used for per-planche conversion (m²)
   AREA_PER_PLANCHE:           SIDEDRESS_AREA_PER_PLANCHE,
-  // Per-product chemistry + mineralization. REQ-089 reads ca_pct here.
+  // Per-product chemistry + mineralization. ca-aware-product-gate reads ca_pct here.
   PRODUCTS:                   SIDEDRESS_PRODUCTS,
   // Per-(product, element) mineralization efficiency at steady-state
   // (legacy view kept for backwards-compat — derived from PRODUCTS).
   MINIMUM_EFFICIENCY:         SIDEDRESS_MINIMUM_EFFICIENCY,
-  // Per-element efficiency (REQ-157) — channel delivery fraction at
-  // current FP-default product (FarinePlumes; Actisol REQ-089-gated out
+  // Per-element efficiency (channel-efficiency-capability-map) — channel delivery fraction at
+  // current FP-default product (FarinePlumes; Actisol ca-aware-product-gate-gated out
   // on Ca-saturated soil). N-only: 0.75 (Sonneveld mineralization).
   efficiency:                 SIDEDRESS_EFFICIENCY_AT_CURRENT_PRODUCTS,
   // Per-stage FP target { actisol_g, farine_g, alfalfa_g, chosen, g_per_planche },
   // populated at script load
   FIRST_PRINCIPLES_BY_STAGE:  FIRST_PRINCIPLES_SIDEDRESS,
-  // Mass-balance derivation function (REQ-087)
+  // Mass-balance derivation function (mass-balance-sizes-product-to-n-gap)
   computeStageSidedress,
 };

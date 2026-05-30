@@ -1,7 +1,7 @@
 // Public API for the compost-contribution model.
 //
 // Spec:    nutrition/compost-contribution/spec.md
-// REQ-080: this namespace exists at runtime with the keys below.
+// public-api-namespace: this namespace exists at runtime with the keys below.
 //
 // Consumers (Bilan UI for tomato + lettuce, future recipe calculators)
 // should reach for `window.CompostContribution` instead of the bare
@@ -22,12 +22,12 @@ window.CompostContribution = {
   SEASONAL_FACTOR:         COMPOST_SEASONAL_FACTOR,
   // Per-element weekly release in g/m²/wk — what consumers read.
   releasePerWeek:          COMPOST_RELEASE_PER_WEEK,
-  // Per-element efficiency (REQ-157) — fraction of applied compost mass
+  // Per-element efficiency (channel-efficiency-capability-map) — fraction of applied compost mass
   // plant-available within year 1, accounting for pH lockout (P) and
   // label-gap uncertainty (Mg). See data.js for per-element cert.
   efficiency:              COMPOST_EFFICIENCY,
   // Mass-balance check helper. Returns the formula value (which the
-  // stored release is allowed to drift from within ±50% per REQ-079;
+  // stored release is allowed to drift from within ±50% per release-values-within-mass-balance-band;
   // Mg is the only current divergence).
   theoreticalReleasePerWeek,
 };

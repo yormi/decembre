@@ -6,7 +6,7 @@
 // yucca, larger volumes drip/run off). Doses divided by 3 to hold
 // concentration constant: 22/22/7/4/1 g + Fe (Cu reduced 4→2 g 2026-05-05
 // per toxicity observation). Spray B (CaCl₂) re-introduced 2026-05-28 —
-// CaCl₂·2H₂O 100 g / 15 L (REQ-025 burn cap 0.67 %), 2×/semaine, sans
+// CaCl₂·2H₂O 100 g / 15 L (foliar-ce-under-burn-cap 0.67 %), 2×/semaine, sans
 // surfactant (coverage cuticulaire ~0.15) ; bypass Ca racinaire pour
 // défense botrytis. Source CaCl₂ vérifiée Ecocert (raison du retrait
 // 2026-05-06 résolue). Modèle Ca recipe (data.js + computeFoliarSupply)

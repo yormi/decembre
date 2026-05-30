@@ -52,7 +52,7 @@ function buildNutrimentNursery() {
     : v >= 1    ? v.toFixed(1)
     :              v.toFixed(2));
 
-  // Block 1 (REQ-130): per-element demand — 3-col table (Él / Par plant / Cert).
+  // Block 1: per-element demand — 3-col table (Él / Par plant / Cert).
   // Per-tray and per-cohort numbers feed Blocks 2/3 inside the gap-chain math;
   // Block 1's job is the per-plant sanity check + cert visibility.
   let html = `<div style="font-size:11.5px; color:var(--text-muted); margin-bottom:6px;">Demande par plant et par semaine. Pour le détail par plateau ou par cohorte, voir Blocs 2-3.</div>`;
@@ -71,16 +71,17 @@ function buildNutrimentNursery() {
   html += `</div>`;
   document.getElementById('nutr-n-needs').innerHTML = html;
 
-  // ─── Gap chain (REQ-129): demand → substrate → fertigation → leviers ───
+  // ─── Gap chain: demand → substrate → fertigation → leviers ───
   // Build flat demand[element] = perTray_mg for the renderGapGrid pipeline.
   const demandFlat = {};
   ['N','P','K','Ca','Mg','Fe','Mn','Zn','B','Cu','Mo'].forEach(element => {
     demandFlat[element] = (demand[element] || {}).perTray_mg || 0;
   });
 
-  // ─── Block 2: Substrate (REQ-127) — recipe header + gap-grid table ───
-  // Reads new {perTray_mg, details} shape (REQ-136). Registers pourquoi
-  // entries per (block, element) cell + per cap for REQ-138 click handlers.
+  // ─── Block 2: Substrate — recipe header + gap-grid table ───
+  // Reads new {perTray_mg, details} shape (contribution-channel-details-payload).
+  // Registers pourquoi entries per (block, element) cell + per cap for
+  // apport-ici-clickable-cert-and-cap-modals click handlers.
   const SCN = window.SubstrateContributionNursery;
   const fmGperTray = SCN.NURSERY_FEATHER_MEAL_DEFAULT_G_PER_TRAY;
   const subResult = SCN.cycleAverageReleasePerTray(fmGperTray);
@@ -94,7 +95,7 @@ function buildNutrimentNursery() {
   ['N','P','K','Ca','Mg','Fe','Mn','Zn','B','Cu','Mo'].forEach(element => {
     gapAfterSubstrate[element] = Math.max(0, demandFlat[element] - (subContrib[element] || 0));
   });
-  // REQ-138 — register pourquoi entries (cell-cert + per-cap) for each element.
+  // apport-ici-clickable-cert-and-cap-modals — register pourquoi entries (cell-cert + per-cap) for each element.
   ['N','P','K','Ca','Mg','Fe','Mn','Zn','B','Cu','Mo'].forEach(element => {
     const v = subContrib[element] || 0;
     const det = subDetails[element] || { cert: null, cap: null };
@@ -128,9 +129,9 @@ function buildNutrimentNursery() {
   subHtml += renderGapGrid(demandFlat, subContrib, gapAfterSubstrate, 'nursery-substrate', subDetails, 'nursery-substrate', (subResult && subResult.efficiency) || {});
   document.getElementById('nutr-n-substrate').innerHTML = subHtml;
 
-  // ─── Block 3: Fertigation (REQ-128) — recipe header + gap-grid table ───
-  // Supply scales with applicationsPerWeek (REQ-122). EC + pH bind per
-  // fertigation, not per week (REQ-125).
+  // ─── Block 3: Fertigation — recipe header + gap-grid table ───
+  // Supply scales with applicationsPerWeek (supply-scales-linearly-with-applications).
+  // EC + pH bind per fertigation, not per week (ec-cap-per-fertigation-not-per-week).
   const FN = window.FertigationNursery;
   const trayL = FN.NURSERY_FERTIGATION_DEFAULTS.trayVolumeL;
   const recipe = FN.NURSERY_RECIPE_DEFAULT;
@@ -143,8 +144,8 @@ function buildNutrimentNursery() {
   const ceColor = ce <= ceCap ? '#1e6b2d' : '#8a3e1e';
   const phColor = (tankPh >= phLo && tankPh <= phHi) ? '#1e6b2d' : '#8a3e1e';
   // Build fert contrib map (already includes applicationsPerWeek scaling
-  // because nurseryRecipeSupply was called with appsPerWeek). REQ-136
-  // also exposes details per element.
+  // because nurseryRecipeSupply was called with appsPerWeek).
+  // contribution-channel-details-payload also exposes details per element.
   const fertContrib = {};
   const fertDetails = supply.details || {};
   ['N','P','K','Ca','Mg','Fe','Mn','Zn','B','Cu','Mo'].forEach(element => {
@@ -155,7 +156,7 @@ function buildNutrimentNursery() {
   ['N','P','K','Ca','Mg','Fe','Mn','Zn','B','Cu','Mo'].forEach(element => {
     gapAfterFert[element] = Math.max(0, gapAfterSubstrate[element] - fertContrib[element]);
   });
-  // REQ-138 — register pourquoi entries per (block, element) cell + cap.
+  // apport-ici-clickable-cert-and-cap-modals — register pourquoi entries per (block, element) cell + cap.
   ['N','P','K','Ca','Mg','Fe','Mn','Zn','B','Cu','Mo'].forEach(element => {
     const v = fertContrib[element] || 0;
     const det = fertDetails[element] || { cert: null, cap: null };
@@ -165,7 +166,7 @@ function buildNutrimentNursery() {
       cert: det.cert,
       equation: 'apport = Σ (recipe[product].g/L × tray_volume × product.base[' + element + ']) × applications/sem',
       plugged: '<strong>' + fmt(v) + ' mg/plateau/sem</strong> à ' + appsPerWeek + '× /sem · CE bidon ' + ce.toFixed(2) + ' mS/cm.',
-      interpretation: 'Cert combiné = min(cert) parmi les produits qui apportent ' + element + '. Augmenter applications/sem (REQ-122) ou ajouter un produit (REQ-124) pour combler le manque sortant.',
+      interpretation: 'Cert combiné = min(cert) parmi les produits qui apportent ' + element + '. Augmenter applications/sem ou ajouter un produit pour combler le manque sortant.',
     });
     if (det.cap) {
       registerPourquoi('nursery-fert.cap.' + element + '.' + det.cap.kind, {
@@ -195,9 +196,10 @@ function buildNutrimentNursery() {
   fertHtml += renderGapGrid(gapAfterSubstrate, fertContrib, gapAfterFert, 'nursery-fert', fertDetails, 'nursery-fert', supply.efficiency || {});
   document.getElementById('nutr-n-fertigation').innerHTML = fertHtml;
 
-  // ─── Block 4: Leviers (REQ-129 — reads gapAfterFert as residual) ───
-  // Includes (REQ-123) min applicationsPerWeek to hit 100% on sourced
-  // elements, and (REQ-124) sourced vs unsourced classification.
+  // ─── Block 4: Leviers (reads gapAfterFert as residual) ───
+  // Includes (min-applications-solves-full-coverage) min applicationsPerWeek
+  // to hit 100% on sourced elements, and (elements-sourced-vs-unsourced)
+  // sourced vs unsourced classification.
   const gaps = [];
   ['N','P','K','Ca','Mg','Fe','Mn','Zn','B','Cu','Mo'].forEach(element => {
     const d = demandFlat[element] || 0;

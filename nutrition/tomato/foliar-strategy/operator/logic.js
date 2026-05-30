@@ -35,7 +35,7 @@
 // SPRAY B REMOVED 2026-05-06
 //   Was CaCl₂·2H₂O 100 g/15 L (Fri) for BER prevention. Removed because the
 //   Teris industrial-grade CaCl₂ Ecocert input listing was never verified
-//   (organic cert audit risk — REQ-002). BER prevention now relies on
+//   (organic cert audit risk — ecocert-only-products). BER prevention now relies on
 //   ventilation + humidity management; if BER still shows up on fruit, an
 //   external CaCl₂ application stays event-driven and out-of-app until a
 //   confirmed-organic CaCl₂ source is sourced.

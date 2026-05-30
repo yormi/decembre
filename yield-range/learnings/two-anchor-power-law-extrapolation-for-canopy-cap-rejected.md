@@ -14,7 +14,7 @@ the fit coincides with breeder data at exactly one row (50-cell) and
 overpredicts everywhere else. The 24 / 18-cell values (80 / 120 g)
 were extrapolations on the same non-physical curve.
 
-Replaced (REQ-112 / REQ-172) by breeder-anchored geometric scaling:
+Replaced (canopy-cap-is-ceiling / nursery-canopy-cap-by-plateau) by breeder-anchored geometric scaling:
 `cap = area_per_cell × h × ρ × 1000` with `h = 0.10 m` and
 `ρ = 82 kg/m³` (back-derived from the 50-cell breeder anchor). The
 geometric basis is the conservative-physics floor — any real

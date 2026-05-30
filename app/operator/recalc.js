@@ -35,7 +35,7 @@ function getBedArea() { return currentCrop === 'tomato' ? TOMATO_BED_AREA : LETT
 // J/cm²/week (inside-greenhouse, glazing transmission applied).
 // Source: 20-year Quebec City weekly averages (provided by Guillaume 2026-05).
 // Cert 5 — these are the reference values; all weekly solar calcs derive from
-// here. Validated by REQ-009 in spec.md.
+// here. Validated by solar-by-week-20yr-average in spec.md.
 //
 // Weeks 19-52 not yet provided → fall back to SOLAR_BY_MONTH below until the
 // array is extended.

@@ -2,7 +2,7 @@
 
 ## PA Taillon April 2026 fertigation anchor — vindicated by physics (history preserved 2026-05-15)
 
-> **Reframe note (2026-05-15):** Originally written 2026-05-14 to capture the anchor as "retired legacy" under the 2026-05-12 REQ-098 amendment that dropped compost-subtraction. That amendment was reverted 2026-05-15 (B1-REV); anchor is now recovered by the mass-balance derivation itself. Block kept for audit-trail completeness; framing flipped: the anchor wasn't deference, it was the right physics.
+> **Reframe note (2026-05-15):** Originally written 2026-05-14 to capture the anchor as "retired legacy" under the 2026-05-12 mass-balance-derivation amendment that dropped compost-subtraction. That amendment was reverted 2026-05-15 (B1-REV); anchor is now recovered by the mass-balance derivation itself. Block kept for audit-trail completeness; framing flipped: the anchor wasn't deference, it was the right physics.
 
 T5 fertigation anchor recommended by PA Taillon (agronomist), April 2026:
 

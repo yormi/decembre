@@ -16,7 +16,7 @@ Observed seedling weights from Décembre nursery. Source-of-truth for empirical 
 |---|---|---|---|---|---|
 | 2026-04-15 | 21 (3 sem) | **4** | normal; one plant poisoned 2026-04-17 | Jordane photo log | Anchors early-phase RGR before canopy closure (d ≤ 14); model must clear ~4 g by d21 |
 | 2026-04-22 | 28 (4 sem) | **16** | peak yield observed | Jordane photo log | Anchors `wPeakG` and the spacing-decay floor: 16 g at d28 fits `RootCap = 56` × ~30% headroom × (1 − W/RootCap) damping. **Sets `optimalHarvestDay ≈ 28`.** |
-| 2026-04-30 | 35 (5 sem) | **10** | yellowing, white spots, plants stressed/crowded | Jordane photo log | Anchors the senescence branch (REQ-070): −38 % from peak → biomass loss is real, not just stalled growth. Without this row the model would only decelerate, not decline. |
+| 2026-04-30 | 35 (5 sem) | **10** | yellowing, white spots, plants stressed/crowded | Jordane photo log | Anchors the senescence branch: −38 % from peak → biomass loss is real, not just stalled growth. Without this row the model would only decelerate, not decline. |
 | 2026-05-08 | ≈35 (5 sem) | **12** | moldy in trays, bolting; same observations as week 5 prior | Jordane photo log | Confirms the d28→d35 collapse repeats across cohorts (n=2 of 2 at d35). Bolting + low-VPD pockets are co-flagged → `f_VPD<2` + `bolting` flags both fire. |
 
 ### Operator observation (Jordane / Guillaume)
@@ -82,10 +82,10 @@ Starting points; refit iteratively when integration code runs against the 4 obse
 
 Theory + literature only — no Décembre observations:
 
-- **Cooler-zone growth ceiling.** Whether moving lettuce out of the tomato zone recovers the d28→d35 mass loss. Bolting flag (REQ-071) and `f_Tday` curve are predictions.
-- **Spread-tray uplift.** `f_light` lift from spacing past d14 never measured here (REQ-063 keeps it off the user surface; "spread = #1 lever" prediction unverified).
+- **Cooler-zone growth ceiling.** Whether moving lettuce out of the tomato zone recovers the d28→d35 mass loss. Bolting flag and `f_Tday` curve are predictions.
+- **Spread-tray uplift.** `f_light` lift from spacing past d14 never measured here (kept off the user surface; "spread = #1 lever" prediction unverified).
 - **32-cell behaviour.** 0.55 spacing-floor estimate is purely geometric; no observed weights at this density.
-- **Variety differences.** `varietyRootFactor` reserved but unpopulated (REQ-068 holds library at Salanova-only).
+- **Variety differences.** `varietyRootFactor` reserved but unpopulated (library held at Salanova-only).
 
 ## Future cohorts to log
 

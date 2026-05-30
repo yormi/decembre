@@ -13,7 +13,7 @@ Cross-crop nutrition rules defer to `nutrition/spec.md`; routing to
 
 ---
 
-## INV-1 — Element coverage via global REQ-029a/b/c
+## INV-1 — Element coverage via global classifiers
 
 **Statement (invariant, not a numbered REQ):** Every product in
 `NURSERY_PRODUCTS` declares `ions` and `chemistryTags` of the same shape as
@@ -172,7 +172,7 @@ the two would silently break the cap.
 
 ## applications-per-week-positive-integer
 
-**Statement:** Every API consuming `applicationsPerWeek` (REQ-112, REQ-113)
+**Statement:** Every API consuming `applicationsPerWeek`
 accepts only integers in `[1, 7]`. Non-integer or out-of-range rejected
 (throw or clamp-then-warn — implementation choice). `minApplicationsPerWeek`
 always returns `null` or an integer in this range; never fractional/zero.
@@ -188,7 +188,7 @@ Fractional values look like solutions but can't be executed.
 Cross-crop rules already enforced upstream by verifier:
 
 - **nutrition/chemistry — every-product-ecocert-allowed** — every product organicAllowed: true (CAN/CGSB-32.311)
-- **REQ-028** — cert annotation on every empirical constant
+- cert annotation on every empirical constant
 - **nutrition/chemistry — product-declares-ions-and-chemistry-tags / every-cation-anion-pair-classified / every-chemistry-tag-classified** — ions + chemistryTags + classification table coverage
 - **nutrition/chemistry — predicted-tank-ph-within-envelope** — predicted tank pH inside compartment envelope (nursery row 4.5–6.5)
 

@@ -9,10 +9,12 @@
 //   - Acadie Algues liquides (Acadian Seaplants; kelp extract). K + micros baseline.
 //
 // Mirrors the global `PRODUCT` schema shape (mode, base, ions, chemistryTags,
-// ecFactor, phContribution, organicAllowed, phClass) so REQ-010, REQ-022,
-// REQ-023, REQ-029a, REQ-053-schema all apply locally too.
+// ecFactor, phContribution, organicAllowed, phClass) so recipe-mode-per-product,
+// every-product-ecocert-allowed, ec-factor-covers-every-product,
+// product-declares-ions-and-chemistry-tags, predicted-tank-ph-within-envelope-schema
+// all apply locally too.
 //
-// IMPORTANT — local ecFactor calibration (REQ-098 satisfaction):
+// IMPORTANT — local ecFactor calibration (predicted-ce-under-nursery-cap satisfaction):
 // The global `PRODUCT` entries for these three products carry ecFactors at
 // cert 2 (Ocean 0.8, Acadie poisson 0.5, Kelp 0.3). Field measurement of the
 // CURRENT production solution (Acadie poisson 13 mL/L + Kelp 2 mL/L in 1.25 L
@@ -30,7 +32,7 @@
 
   // ─── Products ─────────────────────────────────────────────────────────
   //
-  // Per-product analysis. cert annotations inline (REQ-028).
+  // Per-product analysis. cert annotations inline.
   const NURSERY_PRODUCTS = {
 
     'Ocean_15_1_1': {
@@ -39,7 +41,7 @@
       // Elemental: P = 0.01 × 62/142 = 0.00437; K = 0.01 × 78/94.2 = 0.00828.
       // 80% amino acids, 65% fish-protein peptide.
       // Manufacturer hydroponics rate: 2 g/L weekly (label PDF).
-      mode: 'flux',                              // REQ-010 — participates in demand-supply balance
+      mode: 'flux',                              // recipe-mode-per-product — participates in demand-supply balance
       ch: 'nursery',
       base: { N: 0.15, P: 0.00437, K: 0.00828 }, // cert 4 — label
       phClass: { N: 'organic-N', P: 'organic-P', K: 'soluble-cation' }, // cert 3
@@ -85,7 +87,7 @@
       // matter (amino acids, alginic acid, mannitol, fucoidan).
       // Source: nutrition/doc/Acadie Fresh Seaweed Concentrate.pdf
       // Density ~1.05 g/mL (cert 3, viscous brownish-black liquid).
-      mode: 'concentration',                     // REQ-010 — concentration-driven biostimulant + nutrient blend
+      mode: 'concentration',                     // recipe-mode-per-product — concentration-driven biostimulant + nutrient blend
       ch: 'nursery',
       // Element mass fractions from datasheet typical analysis (w/w).
       // K₂O 6.0% × 0.83 = 4.98% K element. P₂O₅ <0.2% × 0.437 = <0.087% P
@@ -139,8 +141,9 @@
 
   // ─── Default recipe at 90 g target / 35-day cycle ─────────────────────
   //
-  // Sized to maximize N + P coverage within REQ-098 (CE ≤ 3.0) and REQ-099
-  // (tank pH 4.5–6.5). Math walked in derivation.md. Doses are concentration
+  // Sized to maximize N + P coverage within predicted-ce-under-nursery-cap
+  // (CE ≤ 3.0) and predicted-tank-ph-in-nursery-envelope (tank pH 4.5–6.5).
+  // Math walked in derivation.md. Doses are concentration
   // in the watering bucket (mL/L for liquids, g/L for the powder).
   //
   // Numbers per product (per tray, per week, in mg of element):
@@ -150,8 +153,8 @@
   //   ────────────────────────────────────────────────────
   //   Total                                              ≈ 1463 mg N/tray
   //
-  // Predicted CE: 0.1 + 0.20×7 + 0.15×6 + 0.10×2 = 2.6 mS/cm  → REQ-098 ✓
-  // Predicted pH: 7.0 + (-0.15)×7 + (-0.10)×6 + (-0.05)×2 = 5.25 → REQ-099 ✓
+  // Predicted CE: 0.1 + 0.20×7 + 0.15×6 + 0.10×2 = 2.6 mS/cm  → predicted-ce-under-nursery-cap ✓
+  // Predicted pH: 7.0 + (-0.15)×7 + (-0.10)×6 + (-0.05)×2 = 5.25 → predicted-tank-ph-in-nursery-envelope ✓
   //
   // Note: per-product dose units below are kept in **g/L** (label-native for
   // Ocean, and we take mL/L ≈ g/L for liquids at density ~1; documented
@@ -165,13 +168,13 @@
 
   // ─── Caps + envelopes ─────────────────────────────────────────────────
   //
-  // REQ-098 — solution CE at fertigation ≤ 3.0 mS/cm. Cert 3.
+  // predicted-ce-under-nursery-cap — solution CE at fertigation ≤ 3.0 mS/cm. Cert 3.
   // Rationale: substrate EC post-watering target 1.5–2.5 mS/cm (cert 4) +
   // some carry-up; staying ≤ 3.0 in the bucket protects week-1 trays
   // (smallest roots, most osmotic-stress-sensitive). Hard cap at 3.0.
   const NURSERY_CE_CAP_MS_CM = 3.0;
 
-  // REQ-099 — tank pH band derived from REQ-053 nursery row.
+  // predicted-tank-ph-in-nursery-envelope — tank pH band derived from predicted-tank-ph-within-envelope nursery row.
   // [4.5, 6.5] matches peat substrate pH range. cert 4.
   const NURSERY_TANK_PH_RANGE = [4.5, 6.5];
 

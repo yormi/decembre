@@ -8,7 +8,7 @@
 // Returns an object per element with the breakdown:
 //   { fruit: <mg/m²/wk from yield>, biomass: <mg/m²/wk from stage>, total }
 // so the Bilan UI can show the split.
-// REQ-081: Ca and Mg are xylem-mobile only; their uptake IS mass-flow, not
+// ca-mg-biomass-transpiration-coupled: Ca and Mg are xylem-mobile only; their uptake IS mass-flow, not
 // a fixed "demand" decoupled from transpiration. When canopy or seasonal
 // transpiration drops (QC winter ~40-60% of Mediterranean baseline), the
 // plant cannot pull Ca/Mg at the rate BIOMASS_DEMAND assumes — apparent
@@ -38,7 +38,7 @@ function calculateNutritionDemand(yieldKgPerM2, stage, transpFactor = 1.0) {
 // Public API for the tomate plant-needs model.
 //
 // Spec:    nutrition/tomato/plant-needs/spec.md
-// REQ-083: this namespace exists at runtime with the keys below.
+// plant-needs-tomato-namespace: this namespace exists at runtime with the keys below.
 //
 // Consumers (Bilan UI, recipe calculators) should never read the underlying
 // globals directly — go through `window.PlantNeedsTomato` so internals can
@@ -50,15 +50,15 @@ function calculateNutritionDemand(yieldKgPerM2, stage, transpFactor = 1.0) {
 // underlying constants/functions migrate into per-domain partials, this
 // wrapper becomes the natural seam to import them from.
 window.PlantNeedsTomato = {
-  // Read-only data tables (REQ-033 anchors TOMATO_REMOVAL macros; REQ-082
-  // guards stage-transition continuity on BIOMASS_DEMAND).
+  // Read-only data tables (tomato-removal-biased-high anchors TOMATO_REMOVAL
+  // macros; stage-transition-continuity guards BIOMASS_DEMAND).
   TOMATO_FRUIT_EXPORT,
   BIOMASS_DEMAND,
   TOMATO_DEMAND_CERT,
   TOMATO_REMOVAL,
   TRANSP_COUPLED_BIOMASS,
 
-  // Core demand function. REQ-081 applies transpFactor to Ca/Mg biomass
+  // Core demand function. ca-mg-biomass-transpiration-coupled applies transpFactor to Ca/Mg biomass
   // term only; phloem-mobile macros and active-transport micros decoupled.
   calculateNutritionDemand,
 

@@ -2,7 +2,7 @@
 
 ## `details` in the supply return — caller-built, not function-built (2026-05-12)
 
-Contribution-channel functions must return flat `mg` map + `details` sibling with per-element `{cert, cap}` (REQ-136). Two implementations possible:
+Contribution-channel functions must return flat `mg` map + `details` sibling with per-element `{cert, cap}` (contribution-channel-details-payload). Two implementations possible:
 
 **Option A — `details` built inside model function.** Returns `{ perM2_mg, details }`; cap detection (K capped at CE, B single-channel) lives in supply function.
 

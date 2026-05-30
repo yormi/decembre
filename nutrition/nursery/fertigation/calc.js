@@ -26,7 +26,7 @@
     return d ? d.NURSERY_PRODUCTS : {};
   }
 
-  // Coerce applicationsPerWeek to integer ∈ [1, 7] (REQ-126). Fractional
+  // Coerce applicationsPerWeek to integer ∈ [1, 7] (applications-per-week-positive-integer). Fractional
   // values are rounded; out-of-range values clamped. NaN/undefined → 1.
   function coerceApplications(N) {
     if (typeof N !== 'number' || !isFinite(N)) return 1;
@@ -34,10 +34,10 @@
   }
 
   // Sum delivered mg of each element across all products in the recipe,
-  // multiplied by tray volume × applicationsPerWeek (REQ-122). Each product
+  // multiplied by tray volume × applicationsPerWeek (supply-scales-linearly-with-applications). Each product
   // contributes base[element] × g/L × L × 1000 mg per fertigation; multiply by
   // applicationsPerWeek for total weekly supply.
-  // REQ-136 — also returns `details[element] = { cert, cap }` per element. cap
+  // contribution-channel-details-payload — also returns `details[element] = { cert, cap }` per element. cap
   // fires when the recipe is at the EC cap and pushing higher would exceed
   // it (currently rare at default doses); otherwise null.
   function nurseryRecipeSupply(recipe, trayVolumeL, applicationsPerWeek) {
@@ -67,11 +67,11 @@
         elCertContrib[element].push(Number(p.cert) || 3);
       }
     }
-    // REQ-136 (revised 2026-05-10 evening) — per-element details. cap is
+    // contribution-channel-details-payload (revised 2026-05-10 evening) — per-element details. cap is
     // the structural reason this channel under-delivers when there's a gap.
     // Distinguishes:
     //   - `damage` (🔥) — element is sourced in the recipe but pushing the
-    //     dose higher would breach EC cap (REQ-098)
+    //     dose higher would breach EC cap (predicted-ce-under-nursery-cap)
     //   - `other`  (❗) — no product in the recipe carries this element
     //     (and other channels would need to source it instead)
     const data = (typeof window !== 'undefined' && window.__NURSERY_FERT_DATA__) || {};
@@ -80,7 +80,7 @@
     // Cover all elements the recipe COULD touch (sourced) and key elements
     // operators care about even if not sourced (Ca, Mg, micros).
     const allEls = ['N','P','K','Ca','Mg','Fe','Mn','Zn','B','Cu','Mo'];
-    // REQ-136 (4-field schema 2026-05-11): per element classification.
+    // contribution-channel-details-payload (4-field schema 2026-05-11): per element classification.
     const FERT_SOURCE_LEVER = {
       K:  'ajouter K₂SO₄ à la recette',
       Mg: 'ajouter MgSO₄·7H₂O',
@@ -123,8 +123,8 @@
         };
       }
     }
-    // REQ-157 — per-element efficiency for nursery fertigation. Dissolved
-    // delivery at tank pH 5-6 (REQ-099 envelope); products bypass soil-pH
+    // channel-efficiency-capability-map — per-element efficiency for nursery fertigation. Dissolved
+    // delivery at tank pH 5-6 (predicted-tank-ph-in-nursery-envelope envelope); products bypass soil-pH
     // chemistry. Amino-N from fish hydrolysate is already in plant-available
     // form (no mineralization step). Routed elements (mg > 0) get 1.0;
     // non-routed elements stay absent.
@@ -136,7 +136,7 @@
   }
 
   // Smallest integer N ∈ [1, 7] such that N × per-fertigation supply covers
-  // demandPerTray for every element where the recipe has a source (REQ-123).
+  // demandPerTray for every element where the recipe has a source (min-applications-solves-full-coverage).
   // Returns null when:
   //   - per-fertigation EC > ceCap (recipe is dose-bound, not frequency-bound)
   //   - even at N = 7 some sourced element falls short of demand
@@ -148,7 +148,7 @@
       trayVolumeL = 1.25;
     }
     if (typeof ceCap === 'number' && isFinite(ceCap) && ceCap > 0) {
-      // Per-fertigation EC must clear cap regardless of frequency (REQ-125).
+      // Per-fertigation EC must clear cap regardless of frequency (ec-cap-per-fertigation-not-per-week).
       const CE = nurseryRecipeCE(recipe, 1);
       if (CE > ceCap) return null;
     }
@@ -158,7 +158,7 @@
       const need = Number(demandPerTray[element]) || 0;
       if (need <= 0) continue;
       const suppliedForElement = (sup1.perTray_mg || {})[element] || 0;
-      if (suppliedForElement <= 0) continue;                        // unsourced — REQ-124 territory
+      if (suppliedForElement <= 0) continue;                        // unsourced — elements-sourced-vs-unsourced territory
       const required = Math.ceil(need / suppliedForElement);
       if (required > minimumN) minimumN = required;
     }
@@ -168,7 +168,7 @@
 
   // Classify demand elements as sourced (recipe delivers any of this
   // element via a product in NURSERY_PRODUCTS) vs unsourced (no product
-  // in the recipe carries it) (REQ-124). LITERAL interpretation — whether
+  // in the recipe carries it) (elements-sourced-vs-unsourced). LITERAL interpretation — whether
   // frequency can cover the demand is a separate check (minimumApplicationsPerWeek
   // returns null in the dose-bound case). The two failure modes are
   // operationally different:

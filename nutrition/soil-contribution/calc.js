@@ -5,7 +5,7 @@
 // Both functions are pure: same arguments → same output. Inputs read from
 // module-scope constants declared in data.js.
 
-// REQ-141 — non-contributing elements always return 0 even when bank data
+// only-ca-p-participate-in-gap-chain — non-contributing elements always return 0 even when bank data
 // exists (K, Mg case today). The min() clamp on contributing elements
 // prevents a finite bank from over-delivering in the corner case where
 // weekly demand exceeds the entire reservoir.
@@ -16,7 +16,7 @@ function soilWeeklyContribution(crop, element, demand_mg) {
   return Math.min(demand_mg, bank);
 }
 
-// REQ-142 + REQ-164 — depletion runway, clamped at min(mass-flow, plant
+// months-to-depletion-clamped-by-peak-demand + sme-soil-solution-wired-per-crop-element — depletion runway, clamped at min(mass-flow, plant
 // peak demand). Denominator = min(SME_ppm × transpiration_L/m²/wk,
 // PLANT_PEAK_WEEKLY_DEMAND_MG_PER_M2[crop][element]). The plant cannot
 // draw faster than its actual demand even when soil-solution availability

@@ -15,8 +15,8 @@ Considered alternatives along the CE budget before locking
 | 8  | 6 |  2.80 |  1650 |  176 |  5.10 |
 | 9  | 5 |  3.05 (FAIL CE) | … | … | … |
 
-X=7/Y=6 chosen as the row that clears REQ-100 (N 52 % of 2 800 target) and
-REQ-101 (P 54 % of 315) with ~0.4 mS/cm CE head-room and pH centred at 5.25.
+X=7/Y=6 chosen as the row that clears n-supply-half-demand-floor (N 52 % of 2 800 target) and
+default-recipe-p-supply-half-demand (P 54 % of 315) with ~0.4 mS/cm CE head-room and pH centred at 5.25.
 X=8 left on the table pending first in-bucket EC measurement of Ocean-containing
 recipe (Ocean ecFactor refinement may open the room).
 

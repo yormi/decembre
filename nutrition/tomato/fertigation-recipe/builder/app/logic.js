@@ -12,8 +12,8 @@
 // the safe band for the current crop and stage.
 //
 // Safe bands (nutrition/chemistry/spec.md):
-//   - CE at dripper, tomato T1-T2: 1.5 – 2.5 mS/cm; T3-T5: 2.0 – 3.0 mS/cm (REQ-024)
-//   - pH at dripper compartment:   5.5 – 7.0 (REQ-053)
+//   - CE at dripper, tomato T1-T2: 1.5 – 2.5 mS/cm; T3-T5: 2.0 – 3.0 mS/cm (predicted-ce-within-crop-stage-band)
+//   - pH at dripper compartment:   5.5 – 7.0 (predicted-tank-ph-within-envelope)
 //
 // Tank geometry (procedure/stored.js): 170 L master tank, Dosatron 2 % →
 // dilution 0.02. Predicted-CE / predicted-pH are pure functions over the
@@ -60,7 +60,7 @@ function tankRecipeFromSupplyRaw(r) {
   const out = {};
   if (r && r.k_g_total)  out['K2SO4']      = r.k_g_total  / FERTIGATION_TANK_VOLUME_L;
   if (r && r.mg_g_total) out['MgSO4-7H2O'] = r.mg_g_total / FERTIGATION_TANK_VOLUME_L;
-  // Solubore only enters the fertigation tank in FP mode (REQ-061 single-channel B at T5);
+  // Solubore only enters the fertigation tank in FP mode (replenishment-cascade-earliest-first single-channel B at T5);
   // STORED mode keeps B foliar-only and r.sb_fert_g is 0 there.
   if (r && r.sb_fert_g)  out['Solubore']   = r.sb_fert_g  / FERTIGATION_TANK_VOLUME_L;
   return out;

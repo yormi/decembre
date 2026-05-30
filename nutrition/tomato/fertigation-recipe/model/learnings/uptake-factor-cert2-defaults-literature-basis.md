@@ -1,6 +1,6 @@
 # Uptake-factor cert-2 defaults — literature basis
 
-## REQ-155 uptake-factor cert-2 defaults — literature basis (2026-05-15)
+## uptake-efficiency-factor cert-2 defaults — literature basis (2026-05-15)
 
 Defaults `PH_UPTAKE_FACTOR_AT_CURRENT_SOIL = { K: 0.90, Mg: 0.85, B: 0.80 }`. Specialist accepted the model-challenger's 2026-05-15 B2-REV mid-band numbers as defensible; refinement is tissue-anchored, not literature-anchored (triggers in `derivation.md` "Uptake-efficiency factor").
 
@@ -33,6 +33,6 @@ All three factors compound with `COMPOST_RELEASE_PER_WEEK` (cert 2-3, Mg cert 1-
 
 ### What the factors do NOT cover
 
-- **Micros (Mn/Zn/Cu/Fe/Mo)** — not in `computeStageRecipe`; fertigation isn't the channel at current pH (REQ-061 cascade locks to foliar). Add per-micro factors when soil pH < 7.0 makes sulfate-metal fertigation viable.
+- **Micros (Mn/Zn/Cu/Fe/Mo)** — not in `computeStageRecipe`; fertigation isn't the channel at current pH (replenishment-cascade-earliest-first cascade locks to foliar). Add per-micro factors when soil pH < 7.0 makes sulfate-metal fertigation viable.
 - **N** — sidedress channel. `SIDEDRESS_MIN_EFF` plays the efficiency role; whether an additional uptake-factor layer is needed on top of mineralization efficiency is a sidedress-domain decision (probably yes — Ca-rich-soil volatilization + immobilization losses).
-- **P, Ca** — soil-bank-credit elements (REQ-098); fertigation resolves to zero regardless of uptake factor.
+- **P, Ca** — soil-bank-credit elements (mass-balance-derivation); fertigation resolves to zero regardless of uptake factor.

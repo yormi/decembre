@@ -1,7 +1,7 @@
 // Cross-nutrition mg/g formatters consumed by gap-grid renderers and the
 // Bilan/nutrition pages. formatValue: g-promotion above 1 000 mg with unit
-// suffix. formatMg (REQ-159): bare-numeric mg, no g-promotion — header
-// already carries the unit (REQ-160).
+// suffix. formatMg (elemental-mass-in-mg): bare-numeric mg, no g-promotion — header
+// already carries the unit (column-header-unit-declaration).
 
 // Format a value as g if >= 1000 mg, else mg.
 function formatValue(mg) {
@@ -12,8 +12,8 @@ function formatValue(mg) {
   return mg.toFixed(2) + ' mg';
 }
 
-// REQ-159 — bare-numeric mg renderer for gap-grid cells. Header carries (mg);
-// cells must not duplicate the unit (REQ-160). Stays in mg across the full
+// elemental-mass-in-mg — bare-numeric mg renderer for gap-grid cells. Header carries (mg);
+// cells must not duplicate the unit (column-header-unit-declaration). Stays in mg across the full
 // range (no g-promotion) so the column reads consistently.
 function formatMg(mg) {
   if (mg <= 0) return '0';

@@ -4,7 +4,7 @@
 // of nutrition/tomato/lib/recipe-math.js 2026-05-23 (Phase 2 chemistry
 // pull-up).
 
-// REQ-024 — Predicted irrigation CE at the dripper.
+// predicted-ce-within-crop-stage-band — Predicted irrigation CE at the dripper.
 // recipe = { productName: gPerL_in_tank }; dilution = Dosatron ratio (e.g. 0.02).
 // Returns mS/cm at 20°C reference.
 function predictedCE(recipe, dilution, waterCE) {
@@ -21,7 +21,7 @@ function predictedCE(recipe, dilution, waterCE) {
   return CE;
 }
 
-// REQ-053 — Predicted tank pH (linear sum of phContributions × g/L).
+// predicted-tank-ph-within-envelope — Predicted tank pH (linear sum of phContributions × g/L).
 // Rough first-pass; assumes no buffering. cert 2-3.
 function predictedTankPh(recipe, waterPh) {
   if (waterPh === undefined) waterPh = 7.0;

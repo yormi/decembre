@@ -1,13 +1,14 @@
 // Chemistry — precipitation pairs, tag incompatibilities, mix order, plus the
-// load-time coverage-validation IIFE (REQ-029a/b/c). Reads PRODUCT from sibling
+// load-time coverage-validation IIFE (product-declares-ions-and-chemistry-tags /
+// every-cation-anion-pair-classified / every-chemistry-tag-classified). Reads PRODUCT from sibling
 // products.js. Carved out of nutrition/tomato/lib/recipe-math.js 2026-05-23
 // (Phase 2 chemistry pull-up).
 
-// REQ-029 — Cation × anion precipitation pairs.
+// in-tank-ksp-precipitation-guard — Cation × anion precipitation pairs.
 // Threshold = combined ion mass (g/L) above which gypsum/phosphate/etc forms.
 // Note: most pairs we list here involve PO4-3 and OH- which don't appear in
 // our active product `ions` decls — they're documented as guidance for future
-// products that introduce them. Coverage check (REQ-029b) only enumerates
+// products that introduce them. Coverage check (every-cation-anion-pair-classified) only enumerates
 // pairs from product-declared ions.
 const KSP_PAIRS = [
   { cation: 'Ca2+', anion: 'PO4-3', threshold_g_per_L_combined: 0.001, cert: 5,
@@ -24,7 +25,7 @@ const KSP_PAIRS = [
     note: 'Mn(OH)₂ above pH 8; rare in tanks, relevant in soil' },
 ];
 
-// REQ-029b — Pairs from product-declared ions explicitly known not to
+// every-cation-anion-pair-classified — Pairs from product-declared ions explicitly known not to
 // precipitate in our tank conditions. Coverage requirement: every cation ×
 // anion combination from the union of PRODUCT[*].ions must appear here OR
 // in KSP_PAIRS. Generated from the cartesian product enumerated below.
@@ -45,7 +46,7 @@ const KSP_SAFE = [
   { cation: 'Mg2+', anion: 'MoO4-2', reason: 'Mg-molybdate soluble' },
   { cation: 'Mg2+', anion: 'organic-matrix', reason: 'organic carrier inert' },
   // Fe2+ × all (excluding OH-/PO4-3 which are in KSP_PAIRS but not declared in ions)
-  { cation: 'Fe2+', anion: 'SO4-2', reason: 'FeSO₄ soluble to ~290 g/L; Fe²⁺ oxidation is the failure mode (REQ-032), not precipitation' },
+  { cation: 'Fe2+', anion: 'SO4-2', reason: 'FeSO₄ soluble to ~290 g/L; Fe²⁺ oxidation is the failure mode (stock-barrel-time-stability), not precipitation' },
   { cation: 'Fe2+', anion: 'Cl-', reason: 'FeCl₂ soluble' },
   { cation: 'Fe2+', anion: 'B(OH)4-', reason: 'low risk at our concs' },
   { cation: 'Fe2+', anion: 'MoO4-2', reason: 'low risk at trace Mo' },
@@ -94,7 +95,7 @@ const KSP_SAFE = [
   { cation: 'H+', anion: 'organic-matrix', reason: 'inert' },
 ];
 
-// REQ-029c — Tag interaction rules.
+// every-chemistry-tag-classified — Tag interaction rules.
 // Forbidden combinations + reasons (cert per row).
 const TAG_INCOMPATIBILITIES = [
   { tags: ['free-Cu2+', 'protein-hydrolysate'], severity: 'forbidden',
@@ -107,7 +108,7 @@ const TAG_INCOMPATIBILITIES = [
     reason: 'high metal sulfate concentration may suppress microbes', cert: 2 },
 ];
 
-// REQ-029c — Tags with no known incompatibility, classified as inert.
+// every-chemistry-tag-classified — Tags with no known incompatibility, classified as inert.
 // Every distinct tag in any PRODUCT[*].chemistryTags must appear here or in
 // TAG_INCOMPATIBILITIES.
 const TAGS_INERT = {
@@ -135,13 +136,13 @@ const TAGS_INERT = {
 
 // ─── INCOMPATIBLE_RECIPES — recipes that must never be mixed in the same tank ──
 //
-// REQ-030. Audit-trail for known incompatibilities. Empty in current state
+// incompatible-recipes-declared. Audit-trail for known incompatibilities. Empty in current state
 // because Spray B (CaCl₂) was retired 2026-05-06 — that was the only
 // incompatibility in active use (CaCl₂ + Fe-EDDHA → Fe-Cl precipitation /
 // ligand swap; CaCl₂ + Spray A sulfates → CaSO₄ gypsum at high conc).
 //
 // If a future recipe is added that conflicts with an existing one, append
-// here with the failure mode. The verifier (REQ-030) asserts this constant
+// here with the failure mode. The verifier (incompatible-recipes-declared) asserts this constant
 // is declared and that each entry has {recipes: [≥2], reason: string}.
 // Day-to-day enforcement is by the team reading this list.
 const INCOMPATIBLE_RECIPES = [
@@ -155,7 +156,7 @@ const INCOMPATIBLE_RECIPES = [
 
 // ─── MIX_ORDER — order to add products to each multi-product recipe ─────
 //
-// REQ-031. Order matters for two reasons:
+// mix-order-per-multi-product-recipe. Order matters for two reasons:
 //   1. Solubility: K₂SO₄ has low cold solubility (~120 g/L). Add first to
 //      hot water; adding it after other salts can drop tank pH or cause
 //      precipitation of K-containing complexes.
@@ -163,7 +164,7 @@ const INCOMPATIBLE_RECIPES = [
 //      — see PRODUCT['FeSO4-7H2O'].maximumStableHours = 4). Add LAST, just
 //      before sealing the spray container.
 //
-// Verifier schema (REQ-031): array of { recipe: string, order: [productName, ...] }.
+// Verifier schema (mix-order-per-multi-product-recipe): array of { recipe: string, order: [productName, ...] }.
 // Product names match PRODUCT keys.
 const MIX_ORDER = [
   { recipe: 'fertigation.tomato',
@@ -177,7 +178,8 @@ const MIX_ORDER = [
     order: ['K2SO4', 'MgSO4-7H2O', 'FeSO4-7H2O'] },
 ];
 
-// ─── Coverage / sanity checks for REQ-029a/b/c ───
+// ─── Coverage / sanity checks for product-declares-ions-and-chemistry-tags /
+// every-cation-anion-pair-classified / every-chemistry-tag-classified ───
 // These run at script load time and console.warn if any product in PRODUCT
 // has missing ions/tags, or any ion pair / tag is unclassified.
 (function validatePhase1ModelCoverage() {
@@ -197,7 +199,7 @@ const MIX_ORDER = [
       });
       (p.chemistryTags || []).forEach(function(t) { tags.add(t); });
     });
-    // REQ-029b: every cation × anion pair from declared ions must appear in KSP_PAIRS or KSP_SAFE
+    // every-cation-anion-pair-classified: every cation × anion pair from declared ions must appear in KSP_PAIRS or KSP_SAFE
     const safeKey = function(c, a) { return c + '|' + a; };
     const safeSet = new Set();
     KSP_SAFE.forEach(function(s) { safeSet.add(safeKey(s.cation, s.anion)); });
@@ -207,7 +209,7 @@ const MIX_ORDER = [
         if (!safeSet.has(safeKey(c, a))) console.warn('[Phase1] unclassified pair:', c, '×', a);
       });
     });
-    // REQ-029c: every tag must appear in TAG_INCOMPATIBILITIES or TAGS_INERT
+    // every-chemistry-tag-classified: every tag must appear in TAG_INCOMPATIBILITIES or TAGS_INERT
     const tagsInIncomp = new Set();
     TAG_INCOMPATIBILITIES.forEach(function(r) { (r.tags || []).forEach(function(t) { tagsInIncomp.add(t); }); });
     tags.forEach(function(t) {

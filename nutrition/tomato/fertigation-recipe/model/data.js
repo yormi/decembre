@@ -11,12 +11,12 @@
 
 // ─── MIXING_FACTOR retired 2026-05-10 ───────────────────────────────────
 // Previously this file declared MIXING_FACTOR_FERT_STORED = 0.5 and
-// MIXING_FACTOR_FERT_FP = 1.0 (REQ-100, mode-aware split, added
+// MIXING_FACTOR_FERT_FP = 1.0 (mode-aware split, added
 // 2026-05-05). The concept has been retired: fertigation supply is now
 // reported at the full barrel-loaded mass per m²/sem, in both modes. SME
 // is reported as a separate channel; users compare them rather than
 // blending. The 0.5 stored-mode discount was a cert 2-3 guess and the
-// double-count framing was artificial. REQ-100 deleted; never reuse the
+// double-count framing was artificial. Mode-aware split deleted; never reuse the
 // number.
 
 // ─── FIRST_PRINCIPLES_T5_FERTIGATION — T5-only refined target ───────────
@@ -24,9 +24,9 @@
 // Canonical product-keyed shape for the T5 fertigation FP target. K2SO4
 // and MgSO4-7H2O values are placeholders ONLY — they are overwritten at
 // boot by wireFpFertigation() in calc.js from computeStageRecipe('T5')
-// output (single source of truth = the mass-balance derivation REQ-098).
+// output (single source of truth = the mass-balance derivation mass-balance-derivation).
 // Solubore is hand-coded because B is the one micro on fertigation by
-// single-channel design (REQ-061) and is not in the computeStageRecipe
+// single-channel design (single-fertigation-tank-per-week) and is not in the computeStageRecipe
 // surface.
 //
 // Solubore 9 g dose: 9 × 0.205 / 382.9 × 1000 = 4.82 mg B/m²/sem = 107 % T5
@@ -38,17 +38,17 @@
 // has been Haifa-heritage 3489 g since the 2026-05-09 commit and has
 // never carried PA Taillon values). Live FP values at boot are
 // K ≈ 5568 / Mg ≈ 1963 / Solubore 11 / NaMolybdate 0.5
-// (computeStageRecipe('T5'), post-REQ-098 restoration + REQ-155 uptake
-// factor + REQ-061 Mo carve-out). See `learnings.md` for the full
+// (computeStageRecipe('T5'), post-mass-balance-derivation restoration + uptake-efficiency-factor uptake
+// factor + single-fertigation-tank-per-week Mo carve-out). See `learnings.md` for the full
 // calibration history including the 2026-05-12 amendment cycle.
 //
-// REQ-154 pins the invariant: this constant's K2SO4 / MgSO4-7H2O values
+// fp-target-mirrors-sizer pins the invariant: this constant's K2SO4 / MgSO4-7H2O values
 // equal computeStageRecipe('T5') output by construction at boot.
 const FIRST_PRINCIPLES_T5_FERTIGATION = {
   'K2SO4':       0,    // populated at boot from computeStageRecipe('T5').kSulfate
   'MgSO4-7H2O':  0,    // populated at boot from computeStageRecipe('T5').mgSulfate
   'Solubore':    0,    // populated at boot from computeStageRecipe('T5').solubore
-  'NaMolybdate': 0.5,  // populated at boot from computeStageRecipe('T5').naMolybdate (REQ-061 Mo carve-out 2026-05-16, flat 0.5 g/wk)
+  'NaMolybdate': 0.5,  // populated at boot from computeStageRecipe('T5').naMolybdate (single-fertigation-tank-per-week Mo carve-out 2026-05-16, flat 0.5 g/wk)
 };
 
 // ─── PH_UPTAKE_FACTOR_AT_CURRENT_SOIL — bed → plant transfer efficiency ──
@@ -61,7 +61,7 @@ const FIRST_PRINCIPLES_T5_FERTIGATION = {
 // computeStageRecipe to inflate the bed-side target: deliver enough that
 // uptake = demand after the bed→plant discount.
 //
-// REQ-155. See derivation.md for per-element reasoning; learnings.md for
+// uptake-efficiency-factor. See derivation.md for per-element reasoning; learnings.md for
 // the literature basis. Refinement trigger lands in derivation.md: tissue
 // petiole correlation ±20 % bumps cert 2 → 3; ±10 % bumps to 4.
 const PH_UPTAKE_FACTOR_AT_CURRENT_SOIL = {
@@ -70,12 +70,12 @@ const PH_UPTAKE_FACTOR_AT_CURRENT_SOIL = {
   B:  0.80,   // cert 2 — soil B adsorption in Ca-rich beds at pH > 7 (Fe/Al oxides + Ca-borate complexes); 15-25 % range, mid 20 %
 };
 
-// Per-element efficiency for the Efficacité column (REQ-157) — share of
+// Per-element efficiency for the Efficacité column (channel-efficiency-capability-map) — share of
 // applied fertigation-product mass that reaches the bed as plant-available
 // form per applied gram, under current soil pH 7.4 chemistry. This is the
 // channel → bed axis (dripper-line chemistry); the bed → plant uptake
 // inefficiency is a separate axis declared in PH_UPTAKE_FACTOR_AT_CURRENT_SOIL
-// above (REQ-155).
+// above (uptake-efficiency-factor).
 //
 // Values reflect the PH_RESPONSE curves at current Décembre tomato-block
 // soil pH 7.28-7.4 (Berger April 2026):
@@ -83,7 +83,7 @@ const PH_UPTAKE_FACTOR_AT_CURRENT_SOIL = {
 //   Mg (MgSO4-7H2O → 'soluble-cation' class):                       0.94
 //   B  (Solubor disodium octaborate → 'borate' class, non-ionic):   1.00
 //   Mo (sodium molybdate → 'molybdate' class, anion):               1.00
-//      (REQ-061 carve-out 2026-05-16: Mo is anion, fully available at
+//      (single-fertigation-tank-per-week carve-out 2026-05-16: Mo is anion, fully available at
 //       pH ≥ 7.0; routed via fertigation rather than foliar because the
 //       pH-lockout argument that keeps cation micros on foliar doesn't
 //       apply to anionic molybdate.)
@@ -94,7 +94,7 @@ const PH_UPTAKE_FACTOR_AT_CURRENT_SOIL = {
 //
 // Elements absent from the map (N / P / Ca / Fe / Mn / Zn / Cu) are
 // not routed by the fertigation channel under STORED at current pH —
-// REQ-061 cascade order locks the cation micros to foliar, N to sidedress,
+// single-fertigation-tank-per-week cascade order locks the cation micros to foliar, N to sidedress,
 // Ca not fertigated, P drawn down via soil bank.
 const FERTIGATION_EFFICIENCY_AT_CURRENT_SOIL = {
   K:  0.94,

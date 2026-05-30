@@ -44,7 +44,7 @@ function computeFertigationContribution({
   }
   const fertK  = (k_g_total  * productPct.K2SO4_K)  / area * 1000;
   const fertMg = (mg_g_total * productPct.MgSO4_Mg) / area * 1000;
-  // Boric acid (Solubore) — FP only, single-channel for B (REQ-061).
+  // Boric acid (Solubore) — FP only, single-channel for B (replenishment-cascade-earliest-first).
   const sb_fert_g = (mode === 'fp' && fpFertigation) ? (fpFertigation['Solubore'] || 0) : 0;
   const fertB = (sb_fert_g * productPct.Solubore_B) / area * 1000;
   const out = { K: fertK, Mg: fertMg };

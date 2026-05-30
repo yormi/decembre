@@ -1,6 +1,6 @@
 // ─── yield-range/model.js — public API for the two-regime yield model ─
 //
-// Spec: yield-range/spec.md (REQ-112..118, REQ-171..175).
+// Spec: yield-range/spec.md.
 window.YieldRange = {
   predictNurseryYield,
   dliBenchAvg,

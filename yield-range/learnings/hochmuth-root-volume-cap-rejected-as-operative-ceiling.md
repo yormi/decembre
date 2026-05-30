@@ -8,7 +8,7 @@ binding constraint — the canopy closes (per-plant DLI drops to the
 hit observed peak 16 g/plant at d28 (heat-stressed; predicted best
 case ~25 g) — far from the root-cap value.
 
-Replaced (REQ-112) with `canopyCapG`, a density-driven biomass
+Replaced (canopy-cap-is-ceiling) with `canopyCapG`, a density-driven biomass
 asymptote derived from Salanova breeder data. Root cap retained in
 the design conversation only as a counterfactual upper bound on what
 the cell could theoretically support — not used in the integration.

@@ -1,12 +1,12 @@
 // ─── yield-range/data.js — constants for the Salanova two-regime model ─
 //
-// Spec: yield-range/spec.md (REQ-112..118, REQ-171..175).
+// Spec: yield-range/spec.md.
 // Calibration anchor: yield-range/doc/yield-range-calibration-2026-spring.md.
 //
 // All constants live here; calc.js consumes them, model.js exposes the public API.
 
-// REQ-115: cross-cultivar butterhead seedling RGR_max — conservative end
-// of literature band. See yield-range/derivation.md REQ-115 + learnings.md
+// logistic-growth-no-decay: cross-cultivar butterhead seedling RGR_max — conservative end
+// of literature band. See yield-range/derivation.md logistic-growth-no-decay + learnings.md
 // "Rejected: back-calculated RGR_max from cap-asymptote target".
 const RGR_MAXIMUM_LETTUCE_NURSERY = 0.30;
 
@@ -18,25 +18,25 @@ const DLI_SUN_OUTDOOR_QC_ANNUAL = 30;
 const GH_LIGHT_TRANSMISSION_DOUBLE_POLY = 0.55;
 const DLI_SUN_GH_ANNUAL_AVG_QC = DLI_SUN_OUTDOOR_QC_ANNUAL * GH_LIGHT_TRANSMISSION_DOUBLE_POLY;
 
-// REQ-172: nursery canopy mass-loading geometry.
+// nursery-canopy-cap-by-plateau: nursery canopy mass-loading geometry.
 const FOLIAGE_HEIGHT_M = 0.10;
 const FOLIAGE_DENSITY_KG_PER_M3 = 82;
 
-// REQ-173: field canopy mass-loading geometry.
+// field-canopy-cap-by-density: field canopy mass-loading geometry.
 const FIELD_CANOPY_HEIGHT_M = 0.18;
 const FIELD_FOLIAGE_DENSITY_KG_PER_M3 = 55;
 
-// REQ-174: Salanova leaf-area per gram of head mass.
+// field-per-plant-dli-share: Salanova leaf-area per gram of head mass.
 const LEAF_PROJECTED_AREA_M2_PER_G = 0.00035;
 
-// REQ-172: nursery cap by tray. Geometric mass-loading basis,
+// nursery-canopy-cap-by-plateau: nursery cap by tray. Geometric mass-loading basis,
 // area_per_cell × FOLIAGE_HEIGHT_M × FOLIAGE_DENSITY_KG_PER_M3 × 1000
 // on 1020-tray frame 0.1525 m². Rationale + cert ladder in
 // yield-range/derivation.md; rejected power-law extrapolation in
 // yield-range/learnings.md.
 const CANOPY_CAP_BY_PLATEAU = { 18: 69, 24: 52, 32: 39, 50: 25 };
 
-// REQ-118: sanity ceiling on nurseryDays + fieldDays sum.
+// trajectory-output-shape: sanity ceiling on nurseryDays + fieldDays sum.
 const TRAJECTORY_MAXIMUM_DAYS = 49;
 
 const POTENTIAL_THRESHOLD = 0.95;

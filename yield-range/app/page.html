@@ -1,8 +1,8 @@
   <!-- ═══════════════ RENDEMENT SEMIS PAGE (admin) ═══════════════ -->
   <!-- Salanova nursery time-to-canopy-cap. Spec: yield-range/app/user-stories.md
-       (REQ-119 two inputs · REQ-120 capacité plafond display ·
-       REQ-121 chart with axis labels + reference line + marker). Math
-       contract: yield-range/spec.md (REQ-112 to REQ-118). -->
+       (two inputs · capacité plafond display · chart with axis labels +
+       reference line + marker). Math contract: yield-range/spec.md
+       (canopy-cap-is-ceiling to trajectory-output-shape). -->
   <div id="page-rendement-content" class="page-content" style="display:none;">
 
     <div class="card">
@@ -12,7 +12,7 @@
       </div>
     </div>
 
-    <!-- REQ-119: exactly two inputs (plateau toggle + DEL slider). -->
+    <!-- exactly two inputs (plateau toggle + DEL slider). -->
     <div class="card">
       <div class="card-title">Conditions</div>
 
@@ -34,9 +34,9 @@
       <input type="range" id="yr-led-hours" min="0" max="18" step="1" value="16" style="width:100%;">
     </div>
 
-    <!-- REQ-120: capacité plafond as a labeled numeric display, separate
-         from the chart's reference line.
-         REQ-133: daysToTransplantPotential surfaced inline next to the cap so the
+    <!-- capacité plafond as a labeled numeric display, separate from the
+         chart's reference line.
+         daysToTransplantPotential surfaced inline next to the cap so the
          operator reads "how much" + "how long" in one glance without
          hopping over to the chart marker. -->
     <div class="card">
@@ -46,7 +46,7 @@
       </div>
     </div>
 
-    <!-- REQ-132: clickable DLI display — opens a modal with the f_light
+    <!-- clickable DLI display — opens a modal with the f_light
          response curve so the operator can read why the trajectory bends
          the way it does at edge DLI values. -->
     <div class="card" id="yr-dli-display" onclick="openDliModal()" style="cursor:pointer;">
@@ -56,7 +56,7 @@
       </div>
     </div>
 
-    <!-- REQ-121: chart of head-weight trajectory vs days from germination,
+    <!-- chart of head-weight trajectory vs days from germination,
          with axis labels, horizontal reference line at canopyCapG, vertical
          marker at daysToTransplantPotential, and empty-state annotation when null. -->
     <div class="card">
@@ -64,9 +64,10 @@
       <div id="yr-chart-container" style="width:100%; overflow:hidden;"></div>
     </div>
 
-    <!-- REQ-132: f_light response modal — auto-rendered from
+    <!-- f_light response modal — auto-rendered from
          window.YieldRange.F_LIGHT_BREAKPOINTS in renderYrDliModal()
-         (REQ-060: no hardcoded duplicate of breakpoint values). Reuses
+         (narrative-derived-from-live-data: no hardcoded duplicate of
+         breakpoint values). Reuses
          the .pq-modal class set defined globally for the Pourquoi modal. -->
     <div id="yr-dli-modal" class="pq-modal" role="dialog" aria-modal="true" aria-labelledby="yr-dli-modal-title">
       <div class="pq-modal-backdrop" onclick="closeDliModal()"></div>

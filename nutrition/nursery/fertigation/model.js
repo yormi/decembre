@@ -2,7 +2,7 @@
 //
 // Public namespace for the nursery weekly fertigation subproject. Wires
 // data.js (constants) + calc.js (pure functions) onto window.FertigationNursery
-// so the verifier (REQ-103) can reach them and the Salanova nursery admin
+// so the verifier (fertigation-nursery-namespace) can reach them and the Salanova nursery admin
 // page (sister subproject) can consume them.
 //
 // Load order in the bundled page is:
@@ -19,7 +19,7 @@
   const C = window.__NURSERY_FERT_CALC__ || {};
 
   window.FertigationNursery = {
-    // Constants (REQ-103 — namespace presence; per-key shapes verified by REQ-098/099/102)
+    // Constants (fertigation-nursery-namespace — namespace presence; per-key shapes verified by predicted-ce-under-nursery-cap/predicted-tank-ph-in-nursery-envelope/products-schema-complete-organic-only)
     NURSERY_PRODUCTS:               D.NURSERY_PRODUCTS,
     NURSERY_FERTIGATION_DEFAULTS:   D.NURSERY_FERTIGATION_DEFAULTS,
     NURSERY_RECIPE_DEFAULT:         D.NURSERY_RECIPE_DEFAULT,

@@ -14,8 +14,8 @@
 //   perTray_mg        = perPlant_mg × cellsPerTray
 //
 // Seed mass treated as 0 (~1 mg per Salanova seed, negligible vs the
-// 90 g target). The formula is **linear in targetG** (REQ-090) and the
-// per-week term is **inverse-linear in cycleDays** (REQ-091) — both
+// 90 g target). The formula is **linear in targetG** (demand-linear-in-target-weight) and the
+// per-week term is **inverse-linear in cycleDays** (demand-inverse-linear-in-cycle-length) — both
 // asserted by the verifier.
 
 function calculateNurseryDemand(targetG, cycleDays, cellsPerTray) {

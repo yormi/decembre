@@ -55,7 +55,7 @@ export function loadLettuceApp() {
   return dom;
 }
 
-// Read the source of nutrition/lettuce/app/logic.js — used by REQ-177's
+// Read the source of nutrition/lettuce/app/logic.js — used by the
 // structural-fallback grep on the render-path (calc-of-demand call shape +
 // no bare-global access to LETTUCE_TISSUE_DW / LETTUCE_DM_FRACTION inside
 // buildNutrimentLettuce).

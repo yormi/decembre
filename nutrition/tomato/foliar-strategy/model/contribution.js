@@ -9,7 +9,7 @@
 // The caller has already resolved:
 //   - which recipe array to score (stored A or FP-derived array)
 //   - the operator levers (surfactant) from DOM
-//   - the REQ-116 mutation of FP_RECIPE_T5.foliar (orchestrator concern;
+//   - the fp-strategy-live-derived mutation of FP_RECIPE_T5.foliar (orchestrator concern;
 //      this function consumes the resulting array, doesn't compute it)
 
 // computeFoliarContribution
@@ -37,7 +37,7 @@ function computeFoliarContribution({
 }
 void computeFoliarContribution;
 
-// REQ-116 — gap-derived FP foliar recipe (pure).
+// fp-strategy-live-derived — gap-derived FP foliar recipe (pure).
 //
 // Extracted from the inline FP branch of calculateNutritionSupply in
 // shell/contribution-orchestrator.js (Phase 3 of nutrition reorg). Takes pre-computed

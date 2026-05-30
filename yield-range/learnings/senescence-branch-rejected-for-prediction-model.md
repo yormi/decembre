@@ -5,7 +5,7 @@ observed in the spring cohort) considered a senescence multiplier or
 negative-growth branch. Rejected for the prediction model: the
 observed mass loss is dominated by **bolting + heat + root-cap
 saturation** in the tomato zone, not the model's "best non-light
-conditions" framing (REQ-113). Adding a senescence term would collapse
+conditions" framing (best-non-light-conditions). Adding a senescence term would collapse
 the model into a calibration to one specific stressed condition rather
 than a best-case planning surface.
 

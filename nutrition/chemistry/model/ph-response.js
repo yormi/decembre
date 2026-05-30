@@ -4,7 +4,7 @@
 // of nutrition/tomato/lib/recipe-math.js 2026-05-23 (Phase 2 chemistry
 // pull-up).
 
-// REQ-017 — pH-aware effective efficiency curves.
+// ph-aware-effective-efficiency — pH-aware effective efficiency curves.
 // Each function takes soilPh and returns a multiplier 0..1.
 // Source: Cadre framework table (see nutrient-model-reference.md §3.4) +
 // Marschner soil-chemistry curves. Cert 3-4.
@@ -71,8 +71,8 @@ const PH_RESPONSE = {
   },
 };
 
-// REQ-055 — Foliar uptake pH multiplier (cuticle absorption window).
-// Curve from REQ-055 table; linear interpolation between anchors. cert 3.
+// foliar-uptake-ph-curve — Foliar uptake pH multiplier (cuticle absorption window).
+// Curve from foliar-uptake-ph-curve table; linear interpolation between anchors. cert 3.
 function foliarPhResponse(ph) {
   if (ph <= 4.0) return 0.5;
   if (ph <= 4.5) return 0.5 + (0.7 - 0.5) * (ph - 4.0) / 0.5;
@@ -86,10 +86,10 @@ function foliarPhResponse(ph) {
   return 0.5;
 }
 
-// REQ-017, REQ-018, REQ-055 — Effective efficiency for a (product, element).
+// ph-aware-effective-efficiency, no-decorative-products-at-current-ph, foliar-uptake-ph-curve — Effective efficiency for a (product, element).
 // Returns 0..1 representing fraction of label-stated mass that reaches plant.
 //
-// Routing rule (REQ-018):
+// Routing rule (no-decorative-products-at-current-ph):
 //   - Soil/fertigation channels: apply PH_RESPONSE[phClass](soilPh).
 //     Soil pH gates rhizosphere availability via Ksp / chelate stability.
 //   - Foliar channel: SKIP soil-pH penalty entirely. Cuticle uptake is
@@ -97,7 +97,7 @@ function foliarPhResponse(ph) {
 //     Mn/Zn/Cu sulfates carry phClass:'sulfate-metal' for documentation
 //     consistency, but in the foliar context that curve is irrelevant —
 //     soil pH never touches the leaf surface.
-//   - Verifier note: REQ-018 should pass sprayPh (or rely on the foliar
+//   - Verifier note: no-decorative-products-at-current-ph should pass sprayPh (or rely on the foliar
 //     branch below) when checking foliar products. Calling
 //     effectiveEfficiency('MnSO4','Mn', soilPh) without a foliar context would
 //     STILL bypass soil-pH for foliar products by design here.

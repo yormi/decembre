@@ -43,16 +43,16 @@ function theoreticalSubstrateReleasePerWeek(week, featherMealPerTrayG) {
 }
 
 // Convenience: average release across the 5 weeks of the cycle (mg/tray/wk).
-// REQ-136 — returns { perTray_mg, details, efficiency } where
-//   details[el] = { cert, cap } (REQ-136)
-//   efficiency[el] = NURSERY_SUBSTRATE_EFFICIENCY (REQ-157 sibling map;
+// contribution-channel-details-payload — returns { perTray_mg, details, efficiency } where
+//   details[el] = { cert, cap }
+//   efficiency[el] = NURSERY_SUBSTRATE_EFFICIENCY (channel-efficiency-capability-map sibling map;
 //     same object returned to all callers — defined in data.js)
 // Cap fires for N when featherMealPerTrayG hits LIMITS.maxFeatherMealPerTrayG
-// (germination protection — REQ-094).
+// (germination protection — feather-meal-front-load-cap).
 //
 // Backwards-compat note: this function previously returned a flat
-// {N, P, K, Ca, Mg} map. After REQ-136 it returned `{perTray_mg, details}`;
-// after REQ-157 (2026-05-15) it returns `{perTray_mg, details, efficiency}`.
+// {N, P, K, Ca, Mg} map. After contribution-channel-details-payload it returned `{perTray_mg, details}`;
+// after channel-efficiency-capability-map (2026-05-15) it returns `{perTray_mg, details, efficiency}`.
 // Callers reading `result.perTray_mg[el]` are unaffected.
 function cycleAverageReleasePerTray(featherMealPerTrayG) {
   const W = OM2_RELEASE_CURVE_BY_WEEK.length;
@@ -64,7 +64,7 @@ function cycleAverageReleasePerTray(featherMealPerTrayG) {
   const perTray_mg = {};
   for (const el of Object.keys(sum)) perTray_mg[el] = sum[el] / W;
 
-  // REQ-136 (revised 2026-05-10 evening) — per-element details. `cap`
+  // contribution-channel-details-payload (revised 2026-05-10 evening) — per-element details. `cap`
   // describes the structural reason this channel may under-deliver, not
   // whether a numerical limit currently binds. The UI shows the emoji only
   // when manque sortant > 0; otherwise the emoji stays hidden even though
@@ -72,7 +72,7 @@ function cycleAverageReleasePerTray(featherMealPerTrayG) {
   // element is short via this channel, here's why" without needing to know
   // demand at calc time.
   const fmCap = LIMITS.maxFeatherMealPerTrayG;
-  // REQ-136 (4-field schema 2026-05-11): constraint / limit / lever, no prose.
+  // contribution-channel-details-payload (4-field schema 2026-05-11): constraint / limit / lever, no prose.
   const details = {
     N: {
       cert: 2,

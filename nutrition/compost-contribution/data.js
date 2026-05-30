@@ -48,7 +48,7 @@ const COMPOST_SEASONAL_FACTOR = 1.5;
 // via `(applied_g_per_m2 × year1_fraction / 52) × seasonal_factor`,
 // EXCEPT Mg which carries a conservative manual override (rounded down
 // from theoretical 0.658 → 0.50 because the underlying Mg % assumption
-// is data-gap, cert 1). REQ-079 verifier asserts every value is within
+// is data-gap, cert 1). release-values-within-mass-balance-band verifier asserts every value is within
 // [0.5×, 1.5×] of theoretical; the Mg override passes that band by
 // design. Other elements are within rounding of the formula.
 const COMPOST_RELEASE_PER_WEEK = {
@@ -59,14 +59,14 @@ const COMPOST_RELEASE_PER_WEEK = {
   Mg: 0.50,
 };
 
-// Per-element efficiency for the Efficacité column (REQ-157) — share of
+// Per-element efficiency for the Efficacité column (channel-efficiency-capability-map) — share of
 // applied compost mass that becomes plant-available within year 1 under
 // current Décembre conditions (pH 7.3-7.5, Ca-saturated bed). Numerically
 // equals COMPOST_MINERALIZATION_YEAR1 because the pH-lockout discount is
 // already baked into the per-element mineralization rate (notably P at
 // 0.05 reflects the current-pH lockout, not a neutral-pH textbook 0.20).
-// Re-exposed as a separate constant so REQ-080's namespace contract names
-// it explicitly and renderers (REQ-156) read a single canonical handle.
+// Re-exposed as a separate constant so public-api-namespace's namespace contract names
+// it explicitly and renderers (efficacite-column-capability) read a single canonical handle.
 //
 // Per-element cert reflects the effective certainty on the plant-available
 // fraction, propagating from the weaker of {mineralization-rate cert,

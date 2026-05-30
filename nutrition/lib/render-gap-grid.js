@@ -7,13 +7,13 @@
 // registerPourquoi(). If a key isn't registered, the row is still rendered
 // but the click is a no-op.
 // renderGapGrid — 6-col gap-chain grid. Cross-app contribution-block layout
-// per REQ-137 (nutrition/spec.md, amended 2026-05-15 to add Efficacité).
-// Optional `details` (REQ-136) carries per-element {cert, cap}; when
-// present, the Apport ici cell becomes clickable (REQ-138) and renders
+// per contribution-block-gap-grid (nutrition/spec.md, amended 2026-05-15 to add Efficacité).
+// Optional `details` (contribution-channel-details-payload) carries per-element {cert, cap}; when
+// present, the Apport ici cell becomes clickable (apport-ici-clickable-cert-and-cap-modals) and renders
 // cap emojis (🔥 damage / 💧 precipitation / ❗ other). `blockId` keys the
 // per-cell + per-emoji modals so Block 2's K cell opens a different modal
-// than Block 3's K cell. `efficiency` (REQ-157) is a per-element map
-// [0, 1]; rendered as integer % in column 3 (REQ-156), em-dash when absent.
+// than Block 3's K cell. `efficiency` (channel-efficiency-capability-map) is a per-element map
+// [0, 1]; rendered as integer % in column 3 (efficacite-column-capability), em-dash when absent.
 //
 // Backwards compat: details + blockId + efficiency optional. When details
 // omitted, falls back to the legacy row-level pq-row click behavior.
@@ -46,11 +46,11 @@ function renderGapGrid(gapsIn, contrib, gapsOut, pqKeyPrefix, details, blockId, 
     const rowClickable = (pqKeyPrefix && !details)
       ? `class="pq-row" onclick="showPourquoi('${pqKeyPrefix}.${element}')"`
       : `class="pq-row"`;
-    // Apport ici cell — clickable per (block, element) when details + blockId given (REQ-138).
+    // Apport ici cell — clickable per (block, element) when details + blockId given (apport-ici-clickable-cert-and-cap-modals).
     const det = (details || {})[element];
     const cellOnclick = (blockId && det) ? `onclick="showCellCert('${blockId}', '${element}')"` : '';
     const cellCursor = cellOnclick ? 'cursor:pointer; ' : '';
-    // REQ-138 (revised 2026-05-11): emoji renders only when this channel
+    // apport-ici-clickable-cert-and-cap-modals (revised 2026-05-11): emoji renders only when this channel
     // under-delivered for this element (gOut > 0). When fully covered, no
     // emoji even if a cap kind would in principle apply. The cap payload
     // has 4 short labelled fields (constraint, limit, lever, uncappedMg) —

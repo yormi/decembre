@@ -8,7 +8,7 @@
 # Usage:
 #   ./scripts/check-spec.sh
 #
-# Add new checks below as new REQ-NNN sections gain verification strategies
+# Add new checks below as new spec-slug sections gain verification strategies
 # in any of the spec files (spec.md or nutrition/**/spec.md).
 
 set -uo pipefail
@@ -89,7 +89,7 @@ check_match() {
 
 # check_in_function NAME FNNAME NEEDLE — pass if NEEDLE (literal substring)
 # appears anywhere inside FNNAME's body. Uses awk to scan from
-# `function FNNAME(` up to the next top-level `}`. Used by REQ-005 to assert
+# `function FNNAME(` up to the next top-level `}`. Used by url-hash-routing to assert
 # routed-state setters call syncHash().
 check_in_function() {
   local name="$1"
@@ -113,12 +113,13 @@ echo "  Release Candidate — Spec Validation"
 echo "════════════════════════════════════════════════════════════"
 echo
 
-# REQ-001 (French 'CE'), REQ-006 (Kelp), REQ-007 (jargon, scoped non-admin),
-# and REQ-008 (ISO week pinned-date tests) moved to scripts/check-recipes.mjs
-# as part of Phase 2 (challenge walkthrough Ch4=B / Ch5=A / Ch6=A scoped /
-# Ch7=A). The node verifier runs after the bash checks below.
+# ui-language-ce-not-ec (French 'CE'), ui-language-algue-not-kelp (Kelp),
+# ui-language-plain-french (jargon, scoped non-admin), and iso-week-numbering
+# (ISO week pinned-date tests) moved to scripts/check-recipes.mjs as part of
+# Phase 2 (challenge walkthrough Ch4=B / Ch5=A / Ch6=A scoped / Ch7=A).
+# The node verifier runs after the bash checks below.
 
-# ─── REQ-004 — Bilan reads from source-of-truth recipes ───
+# ─── bilan-reads-source-of-truth-recipes — Bilan reads from source-of-truth recipes ───
 echo "bilan-reads-source-of-truth-recipes — Bilan reads from source-of-truth recipes"
 
 check_match \
@@ -129,7 +130,7 @@ check_match \
   "Bilan lit STORED_RECIPE.tomato.foliaire.A (Spray hebdomadaire)" \
   'STORED_RECIPE\.tomato\.foliaire\.A'
 
-# Spray B (CaCl₂ anti-BER) retiré 2026-05-06 — voir REQ-004 ligne « Foliaire ».
+# Spray B (CaCl₂ anti-BER) retiré 2026-05-06 — voir bilan-reads-source-of-truth-recipes ligne « Foliaire ».
 
 check_match \
   "Bilan lit STORED_RECIPE.tomato.sidedress[stage] (engrais sol granulaire)" \
@@ -143,7 +144,7 @@ check_match \
   "Bilan lit TOMATO_FRUIT_EXPORT[el] (export fruit seul)" \
   'TOMATO_FRUIT_EXPORT\[el\]'
 
-# ─── REQ-005 — URL hash reflects current page (and subpage) ───
+# ─── url-hash-routing — URL hash reflects current page (and subpage) ───
 echo
 echo "url-hash-routing — URL hash reflects current page (and subpage)"
 
@@ -179,10 +180,11 @@ else
   fi
 fi
 
-# REQ-006 (>Kelp), REQ-007 (jargon scoped non-admin) and REQ-008 (ISO week)
-# now live in scripts/check-recipes.mjs — see node section below.
+# ui-language-algue-not-kelp (>Kelp), ui-language-plain-french (jargon scoped
+# non-admin) and iso-week-numbering (ISO week) now live in
+# scripts/check-recipes.mjs — see node section below.
 
-# ─── REQ-009 — Solar weekly 20-year averages ───
+# ─── solar-by-week-20yr-average — Solar weekly 20-year averages ───
 echo
 echo "solar-by-week-20yr-average — SOLAR_BY_WEEK = moyennes 20 ans (semaines 1-18)"
 
@@ -210,13 +212,17 @@ else
        "manquantes ou modifiées:$solar_missing"
 fi
 
-# ─── Node verifier (Phase 2) — REQ-001/006/007/008 (migrated) plus
-# REQ-010, 011, 012, 019, 022, 023, 029a, 029b, 029c.
+# ─── Node verifier (Phase 2) — ui-language-ce-not-ec / ui-language-algue-not-kelp
+# / ui-language-plain-french / iso-week-numbering (migrated) plus
+# recipe-mode-per-product, channel-role-coverage, phclass-covers-every-element,
+# every-product-ecocert-allowed, ec-factor-covers-every-product,
+# product-declares-ions-and-chemistry-tags, every-cation-anion-pair-classified,
+# every-chemistry-tag-classified.
 # Runs scripts/check-recipes.mjs via jsdom. If node or jsdom is missing, the
 # node script prints a single "skipped" warning and exits 0 — this keeps a
 # fresh-clone friendly path: you can still run the bash checks without
-# `npm install`. Phase 2.5 REQs (013-018, 020-021, 024-032, 053-057) are
-# tracked but deferred until thresholds + plumbing are pinned.
+# `npm install`. Phase 2.5 rules are tracked but deferred until thresholds +
+# plumbing are pinned.
 echo
 echo "════════════════════════════════════════════════════════════"
 echo "  Phase 2 — Node verifier (recipe-model invariants)"
@@ -250,7 +256,7 @@ if command -v node >/dev/null 2>&1; then
   FAIL=$((FAIL + NODE_FAIL))
 else
   printf "  ${YELLOW}⚠${RESET} node not found — Phase 2 checks skipped.\n"
-  printf "  Install Node.js + run \`npm install\` to enable REQ-010+ verification.\n"
+  printf "  Install Node.js + run \`npm install\` to enable recipe-model verification.\n"
 fi
 
 # ─── Final ───

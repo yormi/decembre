@@ -3,8 +3,8 @@
 // Spec:        nutrition/tomato/fertigation-recipe/spec.md
 // Derivation:  nutrition/tomato/fertigation-recipe/derivation.md
 //
-// REQ-098: returned values match the mass-balance derivation.
-// REQ-099: namespace exposed via window.FertigationRecipeTomato (model.js).
+// mass-balance-derivation: returned values match the mass-balance derivation.
+// public-api-namespace: namespace exposed via window.FertigationRecipeTomato (model.js).
 
 // ─── computeStageRecipe — MASS-BALANCE replenishment of K, Mg, B ────────
 //
@@ -13,14 +13,14 @@
 // weighed-out recipe (audit trail via /retire-recipe). computeStageRecipe
 // is read by:
 //   - FIRST_PRINCIPLES_T5_FERTIGATION boot-pin via wireFpFertigation()
-//     (REQ-154 invariant) → FP_RECIPE_T5.fertigation
+//     (fp-target-mirrors-sizer invariant) → FP_RECIPE_T5.fertigation
 //   - Block 7 stored-vs-FP drift gauge (renderPhase1Comparison)
 //   - calculateNutritionSupply when nutrRecipeMode === 'fp'
 //   - computeStageSidedress (sidedress mass-balance variant — N-only)
 //
 // Formula (per element, total tomato area = 382.9 m²):
 //   demand_mg/m²/wk      = TOMATO_FRUIT_EXPORT × stage_yield × 1000 + BIOMASS_DEMAND[stage]
-//   demand_to_bed        = demand / PH_UPTAKE_FACTOR_AT_CURRENT_SOIL[el]   // REQ-155
+//   demand_to_bed        = demand / PH_UPTAKE_FACTOR_AT_CURRENT_SOIL[el]   // uptake-efficiency-factor
 //   sidedress_mg/m²/wk   = STORED_RECIPE.tomato.sidedress[stage].actisol_g
 //                            × element_pct × min_eff × 1000 / SIDEDRESS_AREA_PER_PLANCHE
 //   compost_mg/m²/wk     = CompostContribution.releasePerWeek[el] × 1000
@@ -31,11 +31,11 @@
 // nutrients leave the system at end of cycle (plants pulled, biomass removed
 // off-site), so they count as demand too.
 //
-// COMPOST IS SUBTRACTED (REQ-098 restored 2026-05-15 per B1-REV): compost
+// COMPOST IS SUBTRACTED (mass-balance-derivation restored 2026-05-15 per B1-REV): compost
 // release is *current-week* supply to the bed, not a long-term bank. Soil
 // bank credit applies only to {P, Ca} — neither is in the fertigation flow.
 //
-// UPTAKE FACTOR (REQ-155 added 2026-05-15 per B2-REV): bed → plant transfer
+// UPTAKE FACTOR (uptake-efficiency-factor added 2026-05-15 per B2-REV): bed → plant transfer
 // efficiency is < 100 % at Décembre soil (pH 7.28, Ca 10 989 kg/ha) due to
 // Ca-K / Ca-Mg cation competition and soil B adsorption. The factor applies
 // uniformly to all bed sources (compost, sidedress, fertigation), so it
@@ -44,7 +44,7 @@
 // Returns { kSulfate, mgSulfate, solubore, naMolybdate } in grams (rounded).
 // Total weekly dose for the 7-bed × 54.7 m² tomato area. Mo holds flat at
 // 0.5 g/wk across all stages — smallest reliable barrel weight ≈ 7× peak
-// demand, within Mo's wide tolerance band (REQ-061 Mo carve-out 2026-05-16,
+// demand, within Mo's wide tolerance band (replenishment-cascade-earliest-first Mo carve-out 2026-05-16,
 // derivation.md).
 function computeStageRecipe(stage) {
   const y = RECIPE_INPUTS.stageYield[stage] || 0;
@@ -70,7 +70,7 @@ function computeStageRecipe(stage) {
   const mg_fert_mg_per_m2 = Math.max(0, mg_demand_to_bed - mg_compost_mg);
   const mgSulfate = Math.round((mg_fert_mg_per_m2 / 1000 / PRODUCT_PCT.MgSO4_Mg) * totalArea);
 
-  // ── B (Solubore) — single-channel B at T5+ (REQ-061) ──
+  // ── B (Solubore) — single-channel B at T5+ (replenishment-cascade-earliest-first) ──
   // TOMATO_FRUIT_EXPORT[el].g uses uniform-field convention (×1000 → mg)
   // for both macros and micros — see plant-needs/calc.js calculateNutritionDemand.
   const b_demand_mg = (TOMATO_FRUIT_EXPORT.B.g * 1000 * y) + (biomass.B || 0);
@@ -79,7 +79,7 @@ function computeStageRecipe(stage) {
   const b_fert_mg_per_m2 = Math.max(0, b_demand_to_bed - b_compost_mg);
   const solubore = Math.round((b_fert_mg_per_m2 / 1000 / PRODUCT_PCT.Solubore_B) * totalArea);
 
-  // ── Mo (sodium molybdate) — flat 0.5 g/wk across stages, REQ-061 Mo carve-out ──
+  // ── Mo (sodium molybdate) — flat 0.5 g/wk across stages, replenishment-cascade-earliest-first Mo carve-out ──
   const naMolybdate = 0.5;
 
   return { mgSulfate, kSulfate, solubore, naMolybdate };
@@ -87,7 +87,7 @@ function computeStageRecipe(stage) {
 
 // computeFertigationSupply(stage, opts, recipe) — per-element delivered
 // mg/m²/wk for the fertigation channel (K, Mg, B only; all other elements
-// are explicit zeros). REQ-151. Mirrors the foliar precedent
+// are explicit zeros). per-element-supply. Mirrors the foliar precedent
 // (computeFoliarSupply) — caller picks the source and reshapes into the
 // canonical g-keyed shape, model applies one rule.
 //
@@ -136,9 +136,9 @@ function computeFertigationSupply(stage, opts, recipe) {
 // and Solubore. Then FP_RECIPE_T5.fertigation in app/index.html is
 // propagated from the same constant.
 //
-// Invariant (REQ-154): FIRST_PRINCIPLES_T5_FERTIGATION values match the
+// Invariant (fp-target-mirrors-sizer): FIRST_PRINCIPLES_T5_FERTIGATION values match the
 // computeStageRecipe('T5') reshape by construction — they cannot drift
-// because they are written from one function call at boot. REQ-155 adds
+// because they are written from one function call at boot. uptake-efficiency-factor adds
 // the per-element uptake-factor inflation inside computeStageRecipe; the
 // pin invariant is unchanged in shape.
 //
@@ -172,7 +172,7 @@ function computeFertigationSupply(stage, opts, recipe) {
 // Public API for the tomate fertigation-recipe model.
 //
 // Spec:    nutrition/tomato/fertigation-recipe/spec.md
-// REQ-099: this namespace exists at runtime with the keys below.
+// public-api-namespace: this namespace exists at runtime with the keys below.
 //
 // Consumers (calculateNutritionSupply, renderPhase1Comparison, future per-stage
 // drift gauges) should reach for `window.FertigationRecipeTomato` instead
@@ -180,18 +180,18 @@ function computeFertigationSupply(stage, opts, recipe) {
 // then be reshaped without breaking call sites.
 window.FertigationRecipeTomato = {
   // T5 refined first-principles target. K2SO4 / MgSO4-7H2O values are
-  // populated at boot from computeStageRecipe('T5') (REQ-154); Solubore is
-  // hand-coded (single-channel B at T5, REQ-061). Propagated to
+  // populated at boot from computeStageRecipe('T5') (fp-target-mirrors-sizer); Solubore is
+  // hand-coded (single-channel B at T5, replenishment-cascade-earliest-first). Propagated to
   // FP_RECIPE_T5.fertigation by wireFpFertigation() at script load.
   FIRST_PRINCIPLES_T5:   FIRST_PRINCIPLES_T5_FERTIGATION,
-  // Per-element efficiency (REQ-157) — channel-product → bed delivery fraction
+  // Per-element efficiency (channel-efficiency-capability-map) — channel-product → bed delivery fraction
   // at current soil pH 7.4. Soluble-cation chemistry for K/Mg (K2SO4 + MgSO4),
   // borate chemistry for B (Solubore). Bed → plant axis lives separately in
-  // PH_UPTAKE_FACTOR_AT_CURRENT_SOIL (REQ-155).
+  // PH_UPTAKE_FACTOR_AT_CURRENT_SOIL (uptake-efficiency-factor).
   efficiency:            FERTIGATION_EFFICIENCY_AT_CURRENT_SOIL,
-  // Mass-balance derivation function (REQ-098) — { kSulfate, mgSulfate, solubore } per stage
+  // Mass-balance derivation function (mass-balance-derivation) — { kSulfate, mgSulfate, solubore } per stage
   computeStageRecipe,
-  // Per-element delivered mg/m²/wk (REQ-151) — K, Mg, B from a canonical
+  // Per-element delivered mg/m²/wk (per-element-supply) — K, Mg, B from a canonical
   // g-keyed recipe; default reshape from STORED_RECIPE.tomato.fertigation[stage]
   computeFertigationSupply,
 };

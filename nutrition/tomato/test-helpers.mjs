@@ -36,8 +36,7 @@ async function resolveIncludes(content, sourcePath, depth = 0) {
 
 // Names exposed on window.__TEST_GLOBALS__ for assertion. Mirrors the
 // `exposeNames` list in scripts/check-recipes.mjs but trimmed to what the
-// nutrition/tomato/ integration tests need (REQ-011, REQ-013, REQ-014,
-// REQ-033).
+// nutrition/tomato/ integration tests need.
 const EXPOSE_NAMES = [
   // Plant-needs subproject
   'BIOMASS_DEMAND', 'TOMATO_FRUIT_EXPORT', 'TOMATO_REMOVAL',
@@ -62,10 +61,10 @@ const EXPOSE_NAMES = [
   'PRODUCT', 'PRODUCT_PCT', 'STORED_RECIPE',
   'TOMATO_NUMBER_BEDS', 'TOMATO_BED_AREA',
   'effectiveEfficiency', 'predictedCE',
-  // Cross-crop fertigation tank — pinned by nutrition/spec.md REQ-062
-  // (flat-object lettuce recipe, no parallel sub-tanks).
+  // Cross-crop fertigation tank — pinned by nutrition/spec.md
+  // single-fertigation-tank-per-week (flat-object lettuce recipe, no parallel sub-tanks).
   'LETTUCE',
-  // Compost release feeds the supply chain (REQ-013/014)
+  // Compost release feeds the supply chain (under-fert/luxury-feeding guards)
   'COMPOST_RELEASE_PER_WEEK',
 ];
 

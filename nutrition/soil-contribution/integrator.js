@@ -10,13 +10,13 @@
 // SME source-of-truth: the per-crop SME_SOIL_SOLUTION_PPM table in data.js.
 // Supply read is conservative — below-detection-limit elements zero out at
 // the boundary (SME_BELOW_DETECTION_ELEMENTS). Runway math reads the canonical
-// table directly so the DL-ceiling convention (cert 2 per REQ-164) stays.
+// table directly so the DL-ceiling convention (cert 2 per sme-soil-solution-wired-per-crop-element) stays.
 
 // Below-detection-limit elements zeroed for supply mass-flow. At pH 7.4 the
 // lab reports < 0.03 ppm for Mn / Zn on both beds; treating the DL ceiling
 // as actual supply would credit ~0.45 mg/m²/wk that the plant cannot count
-// on. Runway column keeps the DL ceiling (REQ-164 cert 2) so the operator
-// still sees a finite — if optimistic — runway for context.
+// on. Runway column keeps the DL ceiling (sme-soil-solution-wired-per-crop-element
+// cert 2) so the operator still sees a finite — if optimistic — runway for context.
 const SME_BELOW_DETECTION_ELEMENTS = new Set(['Mn', 'Zn']);
 
 function smePpmForSupply(crop, element) {

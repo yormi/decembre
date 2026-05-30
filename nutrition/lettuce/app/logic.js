@@ -117,7 +117,7 @@ function buildNutrimentLettuce() {
 
   // ─── Block 2: Compost résiduel (Savaria ORGANIMIX, fall 2025) ───
   // Reads window.CompostContribution.releasePerWeek — same source-of-truth as
-  // the tomato compost block (REQ-004). Per-element rows clickable for modal.
+  // the tomato compost block (bilan-reads-source-of-truth-recipes). Per-element rows clickable for modal.
   let compostHtml = `<div style="font-size:12.5px; line-height:1.5; color:var(--text-muted); margin-bottom:10px;">Minéralisation hebdomadaire du compost Savaria ORGANIMIX appliqué à l'automne 2025 sur les planches Salanova (~25,4 kg/m², étiquette N 0,5 · P₂O₅ 0,1 · K₂O 0,1 · Ca 1,1 · Mg ~0,5 %). Décline avec le temps ; à revisiter quand le compost vieillit (~18-24 mois post-application).</div>`;
   order.forEach(element => {
     const gPerWk = CC.releasePerWeek[element];

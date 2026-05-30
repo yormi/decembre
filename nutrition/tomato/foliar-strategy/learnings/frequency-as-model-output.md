@@ -4,7 +4,7 @@
 **Status:** accepted
 
 The previous shape had `sprayCount` (1-3) as an operator input
-on Block 5 (REQ-113, retired this PR). With the strategy/recipe
+on Block 5 (retired this PR). With the strategy/recipe
 hierarchy ([[strategy-recipe-hierarchy]]) Ca runs at 2×/wk,
 oligo at 1×/wk — frequencies diverge per-recipe. Two shapes
 considered.
@@ -32,9 +32,9 @@ operator override on the procedure surface.
 
 ## Why this changes the builder
 
-REQ-113 (sprayCount input) retires this PR. REQ-114 trims to
-surfactant-only re-render. REQ-163 (Efficacité reactive to
-surfactant) holds verbatim.
+The sprayCount input retires this PR. The builder trims to
+surfactant-only re-render. Efficacité reactive to surfactant
+holds verbatim.
 
 The model contract gains a per-recipe weekly-count output;
 specialist details in `model/spec.md`.

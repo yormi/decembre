@@ -15,7 +15,7 @@
 // Cert 4 on the conversion factor (Berger lab convention).
 //
 // Element coverage: 10 of the 11 gap-grid elements. Mo is unmeasured on
-// the Mehlich-3 panel — consistent with the Mo carve-out (REQ-061: Mo
+// the Mehlich-3 panel — consistent with the Mo carve-out (replenishment-cascade-earliest-first: Mo
 // routes via fertigation as an anion, not via the soil bank). Na and Al
 // are reported but not on the gap-grid; excluded from this map.
 //
@@ -41,7 +41,7 @@ const SOIL_BANK_MG_M2 = {
     Zn:  2300,     // 11.5 ppm; cert 4
     B:   60,       // 0.3 ppm; cert 4
     Cu:  920,      // 4.6 ppm; cert 4
-    // Mo not measured on Mehlich-3 panel; routes via fertigation per REQ-061 carve-out.
+    // Mo not measured on Mehlich-3 panel; routes via fertigation per replenishment-cascade-earliest-first carve-out.
   },
   lettuce: {
     N:   14340,    // NO3-N 69.4 ppm + NH4-N 2.3 ppm; cert 4
@@ -59,7 +59,7 @@ const SOIL_BANK_MG_M2 = {
 };
 
 // Elements whose soil bank participates in the weekly gap chain.
-// Spec REQ-141. Scoped to Ca + P today — banks large enough to carry the
+// Spec only-ca-p-participate-in-gap-chain. Scoped to Ca + P today — banks large enough to carry the
 // plant's full weekly need without external resupply, no operator lever
 // turns these off. K + Mg have measured banks but their gap-chain coverage
 // flows through fertigation (K₂SO₄ + MgSO₄); routing them via the soil
@@ -75,7 +75,7 @@ const SOIL_CONTRIBUTING = {
 // organic matter + compost amendments; the displayed "runway" computed
 // from bank ÷ uptake is a counterfactual ("weeks until empty IF
 // mineralization stopped") that never materialises operationally. For
-// these elements the runway column renders blank — see REQ-142 + the
+// these elements the runway column renders blank — see months-to-depletion-clamped-by-peak-demand + the
 // pourquoi-modal `N-not-mehlich` strings. Add S here when sulfur is wired.
 const TURNOVER_BOUND_ELEMENTS = ['N'];
 
@@ -86,7 +86,7 @@ const TURNOVER_BOUND_ELEMENTS = ['N'];
 // only what it needs and the bank drains at the demand rate. For locked-
 // out elements (P / Mn / Zn at pH 7.4) mass-flow is below demand and the
 // clamp doesn't bind — the runway formula reduces to the SME-throttled
-// version. Spec REQ-142.
+// version. Spec months-to-depletion-clamped-by-peak-demand.
 //
 // Sources:
 //   - Tomato: nutrition/tomato/plant-needs/data.js TOMATO_REMOVAL × yield
@@ -133,7 +133,7 @@ const PLANT_PEAK_WEEKLY_DEMAND_MG_PER_M2 = {
 const WEEKS_PER_MONTH = 52 / 12;
 
 // SME (Saturated Media Extract) soil-solution concentrations in ppm
-// (= mg/L of soil solution). Spec REQ-164. Source: Berger Labs SME Report
+// (= mg/L of soil solution). Spec sme-soil-solution-wired-per-crop-element. Source: Berger Labs SME Report
 // 39087, April 10 2026, samples 596614 (tomato 1) and 596616 (laitue 1).
 //
 // Below-detection-limit values (Mn, Zn on both crops; Cu on lettuce trace):
@@ -177,7 +177,7 @@ const SME_SOIL_SOLUTION_PPM = {
   },
 };
 
-// Weekly transpiration estimate per crop (L/m²/wk). Spec REQ-164.
+// Weekly transpiration estimate per crop (L/m²/wk). Spec sme-soil-solution-wired-per-crop-element.
 // Multiplied by SME ppm (mg/L) → weekly plant uptake at current
 // soil-solution availability (mg/m²/wk), the denominator of the
 // SME-derived depletion runway.

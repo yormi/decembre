@@ -1,7 +1,7 @@
 // Public API for the nursery plant-needs model.
 //
 // Spec:    nutrition/nursery/plant-needs/spec.md
-// REQ-093: this namespace exists at runtime with the keys below.
+// public-api-namespace: this namespace exists at runtime with the keys below.
 //
 // Consumers (Semis subpage UI, future nursery recipe calculators) should
 // reach for `window.PlantNeedsNursery` instead of the bare constants
@@ -17,8 +17,9 @@ window.PlantNeedsNursery = {
   LETTUCE_NURSERY_DM_FRACTION,
   NURSERY_TARGETS,
 
-  // Core demand function. REQ-090 asserts linearity in targetG; REQ-091
-  // asserts inverse-linearity in cycleDays.
+  // Core demand function. demand-linear-in-target-weight asserts linearity in
+  // targetG; demand-inverse-linear-in-cycle-length asserts inverse-linearity
+  // in cycleDays.
   calculateNurseryDemand,
 
   // Convenience: per-tray demand at default targets, single element.

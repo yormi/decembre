@@ -164,7 +164,7 @@ per_plant_dli_share_field(weight_g, density) =
 
 Floor 0.40 borrowed from `NURSERY_SPACING_PACKED` (existing
 packed-canopy shared-light efficiency for lettuce in tray
-nursery, REQ-116). Underlying assumption: at full canopy
+nursery). Underlying assumption: at full canopy
 closure, each plant integrates ~40 % of bench DLI as effective
 input — light penetrates the canopy through gaps, sunflecks,
 scattered radiation, so per-plant share is never reduced to
@@ -237,7 +237,7 @@ annual_yield_kg  = heads_per_year × harvest_weight_g / 1000
 ## Confirmed inputs (2026-05-17)
 
 - `bench_dli_mol_per_m2_per_day`: ledHours stays a dynamic
-  operator input (max 18). Existing REQ-114 formula preserved.
+  operator input (max 18). Existing formula preserved.
 - Nursery cap basis: breeder-anchored (50-cell = 25 g pinned;
   other trays scaled by geometric proportion).
 

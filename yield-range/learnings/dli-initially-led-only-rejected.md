@@ -6,4 +6,4 @@ attenuated by double-poly transmission. With corrected DLI ≈ 27.5
 (sun 16 + LED 11.5), spacing decay no longer creates a
 light-starvation cliff past d18, so RGR_max refit to 0.22 (and later
 to 0.40 for the best-case anchor). The two-term sun + LED model is
-now REQ-114 / REQ-131.
+now dli-annual-sun-plus-led / double-poly-transmission-decomposed.

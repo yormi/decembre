@@ -32,7 +32,7 @@ const EXPOSE_NAMES = [
   'predictedCE',
   'calculateNutritionSupply',
   // CompostContribution exposes the per-week release map FP foliar consumes
-  // through the gap chain. REQ-116 mutates CC.releasePerWeek.Mn to verify
+  // through the gap chain. The fp-strategy-live-derived test mutates CC.releasePerWeek.Mn to verify
   // FP_RECIPE_T5.foliar.MnSO4 drops to 0 when the pre-foliar gap closes.
   'CompostContribution',
 ];
@@ -91,7 +91,7 @@ export function loadFoliarFixture() {
   return cachedWindow;
 }
 
-// Helper used by REQ-115 + REQ-116 tests — same shape as
+// Helper used by gap-maximizing-recipe + fp-strategy-live-derived tests — same shape as
 // STORED_RECIPE.tomato.foliaire.A label-string array, derived from a recipe
 // object returned by computeFoliarRecipeForGap.
 export function recipeAsLabelArray(recipe) {

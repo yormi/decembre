@@ -21,7 +21,7 @@
 // ~3 % without surfactant is absorption, not retention — 30 % blends both
 // axes. Bump to cert 4 when tissue panel correlates predicted vs measured.
 //
-// REQ-101 reads this to compute delivered = recipe_g × element_pct ×
+// coverage-discount-on-delivery reads this to compute delivered = recipe_g × element_pct ×
 // 1000 / area × FOLIAR_COVERAGE_DEFAULT.
 const FOLIAR_COVERAGE_DEFAULT = 0.30;
 
@@ -51,10 +51,10 @@ const FOLIAR_COVERAGE_WITH_YUCCA = 0.80;
 const FOLIAR_COVERAGE_CA_NO_SURFACTANT   = 0.15;
 const FOLIAR_COVERAGE_CA_WITH_SURFACTANT = 0.40;
 
-// Per-element efficiency for the Efficacité column (REQ-157, REQ-170) —
+// Per-element efficiency for the Efficacité column (channel-efficiency-capability-map, surfactant-aware-efficiency-map) —
 // share of applied foliar-strategy mass that becomes plant-available per
-// applied gram. Surfactant-aware per REQ-170: toggling the surfactant
-// lever in Block 5 (REQ-163 page-side) flips the efficiency between the
+// applied gram. Surfactant-aware per surfactant-aware-efficiency-map: toggling the surfactant
+// lever in Block 5 (page-side) flips the efficiency between the
 // no-surfactant and with-surfactant regimes.
 //
 // Formula:   efficiency(surfactant) = coverage × foliarPhResponse(sprayPh)
@@ -78,7 +78,7 @@ const FOLIAR_COVERAGE_CA_WITH_SURFACTANT = 0.40;
 //   B  — two-channel: foliar (Solubore spray) + passive (compost/sidedress)
 //        per CHANNEL_ROLE B: {foliar:0.5, passive:0.5}. Absent here only
 //        because the spray formulation lives elsewhere; not a fertigation route.
-//   Mo — retired from foliar 2026-05-16 (REQ-061 Mo carve-out). Molybdate
+//   Mo — retired from foliar 2026-05-16 (replenishment-cascade-earliest-first Mo carve-out). Molybdate
 //        is anionic and fully available at our soil pH 7.4, so the foliar-
 //        bypass argument that keeps cation micros here doesn't apply. Mo
 //        moved to fertigation; the foliar spray no longer carries sodium
@@ -113,7 +113,7 @@ const FOLIAR_EFFICIENCY_AT_CURRENT_CONDITIONS = foliarEfficiency(false);
 // computeFoliarSupply; documented here for the spec's "AREA_M2" namespace
 // key, which exposes the live value via the model.js wrapper.)
 
-// REQ-115 — per-element burn cap (g per 15 L master tank).
+// gap-maximizing-recipe — per-element burn cap (g per 15 L master tank).
 // Per-element certainty (refinable when Décembre tissue + lesion log lands):
 //   Fe / Mo / B — cert 3. Defensible mid-band of Sonneveld 2009, Yara
 //   crop-nutrition foliar tables, university extension publications
@@ -145,12 +145,12 @@ const BURN_CAP_BASE_G = {
   B:  9,    // Solubore (Na₂B₈O₁₃·4H₂O, 20.5 % B) — non-ionic, cert 3
 };
 
-// REQ-115 — burn cap by element. Public via window.FoliarRecipeTomato.burnCapG.
+// gap-maximizing-recipe — burn cap by element. Public via window.FoliarRecipeTomato.burnCapG.
 function burnCapG(element) {
   return BURN_CAP_BASE_G[element] || 0;
 }
 
-// REQ-115 — per-element minimum dose floor (g per 15 L master tank).
+// gap-maximizing-recipe — per-element minimum dose floor (g per 15 L master tank).
 // Sub-floor doses aren't reliably weighable on an organic-farm scale, so
 // computeFoliarRecipeForGap clamps any ideal_g below the floor to 0
 // rather than risk a 2-4× luxury feed for tiny-demand elements (Cu narrow
@@ -164,7 +164,7 @@ function burnCapG(element) {
 //   Cu — 0.2 g. Narrow Cu²⁺ toxicity threshold; cert 2 burn-cap also
 //     argues against forcing higher dose.
 //   Mo — 0.1 g. Wide Sonneveld tolerance band (50-200 mg/L); tiny demand.
-//     Retired from foliar 2026-05-16 (REQ-061 carve-out) but kept for
+//     Retired from foliar 2026-05-16 (replenishment-cascade-earliest-first carve-out) but kept for
 //     completeness in case Mo returns to foliar.
 const MIN_DOSE_G_PER_ELEMENT = {
   Mn: 0.5,
@@ -175,22 +175,22 @@ const MIN_DOSE_G_PER_ELEMENT = {
   B:  0.5,
 };
 
-// REQ-196 — Weekly leaf-tolerance cap per recipe (sprays/week upper bound).
-// Bounds the model-computed weekly spray count (REQ-197) regardless of gap
+// weekly-leaf-tolerance-cap — Weekly leaf-tolerance cap per recipe (sprays/week upper bound).
+// Bounds the model-computed weekly spray count (model-computed-spray-count) regardless of gap
 // size. Per-recipe; no aggregation across recipes. Anchors:
 //   oligo — 1, live STORED Wednesday-only cadence, cert 3 (derivation.md
 //           § "What dropping yucca cost").
 //   Ca    — 3, Test 1 Path C 2026-05-24 anchor, cert 3. Recipe data.js
 //           entry itself is GATED on PO; the cap is declared here so the
-//           contract shape (REQ-196 table) lands without the recipe.
+//           contract shape (weekly-leaf-tolerance-cap table) lands without the recipe.
 const WEEKLY_LEAF_TOLERANCE_CAP_BY_RECIPE = {
   oligo: 1,
   ca:    3,
 };
 
-// REQ-195 — Per-recipe target element set. Static gap allocation per
+// strategy-is-independent-recipes — Per-recipe target element set. Static gap allocation per
 // recipe definition. Oligo recipe targets Mn / Zn / Cu / Fe / B (the
-// cation-micro + B set the foliar tank delivers under REQ-061). Ca
+// cation-micro + B set the foliar tank delivers under replenishment-cascade-earliest-first). Ca
 // recipe targets Ca (gated on PO data.js entry; declared for contract
 // shape).
 const FOLIAR_RECIPE_TARGETS = {

@@ -2,9 +2,9 @@
 //
 // Renders the predicted CE chip on #nutr-sidedress, with band-position colour
 // signal and a click handler that opens a modal naming the soil root zone
-// measurement point + blue-pen mapping + REQ-024 safe band (1.5-3.5 mS/cm).
+// measurement point + blue-pen mapping + predicted-ce-within-crop-stage-band safe band (1.5-3.5 mS/cm).
 //
-// pH side intentionally left as a placeholder element only: REQ-053 declares
+// pH side intentionally left as a placeholder element only: predicted-tank-ph-within-envelope declares
 // no soil-root-zone pH band yet (specialist routing in flight). The pH chip
 // renders a numeric value so the "node exists" precondition tests pass; no
 // modal / colour logic until the chemistry spec ships a band.
@@ -93,7 +93,7 @@ function openSidedressCeModal() {
         sur ce point — pas de conversion goutteur/dripper.
       </div>
       <div style="margin-bottom:10px;">
-        Cible CE : <strong>1.5 – 3.5 mS/cm</strong> (REQ-024, T1-T5 tomate).
+        Cible CE : <strong>1.5 – 3.5 mS/cm</strong> (T1-T5 tomate).
       </div>
       <button data-modal-close type="button"
               style="margin-top:8px; padding:6px 12px; cursor:pointer;">Fermer</button>

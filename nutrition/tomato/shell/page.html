@@ -10,7 +10,7 @@
         </div>
       </div>
 
-      <!-- Light-limited yield ceiling — REQ-105: ceiling = weekly_J_cm² ÷
+      <!-- Light-limited yield ceiling — light-ceiling-from-operator-j-per-g: ceiling = weekly_J_cm² ÷
            (solarPerGram × 1000). solarPerGram input embedded inline below
            the headline so the ceiling + its driver read as a single unit. -->
       <div id="nutr-light-ceiling" style="padding:12px 14px; background:var(--input-bg); border:1px solid var(--border); border-radius:var(--radius-sm); margin-bottom:12px; line-height:1.4;">
@@ -21,7 +21,7 @@
           <input type="number" id="nutr-solar-per-gram" value="7" min="3" max="15" step="0.5" inputmode="decimal" style="width:54px; padding:2px 6px; margin:0 4px; font-family:inherit; font-size:12px; text-align:center;">
           J / g de fruit
         </div>
-        <!-- REQ-105: ⚠ message — rendered ONLY when target > ceiling.
+        <!-- light-ceiling-from-operator-j-per-g: ⚠ message — rendered ONLY when target > ceiling.
              Paired with the orange-bg color flip on the parent card.
              logic.js sets innerHTML + display per overTarget. -->
         <div id="nutr-light-ceiling-warning" style="display:none; margin-top:8px; font-size:12px; line-height:1.4; color:#8a3e1e; font-weight:600;"></div>
@@ -40,7 +40,7 @@
         <span>pH ≥ 7 (lockout racinaire P/Mn/Zn/Fe)</span>
       </label>
 
-      <!-- Recipe-source toggle — REQ-106 + REQ-107: "First principles" on
+      <!-- Recipe-source toggle — fp-recipe-mode-locks-t5 + recipe-mode-toggle-fp-left-default-right: "First principles" on
            the LEFT (default; English term-of-art, not translated); "Stockée"
            on the right. FP only defined for T5; clicking FP snaps the stage
            to T5. Lets admin see "if we shipped FP this week, what would the
@@ -120,7 +120,7 @@
     </div>
 
     <!-- Block 8 (admin) — drift detection: stored recipe vs first-principles
-         target side-by-side (REQ-153). Does NOT replace any team-facing
+         target side-by-side (stored-vs-computed-drift-block). Does NOT replace any team-facing
          recipe. -->
     <div class="card" style="border:1.5px dashed var(--border);">
       <div class="card-title" style="color:var(--text-muted);">8. Recette stockée vs calculée (drift)</div>

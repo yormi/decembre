@@ -23,10 +23,10 @@
 // is clearer). Cert 3-4 for macros.
 const TOMATO_REMOVAL = {
   N:  { g: 2.7,    unit: 'g' },   // Yara 2.3, Sonneveld 2.5, Koller 2.9 — split (≥ Tier B mean 2.57)
-  P:  { g: 0.44,   unit: 'g' },   // Yara 0.36, Sonneveld 0.57, Koller 0.39 — Tier B mean (REQ-033)
+  P:  { g: 0.44,   unit: 'g' },   // Yara 0.36, Sonneveld 0.57, Koller 0.39 — Tier B mean (tomato-removal-biased-high)
   K:  { g: 4.0,    unit: 'g' },   // Yara 3.3, Sonneveld 4.0, Koller 4.48 — match Sonneveld (≥ Tier B mean 3.93)
   Ca: { g: 1.5,    unit: 'g' },   // Yara 1.54, Sonneveld 2.65 (no Koller value)
-  Mg: { g: 0.57,   unit: 'g' },   // Yara 0.54, Sonneveld 0.67, Koller 0.5 — Tier B mean (REQ-033)
+  Mg: { g: 0.57,   unit: 'g' },   // Yara 0.54, Sonneveld 0.67, Koller 0.5 — Tier B mean (tomato-removal-biased-high)
   Fe: { g: 0.010,  unit: 'mg' },  // est. fruit DM × leaf factor; cert 2
   Mn: { g: 0.005,  unit: 'mg' },  // est.; cert 2
   Zn: { g: 0.003,  unit: 'mg' },  // est.; cert 2
@@ -63,10 +63,10 @@ const TOMATO_REMOVAL = {
 // Updated 2026-05-06 to track TOMATO_REMOVAL Koller-aligned values.
 const TOMATO_FRUIT_EXPORT = {
   N:  { g: 2.7     * 0.60, unit: 'g' },   // 1.62 g/kg — Yara 60% split, cert 4
-  P:  { g: 0.44    * 0.60, unit: 'g' },   // 0.264 g/kg — REQ-033 Tier B
+  P:  { g: 0.44    * 0.60, unit: 'g' },   // 0.264 g/kg — tomato-removal-biased-high Tier B
   K:  { g: 4.0     * 0.60, unit: 'g' },   // 2.4 g/kg — cert 4
   Ca: { g: 1.5     * 0.05, unit: 'g' },   // 0.075 g/kg — Yara: ~5% of Ca in fruit, cert 4
-  Mg: { g: 0.57    * 0.25, unit: 'g' },   // 0.1425 g/kg — REQ-033 Tier B (Yara 25% split, cert 3)
+  Mg: { g: 0.57    * 0.25, unit: 'g' },   // 0.1425 g/kg — tomato-removal-biased-high Tier B (Yara 25% split, cert 3)
   Fe: { g: 0.010   * 0.60, unit: 'mg' },  // 60% default; data gap, cert 1-2
   Mn: { g: 0.005   * 0.60, unit: 'mg' },  // 60% default; data gap, cert 1-2
   Zn: { g: 0.003   * 0.60, unit: 'mg' },  // 60% default; data gap, cert 1-2
@@ -253,10 +253,10 @@ const BIOMASS_DEMAND = {
     // Pairs with TOMATO_FRUIT_EXPORT × yield (no double-count).
     // Updated 2026-05-06 to track Koller-aligned T5 values.
     N:  1377,  // T5 × 0.85; cert 2
-    P:  224,   // T5 × 0.85; cert 2 (REQ-033 Tier B)
+    P:  224,   // T5 × 0.85; cert 2 (tomato-removal-biased-high Tier B)
     K:  2040,  // T5 × 0.85; cert 2
     Ca: 1817,  // T5 × 0.85; cert 2
-    Mg: 545,   // T5 × 0.85; cert 2 (REQ-033 Tier B)
+    Mg: 545,   // T5 × 0.85; cert 2 (tomato-removal-biased-high Tier B)
     Fe: 5.1,   // T5 × 0.85; cert 1-2
     Mn: 2.55,  // T5 × 0.85; cert 1-2
     Zn: 1.53,  // T5 × 0.85; cert 1-2
@@ -284,10 +284,10 @@ const BIOMASS_DEMAND = {
     //   Mg:   214 +    641 =   855    vs    855  (exact)
     // All Δ% within ±10% — split-sum reconciliation passes by construction.
     N:  1620,  // 2.7 g/kg × 1500 − 2430 fruit; cert 3
-    P:  264,   // 0.44 g/kg × 1500 − 396 fruit; cert 3 (REQ-033 Tier B)
+    P:  264,   // 0.44 g/kg × 1500 − 396 fruit; cert 3 (tomato-removal-biased-high Tier B)
     K:  2400,  // 4.0 g/kg × 1500 − 3600 fruit; cert 3
     Ca: 2138,  // 1.5 g/kg × 1500 − 112 fruit (~95% retained in canopy); cert 3
-    Mg: 641,   // 0.57 g/kg × 1500 − 214 fruit (~75% retained); cert 3 (REQ-033 Tier B)
+    Mg: 641,   // 0.57 g/kg × 1500 − 214 fruit (~75% retained); cert 3 (tomato-removal-biased-high Tier B)
     Fe: 6,     // 0.010 g × 1500 − 9 fruit; cert 1-2
     Mn: 3,     // 0.005 g × 1500 − 4.5 fruit; cert 1-2
     Zn: 1.8,   // 0.003 g × 1500 − 2.7 fruit; cert 1-2

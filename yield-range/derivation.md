@@ -132,7 +132,7 @@ the same `DLI_bench`: 32-cell `cap = 39 g` → `d46`; 24-cell
 49-day `TRAJECTORY_MAXIMUM_DAYS` window. Lower `ledHours` push every
 tray's timing later; at `ledHours ≤ ~8` the 50-cell asymptote also
 slips past the window and the operator surface renders the
-`Plein potentiel non atteint` annotation (REQ-121).
+`Plein potentiel non atteint` annotation.
 
 **Why not 0.40 (prior value).** Archived in `learnings.md` §
 "Rejected: back-calculated RGR_max from cap-asymptote target". The

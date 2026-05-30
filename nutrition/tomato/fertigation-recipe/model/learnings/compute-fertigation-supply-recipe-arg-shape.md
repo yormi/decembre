@@ -1,6 +1,6 @@
 # computeFertigationSupply — recipe-arg shape decision
 
-## REQ-151 `computeFertigationSupply` — recipe-arg shape decision (2026-05-12)
+## per-element-supply `computeFertigationSupply` — recipe-arg shape decision (2026-05-12)
 
 Three signatures considered before locking the canonical g-keyed shape.
 

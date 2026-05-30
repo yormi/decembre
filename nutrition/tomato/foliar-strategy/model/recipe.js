@@ -3,10 +3,10 @@
 // Spec:        nutrition/tomato/foliar-strategy/spec.md
 // Derivation:  nutrition/tomato/foliar-strategy/derivation.md
 //
-// REQ-101: delivered_mg/m²/wk = recipe_g × element_pct × 1000 / area
+// coverage-discount-on-delivery: delivered_mg/m²/wk = recipe_g × element_pct × 1000 / area
 //                              × coverage_factor × sprayCount
-// REQ-103: namespace exposes this function via window.FoliarRecipeTomato.
-// REQ-112: opts = { sprayCount = 1, surfactant = false }; sprayCount
+// public-api-namespace: namespace exposes this function via window.FoliarRecipeTomato.
+// supply-accepts-spray-count-surfactant: opts = { sprayCount = 1, surfactant = false }; sprayCount
 //          multiplies delivery linearly (1-3); surfactant=true switches
 //          coverage from FOLIAR_COVERAGE_DEFAULT (0.30) to
 //          FOLIAR_COVERAGE_WITH_YUCCA (0.80). Optional 3rd arg `recipe`
@@ -59,7 +59,7 @@ function computeFoliarSupply(stage, opts, recipe) {
   const sb_g    = findG('Solubore');     // disodium octaborate tetrahydrate (Na₂B₈O₁₃·4H₂O); non-ionic in solution
   const cuSO4_g = findG('CuSO₄');
   const feSO4_g = findG('FeSO₄');         // FeSO₄·7H₂O
-  // Mo retired from foliar 2026-05-16 (REQ-061 Mo carve-out — molybdate is
+  // Mo retired from foliar 2026-05-16 (replenishment-cascade-earliest-first Mo carve-out — molybdate is
   // anionic, fully available at soil pH 7.4; routes via fertigation instead).
   // Foliar supply returns Mo: 0 regardless of recipe contents.
 
@@ -83,11 +83,11 @@ function computeFoliarSupply(stage, opts, recipe) {
     Zn: deliver(znSO4_g, PRODUCT_PCT.ZnSO4_Zn),         // 35.5 % Zn
     B:  deliver(sb_g,    PRODUCT_PCT.Solubore_B),       // 20.5 % B (disodium octaborate tetrahydrate)
     Cu: deliver(cuSO4_g, PRODUCT_PCT.CuSO4_Cu),         // 25 % Cu
-    Mo: 0,                                              // Mo retired from foliar (REQ-061 carve-out 2026-05-16) — routes via fertigation
+    Mo: 0,                                              // Mo retired from foliar (replenishment-cascade-earliest-first carve-out 2026-05-16) — routes via fertigation
   };
 }
 
-// REQ-115 — gap-maximizing recipe derivation. Inputs:
+// gap-maximizing-recipe — recipe derivation. Inputs:
 //   gap[element] : per-element residual mg/m²/wk (after compost + sidedress
 //             + fertigation; only foliar elements matter).
 //   opts    : { sprayCount = 1, surfactant = false }.
@@ -96,23 +96,23 @@ function computeFoliarSupply(stage, opts, recipe) {
 //
 // Algorithm: per-element ideal_g sized to close the gap; min-dose floor
 // (< 0.5 g → 0); cap at burnCapG(element); then CE-cap-and-scale
-// loop (max 4 iterations) to keep predictedCE under REQ-025 burn cap.
+// loop (max 4 iterations) to keep predictedCE under foliar-ce-under-burn-cap.
 //
-// REQ-116 — consumers call this with the live gap chain, replacing the
+// fp-strategy-live-derived — consumers call this with the live gap chain, replacing the
 // previously-pinned FP_RECIPE_T5.foliaire literal.
 function computeFoliarRecipeForGap(gap, opts) {
   const o = opts || {};
   const surfactant = !!o.surfactant;
-  // recipeKind = new entry point (REQ-115 reshape): selects recipe
-  // definition + drives the REQ-197 sprayCount search; legacy callers
+  // recipeKind = new entry point (gap-maximizing-recipe reshape): selects recipe
+  // definition + drives the model-computed-spray-count sprayCount search; legacy callers
   // omit it and get the flat doses object back unchanged (transitional
-  // hold, REQ-112). Today only the oligo recipe lands.
+  // hold, supply-accepts-spray-count-surfactant). Today only the oligo recipe lands.
   const hasRecipeKind = (o.recipeKind != null);
   const recipeKind = hasRecipeKind ? String(o.recipeKind) : 'oligo';
   const coverage = surfactant ? FOLIAR_COVERAGE_WITH_YUCCA : FOLIAR_COVERAGE_DEFAULT;
   const area = TOMATO_NUMBER_BEDS * TOMATO_BED_AREA;
 
-  // Foliar elements + product / pct table. Mo dropped 2026-05-16 (REQ-061
+  // Foliar elements + product / pct table. Mo dropped 2026-05-16 (replenishment-cascade-earliest-first
   // carve-out — Mo routes via fertigation now). NaMoO4_g stays in the return
   // shape (always 0) for downstream consumer compatibility (FP_RECIPE_T5.foliar).
   const PRODUCTS = [
@@ -126,7 +126,7 @@ function computeFoliarRecipeForGap(gap, opts) {
 
   // Helper — per-element-dose pass at a given spray count. Pure: returns
   // a fresh recipe object. Used both by the legacy entry (single call at
-  // clamped sprayCount) and by the REQ-197 sprayCount search.
+  // clamped sprayCount) and by the model-computed-spray-count sprayCount search.
   function sizeRecipeAtSprayCount(sprayCount) {
     const recipe = { MnSO4_g: 0, ZnSO4_g: 0, CuSO4_g: 0, FeSO4_g: 0, NaMoO4_g: 0, Solubore_g: 0 };
     for (var i = 0; i < PRODUCTS.length; i++) {
@@ -180,7 +180,7 @@ function computeFoliarRecipeForGap(gap, opts) {
     MnSO4_g: 'Mn', ZnSO4_g: 'Zn', CuSO4_g: 'Cu',
     FeSO4_g: 'Fe', NaMoO4_g: 'Mo', Solubore_g: 'B',
   };
-  var BURN_CE_CAP = 10.0;            // REQ-025 tomato leaf burn cap
+  var BURN_CE_CAP = 10.0;            // foliar-ce-under-burn-cap tomato leaf burn cap
   var TARGET_CE = BURN_CE_CAP * 0.95; // 5 % safety margin
   function applyDropHighestCeLoop(r) {
     for (var iter = 0; iter < 4; iter++) {
@@ -209,7 +209,7 @@ function computeFoliarRecipeForGap(gap, opts) {
   const legacySprayCount = Math.max(1, Math.min(3, Math.round(Number(o.sprayCount) || 1)));
   const recipe = applyDropHighestCeLoop(sizeRecipeAtSprayCount(legacySprayCount));
 
-  // New entry: opts.recipeKind present → REQ-197 sprayCount search +
+  // New entry: opts.recipeKind present → model-computed-spray-count sprayCount search +
   // { doses, sprayCount } bundle. Today only the oligo recipe is wired;
   // unknown recipeKind falls back to oligo (Ca-recipe data.js entry is
   // gated on PO per derivation.md § "Ca-specific cuticle coverage").
@@ -260,7 +260,7 @@ function computeFoliarRecipeForGap(gap, opts) {
   return recipe;
 }
 
-// REQ-198 — Day assignment across farm working days.
+// sprays-spread-across-farm-working-days — Day assignment across farm working days.
 // Source of truth for the working-day pool: window.Nutrition.FARM_WORKING_DAYS
 // (nutrition/spec.md § farm-working-days). Currently ['Mon','Tue','Wed','Thu','Fri'].
 // Pure: returns the array of weekday strings for a given sprayCount.
@@ -288,7 +288,7 @@ function foliarDaysForSprayCount(sprayCount) {
   return indices.map(function(i) { return days[i]; });
 }
 
-// REQ-195 / REQ-197 / REQ-198 — strategy aggregator. Calls
+// strategy-is-independent-recipes / model-computed-spray-count / sprays-spread-across-farm-working-days — strategy aggregator. Calls
 // computeFoliarRecipeForGap per recipe definition in data.js, then maps
 // sprayCount → days. Today only the oligo recipe is wired (Ca recipe
 // data.js entry gated on PO).
@@ -315,7 +315,7 @@ function computeFoliarStrategy(stage, gap, opts) {
 // Public API for the tomate foliar-strategy model.
 //
 // Spec:    nutrition/tomato/foliar-strategy/spec.md
-// REQ-103: this namespace exists at runtime with the keys below.
+// public-api-namespace: this namespace exists at runtime with the keys below.
 //
 // Consumers (Bilan supply chain via calculateNutritionSupply, future yucca-decision
 // drift gauge) should reach for
@@ -327,46 +327,46 @@ window.FoliarRecipeTomato = {
   // call so a future bed-reconfiguration through TOMATO_NUMBER_BEDS /
   // TOMATO_BED_AREA flows here automatically.
   get AREA_M2() { return TOMATO_NUMBER_BEDS * TOMATO_BED_AREA; },
-  // Coverage % without surfactant (REQ-101 default). 0.30, cert 3.
+  // Coverage % without surfactant (coverage-discount-on-delivery default). 0.30, cert 3.
   FOLIAR_COVERAGE_DEFAULT:    FOLIAR_COVERAGE_DEFAULT,
   // Coverage % with yucca (cert 3). Consumed when surfactant=true.
   FOLIAR_COVERAGE_WITH_YUCCA: FOLIAR_COVERAGE_WITH_YUCCA,
-  // Ca-recipe coverage constants (REQ-101 § Ca recipe). Half-of-sulfate
+  // Ca-recipe coverage constants (coverage-discount-on-delivery § Ca recipe). Half-of-sulfate
   // at each surfactant state; cert 2. Unconsumed today (Ca recipe data.js
   // entry gated on PO) — exposed so the half-of-sulfate invariant is
   // visible at the namespace contract layer.
   FOLIAR_COVERAGE_CA_NO_SURFACTANT,
   FOLIAR_COVERAGE_CA_WITH_SURFACTANT,
-  // Per-element efficiency (REQ-157) — default-regime map (surfactant=false).
+  // Per-element efficiency (channel-efficiency-capability-map) — default-regime map (surfactant=false).
   // Cert 3. Returns 0.27 uniform for Mn/Zn/Cu/Fe; B absent (single-channel
-  // via fertigation, REQ-061); Mo absent (retired from foliar 2026-05-16,
-  // REQ-061 carve-out). Caller-friendly for code that doesn't thread the
+  // via fertigation, replenishment-cascade-earliest-first); Mo absent (retired from foliar 2026-05-16,
+  // replenishment-cascade-earliest-first carve-out). Caller-friendly for code that doesn't thread the
   // surfactant lever.
   efficiency:                 FOLIAR_EFFICIENCY_AT_CURRENT_CONDITIONS,
-  // REQ-170 — surfactant-aware efficiency. Function returning the
+  // surfactant-aware-efficiency-map — surfactant-aware efficiency. Function returning the
   // per-element map; surfactant=true flips coverage 0.30 → 0.80 → uniform
   // value 0.27 → 0.72 across Mn/Zn/Cu/Fe. Cert 3. Consumers that thread
   // the Block 5 surfactant lever call this; static .efficiency stays for
   // back-compat with the default regime.
   efficiencyFor:              foliarEfficiency,
-  // REQ-115 — per-element burn cap base (g per 15 L master tank). Cert 3 for
+  // gap-maximizing-recipe — per-element burn cap base (g per 15 L master tank). Cert 3 for
   // Mn/Zn/Fe/Mo/B (extension mid-band); cert 2 for Cu (Décembre-internal,
   // non-transferable).
   BURN_CAP_BASE_G,
-  // REQ-115 — per-element burn cap (surfactant has no effect; see learnings.md).
+  // gap-maximizing-recipe — per-element burn cap (surfactant has no effect; see learnings.md).
   burnCapG,
-  // REQ-115 — per-element min-dose floor map (g per 15 L master tank).
+  // gap-maximizing-recipe — per-element min-dose floor map (g per 15 L master tank).
   // Cu's 0.2 g is the load-bearing case (narrow toxicity); others at 0.5 g.
   MIN_DOSE_G_PER_ELEMENT,
-  // Delivery function (REQ-101 + REQ-103 + REQ-112).
+  // Delivery function (coverage-discount-on-delivery + public-api-namespace + supply-accepts-spray-count-surfactant).
   computeFoliarSupply,
-  // REQ-115 / REQ-116 — gap-maximizing recipe derivation.
+  // gap-maximizing-recipe / fp-strategy-live-derived — gap-maximizing recipe derivation.
   computeFoliarRecipeForGap,
-  // REQ-195 / REQ-197 / REQ-198 — multi-recipe weekly strategy aggregator.
+  // strategy-is-independent-recipes / model-computed-spray-count / sprays-spread-across-farm-working-days — multi-recipe weekly strategy aggregator.
   computeFoliarStrategy,
-  // REQ-116 — pure gap-chain wrapper consumed by the shell-side
+  // fp-strategy-live-derived — pure gap-chain wrapper consumed by the shell-side
   // contribution orchestrator. Lives in foliar-strategy/model/contribution.js;
-  // re-exported here so REQ-139's registry check resolves it under the
+  // re-exported here so subproject-namespace-sole-source's registry check resolves it under the
   // FoliarRecipeTomato namespace.
   deriveFoliarRecipeFromGap,
 };

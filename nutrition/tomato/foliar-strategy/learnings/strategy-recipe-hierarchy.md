@@ -6,7 +6,7 @@
 The foliar subproject was renamed `foliar-recipe/` → `foliar-strategy/`
 because today's model handles one tank's mix (Block 5 oligo)
 but Test 1 Path B adds a Ca recipe that **cannot share a tank
-with the oligo mix** (Ca²⁺ × SO₄²⁻ → gypsum, REQ-029). Two
+with the oligo mix** (Ca²⁺ × SO₄²⁻ → gypsum, in-tank-ksp-precipitation-guard). Two
 recipes per stage today; more later (biofungicide is the
 likely third).
 
@@ -18,7 +18,7 @@ the multi-recipe reality forced one of three shapes.
 
 | Shape | Result |
 |---|---|
-| **A. Sibling `foliar-ca-recipe/`** — one subproject per recipe | Cuticle coverage, surfactant ratio, REQ-029 incompatibility, leaf-tolerance cap are all *the same physics regardless of which ions are in the tank*. Forking two subprojects forces the physics to live in two places (or hoist to `nutrition/chemistry/`, then forks the model too). |
+| **A. Sibling `foliar-ca-recipe/`** — one subproject per recipe | Cuticle coverage, surfactant ratio, in-tank-ksp-precipitation-guard incompatibility, leaf-tolerance cap are all *the same physics regardless of which ions are in the tank*. Forking two subprojects forces the physics to live in two places (or hoist to `nutrition/chemistry/`, then forks the model too). |
 | **B. Rename to `foliar-strategy/` — one subproject, many recipes** | Domain shape: one strategy per crop, many recipes per strategy. Physics lives once. Model contract changes — every consumer sees a list where they saw a scalar. **Picked.** |
 | **C. Keep `foliar-recipe/`, accept term overload** | Directory name connotes "the foliar subproject"; domain term means "one tank's mix". Two senses of "recipe". Saves rename churn (~20-30 cross-refs); pays back daily in confusion. |
 

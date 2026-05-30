@@ -52,7 +52,7 @@ const RECIPE_HISTORY = [
     retired: '2026-05-28',
     recipe: 'STORED_RECIPE.tomato.{fertigation, sidedress, foliaire}',
     summary: 'Stratégie anti-botrytis T5 : Mg/K coupés (antagonisme Ca), borax remis, farine bump, spray B CaCl₂ ré-ajouté',
-    reason: 'Pivot stratégique : défense Ca contre botrytis + vigueur de la plante (farine ↑). (1) Fertigation T5 : MgSO₄ 2800 → 1000 g et K₂SO₄ 7000 → 5500 g — Mg et K en excès gênent l\'absorption racinaire du Ca (antagonisme cationique au membrane). Borax remis à 11 g (était retiré 2026-05-23) — B aide à la cicatrisation des lésions, bon contre la propagation botrytis. Cuve maître 170 L → 110 L sur cycle 5 jours (au lieu de 7) : assure que la dose hebdomadaire complète est livrée pendant les 5 premiers jours ; jours 6-7 fertigation à eau claire. Oligos Fe / Zn / Mn / Cu / Mo inchangés. (2) Sidedress T5 : Actisol 5-3-2 retiré (était déjà gaté par REQ-089 sur sol Ca-saturé — STORED s\'aligne désormais sur FP_RECIPE_T5) ; farine de plumes 1341 → 2000 g par planche pour vigueur additionnelle. (3) Foliaire : spray B CaCl₂·2H₂O 100 g / 15 L réintroduit (cible REQ-025 burn cap 0,67 %), 2×/semaine, sans surfactant — coverage cuticulaire ~0.15, livraison ~17 mg Ca/m²/sem, bypass des obstacles racinaires de Ca pour défense botrytis. Source CaCl₂ vérifiée Ecocert (était la raison du retrait 2026-05-06). Modèle Ca recipe (data.js + computeFoliarSupply) reste gated/todo — STORED audit-trail ouvert avant le pipeline de rendu. T1-T4 inchangés sur les trois canaux — pivot appliqué seulement au stage courant T5.',
+    reason: 'Pivot stratégique : défense Ca contre botrytis + vigueur de la plante (farine ↑). (1) Fertigation T5 : MgSO₄ 2800 → 1000 g et K₂SO₄ 7000 → 5500 g — Mg et K en excès gênent l\'absorption racinaire du Ca (antagonisme cationique au membrane). Borax remis à 11 g (était retiré 2026-05-23) — B aide à la cicatrisation des lésions, bon contre la propagation botrytis. Cuve maître 170 L → 110 L sur cycle 5 jours (au lieu de 7) : assure que la dose hebdomadaire complète est livrée pendant les 5 premiers jours ; jours 6-7 fertigation à eau claire. Oligos Fe / Zn / Mn / Cu / Mo inchangés. (2) Sidedress T5 : Actisol 5-3-2 retiré (était déjà gaté par ca-aware-product-gate sur sol Ca-saturé — STORED s\'aligne désormais sur FP_RECIPE_T5) ; farine de plumes 1341 → 2000 g par planche pour vigueur additionnelle. (3) Foliaire : spray B CaCl₂·2H₂O 100 g / 15 L réintroduit (cible foliar-ce-under-burn-cap burn cap 0,67 %), 2×/semaine, sans surfactant — coverage cuticulaire ~0.15, livraison ~17 mg Ca/m²/sem, bypass des obstacles racinaires de Ca pour défense botrytis. Source CaCl₂ vérifiée Ecocert (était la raison du retrait 2026-05-06). Modèle Ca recipe (data.js + computeFoliarSupply) reste gated/todo — STORED audit-trail ouvert avant le pipeline de rendu. T1-T4 inchangés sur les trois canaux — pivot appliqué seulement au stage courant T5.',
     replacedBy: 'STORED_RECIPE.tomato.fertigation.T5 = { mgSulfate: 1000, kSulfate: 5500, feSulfate: 20, znSulfate: 4, mnSulfate: 7, cuSulfate: 1, borax: 11, naMolybdate: 1 } (cuve 110 L / 5 jours) ; STORED_RECIPE.tomato.sidedress.T5 = { actisol_g: 0, farine_g: 2000 } ; STORED_RECIPE.tomato.foliaire.B = [{ name: \'CaCl₂·2H₂O\', master: \'100 g\', note: \'Ecocert vérifié ; 2×/sem ; sans surfactant — coverage 0.15\' }].',
     fullSnapshot: {
       fertigation: {
@@ -123,7 +123,7 @@ const RECIPE_HISTORY = [
     snapshot: {
       structure: 'const TOMATO_STAGES = { T1: computeStageRecipe(T1), ..., T5: computeStageRecipe(T5) }',
     },
-    reason: 'Vestigial indirection from mass-balance refactor — redundant with computeStageRecipe(). Made REQ-016 (stored vs FP drift) meaningless because stored = computed by construction. Path A cleanup: drop the const, call the function directly, retire REQ-016.',
+    reason: 'Vestigial indirection from mass-balance refactor — redundant with computeStageRecipe(). Made the stored-vs-FP-drift check meaningless because stored = computed by construction. Path A cleanup: drop the const, call the function directly, retire the drift check.',
     replacedBy: 'Direct calls to computeStageRecipe(stage) at every reader site.',
   },
   {
@@ -167,7 +167,7 @@ const RECIPE_HISTORY = [
     recipe: 'FOLIAR.tomato.B (CaCl₂ anti-BER spray)',
     summary: 'Spray B (CaCl₂ anti-BER) retiré',
     snapshot: { product: 'CaCl₂·2H₂O 100 g per 15 L spray, even-week alternation' },
-    reason: 'Teris industrial-grade Ecocert listing not verified (audit Finding 9, REQ-002). BER prevention now via ventilation + humidity management.',
+    reason: 'Teris industrial-grade Ecocert listing not verified (audit Finding 9, ecocert-only-products). BER prevention now via ventilation + humidity management.',
     replacedBy: 'Climate control protocol on Climat page',
   },
   {

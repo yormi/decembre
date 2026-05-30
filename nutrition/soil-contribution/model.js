@@ -1,7 +1,7 @@
 // Public API for the soil-contribution model.
 //
 // Spec:    nutrition/soil-contribution/spec.md
-// REQ-143: this namespace exists at runtime with the keys below.
+// public-api-on-soil-contribution-namespace: this namespace exists at runtime with the keys below.
 //
 // Consumers (Bilan UI Block 2, future bank-trajectory + recipe-derivation
 // surfaces) MUST reach for `window.SoilContribution` instead of the bare

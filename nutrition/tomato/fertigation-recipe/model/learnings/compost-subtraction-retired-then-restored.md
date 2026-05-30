@@ -2,7 +2,7 @@
 
 ## Compost subtraction in K/Mg mass-balance — retired 2026-05-12, restored 2026-05-15
 
-REQ-098 amended 2026-05-12 to drop compost release from K/Mg mass-balance: `computeStageRecipe(stage)` replenished FULL plant offtake (fruit export + biomass), sidedress credited on K only, Mg pure offtake. Compost contribution tracked separately as soil-bank input in `nutrition/compost-contribution/spec.md`. Reverted 2026-05-15 (see B1-REV cycle above). Prior formula preserved for audit + future re-evaluation.
+mass-balance-derivation amended 2026-05-12 to drop compost release from K/Mg mass-balance: `computeStageRecipe(stage)` replenished FULL plant offtake (fruit export + biomass), sidedress credited on K only, Mg pure offtake. Compost contribution tracked separately as soil-bank input in `nutrition/compost-contribution/spec.md`. Reverted 2026-05-15 (see B1-REV cycle above). Prior formula preserved for audit + future re-evaluation.
 
 ### Prior formula (with compost subtraction)
 
@@ -58,7 +58,7 @@ function computeStageRecipe(stage) {
 
 2026-05-07 framing comment ("COMPOST IS NOT SUBTRACTED") expressed policy direction: replenish full offtake, treat compost as margin-of-safety bank. Intent: avoid silent under-feeding when compost ages out (Mg cert 1-2, no label data, finite 18-24 mo).
 
-Implementation lagged 2026-05-07 → 2026-05-12 — code still subtracted compost. Downstream consumers (Block 7 stored-vs-FP gauge, `calcNutrSupply` fp mode, REQ-013/014 supply bounds, REQ-024 predictedCE) calibrated against WITH-subtraction values:
+Implementation lagged 2026-05-07 → 2026-05-12 — code still subtracted compost. Downstream consumers (Block 7 stored-vs-FP gauge, `calcNutrSupply` fp mode, under-fert-guard/luxury-feeding-guard supply bounds, predicted-ce-within-crop-stage-band predictedCE) calibrated against WITH-subtraction values:
 
 - T5 K: offtake 6 000 − sidedress 0 − compost 400 = 5 600 mg/m²/wk → K₂SO₄ 5 167 g (matched PA Taillon anchor by construction).
 - T5 Mg: offtake 855 − compost 500 = 355 mg/m²/wk → MgSO₄·7H₂O 1 379 g (matched PA Taillon anchor by construction).
@@ -67,8 +67,8 @@ Asymmetry with `computeStageSidedress` (subtracts compost for N) was intentional
 
 ### Reconciliation outcome (2026-05-12)
 
-Drift-period plan ("bundle no-compost-subtraction with PA Taillon refit") was superseded: REQ-098 amended to remove subtraction in spec + `calc.js`; PA Taillon `FP_RECIPE_T5.fertigation` anchor (5 167 / 1 379) kept fixed. Drift between bare mass-balance output (5 322 / 3 319 at T5) and anchor framed as normal field correction at Block 7 gauge.
+Drift-period plan ("bundle no-compost-subtraction with PA Taillon refit") was superseded: mass-balance-derivation amended to remove subtraction in spec + `calc.js`; PA Taillon `FP_RECIPE_T5.fertigation` anchor (5 167 / 1 379) kept fixed. Drift between bare mass-balance output (5 322 / 3 319 at T5) and anchor framed as normal field correction at Block 7 gauge.
 
 ### Why this is preserved
 
-Compost-subtraction policy carried calibration weight against REQ-014 supply bound (T4/T5 Mg), REQ-024 predictedCE (T2), and PA Taillon T5 anchor's mass-balance correspondence. If future tissue data motivates re-introducing an explicit compost credit, prior formula + relationships above are the starting point. Re-introduction would require: (a) tissue Mg panels confirming luxury accumulation under full-offtake policy, (b) refresh of REQ-014 / REQ-024 calibration against restored formula, (c) refit (or explicit drift framing) of PA Taillon T5 anchor.
+Compost-subtraction policy carried calibration weight against luxury-feeding-guard supply bound (T4/T5 Mg), predicted-ce-within-crop-stage-band predictedCE (T2), and PA Taillon T5 anchor's mass-balance correspondence. If future tissue data motivates re-introducing an explicit compost credit, prior formula + relationships above are the starting point. Re-introduction would require: (a) tissue Mg panels confirming luxury accumulation under full-offtake policy, (b) refresh of luxury-feeding-guard / predicted-ce-within-crop-stage-band calibration against restored formula, (c) refit (or explicit drift framing) of PA Taillon T5 anchor.

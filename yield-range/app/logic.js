@@ -1,8 +1,9 @@
 // ─── yield-range/app/logic.js — Rendement semis admin page ─
 //
-// Spec: yield-range/app/user-stories.md (REQ-119 two inputs · REQ-120 capacité
-// plafond display · REQ-121 chart with axis labels + reference line +
-// marker). Math contract: yield-range/spec.md (REQ-112 to REQ-118).
+// Spec: yield-range/app/user-stories.md (two inputs · capacité
+// plafond display · chart with axis labels + reference line +
+// marker). Math contract: yield-range/spec.md (canopy-cap-is-ceiling to
+// trajectory-output-shape).
 //
 // State held in the DOM (no module-level vars). Page entry: buildYieldRange.
 // setupYieldRangeInputs is idempotent — wires listeners once across re-entries.
@@ -27,7 +28,7 @@ function setupYieldRangeInputs() {
     });
   });
   // DEL hours slider — both 'input' (live drag) and 'change' (commit on
-  // release). REQ-121 chart re-renders on every input change.
+  // release). Chart re-renders on every input change.
   const slider = document.getElementById('yr-led-hours');
   if (slider) {
     slider.addEventListener('input', renderYieldRange);
@@ -49,9 +50,9 @@ function renderYieldRange() {
   if (labelElement) labelElement.textContent = `${ledHours} h`;
 
   // Run the math model. The yield-range model accepts a two-regime input
-  // set; the legacy admin page (REQ-119) exposes only plateauSize + ledHours,
+  // set; the legacy admin page exposes only plateauSize + ledHours,
   // so the remaining inputs are wired here from page-level defaults until
-  // REQ-119 is extended to surface them. nurseryDays/fieldDays/density/areas
+  // the page is extended to surface them. nurseryDays/fieldDays/density/areas
   // come from the operator inputs once that spec lands; PO-routing follow-up.
   const result = window.YieldRange.predictNurseryYield({
     plateauSize,
@@ -67,11 +68,11 @@ function renderYieldRange() {
   const trajectory = result.trajectory;
   const windowDays = trajectory[trajectory.length - 1].day;
 
-  // REQ-120: capacité plafond display.
+  // Capacité plafond display.
   const capEl = document.getElementById('yr-canopy-cap');
   if (capEl) capEl.textContent = canopyCapG.toFixed(0);
 
-  // REQ-133: daysToTransplantPotential rendered inline next to the cap.
+  // daysToTransplantPotential rendered inline next to the cap.
   const daysElement = document.getElementById('yr-days-to-potential');
   if (daysElement) {
     daysElement.textContent = (daysToTransplantPotential != null)
@@ -79,14 +80,14 @@ function renderYieldRange() {
       : `· pic non atteint dans la fenêtre de ${windowDays} jours`;
   }
 
-  // REQ-132: clickable bench-DLI display. Recompute via the model API so
+  // Clickable bench-DLI display. Recompute via the model API so
   // the page tracks any future change in the DLI formula without a UI edit.
-  // REQ-134: page-card value rounded to integer for quick-read; the modal
+  // Page-card value rounded to integer for quick-read; the modal
   // context line keeps one decimal for transparency.
-  // REQ-135: text colour reflects the f_light response zone at the current
+  // Text colour reflects the f_light response zone at the current
   // bench DLI (green optimum / yellow ramp / red stalled or saturated).
   // Breakpoints sourced from F_LIGHT_BREAKPOINTS via f_light(); no
-  // hardcoded DLI thresholds in the UI (REQ-060).
+  // hardcoded DLI thresholds in the UI (narrative-derived-from-live-data).
   const dliElement = document.getElementById('yr-dli-value');
   const dliBench = window.YieldRange.dliBenchAvg(ledHours);
   if (dliElement) {
@@ -101,14 +102,14 @@ function renderYieldRange() {
     dliElement.style.color = dliColor;
   }
 
-  // REQ-121: chart re-render. Replace SVG markup wholesale on each call —
+  // Chart re-render. Replace SVG markup wholesale on each call —
   // simplest approach; trajectory is 50 points so cost is negligible.
   const chartElement = document.getElementById('yr-chart-container');
   if (chartElement) chartElement.innerHTML = renderYieldRangeChart(trajectory, canopyCapG, daysToTransplantPotential);
 }
 
-// REQ-132: f_light response modal. Auto-renders the breakpoint table from
-// window.YieldRange.F_LIGHT_BREAKPOINTS (REQ-060 — no hardcoded duplicate
+// f_light response modal. Auto-renders the breakpoint table from
+// window.YieldRange.F_LIGHT_BREAKPOINTS (narrative-derived-from-live-data — no hardcoded duplicate
 // of the breakpoint numeric values in HTML). Descriptive labels for each
 // row are kept here since they don't live in data.js.
 function openDliModal() {
@@ -127,7 +128,7 @@ function openDliModal() {
   const dliBench = window.YieldRange.dliBenchAvg(ledHours);
 
   // Per-plant DLI at full canopy bind (d ≥ 28, packed-canopy floor 0.40 per
-  // REQ-116). Surfaced for context — operator can see what fraction of
+  // packed-canopy-spacing). Surfaced for context — operator can see what fraction of
   // bench DLI an average plant actually receives once canopies overlap.
   const dliPerPlantAtBind = dliBench * 0.40;
 
@@ -138,7 +139,7 @@ function openDliModal() {
   //   bp[3]→[4]: saturation ramp 1.0 → 0.7
   //   bp[4]→[5]: saturation floor (0.7)
   // The labels match the f_light comment block in data.js and the spec table
-  // in yield-range/app/user-stories.md REQ-132.
+  // in yield-range/app/user-stories.md.
   const fmtX = v => Number.isInteger(v) ? `${v}` : v.toFixed(1);
   const fmtY = v => v.toFixed(1).replace('.', ',');
   const rows = [];
@@ -186,7 +187,7 @@ document.addEventListener('keydown', (e) => {
 
 // renderYieldRangeChart(trajectory, canopyCapG, daysToTransplantPotential) → SVG markup string.
 //
-// REQ-121 contract:
+// Chart contract:
 //   - x-axis labeled "Jours depuis germination" (range 0 to nurseryDays + fieldDays, integer, ticks every 7 days)
 //   - y-axis labeled "Poids tête (g)" (range 0 to canopyCapG × 1.1, auto-scale)
 //   - polyline series for trajectory
@@ -242,7 +243,7 @@ function renderYieldRangeChart(trajectory, canopyCapG, daysToTransplantPotential
   svg += `<line x1="${ML}" y1="${MT + plotH}" x2="${ML + plotW}" y2="${MT + plotH}" stroke="${axisColor}" stroke-width="1"/>`;
   svg += `<line x1="${ML}" y1="${MT}" x2="${ML}" y2="${MT + plotH}" stroke="${axisColor}" stroke-width="1"/>`;
 
-  // Horizontal reference line at canopyCapG (REQ-121). Dashed, with a
+  // Horizontal reference line at canopyCapG. Dashed, with a
   // "Plafond" label at the right edge.
   const yCap = y(canopyCapG);
   svg += `<line x1="${ML}" y1="${yCap}" x2="${ML + plotW}" y2="${yCap}" stroke="${referenceLineColor}" stroke-width="1" stroke-dasharray="4 3"/>`;
@@ -252,7 +253,7 @@ function renderYieldRangeChart(trajectory, canopyCapG, daysToTransplantPotential
   const points = trajectory.map(p => `${x(p.day)},${y(p.weight_g)}`).join(' ');
   svg += `<polyline points="${points}" fill="none" stroke="${seriesColor}" stroke-width="2"/>`;
 
-  // Vertical marker at daysToTransplantPotential (REQ-121) — or empty-state text.
+  // Vertical marker at daysToTransplantPotential — or empty-state text.
   if (daysToTransplantPotential != null) {
     const xd = x(daysToTransplantPotential);
     svg += `<line x1="${xd}" y1="${MT}" x2="${xd}" y2="${MT + plotH}" stroke="${markerColor}" stroke-width="1" stroke-dasharray="3 3"/>`;
@@ -262,9 +263,9 @@ function renderYieldRangeChart(trajectory, canopyCapG, daysToTransplantPotential
   }
 
   // Axis titles.
-  // X-axis title — REQ-121 "Jours depuis germination".
+  // X-axis title — "Jours depuis germination".
   svg += `<text x="${ML + plotW / 2}" y="${H - 6}" text-anchor="middle" font-size="12" fill="${axisColor}" font-weight="600">Jours depuis germination</text>`;
-  // Y-axis title — REQ-121 "Poids tête (g)". Rotated 90° at left margin.
+  // Y-axis title — "Poids tête (g)". Rotated 90° at left margin.
   svg += `<text x="${14}" y="${MT + plotH / 2}" text-anchor="middle" font-size="12" fill="${axisColor}" font-weight="600" transform="rotate(-90 14 ${MT + plotH / 2})">Poids tête (g)</text>`;
 
   svg += `</svg>`;

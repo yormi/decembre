@@ -65,7 +65,7 @@ Direct (state in turn, do it, changelog line):
 
 Everything else: propose, wait, route.
 
-> **F4 proposed restructure** — move REQ-072 from `yield-range/spec.md` to `yield-range/app/user-stories.md` (page-level, not domain). Side effects: update verifier pattern, add cross-ref. Confirm and I'll execute; PO session re-reads both after.
+> **F4 proposed restructure** — move the entry from `yield-range/spec.md` to `yield-range/app/user-stories.md` (page-level, not domain). Side effects: update verifier pattern, add cross-ref. Confirm and I'll execute; PO session re-reads both after.
 
 ## Triage end of walk
 

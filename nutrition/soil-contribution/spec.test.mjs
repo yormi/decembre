@@ -1,19 +1,19 @@
 // Tests for nutrition/soil-contribution/spec.md.
 //
-// One node:test file pinning every REQ in the subproject's spec:
-//   REQ-140 — SOIL_BANK_MG_M2 is per-crop / per-element in mg/m².
-//   REQ-141 — Only SOIL_CONTRIBUTING elements (P, Ca) participate in the
+// One node:test file pinning every spec entry in the subproject:
+//   bank-per-crop-mehlich3-reservoir — SOIL_BANK_MG_M2 is per-crop / per-element in mg/m².
+//   only-ca-p-participate-in-gap-chain — Only SOIL_CONTRIBUTING elements (P, Ca) participate in the
 //             gap chain; others return 0; contributing elements clamp at
 //             bank when demand exceeds reservoir.
-//   REQ-142 — monthsToDepletion = bank / (SME × transpiration × WEEKS_PER_MONTH);
+//   months-to-depletion-clamped-by-peak-demand — monthsToDepletion = bank / (SME × transpiration × WEEKS_PER_MONTH);
 //             returns null when any operand is missing or zero; defined
 //             regardless of CONTRIBUTING.
-//   REQ-143 — window.SoilContribution exposes the documented key list +
+//   public-api-on-soil-contribution-namespace — window.SoilContribution exposes the documented key list +
 //             function types.
 //   pourquoi-modal-strings-owned-here — Pourquoi modal interpretation strings (verifier-only — bytes
 //             owned by spec, consumed by renderSpec in app/index.html;
 //             coverage handled by scripts/check-recipes.mjs pourquoi-modal-strings-owned-here matcher).
-//   REQ-164 — SME_SOIL_SOLUTION_PPM + TRANSPIRATION_L_PER_M2_PER_WEEK
+//   sme-soil-solution-wired-per-crop-element — SME_SOIL_SOLUTION_PPM + TRANSPIRATION_L_PER_M2_PER_WEEK
 //             cover every banked crop × every gap-grid element.
 //
 // Loaded source (data.js + calc.js + render.js + model.js) runs inside
@@ -30,18 +30,18 @@ const GRID_ELEMENTS = ['N', 'P', 'K', 'Ca', 'Mg', 'Fe', 'Mn', 'Zn', 'B', 'Cu', '
 const WEEKS_PER_MONTH = 52 / 12;
 
 // ────────────────────────────────────────────────────────────────────────
-// REQ-140 — Bank is a per-crop Mehlich-3 reservoir in mg/m²
+// bank-per-crop-mehlich3-reservoir — Bank is a per-crop Mehlich-3 reservoir in mg/m²
 // ────────────────────────────────────────────────────────────────────────
 
-describe('REQ-140 — SOIL_BANK_MG_M2 per-crop / per-element in mg/m²', () => {
-  test('REQ-140 — namespace exposes BANK_MG_M2 as a non-empty object', () => {
+describe('bank-per-crop-mehlich3-reservoir — SOIL_BANK_MG_M2 per-crop / per-element in mg/m²', () => {
+  test('bank-per-crop-mehlich3-reservoir — namespace exposes BANK_MG_M2 as a non-empty object', () => {
     assert.equal(typeof namespace.BANK_MG_M2, 'object');
     assert.ok(namespace.BANK_MG_M2 !== null);
     assert.ok(Object.keys(namespace.BANK_MG_M2).length >= 1,
       'expected at least one crop entry');
   });
 
-  test('REQ-140 — tomato bed wired with P, K, Ca, Mg ≥ 1000 mg/m²', () => {
+  test('bank-per-crop-mehlich3-reservoir — tomato bed wired with P, K, Ca, Mg ≥ 1000 mg/m²', () => {
     const tomato = namespace.BANK_MG_M2.tomato;
     assert.ok(tomato, 'tomato bank entry missing');
     for (const element of ['P', 'K', 'Ca', 'Mg']) {
@@ -52,7 +52,7 @@ describe('REQ-140 — SOIL_BANK_MG_M2 per-crop / per-element in mg/m²', () => {
     }
   });
 
-  test('REQ-140 — extended coverage: tomato + lettuce both expose 10 of 11 gap-grid elements (Mo absent — not on Mehlich-3 panel)', () => {
+  test('bank-per-crop-mehlich3-reservoir — extended coverage: tomato + lettuce both expose 10 of 11 gap-grid elements (Mo absent — not on Mehlich-3 panel)', () => {
     const expected = ['N', 'P', 'K', 'Ca', 'Mg', 'Fe', 'Mn', 'Zn', 'B', 'Cu'];
     const moAbsent = 'Mo';
     for (const crop of ['tomato', 'lettuce']) {
@@ -60,16 +60,16 @@ describe('REQ-140 — SOIL_BANK_MG_M2 per-crop / per-element in mg/m²', () => {
       assert.ok(bank, `${crop} bank entry missing`);
       for (const element of expected) {
         assert.equal(typeof bank[element], 'number',
-          `${crop}.${element} not numeric (REQ-140 follow-up 2026-05-16 extends to 10 elements)`);
+          `${crop}.${element} not numeric (follow-up 2026-05-16 extends to 10 elements)`);
         assert.ok(bank[element] > 0,
           `${crop}.${element}=${bank[element]} must be positive (DL ceilings allowed via P-04)`);
       }
       assert.equal(bank[moAbsent], undefined,
-        `${crop}.Mo should be absent (Mo unmeasured on Mehlich-3, routes via fertigation per REQ-061)`);
+        `${crop}.Mo should be absent (Mo unmeasured on Mehlich-3, routes via fertigation per replenishment-cascade-earliest-first)`);
     }
   });
 
-  test('REQ-140 — lettuce bed wired with P, K, Ca, Mg ≥ 1000 mg/m²', () => {
+  test('bank-per-crop-mehlich3-reservoir — lettuce bed wired with P, K, Ca, Mg ≥ 1000 mg/m²', () => {
     const lettuce = namespace.BANK_MG_M2.lettuce;
     assert.ok(lettuce, 'lettuce bank entry missing');
     for (const element of ['P', 'K', 'Ca', 'Mg']) {
@@ -82,16 +82,16 @@ describe('REQ-140 — SOIL_BANK_MG_M2 per-crop / per-element in mg/m²', () => {
 });
 
 // ────────────────────────────────────────────────────────────────────────
-// REQ-141 — Only CONTRIBUTING elements participate in the gap chain
+// only-ca-p-participate-in-gap-chain — Only CONTRIBUTING elements participate in the gap chain
 // ────────────────────────────────────────────────────────────────────────
 
-describe('REQ-141 — gap-chain participation gated by CONTRIBUTING', () => {
-  test('REQ-141 — CONTRIBUTING = { P: true, Ca: true }', () => {
+describe('only-ca-p-participate-in-gap-chain — gap-chain participation gated by CONTRIBUTING', () => {
+  test('only-ca-p-participate-in-gap-chain — CONTRIBUTING = { P: true, Ca: true }', () => {
     assert.equal(namespace.CONTRIBUTING.P, true);
     assert.equal(namespace.CONTRIBUTING.Ca, true);
   });
 
-  test('REQ-141 — non-contributing elements return 0 even with bank data', () => {
+  test('only-ca-p-participate-in-gap-chain — non-contributing elements return 0 even with bank data', () => {
     // K and Mg have measured banks but are routed via fertigation; soil-bank
     // path must return 0 to avoid double-count.
     for (const element of ['K', 'Mg']) {
@@ -101,7 +101,7 @@ describe('REQ-141 — gap-chain participation gated by CONTRIBUTING', () => {
     }
   });
 
-  test('REQ-141 — elements without bank data return 0', () => {
+  test('only-ca-p-participate-in-gap-chain — elements without bank data return 0', () => {
     // N and micros are not measured on Mehlich-3.
     for (const element of ['N', 'Fe', 'Mn', 'Zn', 'B', 'Cu', 'Mo']) {
       const result = namespace.weeklyContribution('tomato', element, 1000);
@@ -110,12 +110,12 @@ describe('REQ-141 — gap-chain participation gated by CONTRIBUTING', () => {
     }
   });
 
-  test('REQ-141 — contributing element returns demand when bank ≥ demand', () => {
+  test('only-ca-p-participate-in-gap-chain — contributing element returns demand when bank ≥ demand', () => {
     const result = namespace.weeklyContribution('tomato', 'Ca', 5000);
     assert.equal(result, 5000);
   });
 
-  test('REQ-141 — contributing element clamps at bank when demand > bank', () => {
+  test('only-ca-p-participate-in-gap-chain — contributing element clamps at bank when demand > bank', () => {
     const bankCa = namespace.BANK_MG_M2.tomato.Ca;
     const huge = bankCa + 1e9;
     const result = namespace.weeklyContribution('tomato', 'Ca', huge);
@@ -123,21 +123,21 @@ describe('REQ-141 — gap-chain participation gated by CONTRIBUTING', () => {
       `clamp expected at ${bankCa}, got ${result}`);
   });
 
-  test('REQ-141 — non-positive demand returns 0', () => {
+  test('only-ca-p-participate-in-gap-chain — non-positive demand returns 0', () => {
     assert.equal(namespace.weeklyContribution('tomato', 'Ca', 0), 0);
     assert.equal(namespace.weeklyContribution('tomato', 'Ca', -10), 0);
   });
 
-  test('REQ-141 — unknown crop returns 0', () => {
+  test('only-ca-p-participate-in-gap-chain — unknown crop returns 0', () => {
     assert.equal(namespace.weeklyContribution('mars', 'Ca', 1000), 0);
   });
 });
 
 // ────────────────────────────────────────────────────────────────────────
-// REQ-142 — Months-to-depletion is SME-derived, not demand-derived
+// months-to-depletion-clamped-by-peak-demand — Months-to-depletion is SME-derived, not demand-derived
 // ────────────────────────────────────────────────────────────────────────
 
-describe('REQ-142 — monthsToDepletion = bank ÷ min(mass-flow, peak-demand) × WEEKS_PER_MONTH; null for turnover-bound', () => {
+describe('months-to-depletion-clamped-by-peak-demand — monthsToDepletion = bank ÷ min(mass-flow, peak-demand) × WEEKS_PER_MONTH; null for turnover-bound', () => {
   // Plant peak weekly demand mirrors data.js PLANT_PEAK_WEEKLY_DEMAND_MG_PER_M2;
   // re-declared here so the test file is self-contained and tracks the source
   // values. Update both in lockstep when plant-needs refinements shift demand.
@@ -154,12 +154,12 @@ describe('REQ-142 — monthsToDepletion = bank ÷ min(mass-flow, peak-demand) ×
     return bank / (uptake * WEEKS_PER_MONTH);
   };
 
-  test('REQ-142 — function signature takes (crop, element) only — no demand argument', () => {
+  test('months-to-depletion-clamped-by-peak-demand — function signature takes (crop, element) only — no demand argument', () => {
     assert.equal(namespace.monthsToDepletion.length, 2,
       `monthsToDepletion arity = ${namespace.monthsToDepletion.length} (expected 2: crop, element)`);
   });
 
-  test('REQ-142 — tomato P → ~780 mois (~65 ans; lockout, clamp inert)', () => {
+  test('months-to-depletion-clamped-by-peak-demand — tomato P → ~780 mois (~65 ans; lockout, clamp inert)', () => {
     // Mass-flow 16.5 mg/m²/wk < peak demand 660 → clamp no-op.
     const expected = expectedRunway('tomato', 'P');
     const got = namespace.monthsToDepletion('tomato', 'P');
@@ -169,7 +169,7 @@ describe('REQ-142 — monthsToDepletion = bank ÷ min(mass-flow, peak-demand) ×
       `tomato P runway ${(got / 12).toFixed(1)} years out of [60, 70]`);
   });
 
-  test('REQ-142 — tomato Ca → ~113 mois (~9.4 ans; clamp binds at peak demand)', () => {
+  test('months-to-depletion-clamped-by-peak-demand — tomato Ca → ~113 mois (~9.4 ans; clamp binds at peak demand)', () => {
     // Mass-flow 3582 mg/m²/wk > peak demand 2250 → clamp binds at 2250.
     // Pre-clamp runway was 5.9 yr (mass-flow-bound); honest plant-drain
     // runway at peak demand is ~9.4 yr.
@@ -181,7 +181,7 @@ describe('REQ-142 — monthsToDepletion = bank ÷ min(mass-flow, peak-demand) ×
       `tomato Ca runway ${(got / 12).toFixed(1)} years out of [9.0, 10.0]`);
   });
 
-  test('REQ-142 — tomato Mg → clamp binds at peak demand 855', () => {
+  test('months-to-depletion-clamped-by-peak-demand — tomato Mg → clamp binds at peak demand 855', () => {
     // Mass-flow 1189.5 > peak 855 → clamp binds.
     const expected = expectedRunway('tomato', 'Mg');
     const got = namespace.monthsToDepletion('tomato', 'Mg');
@@ -192,7 +192,7 @@ describe('REQ-142 — monthsToDepletion = bank ÷ min(mass-flow, peak-demand) ×
       `tomato Mg runway ${got.toFixed(1)} mo out of [40, 50]`);
   });
 
-  test('REQ-142 — lettuce Ca → mass-flow binds (clamp inert; lettuce mass-flow < peak demand everywhere)', () => {
+  test('months-to-depletion-clamped-by-peak-demand — lettuce Ca → mass-flow binds (clamp inert; lettuce mass-flow < peak demand everywhere)', () => {
     const expected = expectedRunway('lettuce', 'Ca');
     const got = namespace.monthsToDepletion('lettuce', 'Ca');
     assert.ok(Math.abs(got - expected) < 1e-6,
@@ -200,7 +200,7 @@ describe('REQ-142 — monthsToDepletion = bank ÷ min(mass-flow, peak-demand) ×
     assert.ok(got > 0);
   });
 
-  test('REQ-142 — N returns null on both crops (turnover-bound)', () => {
+  test('months-to-depletion-clamped-by-peak-demand — N returns null on both crops (turnover-bound)', () => {
     // N is replenished by mineralization at quasi-steady-state; the
     // counterfactual bank-÷-uptake runway is not operationally meaningful.
     assert.equal(namespace.monthsToDepletion('tomato', 'N'), null,
@@ -209,7 +209,7 @@ describe('REQ-142 — monthsToDepletion = bank ÷ min(mass-flow, peak-demand) ×
       'lettuce N expected null — turnover-bound');
   });
 
-  test('REQ-142 — disabled rows (K, Mg) still expose numeric runway when bank + SME present', () => {
+  test('months-to-depletion-clamped-by-peak-demand — disabled rows (K, Mg) still expose numeric runway when bank + SME present', () => {
     const kMonths = namespace.monthsToDepletion('tomato', 'K');
     const mgMonths = namespace.monthsToDepletion('tomato', 'Mg');
     assert.equal(typeof kMonths, 'number');
@@ -218,14 +218,14 @@ describe('REQ-142 — monthsToDepletion = bank ÷ min(mass-flow, peak-demand) ×
     assert.ok(mgMonths > 0, `tomato Mg runway = ${mgMonths}`);
   });
 
-  test('REQ-142 — Mo returns null (unmeasured on Mehlich-3 panel)', () => {
+  test('months-to-depletion-clamped-by-peak-demand — Mo returns null (unmeasured on Mehlich-3 panel)', () => {
     for (const crop of ['tomato', 'lettuce']) {
       assert.equal(namespace.monthsToDepletion(crop, 'Mo'), null,
-        `${crop} Mo expected null (unmeasured on Mehlich-3, routes via fertigation per REQ-061)`);
+        `${crop} Mo expected null (unmeasured on Mehlich-3, routes via fertigation per replenishment-cascade-earliest-first)`);
     }
   });
 
-  test('REQ-140 (10-element extension) — every non-turnover banked element yields finite monthsToDepletion', () => {
+  test('bank-per-crop-mehlich3-reservoir (10-element extension) — every non-turnover banked element yields finite monthsToDepletion', () => {
     // N is turnover-bound (returns null by design); the other 9 banked
     // elements feed cleanly through monthsToDepletion on both wired crops.
     const banked9 = ['P', 'K', 'Ca', 'Mg', 'Fe', 'Mn', 'Zn', 'B', 'Cu'];
@@ -241,11 +241,11 @@ describe('REQ-142 — monthsToDepletion = bank ÷ min(mass-flow, peak-demand) ×
     assert.deepEqual(offenders, [], offenders.join('; '));
   });
 
-  test('REQ-142 — unknown crop returns null', () => {
+  test('months-to-depletion-clamped-by-peak-demand — unknown crop returns null', () => {
     assert.equal(namespace.monthsToDepletion('mars', 'Ca'), null);
   });
 
-  test('REQ-142 — extra arguments structurally ignored (regression: signature is (crop, element))', () => {
+  test('months-to-depletion-clamped-by-peak-demand — extra arguments structurally ignored (regression: signature is (crop, element))', () => {
     // The pre-2026-05-16 formula was bank / (demand × WEEKS_PER_MONTH). A
     // regression would re-introduce demand as a positional argument. Pin:
     // passing extra args is ignored and the clamped result holds.
@@ -257,10 +257,10 @@ describe('REQ-142 — monthsToDepletion = bank ÷ min(mass-flow, peak-demand) ×
 });
 
 // ────────────────────────────────────────────────────────────────────────
-// REQ-143 — Public API on window.SoilContribution
+// public-api-on-soil-contribution-namespace — Public API on window.SoilContribution
 // ────────────────────────────────────────────────────────────────────────
 
-describe('REQ-143 — window.SoilContribution public API surface', () => {
+describe('public-api-on-soil-contribution-namespace — window.SoilContribution public API surface', () => {
   const REQUIRED_KEYS = [
     'BANK_MG_M2',
     'CONTRIBUTING',
@@ -272,24 +272,24 @@ describe('REQ-143 — window.SoilContribution public API surface', () => {
     'renderGrid',
   ];
 
-  test('REQ-143 — namespace exists and is an object', () => {
+  test('public-api-on-soil-contribution-namespace — namespace exists and is an object', () => {
     assert.ok(window.SoilContribution, 'window.SoilContribution missing');
     assert.equal(typeof window.SoilContribution, 'object');
   });
 
-  test('REQ-143 — every documented key is present', () => {
+  test('public-api-on-soil-contribution-namespace — every documented key is present', () => {
     const missing = REQUIRED_KEYS.filter(key => namespace[key] == null);
     assert.deepEqual(missing, [],
       `missing keys: ${missing.join(', ')}`);
   });
 
-  test('REQ-143 — function-typed members are functions', () => {
+  test('public-api-on-soil-contribution-namespace — function-typed members are functions', () => {
     assert.equal(typeof namespace.weeklyContribution, 'function');
     assert.equal(typeof namespace.monthsToDepletion, 'function');
     assert.equal(typeof namespace.renderGrid, 'function');
   });
 
-  test('REQ-143 — scalar / object members typed correctly', () => {
+  test('public-api-on-soil-contribution-namespace — scalar / object members typed correctly', () => {
     assert.equal(typeof namespace.WEEKS_PER_MONTH, 'number');
     assert.equal(typeof namespace.BANK_MG_M2, 'object');
     assert.equal(typeof namespace.CONTRIBUTING, 'object');
@@ -297,17 +297,17 @@ describe('REQ-143 — window.SoilContribution public API surface', () => {
     assert.equal(typeof namespace.TRANSPIRATION_L_PER_M2_PER_WEEK, 'object');
   });
 
-  test('REQ-143 — WEEKS_PER_MONTH = 52 / 12', () => {
+  test('public-api-on-soil-contribution-namespace — WEEKS_PER_MONTH = 52 / 12', () => {
     assert.ok(Math.abs(namespace.WEEKS_PER_MONTH - 52 / 12) < 1e-9);
   });
 });
 
 // ────────────────────────────────────────────────────────────────────────
-// REQ-164 — SME + transpiration coverage contract
+// sme-soil-solution-wired-per-crop-element — SME + transpiration coverage contract
 // ────────────────────────────────────────────────────────────────────────
 
-describe('REQ-164 — SME + transpiration wired for every banked crop × gap-grid element', () => {
-  test('REQ-164 — SME_SOIL_SOLUTION_PPM has an entry for every banked crop', () => {
+describe('sme-soil-solution-wired-per-crop-element — SME + transpiration wired for every banked crop × gap-grid element', () => {
+  test('sme-soil-solution-wired-per-crop-element — SME_SOIL_SOLUTION_PPM has an entry for every banked crop', () => {
     const bankedCrops = Object.keys(namespace.BANK_MG_M2);
     const smeCrops = Object.keys(namespace.SME_SOIL_SOLUTION_PPM);
     const missing = bankedCrops.filter(crop => !smeCrops.includes(crop));
@@ -315,7 +315,7 @@ describe('REQ-164 — SME + transpiration wired for every banked crop × gap-gri
       `SME crops missing: ${missing.join(', ')}`);
   });
 
-  test('REQ-164 — every banked crop × gap-grid element has a positive SME value', () => {
+  test('sme-soil-solution-wired-per-crop-element — every banked crop × gap-grid element has a positive SME value', () => {
     const bankedCrops = Object.keys(namespace.BANK_MG_M2);
     const offenders = [];
     for (const crop of bankedCrops) {
@@ -330,7 +330,7 @@ describe('REQ-164 — SME + transpiration wired for every banked crop × gap-gri
     assert.deepEqual(offenders, [], offenders.join('; '));
   });
 
-  test('REQ-164 — TRANSPIRATION_L_PER_M2_PER_WEEK populated for every banked crop', () => {
+  test('sme-soil-solution-wired-per-crop-element — TRANSPIRATION_L_PER_M2_PER_WEEK populated for every banked crop', () => {
     const bankedCrops = Object.keys(namespace.BANK_MG_M2);
     const offenders = [];
     for (const crop of bankedCrops) {
@@ -342,14 +342,14 @@ describe('REQ-164 — SME + transpiration wired for every banked crop × gap-gri
     assert.deepEqual(offenders, [], offenders.join('; '));
   });
 
-  test('REQ-164 — tomato + lettuce both wired today', () => {
+  test('sme-soil-solution-wired-per-crop-element — tomato + lettuce both wired today', () => {
     assert.ok(namespace.SME_SOIL_SOLUTION_PPM.tomato);
     assert.ok(namespace.SME_SOIL_SOLUTION_PPM.lettuce);
     assert.ok(namespace.TRANSPIRATION_L_PER_M2_PER_WEEK.tomato > 0);
     assert.ok(namespace.TRANSPIRATION_L_PER_M2_PER_WEEK.lettuce > 0);
   });
 
-  test('REQ-164 — detection-limit ceilings recorded at DL value (Mn, Zn = 0.03 ppm)', () => {
+  test('sme-soil-solution-wired-per-crop-element — detection-limit ceilings recorded at DL value (Mn, Zn = 0.03 ppm)', () => {
     // Conservative ceiling: lab reports <0.03 → we store 0.03 (cert 2).
     // Negative values rejected; ceiling kept so the runway stays a
     // conservative lower bound. Pinning here so a future "use null instead"
@@ -367,16 +367,16 @@ describe('REQ-164 — SME + transpiration wired for every banked crop × gap-gri
 });
 
 // ────────────────────────────────────────────────────────────────────────
-// renderGrid — column count + row count (REQ-143 surface, REQ-162-adjacent)
+// renderGrid — column count + row count (public-api-on-soil-contribution-namespace surface, mois-depuisement-sme-runway-adjacent)
 // ────────────────────────────────────────────────────────────────────────
 //
-// REQ-162 (Mois d'épuisement on every row with reservoir data) is enforced
+// mois-depuisement-sme-runway (Mois d'épuisement on every row with reservoir data) is enforced
 // row-by-row by scripts/check-recipes.mjs against the live page DOM. The
 // helper-level check here only pins renderGrid's structural contract: a
 // 6-column header + 11 element rows in the documented order. Anything
 // finer-grained belongs to the page-level matcher.
 
-describe('renderGrid — structural contract (helper for REQ-143 / REQ-162)', () => {
+describe('renderGrid — structural contract (helper for public-api-on-soil-contribution-namespace / mois-depuisement-sme-runway)', () => {
   test('renderGrid — returns a string with one row per gap-grid element', () => {
     const zeros = Object.fromEntries(GRID_ELEMENTS.map(el => [el, 0]));
     const months = Object.fromEntries(GRID_ELEMENTS.map(el => [el, null]));

@@ -1,6 +1,6 @@
 // ─── yield-range/calc.js — pure functions for the two-regime yield model ─
 //
-// Spec: yield-range/spec.md (REQ-112..118, REQ-171..175).
+// Spec: yield-range/spec.md.
 // Constants: yield-range/data.js. Public API: yield-range/model.js.
 
 function piecewiseLinear(value, breakpoints) {
@@ -33,12 +33,12 @@ function dliBenchAvg(ledHours) {
   return DLI_SUN_GH_ANNUAL_AVG_QC + (LED_PPFD * ledHours * 3600) / 1e6;
 }
 
-// REQ-173: per-plant canopy cap at field density (g).
+// field-canopy-cap-by-density: per-plant canopy cap at field density (g).
 function fieldCanopyCapByDensity(fieldDensityHeadsPerM2) {
   return (1 / fieldDensityHeadsPerM2) * FIELD_CANOPY_HEIGHT_M * FIELD_FOLIAGE_DENSITY_KG_PER_M3 * 1000;
 }
 
-// REQ-174: field per-plant DLI share with ceiling 1.0 and floor 0.40.
+// field-per-plant-dli-share: field per-plant DLI share with ceiling 1.0 and floor 0.40.
 function perPlantDliShareField(weightG, fieldDensityHeadsPerM2) {
   const raw = 1 / (LEAF_PROJECTED_AREA_M2_PER_G * weightG * fieldDensityHeadsPerM2);
   return Math.max(0.40, Math.min(1.0, raw));

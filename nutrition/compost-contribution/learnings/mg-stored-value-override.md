@@ -6,7 +6,7 @@ Savaria label declares N / P / K / Ca but not Mg. We assumed ~0.3 %
 (low-end shrimp-base compost), which yields theoretical 0.658 g/m²/wk.
 Stored value held at **0.50**, i.e. an override ratio of
 **stored ÷ theoretical = 0.50 / 0.658 ≈ 0.76** (~24 % conservative-down).
-Sits inside REQ-079's [0.5×, 1.5×] sanity band by design.
+Sits inside release-values-within-mass-balance-band's [0.5×, 1.5×] sanity band by design.
 
 - Label gap → cert 1 on the underlying assumption.
 - Conservative-down protects against silent under-fertigation: if

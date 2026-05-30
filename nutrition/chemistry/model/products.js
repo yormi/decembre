@@ -9,21 +9,23 @@
 // estimate from product class / Sonneveld / Yara / Hoagland conventions
 // where exact data isn't on hand. cert 4-5 = label-stated or lab-measured.
 
-// REQ-010, REQ-019, REQ-022, REQ-023, REQ-029a, REQ-053, REQ-054
+// recipe-mode-per-product, phclass-covers-every-element, every-product-ecocert-allowed,
+// ec-factor-covers-every-product, product-declares-ions-and-chemistry-tags,
+// predicted-tank-ph-within-envelope, chelate-stability-ph-range-respected
 //
 // Per-product schema:
 //   mode: 'flux' | 'concentration'
 //   ch:   'fertigation' | 'sidedress' | 'frontload' | 'foliar' | 'nursery'
 //   base: { Element: massFraction }                — g element per g product
 //   phClass: string | { El: string }                — soil channels only
-//   ions: { cation/anion: massFraction }            — REQ-029a
-//   chemistryTags: [...]                            — REQ-029a/c
-//   organicAllowed: boolean                         — REQ-022
-//   ecFactor: number                                — mS/cm per g/L (REQ-023)
-//   solubilityCap_g_per_L: number                   — cold water (REQ-021)
-//   phContribution: number                          — pH shift per g/L in clean water (REQ-053)
-//   stablePhRange: [min, max]                       — chelates only (REQ-054)
-//   maximumStableHours: number                          — REQ-032
+//   ions: { cation/anion: massFraction }            — product-declares-ions-and-chemistry-tags
+//   chemistryTags: [...]                            — product-declares-ions-and-chemistry-tags / every-chemistry-tag-classified
+//   organicAllowed: boolean                         — every-product-ecocert-allowed
+//   ecFactor: number                                — mS/cm per g/L (ec-factor-covers-every-product)
+//   solubilityCap_g_per_L: number                   — cold water (solubility-cap-per-product)
+//   phContribution: number                          — pH shift per g/L in clean water (predicted-tank-ph-within-envelope)
+//   stablePhRange: [min, max]                       — chelates only (chelate-stability-ph-range-respected)
+//   maximumStableHours: number                          — stock-barrel-time-stability
 //   cert: number                                    — overall cert
 //
 // Notes on shortcut data:
@@ -71,7 +73,7 @@ const PRODUCT = {
     ecFactor: 1.0,                         // sulfate salt; cert 3
     solubilityCap_g_per_L: 290,            // CRC; cert 4
     phContribution: -0.30,                 // strong acidification by Fe²⁺ hydrolysis (linear approx; real curve flattens at high conc); cert 2
-    maximumStableHours: 4,                     // air oxidation Fe²⁺→Fe³⁺ (REQ-032); cert 4
+    maximumStableHours: 4,                     // air oxidation Fe²⁺→Fe³⁺ (stock-barrel-time-stability); cert 4
     cert: 4,
   },
   'MnSO4': {
@@ -182,7 +184,7 @@ const PRODUCT = {
     ecFactor: 0.5,                         // mostly organic; some salt content; cert 2
     solubilityCap_g_per_L: 1000,           // miscible liquid; cert 4
     phContribution: -0.1,                  // mildly acidic; cert 2
-    maximumStableHours: 24,                    // microbial degradation (REQ-032); cert 3
+    maximumStableHours: 24,                    // microbial degradation (stock-barrel-time-stability); cert 3
     cert: 3,
   },
   'AcadieAlguesLiquides': {

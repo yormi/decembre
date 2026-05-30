@@ -81,12 +81,12 @@ const NURSERY_FEATHER_MEAL_DEFAULT_G_PER_TRAY = 9;
 // at 9 g feather meal per tray — going higher risks germination loss
 // (per Décembre operator note + Sonneveld guidance for peat substrate
 // salt sensitivity). The model EXPOSES this so the consumer page can
-// clamp the input slider; REQ-094 asserts the cap stays ≤ 9.
+// clamp the input slider; feather-meal-front-load-cap asserts the cap stays ≤ 9.
 const LIMITS = {
   maxFeatherMealPerTrayG: 9,  // cert 4 — operational ceiling, not a soft target
 };
 
-// Per-element efficiency for the Efficacité column (REQ-157) — share of
+// Per-element efficiency for the Efficacité column (efficacite-column-capability) — share of
 // applied substrate-product mass that becomes plant-available across the
 // 5-week nursery cycle. Time-distributed: the release-curve sum (≈ 1.0
 // per INV-2 mass balance) means OM2-borne elements fully release across

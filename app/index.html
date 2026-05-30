@@ -216,7 +216,7 @@
 
 // ── 6. Model layer (data / calc / model partials) ─────────────────────────
 //
-// SINGLE-SOURCE-OF-TRUTH RULE (REQ-004): Bilan supply numbers MUST be read
+// SINGLE-SOURCE-OF-TRUTH RULE (bilan-reads-source-of-truth-recipes): Bilan supply numbers MUST be read
 // from the same constants that drive the team-facing pages.
 //   - Fertigation: STORED_RECIPE.tomato.fertigation[stage] × getMultK() × getMultMg()
 //   - Foliaire:    STORED_RECIPE.tomato.foliaire.A (label strings) (B removed 2026-05-06)
@@ -238,7 +238,7 @@
 
 // ─── STORED_RECIPE — single source of truth for recettes appliquées ─────
 //
-// SOURCE OF TRUTH (REQ-004). Unified hand-stored recipe object — what the
+// SOURCE OF TRUTH (bilan-reads-source-of-truth-recipes). Unified hand-stored recipe object — what the
 // team actually weighs out each week, across all three channels: fertigation
 // (PA Taillon barrel), sidedress (granular au sol), foliaire (oligos spray
 // hebdomadaire). The Bilan, team-facing operational pages, audit-trail
@@ -281,10 +281,10 @@ window.STORED_RECIPE = { tomato: {} };
 // the safer organic-soil strategy.
 //
 // Fertigation: K + Mg + Solubore (B). K and Mg values populated at boot
-// from computeStageRecipe('T5') via wireFpFertigation() (REQ-154 — mirror
+// from computeStageRecipe('T5') via wireFpFertigation() (fp-target-mirrors-sizer — mirror
 // the mass-balance derivation by construction). Solubore hand-coded —
-// single-channel B at T5 (REQ-061), non-ionic so 100% efficient at any
-// pH (REQ-018 OK), 9 × 0.205 / 382.9 × 1000 = 4.82 mg/m²/sem = 107% T5
+// single-channel B at T5 (replenishment-cascade-earliest-first), non-ionic so 100% efficient at any
+// pH (no-decorative-products-at-current-ph OK), 9 × 0.205 / 382.9 × 1000 = 4.82 mg/m²/sem = 107% T5
 // demand. Foliaire B = 0. Ecocert validated 2026-05-08.
 // Sidedress: farine alone — Actisol dropped (Ca-aware, soil saturated).
 //   FarinePlumes 1 655 g/planche/sem (cert 3): wired live from
@@ -301,10 +301,10 @@ const FP_RECIPE_T5 = {
   // .fertigation: placeholders — overwritten at script load by
   // wireFpFertigation() in nutrition/tomato/fertigation-recipe/calc.js
   // (single source of truth = FIRST_PRINCIPLES_T5_FERTIGATION in
-  // nutrition/tomato/fertigation-recipe/data.js). Spec: REQ-098 / REQ-099.
+  // nutrition/tomato/fertigation-recipe/data.js). Spec: mass-balance-derivation / public-api-namespace.
   fertigation: {
-    'K2SO4':          0,      // populated at boot from computeStageRecipe('T5').kSulfate (REQ-154)
-    'MgSO4-7H2O':     0,      // populated at boot from computeStageRecipe('T5').mgSulfate (REQ-154)
+    'K2SO4':          0,      // populated at boot from computeStageRecipe('T5').kSulfate (fp-target-mirrors-sizer)
+    'MgSO4-7H2O':     0,      // populated at boot from computeStageRecipe('T5').mgSulfate (fp-target-mirrors-sizer)
     'Solubore':       9,      // boric acid non-ionic, 100% efficiency at pH 7,4 — sole B channel
   },
   sidedress: {
@@ -331,7 +331,7 @@ const FP_RECIPE_T5 = {
 //                              calculateLettuceNutritionDemand,
 //                              calculateLettuceNutritionSupply (pure;
 //                              caller passes a dependency bag).
-// Spec: nutrition/lettuce/plant-needs/spec.md → REQ-165..169, INV-1.
+// Spec: nutrition/lettuce/plant-needs/spec.md → public-api-namespace..canopy-factor-bounded, INV-1.
 <!-- @include nutrition/lettuce/plant-needs/data.js -->
 <!-- @include nutrition/lettuce/plant-needs/calc.js -->
 <!-- @include nutrition/lettuce/plant-needs/model.js -->
@@ -396,7 +396,7 @@ const RECIPE_INPUTS = {
   // not by adding to it.
   //
   // Per-element values, label, mineralization fractions, and seasonal factor
-  // live in `nutrition/compost-contribution/data.js`. Spec: REQ-079, REQ-080.
+  // live in `nutrition/compost-contribution/data.js`. Spec: release-values-within-mass-balance-band, public-api-namespace.
   // Consumers read via `window.CompostContribution.releasePerWeek` (see
   // `computeStageRecipe`, `computeStageSidedress`, `buildNutriment`,
   // `buildNutrimentLettuce`).
@@ -404,7 +404,7 @@ const RECIPE_INPUTS = {
 
 // ─── ACCEPTED_DEFICITS — supply < 0.9 × demand entries with rationale ────────
 //
-// REQ-013 default fail threshold is supply ≥ 0.9 × demand per (stage, element).
+// under-fert-guard default fail threshold is supply ≥ 0.9 × demand per (stage, element).
 // Below threshold WITH an entry here = accepted (model gap with documented why).
 // Below threshold WITHOUT an entry = real failure → fix the model or the recipe.
 //
@@ -440,7 +440,7 @@ const ACCEPTED_DEFICITS = [
 
 // ─── ACCEPTED_EXCESSES — supply > 1.3 × demand entries with rationale ───────
 //
-// REQ-014 default fail threshold is supply ≤ 1.3 × demand per (stage, element).
+// luxury-feeding-guard default fail threshold is supply ≤ 1.3 × demand per (stage, element).
 // Above threshold WITH an entry AND a UI warning = accepted (can't undo past
 // inputs; bank loads up at vegetative stages and draws down through fruit-fill
 // — net stable over annual cycle).
@@ -451,7 +451,7 @@ const ACCEPTED_DEFICITS = [
 // (vegetative establishment, no fruit) and ramps up through T3-T5. Net result:
 // over-supply early, drawn down later, bank ~stable annually. NOT a recipe
 // error — it's the residual signature of a one-time amendment we cannot undo.
-// UI warning surfaced on Nutrition page Block 5 (Leviers) per REQ-014.
+// UI warning surfaced on Nutrition page Block 5 (Leviers) per luxury-feeding-guard.
 const ACCEPTED_EXCESSES = [
   {
     stage: 'T1', element: 'N',
@@ -479,20 +479,20 @@ const ACCEPTED_EXCESSES = [
   },
   {
     stage: 'T4', element: 'Mg',
-    reason: 'REQ-098 amended 2026-05-12 to drop compost subtraction from fertigation sizing — fertigation replenishes full Mg offtake while compost continues releasing Mg in parallel. Total Mg supply / demand at T4 = 1.67 (above 1.3 luxury cap). Mg toxicity risk low; antagonism with K manageable at current Mg:K ratio. Audit-trail acceptance pending PA Taillon ack.',
+    reason: 'mass-balance-derivation amended 2026-05-12 to drop compost subtraction from fertigation sizing — fertigation replenishes full Mg offtake while compost continues releasing Mg in parallel. Total Mg supply / demand at T4 = 1.67 (above 1.3 luxury cap). Mg toxicity risk low; antagonism with K manageable at current Mg:K ratio. Audit-trail acceptance pending PA Taillon ack.',
   },
   {
     stage: 'T5', element: 'Mg',
-    reason: 'Same as T4.Mg — REQ-098 no-compost-subtraction policy puts T5 Mg supply / demand = 1.52. Audit-trail acceptance pending PA Taillon ack.',
+    reason: 'Same as T4.Mg — mass-balance-derivation no-compost-subtraction policy puts T5 Mg supply / demand = 1.52. Audit-trail acceptance pending PA Taillon ack.',
   },
 ];
 
 // ─── Fertigation-recipe subproject (computeStageRecipe + FP T5) ──
 // Math model: data → calc → model. Mirrors plant-needs / sidedress-recipe.
 // Owns: computeStageRecipe(stage), the T5 FP target wired into
-// FP_RECIPE_T5.fertigation (REQ-154 — mirrors computeStageRecipe('T5')
+// FP_RECIPE_T5.fertigation (fp-target-mirrors-sizer — mirrors computeStageRecipe('T5')
 // by construction). Spec: nutrition/tomato/fertigation-recipe/spec.md
-// (REQ-098 mass-balance, REQ-099 namespace, REQ-154 invariant). Includes
+// (mass-balance-derivation mass-balance, public-api-namespace namespace, fp-target-mirrors-sizer invariant). Includes
 // must come AFTER RECIPE_INPUTS, sidedress-recipe/data.js (provides
 // SIDEDRESS_AREA_PER_PLANCHE / SIDEDRESS_MINIMUM_EFFICIENCY), and the FP_RECIPE_T5
 // declaration above (the wireFpFertigation IIFE overwrites .fertigation).
@@ -510,9 +510,9 @@ const ACCEPTED_EXCESSES = [
 // FOLIAR_COVERAGE_WITH_YUCCA (0.80 — exposed for future toggle),
 // computeFoliarSupply(stage) returning per-element delivered mg/m²/wk.
 // Foliar is BURN-CAP-CONSTRAINED, not mass-balance-derived: dose is pinned by
-// REQ-025 cuticle burn cap + local-pool toxicity headroom, model computes
+// foliar-ce-under-burn-cap cuticle burn cap + local-pool toxicity headroom, model computes
 // delivery under coverage. Spec: nutrition/tomato/foliar-strategy/spec.md
-// (REQ-101 coverage discount applied, REQ-103 namespace; REQ-025 inherited
+// (coverage-discount-on-delivery coverage discount applied, public-api-namespace namespace; foliar-ce-under-burn-cap inherited
 // from nutrition/spec.md for burn cap — not duplicated here). Includes must
 // come AFTER STORED_RECIPE (parses .tomato.foliaire.A label strings),
 // PRODUCT_PCT (reads MnSO4_Mn / FeSO4_Fe / etc.), and TOMATO_NUMBER_BEDS /
@@ -573,7 +573,7 @@ const ACCEPTED_EXCESSES = [
 // nutrition/soil-contribution/render.js.
 <!-- @include nutrition/lib/format.js -->
 
-// renderGapGrid lives in nutrition/lib/render-gap-grid.js — REQ-137 6-col
+// renderGapGrid lives in nutrition/lib/render-gap-grid.js — contribution-block-gap-grid 6-col
 // gap-chain layout consumed by every per-channel contribution block across
 // tomato + lettuce + nursery + soil-contribution.
 <!-- @include nutrition/lib/render-gap-grid.js -->

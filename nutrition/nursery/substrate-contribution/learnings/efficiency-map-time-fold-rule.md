@@ -1,6 +1,6 @@
-# Efficiency map (REQ-157) — time-fold rule: cycle-mean release × mineralization chosen
+# Efficiency map (channel-efficiency-capability-map) — time-fold rule: cycle-mean release × mineralization chosen
 
-## Efficiency map (REQ-157) — time-fold rule alternatives considered
+## Efficiency map (channel-efficiency-capability-map) — time-fold rule alternatives considered
 
 | Rule | Description | Outcome |
 |------|-------------|---------|

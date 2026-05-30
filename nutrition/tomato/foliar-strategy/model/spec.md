@@ -388,7 +388,7 @@ per-element efficiency map at the given surfactant lever state.
 every routed element (the cuticle-uptake coverage axis: 0.30 → 0.80
 without changing the spray-pH multiplier). Channel capability shape per
 `nutrition — channel-efficiency-capability-map` (only Mn / Zn / Cu / Fe routed today; B + Mo absent per `nutrition — replenishment-cascade-earliest-first`).
-The page-side Efficacité cell (REQ-163) reads this surface and updates
+The page-side Efficacité cell reads this surface and updates
 when the operator toggles the lever.
 
 **Cert:** 3 (coverage constants are both cert 3; surfactant-on regime

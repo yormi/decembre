@@ -178,7 +178,7 @@ function, not the constants). Historical PA Taillon FP anchor (K 5 167 /
 Mg 1 379 / Solubore 9 from April 2026) preserved in `learnings.md` for
 audit; STORED was never on those values (Haifa-heritage since 2026-05-09).
 
-**Verification:** `scripts/check-recipes.mjs` REQ-154 — exact equality
+**Verification:** `scripts/check-recipes.mjs` fp-target-mirrors-sizer — exact equality
 of K2SO4 / MgSO4-7H2O / Solubore / NaMolybdate between constant and
 `computeStageRecipe('T5')` output; same quadruple propagates to
 `FP_RECIPE_T5.fertigation`.
@@ -213,7 +213,7 @@ uptake factor inflates demand for each. Return shape: `{ kSulfate,
 mgSulfate, solubore }` in grams (rounded). `fp-target-mirrors-sizer` boot-pin propagates
 all three into `FIRST_PRINCIPLES_T5_FERTIGATION` and `FP_RECIPE_T5.fertigation`.
 
-**Verification:** `scripts/check-recipes.mjs` REQ-098 block applies
+**Verification:** `scripts/check-recipes.mjs` mass-balance-derivation block applies
 `demand / uptake_factor[el]` before subtracting compost + sidedress;
 output matches within ±5 g (K/Mg), ±2 g (Solubore). Drops if
 `PH_UPTAKE_FACTOR_AT_CURRENT_SOIL` missing/malformed.
@@ -303,6 +303,6 @@ Specs that *consume* the fertigation output:
 
 ## Retired specs
 
-- **REQ-100** retired 2026-05-10 — concept dropped, fertigation supply
+- Retired 2026-05-10 — concept dropped, fertigation supply
   now reported at full barrel mass (no mixing-factor discount). Number
   not reused. Detail in `learnings.md`.

@@ -6,11 +6,11 @@ Archive of processed mailbox entries with team-leader outcome blocks.
 ## 2026-05-24 — Bulk archive — Phase 1-4 nutrition reorg (1 entries)
 
 ### Team-leader outcome (2026-05-24)
-All 1 entries below resolved by the Phase 1-4 nutrition reorg run on 2026-05-23/24. Commits: c24911c (Phase 1+2), 8d0bfcb (Phase 3), Phase 4 pending commit. Verifier green at every checkpoint: npm test 22/22, npm run check 161/0. PO spec edits applied; specialist code moves done; pruner stale-reference sweep landed (14 updates, 4 KEEPs, 8 punts surfaced); test-writer added REQ-011 cross-crop channel-role coverage + REQ-194 foliar-pH application coverage. Cut to done in bulk per session continuity; entries preserved verbatim below.
+All 1 entries below resolved by the Phase 1-4 nutrition reorg run on 2026-05-23/24. Commits: c24911c (Phase 1+2), 8d0bfcb (Phase 3), Phase 4 pending commit. Verifier green at every checkpoint: npm test 22/22, npm run check 161/0. PO spec edits applied; specialist code moves done; pruner stale-reference sweep landed (14 updates, 4 KEEPs, 8 punts surfaced); test-writer added channel-role-coverage cross-crop channel-role coverage + foliar-uptake-ph-multiplier foliar-pH application coverage. Cut to done in bulk per session continuity; entries preserved verbatim below.
 
 ## 2026-05-24 — stale-reference sweep (post-reorg c24911c + 8d0bfcb)
 
-**Scope:** Tree-wide grep for `recipe-math` / `tomato/app/user-stories.md` / `tomato/app/logic.js` / `shell/supply.js` / `REQ-012` / `computeRecipe` / `passiveSupplyMassFlow` after the Phase 1-3 reorg commits. Surface: source comments (non-test code), `derivation.md`, `learnings.md`, `scripts/check-recipes.mjs`. Excluded per lane: `*.spec.md` (PO), `*.test.mjs` (test-writer), `team/`, `working files/`.
+**Scope:** Tree-wide grep for `recipe-math` / `tomato/app/user-stories.md` / `tomato/app/logic.js` / `shell/supply.js` / `computeRecipe` / `passiveSupplyMassFlow` after the Phase 1-3 reorg commits. Surface: source comments (non-test code), `derivation.md`, `learnings.md`, `scripts/check-recipes.mjs`. Excluded per lane: `*.spec.md` (PO), `*.test.mjs` (test-writer), `team/`, `working files/`.
 
 **Updates (14):**
 - `app/index.html:566` `tomato/app/logic.js` → `tomato/shell/logic.js`
@@ -22,13 +22,13 @@ All 1 entries below resolved by the Phase 1-4 nutrition reorg run on 2026-05-23/
 - `nutrition/tomato/fertigation-recipe/model/derivation.md:191` `app/logic.js` → `shell/logic.js`
 - `nutrition/tomato/fertigation-recipe/model/learnings.md:193` same
 - `nutrition/tomato/plant-needs/model/derivation.md:145` same
-- `nutrition/tomato/channel-role.js:8` REQ-012 dropped (folded into REQ-011 in `nutrition/spec.md`)
-- `scripts/check-recipes.mjs:18,1322,1324` REQ-012 → REQ-011 (header + comment + label)
-- `scripts/check-recipes.mjs:1749` `tomato/app/user-stories.md` → `tomato/shell/spec.md` (REQ-153 new home)
-- `scripts/check-recipes.mjs:3374` `tomato/app/user-stories.md` → `tomato/shell/spec.md` (REQ-104..107 new home)
-- `scripts/check-recipes.mjs:3531` → `tomato/plant-needs/builder/user-stories.md` (REQ-108..111)
-- `scripts/check-recipes.mjs:3866,3909` → `tomato/foliar-strategy/builder/user-stories.md` (REQ-113, REQ-114)
-- `scripts/check-recipes.mjs:5570,6041` → `tomato/foliar-strategy/builder/user-stories.md` (REQ-163)
+- `nutrition/tomato/channel-role.js:8` channel-role-coverage dropped (folded into channel-role-coverage in `nutrition/spec.md`)
+- `scripts/check-recipes.mjs:18,1322,1324` channel-role-coverage label (header + comment + label)
+- `scripts/check-recipes.mjs:1749` `tomato/app/user-stories.md` → `tomato/shell/spec.md` (stored-vs-computed-drift-block new home)
+- `scripts/check-recipes.mjs:3374` `tomato/app/user-stories.md` → `tomato/shell/spec.md` (header-inputs-five-scalars..recipe-mode-toggle-fp-left-default-right new home)
+- `scripts/check-recipes.mjs:3531` → `tomato/plant-needs/builder/user-stories.md`
+- `scripts/check-recipes.mjs:3866,3909` → `tomato/foliar-strategy/builder/user-stories.md`
+- `scripts/check-recipes.mjs:5570,6041` → `tomato/foliar-strategy/builder/user-stories.md`
 
 **Deletions:** none. Every stale reference had a legitimate new home — updates only.
 

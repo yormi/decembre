@@ -1,7 +1,7 @@
 // Public API for the nursery substrate-contribution model.
 //
 // Spec:    nutrition/nursery/substrate-contribution/spec.md
-// REQ-097: this namespace exists at runtime with the keys below.
+// Spec public-api-namespace: this namespace exists at runtime with the keys below.
 //
 // Consumers (Semis laitue Bilan card "Réserve substrat", future per-tray
 // recipe calculators) reach for `window.SubstrateContributionNursery`
@@ -23,7 +23,7 @@ window.SubstrateContributionNursery = {
   NURSERY_FEATHER_MEAL_DEFAULT_G_PER_TRAY,
   // Operational ceiling — germination protection.
   LIMITS,
-  // Per-element efficiency (REQ-157) — fraction of applied substrate-product
+  // Per-element efficiency (channel-efficiency-capability-map) — fraction of applied substrate-product
   // mass plant-available across the 5-week cycle. See data.js + derivation.md
   // for the definitional choice (cycle-mean × mineralization for N;
   // cycle-mean for OM2-only elements).
