@@ -6,6 +6,261 @@ Live working set per [[P-16]]: PENDING findings + resolutions ≤7 days old. Old
 
 ---
 
+## 2026-05-30 — third supplement to tomato soil-ph entries below (re-fire; no diff obtainable — file untracked)
+
+Scope: PostToolUse hook re-fired on `nutrition/tomato/soil-ph/model/derivation.md`. File is untracked → `git diff HEAD` and `HEAD~1..HEAD` both empty; cannot isolate this edit's delta. Walked current content against the full PENDING set below (B1–B11 / D1–D5): every section maps to a filed finding. NOT re-raising any of them. ONE orthogonal angle no prior pass took — on the P-lock anchor (`Full chain` §, "P is locked, not absent — Mehlich-3 P = 557.7 kg/ha … cert 4"). Prior B11 challenged the HCO₃⁻ *uptake* half; prior D5 challenged the *timeline* cert. Neither questioned whether the **557.7 number is a valid measure of available P reserve on THIS soil**. That is the gap below. If this re-fire was in fact a no-op (no claim moved), treat D6 as a standing challenge on the existing anchor, not a response to a new edit.
+
+### Cert defense
+
+**D6 — The entire programme's headline payoff ("pH-drawdown unlocks a real P reserve, P is locked-not-absent") rests on Mehlich-3 P = 557.7 kg/ha read as a large plant-available vault (stated cert 4). But Mehlich-3 is an ACID extractant calibrated for acid/neutral soils; on a calcareous soil (water pH 7.28, ~10 989 kg/ha exchangeable Ca, free carbonate present) its dilute acid dissolves Ca-bound P that is NOT plant-available, systematically OVER-reading available P. Olsen / sodium-bicarbonate P is the standard test above pH ~7.3 for exactly this reason. So the "vault" may be partly an extractant artifact — pH-drawdown would release less than the 557.7 figure implies.** (stated cert 4) · `PENDING`
+- **Specialist's defense:** the 557.7 (Mehlich-3) vs 1.1 ppm (SME available) contrast is a real, measured, cert-4 gap — a 500× spread is not noise; *something* large is bound and pH-suppressed. The qualitative direction (a sizable P reserve is locked by high pH) survives even if the magnitude is soft.
+- **What I'd need to accept cert ≥ 4 on the *magnitude*:** an Olsen-P (NaHCO₃) reading on the tomato bed — the pH-appropriate available-P test — alongside the Mehlich-3. On calcareous soil Mehlich-3 routinely over-states available P by a wide, soil-specific factor; the gap between Mehlich-3 and Olsen on THIS bed sizes how much of the 557.7 is genuinely releasable vs Ca-phosphate the acid extractant counted but roots can't reach. Until then the *direction* is cert 4, the *recoverable magnitude* is cert 2.
+- **My read:** split the claim. "A pH-suppressed P reserve exists and drawdown helps" — cert 4, fine, leave it. The implicit "≈557.7 kg/ha is the size of the prize" — cert should be **2**, because the anchor number is an acid-extractant figure on a calcareous soil where that extractant is known to over-read. This is NOT a cert-fastidiousness nit under [[yield-impact-not-cert-fastidiousness]]: P is the −90% headline tissue deficit, the P-unlock IS the programme's reason to exist, and if the releasable reserve is a fraction of 557.7 the manage-around-vs-correct call flips. Clears the ≥10%-yield bar. Closes on one Olsen-P read (cheap, same Berger panel), bundles with the calcimeter % as the second measured gate the programme is waiting on. Cross-ref `[[feedback_sme_spec_ranges]]` (Mehlich-3 lead for soil) — that rule picks Mehlich-3 over SME for nutrient *level* reads; it does NOT bless Mehlich-3 P magnitude as plant-available on calcareous soil, which is the specific over-read here.
+
+### Verdict
+
+Land after addressing D6 (pull an Olsen-P / NaHCO₃ available-P read alongside the Mehlich-3 before sizing the P-unlock payoff; down-cert the 557.7 *magnitude* to 2, keep the *direction* at 4). Single finding; B1–B11 / D1–D5 below all remain PENDING and are NOT re-raised. Specialist's lane; the Olsen-P read is specialist-actionable now and joins the calcimeter % as the second measured input the programme is gated on. No STORED pressure; no code/spec edits proposed.
+
+---
+
+## 2026-05-30 — second supplement to tomato soil-ph entries below (same file, "Full chain to healthy roots + sufficient P" section)
+
+Scope: file edited again since the 2026-05-30 B9 pass. New material only: the **"Full chain to 'healthy roots + sufficient P' (worked, 0.1% carbonate)"** section — (a) P-lock claim (Mehlich-3 P 557.7 kg/ha vault vs SME 1.1 ppm available, cert 4); (b) a 4-stage end-to-end table at 0.1% carbonate / 2.5 kg-S/bed-mo (titrate carbonate ~3.5 kg → CEC-buffered drawdown 7.28→6.5 ~10 kg, cert 2 → P solubilise → new roots + tissue P 0.23%→>0.50%); (c) headline "~6–8 months total, earliest signs ~3–4 mo"; (d) "Cadence dependence — chemical stages compress, biology does not" (biweekly ~4–5 mo, ~1.5–2 mo biological floor); (e) sink-competition caveat (fruiting T5 spends on fruit before roots, cert 2). Prior B1–B9 / D1–D4 remain PENDING and are NOT re-raised. **Acknowledgement:** stage 2 of this worked chain (the explicit ~10 kg-S/bed CEC-buffered drawdown term, named "the binding term") substantially answers prior **B3** — the exchange-buffer is no longer framed as a low-carbonate-only corner case; it is now the dominant term in the worked example. B3's remaining open half is B10 below: the term lives in the worked chain but is NOT propagated to the §passes / §months dose tables, which still count carbonate titration only.
+
+### Blindspots
+
+**B10 — Coherence: the worked chain and the dose tables disagree on the same 0.1% input. Stage 1 (carbonate) = ~3.5 kg S/bed; stage 2 (CEC drawdown to 6.5) = ~10 kg S/bed — so total S to actually reach target ≈ 13.5 kg/bed, ~4× the carbonate-only figure. But the §passes table reads "0.1% → ~25 kg whole-block → feasible in a season, ~1–2 passes" and the §months table reads "0.1% → ~3.5 kg/bed → ~1.5 mo." Both upstream tables count ONLY the carbonate term this section says is the smaller part. A reader who stops at the dose tables (the scannable surface) concludes "0.1% = easy, 1–2 passes, ~6 weeks"; the worked chain says the same 0.1% is 13.5 kg/bed and 6–8 months. The feasibility cliff the tables exist to communicate is mis-placed by the stage-2 term's own magnitude.** · `PENDING`
+- **What the spec assumes:** the §passes and §months tables are the feasibility-communication surface (per prior C1 "keep — shows the go/no-go cliff"); the worked chain is a downstream elaboration.
+- **What might be ignored:** the worked chain reveals the tables undercount total-S-to-target by the stage-2/stage-1 ratio (~10/3.5 ≈ 3× here), and that ratio GROWS as carbonate shrinks (at ~0 fizz the carbonate term → 0 but the CEC drawdown term is unchanged → the tables would read "buffer-only, cheap" while the real cost is almost entirely the unshown CEC term). So the cliff isn't just shifted — its shape inverts at the low-carbonate end the tables present as easiest. This is prior B3 quantified: the fix B3 asked for (add the exchange-buffer as a second additive column to the dose table) is now numerically justified by this section's own ~10 kg figure. Until the tables carry both terms, the doc's two surfaces give a reader opposite feasibility reads on the same calcimeter %.
+- **How to test it:** add the stage-2 CEC-drawdown S as a second additive column to the §passes + §months tables (total-S = carbonate term + drawdown term), keyed to the same SMP/buffer-pH trigger already named for the no-fizz row. The ~10 kg/bed drawdown figure is already derived here — propagate it up, don't leave it stranded in the worked example.
+- **Cost if real:** medium. No live mis-dose pre-gate. But the dose tables are the surface a busy reader (or parallel session, or Catherine) scans for "is correction feasible?" — and they currently answer "yes, cheaply" at exactly the 0.1% case the worked chain rates 6–8 months. A correct feasibility call read off the wrong surface drives the manage-around-vs-correct decision on the optimistic number.
+
+**B11 — Stage 4 ("leaf 0.23% → >0.50% floor over leaf turnover, ~1–2 mo") and the sink-competition caveat ("fruiting T5 plant spends on fruit before roots → clean payoff is on new growth, not existing stressed tissue") are in tension. The stage table promises an existing-leaf tissue-P recovery; the caveat says the existing stressed tissue is exactly what WON'T recover on a fruiting plant.** · `PENDING`
+- **What the spec assumes:** stage 4 reads as a whole-plant tissue-P lift (0.23→>0.50%) on the ~1–2 mo leaf-turnover timescale; the caveat is appended below as a hedge.
+- **What might be ignored:** the two statements describe different plant compartments and the section doesn't say which the team should expect to measure. If a tissue panel is pulled mid-cycle to verify the programme, it samples existing leaves — the compartment the caveat says won't move. So the verification read (existing-leaf P) and the claimed payoff (new-growth P) are mismatched: the programme could be working on new growth while the tissue panel reads flat, or vice versa. Separately, the 0.23→0.50% jump assumes soil-solution P (pH-gated solubility) is the only barrier — but on a Ca-saturated high-bicarbonate soil, P uptake is also physiologically inhibited by HCO₃⁻ at the root independent of soil-solution P; lowering bulk pH may not lift tissue P as fast as the solubility model implies. (Doesn't undercut the worked timeline by much; flags that "P unlocks → tissue P rises" is two cert-2 steps, not one.)
+- **How to test it:** state which compartment stage 4 refers to and which a verification tissue panel samples — i.e. "expect new-growth tissue P to recover; existing fruiting-canopy leaves may stay low; sample youngest fully-expanded leaves on new growth, not whole-canopy." Pairs with the SO₄²⁻/tissue panels already named in prior B2/D2/B6.
+- **Cost if real:** low-medium. No mis-dose. Mismatched-expectation risk: a flat existing-leaf tissue read mis-reported as "programme not working," or a verification panel sampled from the wrong compartment.
+
+### Complexity
+
+**C5 — The "Cadence dependence — chemical stages compress, biology does not" block (monthly ~6–8 mo → biweekly ~4–5 mo, "compressed not halved", biweekly-is-the-floor-for-micronized reasoning) elaborates a monthly-vs-biweekly STANDING-CROP cadence — the same cadence prior B9 establishes is NOT the operative tomato lever (the doc's own conclusion is between-cycles tilled, not mid-crop standing).** · `PENDING`
+- **Specialist added:** a paragraph deriving the biweekly-vs-monthly compression ratio + the micronized half-life floor + the thin-0.1%-buffer-consumed-in-3-weeks overshoot caveat, all on the standing-crop tier.
+- **Test — changes a team action?** Marginal, and it compounds the B9 coherence gap. If the tomato block runs tilled-at-flip (B9's open question), this entire monthly-vs-biweekly standing-crop optimisation is moot for tomato — it's lettuce's cadence (continuous-flip crop), analysed on the tomato page. The genuine accelerator the block itself names ("a tilled bare-bed window") is the one-line operative point; the rest is expectation-setting on a cadence the doc says tomato shouldn't run mid-crop.
+- **MVP version:** cut to the one line that survives B9 — "the accelerator is a tilled bare-bed window between crops (5.4 kg rate, full incorporation, no live-root acid microzone), not higher standing-crop frequency." Drop the monthly-vs-biweekly compression arithmetic, or move it to the lettuce sibling where the continuous-flip cadence is the real operating mode. Resolving this is downstream of the B9 operating-tier call (Guillaume on flip frequency) — don't cut until B9 lands.
+- **Why it might stay:** if Guillaume's B9 answer is "tomato DOES run mid-crop standing passes as slow pre-load," then the compression arithmetic is the expectation-setting for that mode and earns its place. The cut is conditional on B9, not independent.
+
+### Cert defense
+
+**D5 — Headline "realistic total ~6–8 months; earliest signs ~3–4 months" reads as a determinate timeline, but it is built on 0.1% carbonate (cert 0 — which calcimeter row, unmeasured) × stage-2 CEC drawdown (self-labelled cert 2) × biological lag (self-labelled cert 2). min-rule → the headline months carry cert ≤ 2 with a cert-0 row selector underneath.** (stated cert 2 on stage 2 + caveat; headline unlabelled) · `PENDING`
+- **Specialist's defense:** the section IS honest in-body — stage 2 is explicitly "the slow, cert-2 step," the closing caveat is explicitly cert 2 ("CEC drawdown + biological lag are extrapolated, not measured on Décembre beds"), and the P-lock anchor (557.7 vs 1.1 ppm) is a real cert-4 measured contrast. The cert labels are present where it counts.
+- **What I'd need to accept the headline ≥ cert 2:** nothing on the method — same posture as prior D4. Only that the bolded "~6–8 months / ~3–4 months" headline inherits the cert-0 carbonate-row selector (it assumes 0.1%, the optimistic feasible row) AND the 100%-oxidation basis from prior B2 (real calendar longer). So the headline is doubly optimistic: best-case carbonate row + full oxidation. A one-line "at the 0.1% row; higher carbonate or sub-unity oxidation pushes this out" closes it.
+- **My read:** in-body cert labels fine; the bolded headline reads more determinate than its cert-0-row + cert-2-stage + prior-B2-oxidation basis warrants. Per [[yield-impact-not-cert-fastidiousness]] this is a cert-propagation note bundling with prior D4/B2, not a 3/5 escalation (no dose pre-gate). Closes on the same calcimeter-% + first-pass SO₄²⁻ bundle as every prior cert item.
+
+### Verdict
+
+Land after addressing B10 (propagate the stage-2 CEC-drawdown S as a second additive column onto the §passes + §months tables — the ~10 kg figure is already derived here; this is prior B3 quantified and is the one that changes a feasibility read, not just prose). B11 state the compartment stage 4 refers to vs what a tissue panel samples. C5 conditional on B9's operating-tier call — if tomato runs tilled-at-flip, cut the standing-crop compression arithmetic or move it to the lettuce sibling. D5 propagate cert-0-row + prior-B2-oxidation onto the headline months, bundle with prior D4. B10 is the priority — two surfaces in one file give opposite feasibility reads on the same 0.1% input, and the worked chain's own numbers say the dose tables undercount by ~4×. All specialist's lane; no STORED pressure; no code/spec edits proposed.
+
+---
+
+## 2026-05-30 — supplement to tomato soil-ph entries below (same file, one new section)
+
+Scope: file edited again. New material since the three 2026-05-29 passes: the **"Time-to-effect — oxidation is NOT the binding rate-limiter"** section (a months-before-movement table by calcimeter row at the 2.5 kg/bed standing-crop cap, ~10 940 kg single-bed topsoil) + its load-bearing consequence: **"sulphur is a between-cycles soil-prep lever for tomato, NOT a current-crop rescue."** cert 3 (stoich cert 5; calcimeter-row cert 0). Prior B1–B8 / D1–D3 remain PENDING below and are NOT re-raised. The new months-table inherits prior B2 (100 %-oxidation) and prior D1 (bulk-density basis) verbatim — same fixes propagate, not re-routed.
+
+### Blindspots
+
+**B9 — Coherence: the new consequence ("not a current-crop rescue; the fast window is the bare-bed tilled tier between crops") guts the operative payoff of the elaborate monthly *standing-crop* cadence the doc spends three sections building. Tomato is a continuous block (per prior B5/C2) with few/no mid-cycle bare-bed windows → the operative tier IS the slow standing-crop one → so the monthly programme the doc designs is exactly the one this section says can't move current-crop pH. What, then, is the monthly standing-crop cadence FOR?** · `PENDING`
+- **What the spec assumes:** the cadence section frames monthly standing-crop passes as the live programme (dose ~1.5–2.5 kg/bed/month, q4wk retest); this section then concludes standing-crop dosing is months-to-multi-cycle from any pH move and the real lever is the between-crops tilled tier.
+- **What might be ignored:** the two sections are individually sound but jointly under-reconciled. If the monthly standing-crop programme can't rescue the current crop, its only coherent purpose is slow *pre-loading* of the carbonate burn-down for the NEXT cycle — a different value proposition than the cadence section's "monthly passes safe/effective" framing implies, and it changes the operator's expectation (don't expect a tissue/pH response this crop). Either the monthly standing-crop cadence is demoted to "between-crops tilled is primary; standing-crop monthly is optional slow pre-load," or the consequence over-states — some rhizosphere acidification (per the `what-the-ph-lever-actually-addresses` learning: micros/P availability) may help the current crop before bulk pH moves. The doc asserts both without picking which the team acts on.
+- **How to test it:** state the tomato operating mode explicitly — running monthly standing-crop passes mid-crop (then say what current-crop payoff to expect, if any: rhizosphere micro/P availability per the tissue learning, NOT bulk pH), or only tilled-at-flip passes (then the monthly cadence section is lettuce's, not tomato's, and belongs scoped there). **Guillaume call needed:** which tier the tomato block actually runs, given its flip frequency.
+- **Cost if real:** medium. Not a mis-dose (no dose pre-gate). But an operator reading the cadence section expects a monthly programme to do something this season; the time-to-effect section says it won't. Mismatched expectation → either abandoning a working slow pre-load as "not working," or over-dosing standing crop chasing a current-crop move that can't come.
+
+### Complexity
+
+**C3 — Months-before-movement table (4 rows) re-expresses the same calcimeter-% rows as the §passes table, just ÷ rate into months instead of pass-count.** · `PENDING`
+- **Specialist added:** a second carbonate-keyed table (months-to-pH-move) alongside the existing passes-to-titrate table.
+- **Test — changes a team action?** Marginal. Same input (one measured calcimeter %), same cliff (feasible ≤0.1 %, impractical ≥1 %); months vs passes is a unit restatement of the same go/no-go.
+- **MVP version:** fold the months column into the existing §passes dose table rather than a standalone table + prose — one carbonate-keyed table carrying passes AND months stops the two drifting. They already use different bed-mass bases (76 580 kg whole-block in the passes table vs ~10 940 kg single-bed here) — a reader cross-referencing will trip on the basis switch.
+- **Why it might stay:** the months framing delivers the "between-cycles not rescue" punchline; the timing cliff is genuinely the decision. Cut is to the *duplication* (two tables, two bed-mass bases), not the months information.
+
+### Cert defense
+
+**D4 — Table stated cert 3, but every months value = (carbonate-row × stoich) ÷ (2.5 kg/bed/month assumed fully oxidised). It inherits calcimeter-row cert 0 (which row?) AND prior-B2 oxidation-fraction cert 2 (months assume 100 % oxidation → real months longer). min-rule → the months numbers carry cert ≤ 2, not 3.** (stated cert 3) · `PENDING`
+- **Specialist's defense:** the doc already self-labels "which calcimeter row cert 0 until measured" and "titration stoichiometry cert 5" — the cert-0 caveat is present and honest.
+- **What I'd need to accept cert ≥ 3 on the months outputs:** propagate the two soft terms onto the months column the way prior D1 asked for bulk-density — note "months are a floor: divide by oxidation fraction (prior B2) for real calendar; row unknown until calcimeter." The cert-3 label sits on the *method*; the *numbers* are cert 0/2.
+- **My read:** method cert 3 fine; the months figures read more determinate than their cert-0 row + 100 %-oxidation basis warrants. Same empirical bundle as prior B2/D1/D2 — one first-pass SO₄²⁻ read + the calcimeter % closes it. Per `[[yield-impact-not-cert-fastidiousness]]` this is a cert-propagation note, not a 3/5 escalation (no dose pre-gate).
+
+### Verdict
+
+Land after addressing B9 (reconcile the monthly standing-crop cadence with "not a current-crop rescue" — pick the tomato operating tier; Guillaume call on flip frequency). C3 fold months into the §passes table on one bed-mass basis. D4 propagate cert-0/2 onto the months numbers, bundle with prior B2/D1. B9 is the one for Mode B — a coherence gap between two individually-sound sections; resolving it (what the monthly programme is actually for on a continuous tomato block) needs Guillaume's read on flip cadence. All specialist's lane except B9's operating-mode question; no STORED pressure; no code/spec edits proposed.
+
+---
+
+## 2026-05-29 — review of `nutrition/lettuce/soil-ph/model/derivation.md` (new file, full content)
+
+Scope: brand-new lettuce soil-pH-correction derivation (untracked — whole file is the diff). Sibling `spec.md` is stub-only (no wired REQs; blocked on lettuce root-zone pH band PO gap + calcimeter). The file re-anchors the crop-agnostic sulphur chemistry (owned by `tomato/soil-ph`) on lettuce numbers: soil state, geometry (4.5 × 30.4 = 136.8 m², 27 360 kg topsoil), two-tier per-pass cap re-scaled to the 30.4 m² bed, turnover-aligned cadence, tighter salt guardrails. **Inherited-gap note:** because the chemistry is shared, four PENDING findings on the tomato soil-ph entries below apply verbatim and are NOT re-raised — the same fixes propagate: oxidation-fraction-not-1.0 (tomato B2), exchange-buffer CEC term as additive not low-carbonate-only (tomato B3), bulk-soil-lever vs root-zone-target scale bridge (tomato B1), bulk-density 1.0 g/cm³ basis under the whole dose table (tomato D1). The lettuce dose table reproduces all four. Findings below are lettuce-SPECIFIC only.
+
+### Blindspots
+
+**B1 — The estimated Mehlich-3 water pH 7.77 (cert 2) is the single tomato sample's SME→water offset (0.29) bolted onto lettuce's SME 7.48. That borrowed offset drives the load-bearing "lettuce is MORE alkaline than tomato → correction more, not less, needed" narrative that frames the whole feasibility read.** · `PENDING`
+- **What the spec assumes:** "Mehlich-3 water pH ~7.77 (estimated) = SME + ~0.29 method offset (tomato: water 7.28 vs SME 6.99); no direct water-pH on file." Treated as the operative anchor scale.
+- **What might be ignored:** the SME→water offset is not a soil constant — it varies with the carbonate / Ca-saturation load and the pH region (partly a CO₂ / dilution artefact that scales with the carbonate pool). Lettuce's bed is described as *more* Ca-saturated and *more* carbonate-loaded than tomato's — exactly the condition under which the offset would differ from the tomato number. So a one-point offset from the less-carbonated bed is applied to the more-carbonated bed to argue the more-carbonated bed needs more correction — mildly circular. The direction (lettuce more alkaline) holds on the SME numbers alone (7.48 vs 6.99, same instrument, both cert 4); the water-pH restatement adds borrowed precision the data doesn't carry.
+- **How to test it:** the direct lettuce water-pH read is already a named refinement trigger — until it lands, lead the alkalinity comparison on the SME numbers rather than the cert-2 borrowed-offset water figures. Cheap interim: one paired Mehlich-3-water + SME read on the lettuce bed sizes the lettuce-specific offset directly.
+- **Cost if real:** low-medium. No dose runs until the calcimeter gate fires, so no live mis-dose. But "more correction needed than tomato" sets the feasibility prior, and if the offset is smaller on the carbonate-heavy bed the alkalinity gap is overstated.
+
+**B2 — Sulphate-salinity is the binding constraint here, not pH overshoot — and the doc's own reassurance (gypsum self-limits EC at ~2.0–2.2 dS/m) sits ABOVE lettuce's ECe ≤ 1.3 threshold, so the self-limit does NOT protect lettuce. Monthly tilled-at-flip passes (the stated DEFAULT) put a transient sulphate-CE pulse into the root zone exactly as fast-cycle seedlings transplant.** · `PENDING`
+- **What the spec assumes:** "Gypsum salinity still self-limits (CaSO₄ solubility ~2.4 g/L, EC self-caps ~2.0–2.2 dS/m) — but lettuce's lower threshold means the transient EC pulse matters more … Hence the pre-transplant EC check." Guardrail table caps ECe ≤ 1.3 and prescribes a pre-transplant EC check.
+- **What might be ignored:** the doc half-names this but stops at a qualitative check. The CaSO₄ self-limit (~2.0–2.2 dS/m) is ~1.7× lettuce's 1.3 ceiling — so "gypsum self-limits EC" is reassuring for tomato (2.5 ceiling) and the wrong reassurance for lettuce, where the self-limit ceiling is well into yield-loss territory. The pre-transplant EC *check* is a stop-gate, not a dose limit: it tells the operator to skip a pass, but the model still sizes passes against the carbonate pool with no salinity-side dose ceiling. A 3.0 kg-S tilled pass ≈ 12.75 kg CaSO₄-equivalent into 27 360 kg topsoil per flip; on a salt-sensitive crop that pulse, not pH, is the first thing to blow the band — and it lands right at transplant of a crop with no time to recover.
+- **How to test it:** name a salinity-side dose ceiling for lettuce (annual or per-pass S capped on the ECe 1.3 guardrail, not only the per-pass pH-overshoot / tilled-tier ceiling), or quantify the expected per-pass CE pulse so the operator knows the margin before the pre-transplant read, not just that a read is due. Empirical: SME CE before/after one tilled pass sizes retained sulphate directly.
+- **Cost if real:** medium-high. Lettuce yield falls fast above ECe 1.3; the pulse lands at transplant of a fast crop. The pH lever buys acidity correction at a salinity cost on the crop least able to absorb it — and "monthly passes land by the crop rhythm" reads as routine-safe.
+
+### Complexity
+
+**C1 — Two-tier cap (tilled-in 3.0 kg/bed + standing-crop 1.4 kg/bed) carried for lettuce, but the doc itself argues the tilled-at-flip tier is the DEFAULT because lettuce flips every few weeks and oxidation completes within a flip cycle.** · `PENDING`
+- **Specialist added:** the standing-crop tier (~4.5 kg/100 m² → ~1.4 kg/bed) alongside the tilled tier, ported from the tomato two-tier structure.
+- **Test — changes a team action?** Possibly not, on lettuce. The cadence logic says every flip is a bare-bed incorporation window and oxidation (~6–10 day half-life) clears within a flip cycle — so a lettuce bed rarely needs a mid-crop surface pass on standing plants. On tomato the standing tier is the operative one (continuous block); on lettuce it may be near-dead.
+- **MVP version:** keep the tilled tier; reduce the standing-crop tier to a one-line "rarely needed on lettuce — flip cadence makes the tilled window the norm; standing-crop rate retained only for an unplanned mid-crop carbonate-burn pass." Don't present two co-equal tiers when one almost never fires for this crop.
+- **Why it might stay:** a fast carbonate burn-down on a long-held bed (or a flip that slips) could need a mid-crop pass; the rate should exist. The cut is to the *framing* (co-equal default), not the number.
+
+### Cert defense
+
+**D1 — Buffer-only "no fizz" range ~18–43 kg (cert 1) is the tomato 50–120 kg range × topsoil-mass ratio 0.357.** (stated cert 1) · `PENDING`
+- **Specialist's defense:** explicitly cert 1, explicitly "uncalibrated until an SMP buffer-pH reading lands," and the linear topsoil-mass scaling is the right first-order transfer.
+- **What I'd need to accept cert ≥ 1:** nothing — cert 1 is honest and the refinement trigger (SMP buffer-pH) is named. Only nit: two significant figures (18–43) reads more precise than a cert-1 ratio-scaled estimate warrants; "~20–40" carries the same information. Per `[[yield-impact-not-cert-fastidiousness]]` below the 3/5 bar (no dose pre-gate; cert already floored at 1).
+- **My read:** cert 1 fine; cosmetic rounding only. Lowest-priority item in this entry.
+
+### Verdict
+
+Land after addressing B1 (lead the alkalinity comparison on SME numbers, not the borrowed-offset water pH, until the direct read lands) + B2 (salinity-side dose ceiling for lettuce, not only the pH-overshoot tier cap — this is the lettuce-specific crux). C1 reframe the standing tier as rarely-fires-on-lettuce. D1 cosmetic. All four shared-with-tomato gaps (oxidation-fraction, exchange-buffer, scale-bridge, bulk-density) ride the tomato entries below — same fixes propagate; don't double-route. All specialist's lane; no STORED pressure; no code/spec edits proposed. B2 is the one worth Guillaume's eye in Mode B — salt on a salt-sensitive crop at transplant is a direct yield axis the current guardrail only half-covers.
+
+---
+
+## 2026-05-29 — review of `nutrition/tomato/soil-ph/model/derivation.md` (new file, full content)
+
+Scope: brand-new derivation for the soil-pH-correction subproject (untracked — whole file is the diff; no prior commit). Sibling `spec.md` is still stub-only (specs blocked on REQ-053 + calcimeter). Claims landed: (1) soil-state anchor table; (2) free-carbonate feasibility gate; (3) sulphur dose rule `S = 0.32 × CaCO₃ mass` + 5-row dose table off calcimeter %; (4) per-application cap 7.7 kg = 2 kg/100 m² (lettuce precedent); (5) pH-scale rule "anchor on Mehlich-3 water pH, track SME root-zone secondary, never mix." Decision history correctly externalized to `learnings/0001`. Carbonate-gate logic is sound and well-steelmanned — the gate-first framing (no dose trustworthy until calcimeter %) is the right epistemic posture. Findings below are on the dose-arithmetic determinacy and the scale endpoint, not the gate.
+
+### Blindspots
+
+**B1 — Lever scale ≠ target scale. Correction is anchored on Mehlich-3 water pH (bulk-soil measure, 7.28), but the endpoint the model consumes (REQ-053 root-zone target band) is a root-zone quantity — the same scale as the SME 6.99 the doc explicitly demotes to "secondary guardrail." The two scales sit ~0.3 units apart by the doc's own statement. Driving a bulk-soil lever to a root-zone target without a stated transfer between scales means the dose can hit the water-pH target while the root-zone (where the plant lives, and where REQ-053 is defined) is still off.** · `PENDING`
+- **What the spec assumes:** "Anchor correction on Mehlich-3 water pH … track SME root-zone as a secondary guardrail. Never mix the two scales in one calculation." Reads as: water-pH is the operative scale; SME is a watchdog.
+- **What might be ignored:** REQ-053 (the unspecced PO gap this model is blocked on) is a *root-zone* target band — SME-scale, not water-pH-scale. The memory rule `[[feedback_sme_spec_ranges]]` says lead soil reads with Mehlich-3, *not* SME interpretive bands — that rule is about deficiency/nutrient bands, not necessarily about which pH scale a root-zone *target* is expressed in. If REQ-053 lands in root-zone terms (likely, given "root-zone target band"), the model anchors the lever on one scale and the goalpost on another, with no conversion. "Never mix the two scales" is then doing double duty: it's a good anti-error rule for a single calc, but here it forbids the very conversion the target → lever handoff requires.
+- **How to test it:** when REQ-053 lands, check which scale it's expressed in. If root-zone/SME, the derivation needs an explicit scale-bridge (paired water-pH ↔ SME-pH regression on Décembre beds, or a stated offset with cert) before any dose targets the band. Cheap interim: log paired Mehlich-3-water + SME pH each Berger cycle to size the offset empirically.
+- **Cost if real:** medium. Not this-cycle (no dose runs until the gate measures). But at gate-firing, a dose sized to move water-pH by Δ could over- or under-shoot the root-zone band by the scale offset; on a slow apply-and-retest loop the mis-target costs a full retest cycle (≥ weeks) per iteration.
+
+**B2 — Stoichiometric titration with no oxidation-efficiency term. `S = 0.32 × CaCO₃ mass` assumes 1 mol applied S → 1 mol H₂SO₄ → 1 mol CaCO₃ neutralized, i.e. 100 % of applied elemental S oxidizes and 100 % of the acid lands on carbonate. Field S oxidation is microbial, incomplete, and slow (temperature / moisture / population-dependent); a real programme needs more S than stoichiometric, or longer.** · `PENDING`
+- **What the spec assumes:** the "S to titrate (kg)" column and the "7.7 kg passes" count read as the physical S that closes the carbonate pool. The reaction chain is written as if it runs to completion.
+- **What might be ignored:** this is the same epistemic shape as the foliar-coverage factor on the spray side (the coverage-axis entries above) — applied mass × an efficiency < 1 = delivered effect. Here the efficiency is the seasonal S-oxidation fraction, which the dose table silently sets to 1.0. Élémental-S product literature typically assumes a fraction oxidizes per season (particle-size and microbial-dependent). At, say, 0.6 seasonal oxidation, every "S to titrate" number is ~1.7× too low, and the "passes" count understates how many applications the carbonate pool actually needs. The dose-table cliff (feasible at 0.1 %, impractical at 1 %) shifts left — i.e. correction becomes impractical at a *lower* carbonate % than the table implies.
+- **How to test it:** name an S-oxidation-efficiency factor (cert 2, particle-size + soil-temp dependent) and apply it to the dose column, or flag the table explicitly as "stoichiometric floor — multiply by 1/oxidation-fraction for applied S." Empirical: post-application soil sulphate (SO₄) rise vs applied S over one season sizes the local oxidation fraction directly.
+- **Cost if real:** medium. The table is the feasibility communicator; if it under-states applied S by ~1.5–2×, the "feasible over a season" read at 0.1 % carbonate is optimistic, and the go/no-go cliff is mis-placed. Drives the manage-around-vs-correct decision on the wrong threshold.
+
+**B3 — Free carbonate framed as THE sink; the CEC=33.1 (very high, Ca-saturated, ~10 989 kg/ha exchangeable Ca) buffer is the larger unflagged sink once carbonate is gone. The gate sizes S to titrate carbonate, then implicitly treats pH as free to move — but a 33 meq/100g Ca-saturated exchange complex resists pH change strongly even at zero free carbonate.** · `PENDING`
+- **What the spec assumes:** "Free carbonate is a sink: oxidised sulphur → H₂SO₄ → neutralises CaCO₃ *before* net pH moves. Until the pool is sized, no sulphur total is trustworthy." The "~0 (no fizz)" row carries a buffer-only estimate at cert 1.
+- **What might be ignored:** the buffer-only row exists, but it's framed as the *low-carbonate* corner case, not as a term that applies *in addition to* carbonate at every row. Even after free CaCO₃ is titrated, each unit of pH drawdown on a CEC-33 Ca-saturated soil consumes a large additional S charge to displace exchangeable Ca (lime-requirement / buffer-pH territory). So total S to reach a target pH = carbonate-titration term **+** exchange-buffer term — the table shows only the first. The doc names SMP/buffer-pH as a refinement trigger for the no-fizz row, which is the right instrument, but the buffer term is mis-scoped as low-carbonate-only when it's universal and, on this CEC, dominant near the target.
+- **How to test it:** SMP / lime-requirement buffer-pH reading (already a named trigger) sizes the exchange-buffer term; add it as a second additive column to the dose table rather than a single-row alternative. Confirms whether the high-CEC buffer or the carbonate pool is the binding constraint near the REQ-053 band.
+- **Cost if real:** medium-high. If the exchange buffer dominates near target, even the "feasible" low-carbonate rows under-state total S to actually *reach and hold* the band — reinforcing the doc's own "holding loop not finish line" point, but quantitatively the dose table would still read as if titrating carbonate ≈ done.
+
+### Complexity
+
+**C1 — 5-row dose table (0 / 0.1 / 0.5 / 1 / 2 % calcimeter).** · `PENDING`
+- **Specialist added:** five illustrative carbonate-% rows, each with CaCO₃ mass, S-to-titrate, pass-count, and a plain-language read.
+- **Test — changes a team action?** Indirectly. The operative input is a single measured calcimeter %, and the model picks one row. The other four rows don't drive an action — they communicate the feasibility cliff.
+- **MVP version:** keep. This is the rare table that earns illustrative breadth: it shows the go/no-go cliff (feasible at 0.1 %, forget-it at 1 %+) that a single formula hides, and the gate decision *is* "which side of the cliff are we on." Cutting to one formula would hide the decision shape. No cut.
+- **Why it might stay:** it is the feasibility-communication surface; the cliff is the whole point of the gate.
+
+### Cert defense
+
+**D1 — Soil mass basis 200 kg/m² (cert 3) is the linear scalar under every number in the dose table, yet presented mid-table as settled context. It encodes 20 cm depth × 1.0 g/cm³ bulk density. 1.0 g/cm³ is low for a mineral bed (typical 1.2–1.4); if it's assumed rather than measured, every "S to titrate" value scales with it (+30 % mass at 1.3 → +30 % S).** (stated cert 3) · `PENDING`
+- **Specialist's defense:** sourced from `soil-contribution/data.js`; 1.0 g/cm³ is plausible for a high-organic amended greenhouse bed; cert 3 reflects the depth/density modelling assumption.
+- **What I'd need to accept cert ≥ 3 as the dose-table basis:** either a measured Décembre bulk-density reading (cert 4) or an explicit note that the dose column scales linearly with this term so a reader knows the table inherits the cert-3 uncertainty. Right now the dose numbers read as determinate while their basis is the softest non-zero-cert term in the anchor table.
+- **My read:** cert 3 on the *basis* is fine; the gap is that the dose table doesn't propagate the cert-3 label onto its outputs. Per `[[yield-impact-not-cert-fastidiousness]]` this is borderline — no dose runs until the gate fires, but the basis sets the whole table's scale, and the incorporation-depth refinement trigger already implies the depth half of this term is live. Bundle the bulk-density-source note with that trigger.
+
+### Verdict
+
+Land after addressing B1 (scale-bridge before any dose targets REQ-053) + B2 (oxidation-efficiency factor or stoichiometric-floor flag) + B3 (exchange-buffer term as additive, not low-carbonate-only). All three are specialist's lane and all tighten the dose-table determinacy without touching the gate logic, which is sound. C1 keep. D1 cert-propagation note, bundle with the incorporation-depth trigger. B1 has a latent Guillaume/PO dependency — it can't fully close until REQ-053's scale is known — but the empirical interim (log paired water + SME pH per Berger cycle) is specialist-actionable now. No STORED pressure; no code/spec edits proposed.
+
+## 2026-05-29 — supplement to entry above (same file, two new sections since prior review)
+
+Scope: the prior 2026-05-29 entry reviewed a version with a single per-application cap (7.7 kg = 2 kg/100 m², lettuce/turf precedent) and no cadence section. The file has since been edited — two new blocks: (1) **two-tier per-pass cap** (tilled-in ~9.8 kg/100 m² → ~5.4 kg/bed; standing-crop ~4.5 kg/100 m² → ~2.5 kg/bed; the old 2 kg/100 m² explicitly superseded as a turf number), both cert 3; (2) **"Pass cadence — oxidation-gated, not calendar-gated"** — micronized (~200 mesh) oxidises mostly in ~28 days at 20–30 °C → monthly passes "physically real"; prilled barred; carbonate-buffered = no-overshoot during burn-down, switch to ≥8-week retest-gated near exhaustion (cert 4 on the oxidation kinetics). Dose table gained a second pass-column (@2.5 + @5.4 kg/bed). Findings below are on the new material only — prior B1 (scale-bridge), B2 (oxidation-efficiency term), B3 (exchange buffer), D1 (bulk-density) remain PENDING above and are NOT re-raised.
+
+### Blindspots
+
+**B4 — Monthly cadence generates a sulphate (CaSO₄ → SO₄²⁻) salt load the model never tracks. Each pass: S → H₂SO₄ → CaSO₄. On a Ca-saturated CEC-33 soil that is also fertigated, gypsum is sparingly soluble but SO₄²⁻ is mobile and accumulates in the root zone → CE rise. The model tracks carbonate burn-down but is silent on the sulphate-salinity side-product of running 12 passes/yr.** · `PENDING`
+- **What the spec assumes:** cadence is gated only by oxidation rate + carbonate buffering; "monthly passes safe while free carbonate remains." Safety is framed purely as pH-overshoot avoidance.
+- **What might be ignored:** the reaction's other product is a salt. 2.5 kg S/bed/pass × ~12 passes ≈ 30 kg S/bed/yr → ~94 kg CaSO₄/bed/yr equivalent (S:CaSO₄ = 32:136). Root-zone CE is already flagged out-of-band on the fertigation side (default STORED computes CE 1.52, changelog 2026-05-25). A monthly root-zone sulphate addition compounds that CE pressure independent of pH. "No overshoot while carbonate buffers pH" is true for pH and silent on salinity — two different failure axes sharing the same cadence.
+- **How to test it:** add a root-zone SO₄²⁻ / CE accumulation note to the cadence section (cert 2 — depends on leaching fraction + fertigation flush), or name an annual-S-load ceiling tied to a CE guardrail rather than only a per-pass pH-overshoot ceiling. Empirical: SME CE before/after a pass-series sizes the sulphate retention directly.
+- **Cost if real:** medium-high. If monthly cadence pushes root-zone CE further out of band, the pH lever buys an acidity correction at a salinity cost — and the operator, reading "monthly passes safe," wouldn't see the CE creep until a Berger SME read weeks later. CE stress on tomato at fruiting is a direct yield lever.
+
+**B5 — The standing-crop cap (4.5 kg/100 m² ≈ "400 lb/acre") is a field-broadcast rate applied to a high-root-density greenhouse bed. Per unit of live root, a greenhouse tomato bed packs far more root than a broadcast field acre; the acid-microzone risk the cap is meant to bound scales with root contact, not ground area.** · `PENDING`
+- **What the spec assumes:** "standing-crop = established-planting ceiling (no till near live roots → acid-microzone risk)," basis cert 3 extension literature.
+- **What might be ignored:** the cap is correctly per-unit-area, but the *risk it bounds* (localised H₂SO₄ microzone scorching live roots) is per-unit-root. A field acre at 400 lb/acre spreads acid across sparse field-crop roots; a 54.7 m² greenhouse bed at the area-equivalent rate concentrates the same per-area acid pulse against a much denser root mat. The cert-3 field basis may over-state the safe standing-crop rate for this geometry. The tilled tier is unaffected (incorporation dilutes through the profile, no live roots).
+- **How to test it:** down-rate the standing-crop tier with an explicit greenhouse-root-density caveat (cert 2), or flag it as "field-broadcast basis — likely conservative needed for bed root density, confirm with a single-bed band trial watching for root scorch / localised pH < 5.5." Cheap empirical: post-band SME pH spot-reads at the band line vs interrow.
+- **Cost if real:** medium. The standing-crop tier is the operative one for most of the calendar (tomatoes in ground); if its safe rate is over-stated, a by-the-book pass risks root-microzone acid damage the cap was specifically added to prevent.
+
+### Complexity
+
+**C2 — Dose table second pass-column (@5.4 kg/bed tilled) alongside @2.5 kg/bed standing.** · `PENDING`
+- **Specialist added:** a second passes-count column so each carbonate-% row shows passes at both tiers.
+- **Test — changes a team action?** Partially. The tilled tier is only reachable between crops (bare bed) — a minority of the calendar for a continuous tomato block. Most real decisions read the standing-crop column.
+- **MVP version:** keep, but the tilled column earns its place only as the "if you can catch a bare-bed window, here's the faster path" lever. One line noting the tilled column is between-crops-only would stop a reader treating 5.4 kg/bed as a generally-available rate. No cut — same feasibility-communicator logic as C1 above.
+- **Why it might stay:** the tilled/standing gap (≈2× rate) is a real operational fork — catching a bare-bed window roughly halves the pass count. That fork is worth showing.
+
+### Cert defense
+
+**D2 — Micronized-S oxidation "mostly in the first ~28 days at 20–30 °C" (cert 4) is the load-bearing claim under "monthly passes are physically real," yet it's a literature/lab kinetic applied to Décembre's unmeasured Thiobacillus population + bed conditions.** (stated cert 4) · `PENDING`
+- **Specialist's defense:** S⁰ oxidation kinetics by particle size + temperature are well-established; greenhouse warm/moist/aerated is near-ideal; micronized ~200 mesh oxidises fastest. The mechanism is genuinely cert 4.
+- **What I'd need to accept cert ≥ 4 on the *cadence claim*:** the mechanism is cert 4; the Décembre-specific 28-day completion is not measured. Thiobacillus population density varies widely with soil history (prior S inputs, organic matter, pH) — a bed that has never run elemental S may oxidise slowly on the first passes until the population builds. Per the canonical min-rule, cadence-feasibility cert = min(mechanism 4, local-population-unknown 2) = 2 until a first-pass SO₄²⁻ rise is measured.
+- **My read:** cert should be **2 on the "monthly is real *at Décembre*" claim** (cert 4 fine on the kinetic mechanism in the abstract). First-pass post-application soil sulphate at 28 days vs applied S calibrates it — same instrument that would size prior B2's oxidation fraction. Bundle the two: one SO₄²⁻ panel sizes both the oxidation *fraction* (B2) and the oxidation *rate* (this).
+
+### Verdict
+
+Land after addressing B4 (sulphate/CE accumulation axis — name it or cap annual S on a CE guardrail) + D2 (down-cert the Décembre monthly-cadence claim to 2 pending first-pass SO₄²⁻ read). B5 is a specialist judgement call on the standing-crop rate — flag-and-caveat now, single-bed band trial to confirm. C2 keep + one between-crops-only line. All specialist's lane; none pressures STORED. Note for Mode B: the new cadence section answers the *timing* half of prior B2 but the dose table still assumes 100 % oxidation — B2's oxidation-*fraction* gap is NOT closed by this edit.
+
+## 2026-05-29 — second supplement to tomato soil-ph entries above (same file, three new sections)
+
+Scope: file edited again since the two supplements above. New material only: (1) **Tiger 90CR on-hand product section** — 90 % S + ~10 % bentonite degradable pastille; product dose = elemental S ÷ 0.90; cert-0 organic status honestly flagged (formulation listing unverified); "form vs micronized" para arguing post-dispersion oxidation approaches micronized rate after a days-long wetting/dispersion lag "inside the 4-week window" (cert 3). (2) **Gypsum self-limit "red herring" paragraph** — CaSO₄ solubility ~2.4 g/L → soil-water dissolves ~8 kg before saturating, excess precipitates inert + leaches, soil-solution EC self-caps ~2.0–2.2 dS/m regardless of dose (cert 4); directly answers prior B4. (3) **Annual-cap-as-monitorable + measured guardrails** — "≤400 lb/acre/yr" reframed as throughput + anaerobic-H₂S default, pH-independent; replaced by EC ≤ 2.5 dS/m + q4wk pH retest (stop 6.5 / floor 6.2) + never-dose-waterlogged (cert 3/4). Prior B1–B5 / D1–D2 remain PENDING above and are NOT re-raised. **Acknowledgement:** the gypsum paragraph substantially closes B4 *for tomato* — the ~2.0–2.2 dS/m self-cap sits below the tomato ECe 2.5 ceiling, so the salt side does not blow the band on this crop (it does NOT close B4 on the lettuce sibling, whose 1.3 ceiling is below the self-cap — that lettuce B2 stands).
+
+### Blindspots
+
+**B6 — The whole cadence + monthly-feasibility argument is derived for micronized ~200-mesh powder, but the on-hand product is Tiger 90CR, a bentonite-bound pastille. The doc bridges the gap with "post-dispersion oxidation approaches the micronized rate" + "wetting/dispersion lag is inside the 4-week window" — both asserted, neither anchored. The model's timing backbone now rests on an unverified equivalence between the product in the shed and the powder in the literature.** · `PENDING`
+- **What the spec assumes:** once the bentonite clay swells and fractures the pastille, the freed S particles oxidise at ~micronized rate; the only penalty is a days-long dispersion lag that fits inside the q4wk retest window.
+- **What might be ignored:** bentonite-prill S is engineered for *handling* (dust-free spreading), not for micronized-grade kinetics — field comparisons of prilled/bentonite vs true micronized S consistently show slower and more variable season-one oxidation, because (a) fracture is moisture-and-tillage-dependent and incomplete on a surface-banded standing-crop pass (no incorporation to work the clay), and (b) the freed-particle size distribution after fracture is coarser than 200-mesh powder. On the standing-crop tier (the operative one most of the calendar, per prior C2) there is no till to drive dispersion — so the lag and the post-fracture particle size are both worse than the tilled case the bridge implicitly pictures. If real oxidation runs slower, monthly passes under-deliver acid per pass (compounds prior B2 oxidation-fraction) AND the "mostly consumed before the next dose, no runaway stacking" safety claim weakens — unoxidised pastille can accumulate across passes, the exact prilled failure mode the doc warns against.
+- **How to test it:** the first-pass SO₄²⁻ panel already named for B2/D2 sizes THIS product's real oxidation directly — run it on Tiger 90CR specifically, surface-banded, not on assumed micronized powder. Until then, down-rate the "approaches micronized" claim to "assume slower; confirm by first-pass sulphate." Cheap interim: a wetting test (does a banded pastille fracture on irrigation alone within days, or sit intact?) settles the dispersion-lag half.
+- **Cost if real:** medium. No live mis-dose pre-gate, but the product-vs-literature gap means the cadence section is calibrated for a powder Décembre doesn't have; on the no-till standing-crop tier the monthly schedule could both under-deliver and slowly stack — the one outcome the cadence design explicitly rules out.
+
+**B7 — The safety architecture flipped from a static annual cap (robust to a missed reading) to a monitoring feedback loop (fails open if a reading is skipped). Dropping "≤400 lb/acre/yr" in favour of q4wk EC + pH retests concentrates ALL overshoot/salinity protection onto a monitoring discipline the doc assumes but never verifies Décembre runs.** · `PENDING`
+- **What the spec assumes:** "Replace the annual cap with measured guardrails" — EC ≤ 2.5, q4wk pH retest stop-at-6.5, never dose waterlogged. With direct monitoring the annual cap "does not bind."
+- **What might be ignored:** the annual cap and the guardrail loop are not equivalent safety designs. A static cap is *open-loop* — it protects even if nobody reads anything; you physically can't exceed it. The guardrail loop is *closed-loop* — it protects only while the operator actually pulls a root-zone ECe and a soil pH every 4 weeks *before* each dose and acts on them. The doc itself calls the annual cap "a default for unmonitored growers" — which is precisely the failure mode to ask about: if a q4wk read slips (instrument uncalibrated, busy transplant week, no SME lab turnaround inside 4 weeks), the loop dosing continues with no backstop. Berger SME turnaround is weeks, so "retest pH every 4 weeks before dosing" may not even be physically satisfiable on lab reads alone — it implies an on-hand soil-pH + EC meter and a calibration routine that aren't named anywhere. Removing the only open-loop guard without confirming the closed-loop inputs exist is the risk.
+- **How to test it:** confirm the monitoring instrumentation + cadence are real before deleting the cap — (a) is there an on-hand soil/root-zone EC + pH meter, (b) what's the actual turnaround, (c) who pulls the read and gates the dose. If the loop can't be guaranteed q4wk, keep a conservative annual backstop as a fail-safe floor *alongside* the guardrails (belt-and-suspenders), rather than replacing one with the other. **Guillaume call needed:** only he knows whether Décembre has the meter + the q4wk discipline to run an open-cap monitored programme.
+- **Cost if real:** medium-high. An unmonitored monthly programme with the cap removed is the worst case the cap existed to prevent — anaerobic-H₂S root burn and/or sulphate-CE creep accumulating unseen between skipped reads. The reframe is correct in *principle* (cap is throughput not toxicity) but it trades a robust guard for a fragile one, and the fragility is invisible until a read is missed.
+
+### Complexity
+
+No new added-constant surface. The ÷0.90 product conversion is a required real number (elemental-S figures → product mass on the actual bag) — keep. The guardrail list is the team's operative action, not scaffolding — not cuttable.
+
+### Cert defense
+
+**D3 — "Post-dispersion oxidation approaches the micronized rate … lag inside the 4-week window" (stated cert 3) is the bridge that lets all the cert-4 micronized kinetics carry over to the on-hand bentonite-prill product.** (stated cert 3) · `PENDING`
+- **Specialist's defense:** the "degradable" mechanism is real — bentonite swells on wetting and fractures the pastille into fine S; Tiger-Sul markets it on exactly this dispersion behaviour.
+- **What I'd need to accept cert ≥ 3:** a bentonite-S (not micronized-S) oxidation anchor, or a Décembre first-pass sulphate read on Tiger 90CR. The mechanism that fracture *happens* is sound; the quantitative claim that post-fracture rate *approaches micronized* and that the lag *fits inside 4 weeks* is the unanchored part — and it's worse on the no-till standing-crop tier. Per the min-rule: min(mechanism cert 4, product-specific-rate-unmeasured 2) = 2 on the "Tiger 90CR behaves like micronized at Décembre" claim.
+- **My read:** cert should be **2** on the equivalence claim (cert 4 fine on the abstract fracture mechanism). Same SO₄²⁻ panel that sizes B2/D2/B6 calibrates this — one first-pass sulphate read on the actual product closes all four. Note: the cert-0 *organic-status* flag on Tiger 90CR is exemplary — honest, named refinement trigger (pull OMRI/Ecocert cert), no assumption. No challenge there.
+
+### Verdict
+
+Land after addressing B6 (run the first-pass SO₄²⁻ panel on Tiger 90CR specifically, surface-banded; down-rate "approaches micronized" until then) + D3 (down-cert the product-equivalence claim to 2). B7 is the one for Guillaume's eye in Mode B — replacing the open-loop annual cap with a closed-loop monitoring guard is sound only if the q4wk EC+pH read is genuinely runnable at Décembre; if not, keep a conservative annual floor as fail-safe. B4 substantially closes for tomato (gypsum self-cap below ECe 2.5) — acknowledge, don't re-raise; lettuce-side B2 still stands. B6/D3/prior-B2/prior-D2 all collapse onto ONE empirical: first-pass sulphate on the real product. All specialist's lane except B7's instrumentation question; no STORED pressure; no code/spec edits proposed.
+
+### Correction to the supplement above — B4 does NOT cleanly close for tomato
+
+The verdict above accepts "gypsum self-cap ~2.0–2.2 dS/m < ECe 2.5 ceiling → B4 closes for tomato". That comparison is wrong-shape. One finding the prior pass missed:
+
+**B8 — The ~2.0–2.2 dS/m self-cap bounds the gypsum *contribution in isolation*; root-zone ECe the plant sees = fertigation background + gypsum contribution. Default STORED already computes root-zone CE 1.52 (changelog 2026-05-25). A saturated-gypsum pulse stacked on a ~1.5 base lands at/over the 2.5 ceiling — so the self-cap does NOT keep tomato under-band; the EC guardrail is doing the real work, not the self-limit.** · `PENDING`
+- **What the spec assumes:** "soil-solution EC self-caps near a saturated CaSO₄ solution (~2.0–2.2 dS/m) regardless of dose. Salt buildup is largely a red herring here." cert 4; supplement above reads this as closing B4 for tomato.
+- **What might be ignored:** (a) additivity — the self-cap is on the gypsum term only; total ECe = fertigation EC + gypsum term, and the doc's own line "transient EC pulse on top of fertigation EC" concedes the base then waves it off. At a 1.52 base a full saturated-gypsum contribution clears 2.5. (b) "Excess precipitates inert + leaches" assumes a leaching fraction the greenhouse controls tightly; under low LF the precipitate re-dissolves (common-ion) as the bed dries between fertigations — a reservoir, not an exit. So "red herring" inverts the operator signal the very-next-line EC guardrail implies.
+- **How to test it:** SME ECe before/after a pass-series on a bed at known fertigation EC sizes the additive pulse + whether it leaves between reads. Reframe prose to "gypsum *contribution* self-caps; total ECe is additive on fertigation — hence the EC guardrail binds when the base runs high."
+- **Cost if real:** medium-high — same CE-stress-at-fruiting axis as prior B4; the new prose under-warns exactly where B4 said the model under-tracked. Net regression in operator signal, not a close.
+
+**Revised B4 status:** the gypsum paragraph *names* the salinity axis (good — B4's original "model is silent" complaint is addressed) but its "red herring / regardless of dose" conclusion over-corrects. B4 stays PENDING for tomato, narrowed to the additivity reframe in B8. Lettuce-side B2 stands unchanged.
+
+---
+
 ## 2026-05-24 — supplement to Ca reactivation review (BURN_CAP_BASE_G row + coverage axis)
 
 Scope: same diff as the entry below. Two mechanical findings the earlier pass didn't surface. (1) New row `Ca | 100 | CaCl₂·2H₂O … | 3` in `BURN_CAP_BASE_G` table at `derivation.md:91`. (2) The 56 mg Ca/m²/wk delivery number depends on a Ca-specific coverage = 0.40 the derivation never names in-doc.
@@ -474,3 +729,100 @@ Hunks: STORED-vs-FP P-13 reframe (closes prior B2 wording), active-channels-sum 
 ## 2026-05-17 — review of `nutrition/tomato/sidedress-recipe/derivation.md` (working-tree diff vs HEAD)
 
 Substantive add: REQ-089 gate-release threshold (Mehlich-3 Ca < 7 500 kg/ha + base-saturation Ca % < 70 % "whichever resolves first"). Three findings auto-rejected at 1/5 (7 500 midpoint-not-mechanistic; CEC-coupling on dual criterion; cold-shoulder pointer/Caveats duplication) — specialist scaffolding for future re-derivation; Actisol stays gated OUT by `ca_pct === 0` regardless. No cert ≥3 claims moved. No Guillaume call.
+
+---
+
+## 2026-05-29 — review of `nutrition/tomato/soil-ph/model/derivation.md` (whole-file introduction — untracked, no prior commit)
+
+Scope: new subproject derivation. No spec entries yet (model/spec.md blocked on calcimeter % + PO soil-root-zone-ph-band). Sulphur dose rule (S = 0.32 × CaCO₃), feasibility gate (free carbonate), dose table, refinement triggers, pH-scale anchor. Self-rejected acid amendment + fast recovery in `learnings/0001`. Solid, honestly cert-flagged work — two real blindspots below, one minor.
+
+### Blindspots
+**B1 — Dose table reads S stoichiometrically; ignores elemental-S microbial oxidation rate at greenhouse soil temperature.** · `PENDING`
+- **What the spec assumes:** "feasible over a season" / "~3 passes" treats applied S as if it titrates carbonate on the application timescale (1 mol S → 1 mol CaCO₃, done).
+- **What might be ignored:** elemental S only acidifies *after* Thiobacillus oxidation to H₂SO₄ — slow, temperature- and population-limited. In cool/early soil only a fraction of a pass may oxidise before the next. The "Read" column rates feasibility on total mass, not on the rate-limited fraction that actually converts per season.
+- **How to test it:** literature on elemental-S oxidation rate at our soil temp range; PA Taillon field experience on sulphur lead-time; or a small apply-and-retest trial timing the pH move.
+- **Cost if real:** medium — "feasible over a season" could be "feasible over 2-3 years," which flips sulphur from a real lever to a slow-trim-only at the 0.1% row too, not just 0.5%+.
+
+**B2 — Dose table counts only carbonate-titration S; omits the CEC-buffering term needed to move pH *after* free carbonate is gone.** · `PENDING`
+- **What the spec assumes:** two regimes — high carbonate → titrate carbonate (0.32× rows); zero carbonate → buffer-only estimate (cert 1). The rows in between charge S only to neutralise carbonate.
+- **What might be ignored:** the model's question is "move pH to target," not "consume carbonate." With CEC 33.1 meq/100g + exchangeable Ca ~10 989 kg/ha, once free carbonate is titrated the soil is still strongly pH-buffered — additional S is needed to shift pH against the exchange complex. The 0.1%/0.5% rows understate total S to *reach the target* by exactly the buffer-only term they only apply to the no-fizz case. Carbonate-titrated ≠ at-target.
+- **How to test it:** SMP / lime-requirement buffer-pH reading gives the full acid requirement to a target including CEC buffering — add it to (not substitute for) the carbonate term.
+- **Cost if real:** high — every non-zero-carbonate dose is a floor, not the answer; "feasible" rows could be under-rated on total S.
+
+**B3 — Soil-mass basis assumes bulk density 1.0 g/cm³; doses scale linearly with it.** · `PENDING`
+- **What the spec assumes:** 200 kg/m² = 20 cm × 1.0 g/cm³ (cert 3). Refinement triggers list incorporation *depth* but not density.
+- **What might be ignored:** mineral greenhouse soil is typically 1.2-1.4 g/cm³; at 1.3 the soil mass (and carbonate mass, and every S dose) is ~30% higher than tabled. Density is as load-bearing as depth, which is already a listed trigger.
+- **How to test it:** a measured bulk-density on the tomato bed (cheap, one core); or fold density into the existing depth refinement trigger.
+- **Cost if real:** low-medium — proportional dose error, same direction across all rows.
+
+### Complexity
+No finding. Nothing is wired (no code, spec blocked); the 5-row dose table is illustrative go/no-go derivation, not constants forcing a team action. The 1%/2% rows collapse to one action ("abandon, manage around") but the table earns its space as a feasibility aid — steelman holds, drop.
+
+### Cert defense
+No cert ≥3 claim is over-stated. S:CaCO₃ 32:100 is textbook (cert-solid). Soil-state anchors cert 4 are Berger-sourced. Soil-mass cert 3 carries the bulk-density assumption flagged in B3 but is honest for derivation scaffolding. Buffer-only estimate self-rated cert 1. No challenge.
+
+### Verdict
+Land — strong, honestly-flagged introduction. Address B1 (oxidation timescale) + B2 (CEC buffer term beyond carbonate) before any dose table is read as a programme; both change whether "feasible" rows are truly feasible. B3 minor. All three are specialist-lane refinements, none needs a Guillaume field call to file.
+
+---
+
+## 2026-05-29 (2) — re-review of `nutrition/tomato/soil-ph/model/derivation.md` (whole-file, expanded since 2026-05-29 (1))
+
+Scope: new since prior pass — "Pass cadence — oxidation-gated, not calendar-gated" section + gypsum salinity self-limit. Prior B1 (oxidation timescale) is now **addressed** by the cadence section (micronized half-life, steady-state framing). Prior B2 (CEC buffer term beyond carbonate) + B3 (bulk-density basis) still stand, unchanged in this edit — not re-fired here. Below: findings on the new claims only.
+
+### Blindspots
+**B1 — "Monthly reaches steady state, does NOT runaway-stack" assumes an established Thiobacillus population; first-season cold-start violates it.** · `PENDING`
+- **What the spec assumes:** micronized S half-oxidises in ~6–10 days at 20 °C, so a monthly dose is mostly consumed before the next → no accumulation.
+- **What might be ignored:** that half-life is a steady-state figure. A bed with no prior elemental-S history has a population-establishment lag (weeks–months) before *Thiobacillus* builds up. Early monthly doses can accumulate unoxidised — exactly the runaway-stack the model rules out — then crash pH when the population catches up. The "does NOT runaway-stack" claim is true only after the colony is established.
+- **How to test it:** literature on first-season S⁰ oxidation lag / inoculation; the EC+pH-at-4-weeks guardrail partly catches it but won't see unoxidised inventory, only realised acid. A redox/pH retest before dose 2–3 confirms whether dose 1 actually moved.
+- **Cost if real:** medium — first 1–3 passes over-credited; risk of a delayed pH crash + transient H₂S if the inventory reduces.
+
+**B2 — Aeration guardrail is bed-scale ("never dose a waterlogged bed"); ignores local anaerobic microzones around undissolved S under continuous drip.** · `PENDING`
+- **What the spec assumes:** keeping the bed aerobic prevents S⁰ → H₂S root burn; operator gate is "don't dose waterlogged."
+- **What might be ignored:** monthly 1.5–2.5 kg micronized S/bed + continuous fertigation can create reduced microzones around undissolved particles even in a nominally aerobic bed. The operator can't see microzone anaerobiosis; the bed-scale gate misses it.
+- **How to test it:** PA Taillon field experience on S near live tomato roots under drip; or a smell/redox spot-check near banded S.
+- **Cost if real:** medium — localized root burn, not whole-bed, but in the active crop.
+
+### Complexity
+**C1 — Tilled-in cap tier is untethered to any cadence or dose recommendation.** · `PENDING`
+- **Specialist added:** two-tier per-pass cap (tilled-in ~5.4 kg/bed vs standing ~2.5 kg/bed).
+- **Test:** changes a team action? The bottom-line programme (1.5–2.5 kg/bed/month, EC+pH guardrails) is standing-crop only. The tilled tier names a ceiling with no cadence/recommendation attached — it's a lone number.
+- **MVP version:** fold the tilled ceiling into a one-line note on the between-crop window, or drop until a bare-bed programme is actually derived.
+- **Why it might stay:** between-crop tilling is a genuine second regime with a much higher ceiling — worth recording if a bare-bed catch-up pass is ever planned. Steelman is thin but real; low-priority.
+
+### Cert defense
+**D1 — "The ≤400 lb/acre/yr cap is a throughput + anaerobic-H₂S default, pH-independent in origin; monthly splits totalling more than it are supported" (stated cert 4 / cert 3).** · `PENDING`
+- **Specialist's defense:** the annual figure is an unmonitored-grower throughput default, not a toxicity or pH-overshoot ceiling; with direct EC+pH monitoring it doesn't bind.
+- **What I'd need to accept cert ≥4:** a published source that actually states the cap's *basis* (throughput/H₂S, not cumulative soil-acidification or sulfate limit). cert 4 here is on an interpretation of *why* an extension number exists — that's the load-bearing claim that unlocks dosing past the annual figure. If the cap secretly embeds a cumulative-acidification limit, monthly stacking over-acidifies or builds sulfate.
+- **My read:** the "monthly splits supported" half is already honestly cert 3 (principle-sourced, no validated higher number). The "pH-independent in origin" half should be **cert 3**, not 4 — it's an inference about an external number's rationale, not a measured/textbook fact. Demote until a source names the basis.
+
+**D2 — "Soil-solution EC self-caps near saturated CaSO₄ (~2.0–2.2 dS/m) regardless of dose; salt buildup largely a red herring" (stated cert 4).** · `PENDING`
+- **Specialist's defense:** gypsum solubility ~2.4 g/L caps dissolved Ca/SO₄; excess precipitates inert.
+- **What I'd need to accept cert ≥4 on "regardless of dose":** the self-cap assumes equilibrium with free water + drainage and ignores the common-ion effect from fertigation Ca/SO₄ (which *lowers* gypsum solubility, so the EC floor from gypsum is real but the combined fertigation+gypsum EC can still exceed the gypsum-alone cap). The derivation already hedges this with the EC guardrail, so the practical risk is covered.
+- **My read:** fine as stated *because* the EC guardrail backstops it — but "regardless of dose / red herring" reads stronger than the chemistry warrants under fertigation. Leave the value; soften the cert-4 framing to cert 3 if challenged. Low priority.
+
+### Verdict
+Land — the cadence + gypsum additions are solid and resolve prior B1. Address B1 (cold-start lag — it contradicts the explicit "does NOT runaway-stack" claim) before the monthly programme is read as safe from pass 1. D1 is the real cert challenge (the pH-independent-cap claim is what unlocks stacking past the annual figure — demote to cert 3 pending a source). B2, C1, D2 are specialist-lane minors. None needs a Guillaume field call to file, though B2 + D1 would both benefit from PA Taillon input in Mode B.
+
+## 2026-05-30 (2) — re-pass on nutrition/tomato/soil-ph/model/derivation.md (file re-fired; novel-only)
+
+Scope: file re-edited. Most angles already PENDING from the four prior passes — NOT re-raised. Specifically de-duplicated: scale lever≠target (prior 2026-05-29 B1), oxidation fraction (prior B2), exchange-buffer (prior B3), cadence-vs-"not-a-rescue" coherence (prior B9), overlapping dose tables (prior C3), gypsum EC self-cap cert/additivity (prior D2/B8). Below: only findings the prior passes did not carry.
+
+### Blindspots
+**B10 — Root zone (SME 6.99) may already sit inside the target band → the whole programme may be chasing a bulk-soil number the plant doesn't feel.** · `PENDING`
+- **What the spec assumes:** anchor on Mehlich-3 water pH 7.28, draw down toward ~6.5; P is locked and pH-drawdown releases it.
+- **What might be ignored:** sharper than prior B1 (which flagged the scale *bridge*). This flags the *level*: roots experience SME 6.99 — already at/near the 6.5 target. If the rhizosphere is effectively on-target, the multi-cycle S programme corrects a bulk number the plant doesn't live in, and the P-lockout narrative weakens (P availability is a root-zone phenomenon). Prior B1 asked "convert before you dose"; this asks "is there a gap to close at all?"
+- **How to test it:** tissue P trend vs SME-available P over the next panel; PA Taillon read on whether a 6.99 root zone justifies a years-long S programme.
+- **Cost if real:** high — could retire the correction effort, not just re-scale it.
+
+**B11 — Adding gypsum (CaSO₄) to an already Ca-saturated CEC ignores Ca × Mg/K cation antagonism — a separate axis from the sulphate-EC findings (B4/B8).** · `PENDING`
+- **What the spec assumes:** the gypsum by-product is inert/self-limiting; its only tracked effect is a transient EC pulse.
+- **What might be ignored:** B4/B8 cover *total salinity*. This is *cation balance*: the bed is flagged Ca-saturated (Mehlich-3 Ca ~10 989 kg/ha; the same read that drove the 2026-05-28 Actisol→0 retire). Every pass adds solution Ca that competes with Mg and K uptake — the exact antagonism that justified cutting MgSO₄/K₂SO₄ on the fertigation side. The S lever quietly pushes Ca the recipe side is trying to pull back.
+- **How to test it:** tissue Mg:K:Ca ratio before/after a trial pass; recompute against the current fertigation cation load.
+- **Cost if real:** medium.
+
+### Complexity / Cert defense
+No novel finding beyond the prior passes.
+
+### Verdict
+Land after the prior-pass items + B10. B10 is the one for Mode B — it's potentially programme-ending (a Guillaume/PA-Taillon call on whether a 6.99 root zone needs correcting at all) and sits upstream of the calcimeter gate. B11 is a specialist-lane cation-balance note to fold into the gypsum section. Everything else routes via the existing PENDING entries; no double-routing.

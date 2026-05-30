@@ -30,6 +30,11 @@ admin page live in `nutrition/tomato/shell/spec.md` (page-shell orchestration
   carries surfactant lever only (sprayCount input retired 2026-05-24).
   Layer files: `spec.md`, `model/spec.md`, `builder/user-stories.md`,
   `procedure/user-stories.md`, `operator/user-stories.md`. Vocabulary in `CONTEXT.md`.
+- **`soil-ph/model/spec.md`** — whether/how much elemental sulphur
+  corrects tomato-bed soil pH toward the root-zone target. Calcimeter
+  free-carbonate reading is the feasibility gate; acid amendment
+  rejected. Greenfield — spec entries blocked on the soil-root-zone
+  target band + the carbonate measurement. No code yet.
 
 The specs below cover the *coupling* between plant-needs and the supply
 chain (`under-fert-guard`, `luxury-feeding-guard`) plus the

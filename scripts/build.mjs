@@ -24,7 +24,7 @@
 //   - The resolver is purely textual — no template variables, no logic.
 //     If you need a variable, do it in the partial itself.
 
-import { readFile, writeFile, copyFile, mkdir, readdir } from 'node:fs/promises';
+import { readFile, writeFile, copyFile, mkdir, readdir, cp } from 'node:fs/promises';
 import { watch } from 'node:fs';
 import { resolve, dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -42,6 +42,12 @@ const STATIC_ASSETS = [
   'apple-touch-icon.png',
   'historique.html',
   'history.json',
+];
+// Static asset directories copied recursively into dist/, preserving the
+// subpath. `app/diagnostic/images/` ships the symptom-guide reference photos
+// referenced via <img src="diagnostic/images/...">.
+const STATIC_ASSET_DIRS = [
+  ['app/diagnostic/images', 'diagnostic/images'],
 ];
 // Match a whole-line @include directive: leading hspace + marker + trailing
 // hspace + optional newline. Consuming the newline avoids a stray blank line
@@ -165,6 +171,9 @@ async function build() {
   await writeFile(OUTPUT, out);
   await Promise.all(STATIC_ASSETS.map(name =>
     copyFile(resolve(PROJECT_ROOT, 'app', name), resolve(DIST_DIR, name))
+  ));
+  await Promise.all(STATIC_ASSET_DIRS.map(([from, to]) =>
+    cp(resolve(PROJECT_ROOT, from), resolve(DIST_DIR, to), { recursive: true })
   ));
   const ms = Date.now() - t0;
   const ts = new Date().toLocaleTimeString('fr-CA', { hour12: false });

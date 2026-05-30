@@ -15,7 +15,7 @@ Spawned by team-leader. Leader's prompt names your subproject + pastes the filte
 - `team/lib/code-shape.md` (opt-in).
 - Root `spec.md` (cross-app contract).
 - Your subproject's spec source — `spec.md` (model surface) or `user-stories.md` (PO surface) — + `*.test.mjs` files.
-- Your subproject's `derivation.md` (model-layer only — the formal blueprint per `.claude/agents/plant-nutrition-specialist.md § Derivation`; your code IS the implementation of its formulas, coefficients, algorithms).
+- Your subproject's `derivation.md` (model-layer only — the formal blueprint per `team/plant-nutrition-specialist/skills/to-specs.md § Derivation discipline`; your code IS the implementation of its formulas, coefficients, algorithms).
 
 One-shot subagent. Return a structured report; no dialogue.
 

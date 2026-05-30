@@ -66,4 +66,5 @@ Every contribution channel exposes per-element supply in mg/m²/wk. The plant-ne
 
 - `team/product-owner/skills/to-specs.md` — PO-surface counterpart
 - `nutrition/tomato/plant-needs/spec.md` — canonical model-layer spec
-- `.claude/agents/plant-nutrition-specialist.md § Derivation` — faithful-blueprint contract
+
+This skill's **Derivation discipline** section IS the faithful-blueprint contract. The persona file carries only a pointer here.

@@ -78,7 +78,8 @@ const DIAG_DATA = {
             cause: 'Carence en magnésium (Mg)',
             cert: 5,
             confirm: 'C\'est sur les VIEILLES feuilles (le contraire de Fe). Le motif est visuel et reconnaissable une fois vu.',
-            action: 'Augmenter le multiplicateur MgSO₄ dans la fertigation (actuellement 1,5×, possibilité 2×).'
+            action: 'Augmenter le multiplicateur MgSO₄ dans la fertigation (actuellement 1,5×, possibilité 2×).',
+            image: 'diagnostic/images/mg-deficiency-tomato-leaf.jpg'
           },
           {
             id: 't-k',
@@ -87,7 +88,8 @@ const DIAG_DATA = {
             cause: 'Carence en potassium (K)',
             cert: 5,
             confirm: 'Ce sont les BORDS qui partent, pas l\'intérieur. Mg = entre les nervures ; K = sur la marge.',
-            action: 'Vérifier le K₂SO₄ dans la fertigation. Possiblement augmenter le multiplicateur (actuellement 1×).'
+            action: 'Vérifier le K₂SO₄ dans la fertigation. Possiblement augmenter le multiplicateur (actuellement 1×).',
+            image: 'diagnostic/images/k-deficiency-tomato-leaf.jpg'
           },
           {
             id: 't-n',
@@ -96,7 +98,8 @@ const DIAG_DATA = {
             cause: 'Carence en azote (N)',
             cert: 5,
             confirm: 'Pas de motif particulier — juste pâle partout. Si le pâle est concentré entre les nervures → plutôt Fe ou Mg.',
-            action: 'Peu probable à votre dose actuelle (le N vient surtout du sol et des amendements). Vérifier l\'application de compost / azote organique au sol.'
+            action: 'Peu probable à votre dose actuelle (le N vient surtout du sol et des amendements). Vérifier l\'application de compost / azote organique au sol.',
+            image: 'diagnostic/images/n-deficiency-tomato-leaf.jpg'
           },
           {
             id: 't-p',
@@ -130,7 +133,8 @@ const DIAG_DATA = {
             cause: 'BER (Blossom-End Rot) — translocation du Ca',
             cert: 5,
             confirm: 'Typique et reconnaissable. À ne pas confondre avec carence en B (qui donne des taches sur la peau ailleurs sur le fruit ET tiges creuses).',
-            action: 'Prévention : ventilation HAF + gestion de l\'humidité matinale (le Ca xylémique suit le flux de transpiration; humidité élevée le matin freine le transport vers les jeunes fruits). Spray foliaire CaCl₂ retiré du programme 2026-05-06 (Ecocert non vérifié) — application externe événementielle si BER persiste.'
+            action: 'Prévention : ventilation HAF + gestion de l\'humidité matinale (le Ca xylémique suit le flux de transpiration; humidité élevée le matin freine le transport vers les jeunes fruits). Spray foliaire CaCl₂ retiré du programme 2026-05-06 (Ecocert non vérifié) — application externe événementielle si BER persiste.',
+            image: 'diagnostic/images/ber-blossom-end-rot.jpg'
           },
           {
             id: 't-b-fruit',
@@ -139,7 +143,8 @@ const DIAG_DATA = {
             cause: 'Carence en bore (B)',
             cert: 4,
             confirm: 'Vérifier aussi tiges creuses + apex qui meurt. Si plusieurs signes B → certitude.',
-            action: 'Maintenir le Solubore dans le Spray A.'
+            action: 'Maintenir le Solubore dans le Spray A.',
+            image: 'diagnostic/images/b-deficiency-tomato-fruit-corky.jpg'
           },
           {
             id: 't-b-stem',
@@ -375,6 +380,7 @@ function renderDiag() {
     const s = loc.symptoms.find(sm => sm.id === diagSymptom);
     document.getElementById('diag-result').innerHTML = `
       <div class="diag-result-cause">${s.cause}<span class="diag-cert diag-cert-${s.cert}">Certitude ${s.cert}/5</span></div>
+      ${s.image ? `<img class="diag-result-image" src="${s.image}" alt="Photo de référence : ${s.cause}" loading="lazy">` : ''}
       <div class="diag-result-section">
         <div class="diag-result-label">Comment confirmer</div>
         <div class="diag-result-text">${s.confirm}</div>

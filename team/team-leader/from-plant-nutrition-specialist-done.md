@@ -8,6 +8,15 @@ Most recent at the top.
 
 ## Entries
 
+## 2026-05-28 — app/diagnostic (asset wiring, NOT a spec change)
+
+**Change type:** added (5 reference images for the tomato symptom guide)
+**REQs affected:** none — operator-facing asset wiring.
+**Summary:** wire 5 verified tomato symptom images into `app/diagnostic/` per `nutrition/tomato/doc/diagnostic-image-curation.md` mapping; 8 entries stay imageless; Mn-toxicity photo must NOT attach to `t-mn`.
+
+### Team-leader outcome (2026-05-28)
+Handled directly (small surgical asset-wiring, no spec/REQ → no test-writer/pruner waves; per `test-depth-matches-spec-demand`, no spec demand = no test contract). 5 images wired to `t-mg`, `t-k`, `t-n`, `t-ber` (BER — the inbox/doc label `fruit` is the location id; BER symptom object id is `t-ber`), `t-b-fruit`. `t-mn` correctly left imageless (toxicity guardrail). Image-src: photos resized ≤900px/q82 (<100 KB each) into new `app/diagnostic/images/`; `scripts/build.mjs` taught to copy that dir → `dist/diagnostic/images/`; src `diagnostic/images/<file>` returns 200 from the running server. Imageless entries emit no `<img>` (guarded ternary). `check-spec.sh` 158/1 (REQ-002 pre-existing), `npm test` 26/29 (3 failures pre-existing foliar/sidedress, unrelated). Outcome delivered — entry deletable.
+
 ## 2026-05-24 21:24 — nutrition/tomato/foliar-strategy/model
 
 **Change type:** added, edited
