@@ -19,8 +19,8 @@ T5 would drop from ~4 953 g to ~880 g; FP Mg target would drop from
 drift gauge would flip from STORED-under-FP to STORED-over-FP for K + Mg.
 
 **Decision (2026-05-17):** rejected. Adopted "path 2" — keep
-`computeStageRecipe` as-is, declare the architectural choice in REQ-141
-+ derivation explicitly in only-ca-p-participate-in-gap-chain: fertigation sizing covers the active-channels
+`computeStageRecipe` as-is, declare the architectural choice in
+only-ca-p-participate-in-gap-chain + derivation explicitly: fertigation sizing covers the active-channels
 delivery share (compost + sidedress + fertigation), the soil bank's
 K + Mg mass-flow contribution is operator-side headroom outside the
 sizer's scope. Guillaume direct ruling — STORED is operator lane per

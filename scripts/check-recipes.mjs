@@ -8,31 +8,31 @@
 // structural + DOM-walk checks for the REQs listed below.
 //
 // Implements (Phase 2):
-//   REQ-001 — DOM-walked French CE check (migrated from bash)
-//   REQ-006 — DOM-walked >Kelp check (migrated from bash)
-//   REQ-007 — DOM-walked jargon scan, scoped to non-admin pages (migrated)
-//   REQ-008 — pinned-date getWeekNumber tests (migrated from bash greps)
-//   REQ-010 — every PRODUCT[*].mode is 'flux' or 'concentration'
-//   REQ-011 — CHANNEL_ROLE covers every element in BIOMASS_DEMAND.T1..T5
+//   ui-language-ce-not-ec — DOM-walked French CE check (migrated from bash)
+//   ui-language-algue-not-kelp — DOM-walked >Kelp check (migrated from bash)
+//   ui-language-plain-french — DOM-walked jargon scan, scoped to non-admin pages (migrated)
+//   iso-week-numbering — pinned-date getWeekNumber tests (migrated from bash greps)
+//   recipe-mode-per-product — every PRODUCT[*].mode is 'flux' or 'concentration'
+//   channel-role-coverage — CHANNEL_ROLE covers every element in BIOMASS_DEMAND.T1..T5
 //             ∪ TOMATO_FRUIT_EXPORT
-//   REQ-011 — fraction sums per element in CHANNEL_ROLE within 1.0 ± 0.05
-//   REQ-019 — every product's phClass covers every element in base
-//   REQ-022 — every product in any active recipe has organicAllowed: true
-//   REQ-023 — every product in PRODUCT has an ecFactor field (number; 0 explicit)
-//   REQ-029a — every product has non-empty ions and chemistryTags
-//   REQ-029b — every (cation × anion) pair across PRODUCT.ions is in
+//   channel-role-coverage — fraction sums per element in CHANNEL_ROLE within 1.0 ± 0.05
+//   phclass-covers-every-element — every product's phClass covers every element in base
+//   every-product-ecocert-allowed — every product in any active recipe has organicAllowed: true
+//   ec-factor-covers-every-product — every product in PRODUCT has an ecFactor field (number; 0 explicit)
+//   product-declares-ions-and-chemistry-tags — every product has non-empty ions and chemistryTags
+//   every-cation-anion-pair-classified — every (cation × anion) pair across PRODUCT.ions is in
 //              KSP_PAIRS or KSP_SAFE
-//   REQ-029c — every distinct PRODUCT.chemistryTags tag is in
+//   every-chemistry-tag-classified — every distinct PRODUCT.chemistryTags tag is in
 //              TAG_INCOMPATIBILITIES or TAGS_INERT
 //
 // Deferred to Phase 2.5 (need richer plumbing or human-decided thresholds):
-//   REQ-013, REQ-014 (supply ratio bounds)
-//   REQ-015 (concentration band validation)
-//   REQ-017, REQ-018 (effective efficiency at current pH)
-//   REQ-020 (lockout gate)
-//   REQ-021 (solubility cap)
-//   REQ-024, REQ-025, REQ-029..REQ-032 (CE bands, precipitation logic, mix order, stock stability)
-//   REQ-053..REQ-055 (pH envelope, chelate stability, foliar pH curve)
+//   under-fert-guard, luxury-feeding-guard (supply ratio bounds)
+//   concentration-dose-within-band (concentration band validation)
+//   ph-aware-effective-efficiency, no-decorative-products-at-current-ph (effective efficiency at current pH)
+//   passive-supply-lockout-gate (lockout gate)
+//   solubility-cap-per-product (solubility cap)
+//   predicted-ce-within-crop-stage-band, foliar-ce-under-burn-cap, in-tank-ksp-precipitation-guard, stock-barrel-time-stability (CE bands, precipitation logic, mix order, stock stability)
+//   predicted-tank-ph-within-envelope, chelate-stability-ph-range-respected, foliar-uptake-ph-curve (pH envelope, chelate stability, foliar pH curve)
 //
 // Exit code: 0 on full pass, 1 on any failure. If jsdom is missing, exits 0
 // after printing a single "skipped" warning so the bash umbrella verifier
@@ -140,7 +140,7 @@ try {
   process.stdout.write(
     `\n${c.yellow}⚠${c.reset} node verifier skipped: jsdom not installed.\n` +
     `  Run \`npm install\` from ${REPO_ROOT} to enable Phase 2 checks.\n` +
-    `  (REQ-010+, REQ-029a/b/c, and node-migrated REQ-001/006/007/008 will not run.)\n`
+    `  (structural product/chemistry checks and node-migrated CE/Kelp/jargon/week checks will not run.)\n`
   );
   process.exit(0);
 }
@@ -178,30 +178,30 @@ const exposeNames = [
   'COMPOST_AMENDMENT', 'COMPOST_LABEL_PCT', 'COMPOST_MINERALIZATION_YEAR1',
   'COMPOST_SEASONAL_FACTOR', 'COMPOST_RELEASE_PER_WEEK', 'theoreticalReleasePerWeek',
   'FIRST_PRINCIPLES_SIDEDRESS', 'computeStageSidedress',
-  // Fertigation-recipe (REQ-098..099, REQ-154, REQ-155). wireFpFertigation()
+  // Fertigation-recipe (mass-balance-derivation, public-api-namespace, fp-target-mirrors-sizer, uptake-efficiency-factor). wireFpFertigation()
   // in calc.js writes computeStageRecipe('T5') output into
   // FIRST_PRINCIPLES_T5_FERTIGATION at script load, then propagates to
-  // FP_RECIPE_T5.fertigation. REQ-155 added per-element uptake factor
+  // FP_RECIPE_T5.fertigation. uptake-efficiency-factor added per-element uptake factor
   // (PH_UPTAKE_FACTOR_AT_CURRENT_SOIL) for K/Mg/B; computeStageRecipe
   // divides demand by the factor before subtracting compost+sidedress.
-  // REQ-100 (mode-aware mixing factor) retired 2026-05-10.
+  // mode-aware mixing factor retired 2026-05-10.
   'FP_RECIPE_T5',
   'FIRST_PRINCIPLES_T5_FERTIGATION',
   'PH_UPTAKE_FACTOR_AT_CURRENT_SOIL',
-  // Foliar-recipe (REQ-101 / REQ-103). Cuticle-coverage delivery model;
+  // Foliar-recipe (coverage-discount-on-delivery / public-api-namespace). Cuticle-coverage delivery model;
   // the function reads from STORED_RECIPE.tomato.foliaire so the verifier
   // also pulls the constants directly via window.FoliarRecipeTomato.
   'FOLIAR_COVERAGE_DEFAULT', 'FOLIAR_COVERAGE_WITH_YUCCA', 'computeFoliarSupply',
   'BURN_CAP_BASE_G', 'burnCapG', 'computeFoliarRecipeForGap',
-  // Nursery plant-needs (REQ-090..093). Until app/index.html @includes the
+  // Nursery plant-needs (nursery plant-needs). Until app/index.html @includes the
   // partials, window.PlantNeedsNursery / NURSERY_TARGETS / calculateNurseryDemand
-  // are absent — the verifier's REQ-090..093 block loads the source files via
+  // are absent — the verifier's nursery plant-needs block loads the source files via
   // Node vm and runs assertions there, so the checks pass pre-integration and
   // also remain valid post-integration (the source-of-truth is the file set).
   'PlantNeedsNursery',
   'NURSERY_TARGETS', 'calculateNurseryDemand',
   'LETTUCE_NURSERY_TISSUE_DW', 'LETTUCE_NURSERY_DM_FRACTION',
-  // Salanova plant-needs (REQ-165..169). After the 2026-05-16 carve, the
+  // Salanova plant-needs (lettuce plant-needs spec). After the 2026-05-16 carve, the
   // partials in nutrition/lettuce/plant-needs/ supply LETTUCE_TISSUE_DW,
   // LETTUCE_DM_FRACTION, LETTUCE_FRONTLOAD_DEFAULTS, SME_LETTUCE_PPM,
   // calculateLettuceNutrition{Demand,Supply}, and window.PlantNeedsLettuce.
@@ -210,7 +210,7 @@ const exposeNames = [
   'SME_LETTUCE_PPM',
   'calculateLettuceNutritionDemand', 'calculateLettuceNutritionSupply',
   'getWeekNumber', 'foliarPhResponse',
-  // The following are EXPECTED constants for REQ-030/031 — not currently
+  // The following are EXPECTED constants for incompatible-recipes-declared / mix-order-per-multi-product-recipe — not currently
   // declared in index.html. Verifier asserts presence and fails informatively
   // if absent, so the gap is tracked rather than silently passed.
   'INCOMPATIBLE_RECIPES', 'MIX_ORDER',
@@ -348,7 +348,7 @@ const FORBIDDEN_EC_PATTERNS = [
 ];
 
 // Collect visible text per element. We skip <script>/<style> and known
-// lab-quote spans (REQ-001 scope: Berger Labs water analysis is OUT of
+// lab-quote spans (ui-language-ce-not-ec scope: Berger Labs water analysis is OUT of
 // scope). Phase 2 has no explicit lab-quote tag, so we walk everything;
 // none of the current lab quotes appear inside an EC-context that would
 // match these regexes (verified by running this against current index.html).
@@ -527,7 +527,7 @@ if (!CHANNEL_ROLE || !BIOMASS_DEMAND || !TOMATO_FRUIT_EXPORT) {
 // biomass term for Ca and Mg only. Verified by calling at tf=1.0 vs tf=0.5
 // and asserting Ca/Mg biomass term halves while N/P/K/micros are unchanged.
 //
-// Spec: nutrition/tomato/plant-needs/spec.md → REQ-081.
+// Spec: nutrition/tomato/plant-needs/spec.md → ca-mg-biomass-transpiration-coupled.
 
 header('ca-mg-biomass-transpiration-coupled — Ca/Mg biomass demand × transpFactor');
 
@@ -573,7 +573,7 @@ if (!calculateNutritionDemand) {
 // flagging anything in the 250%+ range as suspicious. Stage order is
 // taken from `Object.keys(BIOMASS_DEMAND)` in declaration order.
 //
-// Spec: nutrition/tomato/plant-needs/spec.md → REQ-082.
+// Spec: nutrition/tomato/plant-needs/spec.md → stage-transition-continuity.
 
 header('stage-transition-continuity — BIOMASS_DEMAND stage-transition continuity (≤ 250 %)');
 
@@ -613,7 +613,7 @@ if (!BIOMASS_DEMAND) {
 // expected public API. Renames or removals fail loudly here, before
 // they break consumers (Bilan UI, recipe calculators).
 //
-// Spec: nutrition/tomato/plant-needs/spec.md → REQ-083.
+// Spec: nutrition/tomato/plant-needs/spec.md → plant-needs-tomato-namespace.
 
 header('plant-needs-tomato-namespace — window.PlantNeedsTomato public API surface');
 
@@ -646,7 +646,7 @@ if (!PN) {
 // SEASONAL_FACTOR. Catches transcription errors while allowing conservative
 // manual overrides (Mg label-gap, ~25 % below theoretical).
 //
-// Spec: nutrition/compost-contribution/spec.md → REQ-079.
+// Spec: nutrition/compost-contribution/spec.md → release-values-within-mass-balance-band.
 
 header('release-values-within-mass-balance-band — Compost release within ±50 % of mass-balance');
 
@@ -684,7 +684,7 @@ if (!COMPOST_RELEASE_PER_WEEK || !COMPOST_LABEL_PCT
 
 // ─── public-api-namespace — CompostContribution public API namespace ─────────────────
 //
-// Spec: nutrition/compost-contribution/spec.md → REQ-080.
+// Spec: nutrition/compost-contribution/spec.md → public-api-namespace.
 
 header('public-api-namespace — window.CompostContribution public API surface');
 
@@ -749,8 +749,8 @@ header('Compost INV-1 — Element coverage closed across 4 maps');
 
 // ─── soil-contribution subproject ─────────────────────────
 //
-// Spec: nutrition/soil-contribution/spec.md → REQ-140 (bank shape), REQ-141
-// (CONTRIBUTING scoping), REQ-142 (months-to-depletion), REQ-143 (namespace).
+// Spec: nutrition/soil-contribution/spec.md → bank-per-crop-mehlich3-reservoir (bank shape), only-ca-p-participate-in-gap-chain
+// (CONTRIBUTING scoping), months-to-depletion-clamped-by-peak-demand (months-to-depletion), public-api-on-soil-contribution-namespace (namespace).
 
 header('bank-per-crop-mehlich3-reservoir — SoilContribution.BANK_MG_M2.tomato declared in mg/m²');
 {
@@ -899,7 +899,7 @@ header('public-api-on-soil-contribution-namespace — window.SoilContribution pu
 
 // ─── sme-soil-solution-wired-per-crop-element — SME soil-solution + transpiration wired per crop / element ──
 //
-// Spec: nutrition/soil-contribution/spec.md → REQ-164. Every crop that has
+// Spec: nutrition/soil-contribution/spec.md → sme-soil-solution-wired-per-crop-element. Every crop that has
 // a SOIL_BANK_MG_M2 entry must also have an SME_SOIL_SOLUTION_PPM entry
 // covering every element on the gap grid (N, P, K, Ca, Mg, Fe, Mn, Zn, B,
 // Cu, Mo), plus a positive TRANSPIRATION_L_PER_M2_PER_WEEK value.
@@ -991,7 +991,7 @@ if (!computeStageSidedress) {
 //   n_needed  = max(0, offtake − compost)
 //   g/planche = round(n_needed / (p.n_pct × p.efficiency) / 1000 × area)
 //
-// Spec: nutrition/tomato/sidedress-recipe/spec.md → REQ-087.
+// Spec: nutrition/tomato/sidedress-recipe/spec.md → mass-balance-sizes-product-to-n-gap.
 
 header('mass-balance-sizes-product-to-n-gap — Sidedress g_per_planche matches mass-balance formula');
 
@@ -1045,7 +1045,7 @@ if (!computeStageSidedress || !SIDEDRESS_PRODUCTS || !SIDEDRESS_AREA_PER_PLANCHE
 
 // ─── public-api-namespace — SidedressRecipeTomato public API namespace ───────────────
 //
-// Spec: nutrition/tomato/sidedress-recipe/spec.md → REQ-088.
+// Spec: nutrition/tomato/sidedress-recipe/spec.md → public-api-namespace.
 
 header('public-api-namespace — window.SidedressRecipeTomato public API surface');
 
@@ -1086,7 +1086,7 @@ if (!SR) {
 //       the gate. Future Ca-bearing products (Selectus, frass, etc.) get
 //       rejected automatically without code changes.
 //
-// Spec: nutrition/tomato/sidedress-recipe/spec.md → REQ-089.
+// Spec: nutrition/tomato/sidedress-recipe/spec.md → ca-aware-product-gate.
 
 header('ca-aware-product-gate — Ca-aware product gate (chosen product ca_pct === 0)');
 
@@ -1138,9 +1138,9 @@ if (!computeStageSidedress || !SIDEDRESS_PRODUCTS) {
 // mass-balance derivation within ±5 g rounding tolerance. Per element,
 // fertigation sizes to (demand / uptake_factor) − compost − sidedress, with
 // soil-bank credit applying only to {P, Ca} (neither in fertigation flow).
-// Function implements K + Mg + B (Solubore) branches. (REQ-098 with-compost
+// Function implements K + Mg + B (Solubore) branches. (mass-balance-derivation with-compost
 // subtraction restored 2026-05-15 per B1-REV; uptake factor added per
-// REQ-155 B2-REV same day.):
+// uptake-efficiency-factor B2-REV same day.):
 //   demand_to_bed = demand / PH_UPTAKE_FACTOR_AT_CURRENT_SOIL[element]
 //   k_offtake     = TOMATO_FRUIT_EXPORT.K × stageYield × 1000 + BIOMASS_DEMAND[stage].K
 //   k_demand_to_bed = k_offtake / uptake.K
@@ -1150,7 +1150,7 @@ if (!computeStageSidedress || !SIDEDRESS_PRODUCTS) {
 //   kSulfate_g    = round(k_needed / 1000 / K2SO4_K × total_area)
 //   (Mg analogous, no sidedress; B analogous, no sidedress, compost B = 0.)
 //
-// Spec: nutrition/tomato/fertigation-recipe/spec.md → REQ-098 + REQ-155.
+// Spec: nutrition/tomato/fertigation-recipe/spec.md → mass-balance-derivation + uptake-efficiency-factor.
 
 header('mass-balance-derivation — computeStageRecipe matches mass-balance formula');
 
@@ -1214,7 +1214,7 @@ if (!computeStageRecipe || !TOMATO_FRUIT_EXPORT || !BIOMASS_DEMAND
 
 // ─── public-api-namespace — FertigationRecipeTomato public API namespace ─────────────
 //
-// Spec: nutrition/tomato/fertigation-recipe/spec.md → REQ-099.
+// Spec: nutrition/tomato/fertigation-recipe/spec.md → public-api-namespace.
 
 header('public-api-namespace — window.FertigationRecipeTomato public API surface');
 
@@ -1242,17 +1242,17 @@ if (!FR) {
   }
 }
 
-// REQ-100 (mode-aware MIXING_FACTOR) retired 2026-05-10 — concept dropped,
+// Mode-aware MIXING_FACTOR retired 2026-05-10 — concept dropped,
 // fertigation supply now reported at full barrel mass. Number not reused.
 
 // ─── fp-target-mirrors-sizer — FIRST_PRINCIPLES_T5_FERTIGATION pinned to computeStageRecipe('T5')
 //
-// Spec: nutrition/tomato/fertigation-recipe/spec.md → REQ-154.
+// Spec: nutrition/tomato/fertigation-recipe/spec.md → fp-target-mirrors-sizer.
 // The FP T5 fertigation target equals the mass-balance derivation output
 // by construction (wireFpFertigation mutates the constant values at boot
 // from computeStageRecipe('T5')). PA Taillon legacy anchor preserved in
 // learnings.md; pinning prevents the K/Mg drift the legacy anchor surfaced
-// after the REQ-098 amendment dropped compost-subtraction.
+// after the mass-balance-derivation amendment dropped compost-subtraction.
 
 header('fp-target-mirrors-sizer — FIRST_PRINCIPLES_T5_FERTIGATION values = computeStageRecipe(T5) output');
 
@@ -1290,10 +1290,10 @@ if (!FIRST_PRINCIPLES_T5_FERTIGATION || !computeStageRecipe || !FP_RECIPE_T5) {
 
 // ─── uptake-efficiency-factor — PH_UPTAKE_FACTOR_AT_CURRENT_SOIL applied to fertigation sizing
 //
-// Spec: nutrition/tomato/fertigation-recipe/spec.md → REQ-155.
+// Spec: nutrition/tomato/fertigation-recipe/spec.md → uptake-efficiency-factor.
 // Asserts the constant exists with K/Mg/B keys at the expected cert-2
 // mid-band values (B2-REV defaults), each in (0, 1]. The function-output
-// correlation is covered by REQ-098 (which now applies the factor in the
+// correlation is covered by mass-balance-derivation (which now applies the factor in the
 // expected-value calculation).
 
 header('uptake-efficiency-factor — PH_UPTAKE_FACTOR_AT_CURRENT_SOIL: per-element bed→plant factor');
@@ -1544,11 +1544,11 @@ if (!TOMATO_REMOVAL) {
   }
 }
 
-// ─── Phase 2.5 wiring (REQ-013/014/015/016/017/018/020/021/024/025/026/027/
+// ─── Phase 2.5 wiring (under-fert-guard/014/015/016/017/018/020/021/024/025/026/027/
 //     029/030/031/032/053/054/055/060/061) ──────────────────────────────────
 //
 // Manual-review skip list (NOT wired here, by design):
-//   REQ-002 — Ecocert-only (manual policy review per its own statement)
+//   ecocert-only-products — Ecocert-only (manual policy review per its own statement)
 //
 // ─────────────────────────────────────────────────────────────────────────
 
@@ -1709,7 +1709,7 @@ if (typeof computeStageRecipe !== 'function' || !TOMATO_SIDEDRESS || !RECIPE_INP
 
 // ─── concentration-dose-within-band — Concentration-driven dose / solubility declared ────────────
 //
-// REQ-015 envelopes (efficacy_min / safety_max) aren't in PRODUCT shape today.
+// concentration-dose-within-band envelopes (efficacy_min / safety_max) aren't in PRODUCT shape today.
 // Best mechanizable proxy: every PRODUCT entry MUST declare solubilityCap_g_per_L
 // (existing field). This catches the add-product-without-data case so a real
 // efficacy/safety band can be added next.
@@ -1732,10 +1732,10 @@ if (!PRODUCT) {
   }
 }
 
-// REQ-016 retired 2026-05-08 — was "stored TOMATO_STAGES vs computeStageRecipe
+// Stored-stage-recipe drift check retired 2026-05-08 — was "stored TOMATO_STAGES vs computeStageRecipe
 // drift detection". Comparison became meaningless when TOMATO_STAGES const was
 // removed (stored = computed by construction). See RECIPE_HISTORY entry
-// (retired 2026-05-08). REQ-153 (2026-05-13) replaces it for Block 8 direction.
+// (retired 2026-05-08). stored-vs-computed-drift-block (2026-05-13) replaces it for Block 8 direction.
 
 // ─── stored-vs-computed-drift-block — Block 8 drift gauge renders ratio FP ÷ Stored ──────────────
 //
@@ -1746,7 +1746,7 @@ if (!PRODUCT) {
 // Stubs one element so FP/Stored = 1.5 and asserts the rendered K row text
 // contains "150"; defensive guard rejects the inverted "67" rendering.
 //
-// Spec: nutrition/tomato/shell/spec.md → REQ-153.
+// Spec: nutrition/tomato/shell/spec.md → stored-vs-computed-drift-block.
 
 header('stored-vs-computed-drift-block — Block 8 drift gauge renders FP ÷ Stored (≥100 % = under-supply)');
 
@@ -1950,7 +1950,7 @@ if (typeof ph1.predictedCE !== 'function' || typeof computeStageRecipe !== 'func
   // means a "nominal" tank that's mostly water, can't meaningfully hit the
   // 0.3 floor. The band binds at T3+ when the plant ramps to flowering / fruit
   // load and fertigation mass jumps. (Previous mass-based threshold was
-  // recalibrated to a stage-name skip after REQ-098 amendment 2026-05-12 —
+  // recalibrated to a stage-name skip after mass-balance-derivation amendment 2026-05-12 —
   // T2 fertigation mass crossed the old 3000 g cutoff under the no-compost-
   // subtraction formula.)
   const VEGETATIVE_STAGES = new Set(['T1', 'T2']);
@@ -2100,7 +2100,7 @@ if (typeof MIX_ORDER === 'undefined' || MIX_ORDER === undefined) {
 // ─── stock-barrel-time-stability — Stock barrel time-stability ────────────────────────────────
 //
 // PRODUCT entries already declare maximumStableHours — assert non-empty for active
-// fertigation/foliar products. This is the schema half of REQ-032; the UI
+// fertigation/foliar products. This is the schema half of stock-barrel-time-stability; the UI
 // "stock-age warning" remains TODO.
 
 header('stock-barrel-time-stability — maximumStableHours déclaré sur tout produit en recette active');
@@ -2129,7 +2129,7 @@ if (!PRODUCT) {
 
 // ─── predicted-tank-ph-within-envelope — Predicted tank pH within compartment envelope ──────────────
 //
-// Bands per REQ-053:
+// Bands per predicted-tank-ph-within-envelope:
 //   Foliar tank: 5.0–7.0
 //   Fertigation stock: 4.5–7.5
 // Use predictedTankPh on each active recipe (g/L for each product in tank).
@@ -2230,7 +2230,7 @@ if (typeof foliarPhResponse !== 'function') {
 
 // ─── narrative-derived-from-live-data — Narrative auto-derive coherence (count `// stable —`) ──────
 //
-// Real REQ-060 needs a STALE_PHRASE table + render-walk. Mechanizable proxy:
+// Real narrative-derived-from-live-data needs a STALE_PHRASE table + render-walk. Mechanizable proxy:
 // count occurrences of the convention `// stable —` in index.html — confirms
 // the discipline is in use. Calibrate threshold from current count.
 
@@ -2398,11 +2398,11 @@ header('ecocert-only-products — Pas de produits non-Ecocert dans le copy de l\
 // NURSERY_TARGETS / calculateNurseryDemand are absent from the dist/index.html
 // artifact. To avoid a chicken-and-egg between source-of-truth (the partials)
 // and verifier runtime (jsdom on dist/index.html), we load the partials
-// directly into a Node vm sandbox and run REQ-090..093 against that. After
+// directly into a Node vm sandbox and run nursery plant-needs against that. After
 // integration, the same code path still works — the partials remain the
 // canonical definitions.
 //
-// Spec: nutrition/nursery/plant-needs/spec.md → REQ-090..093 + INV-1.
+// Spec: nutrition/nursery/plant-needs/spec.md → nursery plant-needs + INV-1.
 
 import vm from 'node:vm';
 
@@ -2452,7 +2452,7 @@ if (!nurseryNs) {
 // calculateNurseryDemand(1g, days, cells), per element, on perTray_mg. Asserted
 // within ±0.1 %.
 //
-// Spec: nutrition/nursery/plant-needs/spec.md → REQ-090.
+// Spec: nutrition/nursery/plant-needs/spec.md → demand-linear-in-target-weight.
 
 header('demand-linear-in-target-weight — Nursery demand linear in targetG (±0.1 %)');
 
@@ -2483,7 +2483,7 @@ if (!nurseryNs || typeof nurseryNs.calculateNurseryDemand !== 'function') {
 // calculateNurseryDemand(g, 70, cells).perTray_mg is exactly half of
 // calculateNurseryDemand(g, 35, cells).perTray_mg, per element. ±0.1 %.
 //
-// Spec: nutrition/nursery/plant-needs/spec.md → REQ-091.
+// Spec: nutrition/nursery/plant-needs/spec.md → demand-inverse-linear-in-cycle-length.
 
 header('demand-inverse-linear-in-cycle-length — Nursery demand inverse-linear in cycleDays (±0.1 %)');
 
@@ -2514,7 +2514,7 @@ if (!nurseryNs || typeof nurseryNs.calculateNurseryDemand !== 'function') {
 // At defaults (90 g, 35 d, 50 cells), N perPlant_mg ∈ [50, 70]. Catches
 // order-of-magnitude typos in DM, tissue concentration, or cycle length.
 //
-// Spec: nutrition/nursery/plant-needs/spec.md → REQ-092.
+// Spec: nutrition/nursery/plant-needs/spec.md → nitrogen-demand-in-band-at-defaults.
 
 header('nitrogen-demand-in-band-at-defaults — Nursery N demand ∈ [50, 70] mg/plant/wk au défaut');
 
@@ -2540,7 +2540,7 @@ if (!nurseryNs || typeof nurseryNs.calculateNurseryDemand !== 'function') {
 // that calculateNurseryDemand returns shape `{ perPlant_mg, perTray_mg }` per
 // element and demandPerTray returns a number.
 //
-// Spec: nutrition/nursery/plant-needs/spec.md → REQ-093.
+// Spec: nutrition/nursery/plant-needs/spec.md → public-api-namespace.
 
 header('public-api-namespace — window.PlantNeedsNursery public API surface');
 
@@ -2577,11 +2577,11 @@ if (!nurseryNs) {
 // ─── salanova plant-needs subproject ────────────────────
 //
 // nutrition/lettuce/plant-needs/{data.js,calc.js,model.js} carved out of
-// app/index.html 2026-05-16. Same vm-loaded pattern as REQ-090..093:
+// app/index.html 2026-05-16. Same vm-loaded pattern as nursery plant-needs:
 // load the partials in a shared sandbox, prefer the real jsdom window
 // when present, else fall back to the vm copy.
 //
-// Spec: nutrition/lettuce/plant-needs/spec.md → REQ-165..169 + INV-1.
+// Spec: nutrition/lettuce/plant-needs/spec.md → public-api-namespace..169 + INV-1.
 
 let lettucePlantNeedsNs = window.PlantNeedsLettuce || null;
 let lettucePlantNeedsLoadError = null;
@@ -2779,13 +2779,13 @@ if (!lettucePlantNeedsNs) {
 //
 // The nursery/substrate-contribution subproject (data + calc + model)
 // lives at nutrition/nursery/substrate-contribution/{data.js,calc.js,model.js}.
-// Same vm-loaded pattern as REQ-090..093 above: load the partials in a
-// shared sandbox, run REQ-094..097 against the produced namespace. Once
+// Same vm-loaded pattern as nursery plant-needs above: load the partials in a
+// shared sandbox, run feather-meal-front-load-cap..097 against the produced namespace. Once
 // app/index.html @includes the partials, window.SubstrateContributionNursery
 // will also exist on the real jsdom window — we prefer that when present,
 // otherwise fall back to the vm-loaded copy.
 //
-// Spec: nutrition/nursery/substrate-contribution/spec.md → REQ-094..097.
+// Spec: nutrition/nursery/substrate-contribution/spec.md → feather-meal-front-load-cap..097.
 
 let SCN = window.SubstrateContributionNursery;
 let substrateLoadError = null;
@@ -2889,7 +2889,7 @@ if (!SCN || typeof SCN.cycleAverageReleasePerTray !== 'function'
   const fmG = SCN.NURSERY_FEATHER_MEAL_DEFAULT_G_PER_TRAY || 9;
   const W   = (SCN.OM2_RELEASE_CURVE_BY_WEEK || []).length || 5;
   const result = SCN.cycleAverageReleasePerTray(fmG);
-  // REQ-136 — function now returns { perTray_mg, details }; legacy callers
+  // contribution-channel-details-payload — function now returns { perTray_mg, details }; legacy callers
   // that read avg[element] directly are migrated to avg.perTray_mg[element].
   const avg = (result && result.perTray_mg) ? result.perTray_mg : result;
 
@@ -3020,7 +3020,7 @@ header('Foliar INV-1 — Element coverage closed + numeric output');
 // computeFoliarSupply('T5').{Mn, Fe} matches within 1 % tolerance. Mn pins
 // the surfactant-coverage logic; Fe pins the FeSO₄·7H₂O 20 % Fe path.
 //
-// Spec: nutrition/tomato/foliar-strategy/spec.md → REQ-101.
+// Spec: nutrition/tomato/foliar-strategy/spec.md → coverage-discount-on-delivery.
 
 header('coverage-discount-on-delivery — Foliar delivery applies FOLIAR_COVERAGE_DEFAULT (Mn, Fe)');
 
@@ -3064,7 +3064,7 @@ header('coverage-discount-on-delivery — Foliar delivery applies FOLIAR_COVERAG
 
 // ─── public-api-namespace — FoliarRecipeTomato public API namespace ──────────────────
 //
-// Spec: nutrition/tomato/foliar-strategy/spec.md → REQ-103.
+// Spec: nutrition/tomato/foliar-strategy/spec.md → public-api-namespace.
 
 header('public-api-namespace — window.FoliarRecipeTomato public API surface');
 
@@ -3101,7 +3101,7 @@ header('public-api-namespace — window.FoliarRecipeTomato public API surface');
 // Defaults match prior single-arg behavior; sprayCount=2 doubles every
 // element; surfactant=true scales by FOLIAR_COVERAGE_WITH_YUCCA / DEFAULT.
 //
-// Spec: nutrition/tomato/foliar-strategy/spec.md → REQ-112.
+// Spec: nutrition/tomato/foliar-strategy/spec.md → supply-accepts-spray-count-surfactant.
 
 header('supply-accepts-spray-count-surfactant — computeFoliarSupply(stage, opts) — sprayCount + surfactant levers');
 
@@ -3175,7 +3175,7 @@ header('supply-accepts-spray-count-surfactant — computeFoliarSupply(stage, opt
 
 // ─── gap-maximizing-recipe — computeFoliarRecipeForGap derives gap-maximizing recipe
 //
-// Spec: nutrition/tomato/foliar-strategy/spec.md → REQ-115.
+// Spec: nutrition/tomato/foliar-strategy/spec.md → gap-maximizing-recipe.
 
 header('gap-maximizing-recipe — computeFoliarRecipeForGap (min-dose clamp + surfactant + burn cap + CE scale)');
 
@@ -3219,7 +3219,7 @@ header('gap-maximizing-recipe — computeFoliarRecipeForGap (min-dose clamp + su
     });
 
     // CE check: predictedCE on a huge-gap recipe (with + without surfactant)
-    // should stay under REQ-025 burn cap (10 mS/cm tomato leaf).
+    // should stay under foliar-ce-under-burn-cap burn cap (10 mS/cm tomato leaf).
     if (typeof predictedCE === 'function') {
       const recipeAsLabelArray = function(r) {
         return [
@@ -3303,7 +3303,7 @@ header('gap-maximizing-recipe — computeFoliarRecipeForGap (min-dose clamp + su
 
 // ─── fp-strategy-live-derived — FP foliar recipe live-derived from pre-foliar gap chain ──
 //
-// Spec: nutrition/tomato/foliar-strategy/spec.md → REQ-116.
+// Spec: nutrition/tomato/foliar-strategy/spec.md → fp-strategy-live-derived.
 //
 // Integration test: call calculateNutritionSupply twice in FP mode at T5. Between
 // calls, bump COMPOST_RELEASE_PER_WEEK.Mn so the pre-foliar gap drops
@@ -3371,7 +3371,7 @@ header('fp-strategy-live-derived — FP foliar recipe live-derived from pre-foli
 //
 // Section 1 of the Bilan UI specs. Asserts header inputs, light ceiling
 // formula, recipe-mode toggle behaviour. Spec:
-// nutrition/tomato/shell/spec.md → REQ-104..107.
+// nutrition/tomato/shell/spec.md → header-inputs-five-scalars..107.
 
 header('header-inputs-five-scalars — Header inputs are exactly five scalars (no nutr-current)');
 
@@ -3509,7 +3509,7 @@ header('recipe-mode-toggle-fp-left-default-right — Recipe toggle: First princi
   if (productsBlock) {
     offenders.push('nutr-products still in DOM — should be removed');
   }
-  // REQ-107: helper-note text is also unspecified, so per the build-minimum
+  // recipe-mode-toggle-fp-left-default-right: helper-note text is also unspecified, so per the build-minimum
   // principle (~/.claude/CLAUDE.md "Spec discipline"), it must be empty.
   const note = window.document.getElementById('nutr-recipe-mode-note');
   if (note) {
@@ -3528,7 +3528,7 @@ header('recipe-mode-toggle-fp-left-default-right — Recipe toggle: First princi
 // ─── tomato Nutrition page Block 1 (Besoin du plant) ────
 //
 // Section 2 of the Bilan UI specs. Spec:
-// nutrition/tomato/plant-needs/builder/user-stories.md → REQ-108..111.
+// nutrition/tomato/plant-needs/builder/user-stories.md.
 
 header('Block 1 calls PN.calculateNutritionDemand (no bare-global lookups in render)');
 
@@ -3594,7 +3594,7 @@ header('Block 1 row click opens cert + equation + plugged modal (no interpretati
     offenders.push(`only ${clickableCount}/${rowsCount} rows wire showPourquoi('demand.<element>')`);
   }
   if (interpretationLeaked) {
-    offenders.push('modal interpretation node has text — should be empty per REQ-109');
+    offenders.push('modal interpretation node has text — should be empty');
   }
   if (offenders.length === 0) {
     pass(`Block 1: ${rowsCount} rows cliquables ; modal n'expose que cert + équation + plugged`);
@@ -3672,7 +3672,7 @@ header('Block 1 row layout: 4 columns (Él. / Fruit / Biomasse / Total)');
 
 // ─── multi-fertigation degree of freedom ────────────────
 //
-// Spec: nutrition/nursery/fertigation/spec.md → REQ-122..126.
+// Spec: nutrition/nursery/fertigation/spec.md → supply-scales-linearly-with-applications..126.
 // Implementation: nutrition/nursery/fertigation/calc.js.
 // All five checks read the live `window.FertigationNursery` namespace,
 // which is mounted by the @included data.js + calc.js + model.js trio.
@@ -3863,8 +3863,8 @@ header('applications-per-week-positive-integer — applicationsPerWeek coerced t
 
 // ─── semis subpage Blocks 2/3 layout + gap chain ─────────
 //
-// Specs: nutrition/nursery/app/user-stories.md → REQ-127 (Block 2 layout),
-// REQ-128 (Block 3 layout), REQ-129 (gap chain demand → substrate → fert).
+// Specs: nutrition/nursery/app/user-stories.md → Block 2 layout,
+// Block 3 layout, gap chain demand → substrate → fert.
 //
 // Need to flip the page to the Semis subpage so the render lands. setNutrCrop
 // triggers buildNutriment which dispatches to buildNutrimentNursery and writes
@@ -3909,13 +3909,13 @@ header('Block 1 (Besoins): 3-col table (Él / Par plant / Cert)');
 
 // Helper: assert a contribution-block container has a 6-col gap-grid
 // header strip whose column text matches REQ137_HEADER_ORDER (defined in
-// the REQ-137 block below — declared as a top-level const there). When the
+// the contribution-block-gap-grid block below — declared as a top-level const there). When the
 // helper is invoked here BEFORE the const declaration runs, it shadow-
 // references the const; since both are at module scope and execute in
 // order with `header()`/`pass()`/`fail()` doing IO immediately, the
-// REQ-127/128 blocks run BEFORE REQ-137 — so we duplicate the constant
+// Nursery Block 2/3 blocks run BEFORE contribution-block-gap-grid — so we duplicate the constant
 // inline here to keep the block self-contained. (The two declarations
-// must stay in sync; both reflect REQ-137 amended 2026-05-15.)
+// must stay in sync; both reflect contribution-block-gap-grid amended 2026-05-15.)
 const REQ127_128_HEADER_ORDER = ['Él.', 'Manque entrant (mg)', 'Efficacité', 'Apport ici (mg)', 'Manque sortant (mg)', ''];
 function assertSixColGapGrid(blockElement) {
   const headerStrip = findGapGridHeaderStrip(blockElement);
@@ -4017,11 +4017,11 @@ header('Gap chain order demand → substrate → fertigation');
 
 // ─── cross-app contribution-block: details + cell modals ──
 //
-// Spec: nutrition/spec.md → REQ-136 (model: details{cert, cap}),
-// REQ-137 (UI layout, inherited from REQ-127/128 nursery), REQ-138
+// Spec: nutrition/spec.md → contribution-channel-details-payload (model: details{cert, cap}),
+// contribution-block-gap-grid (UI layout, inherited from nursery Block 2/3), apport-ici-clickable-cert-and-cap-modals
 // (cell + emoji modals scoped per (block, element, cap-kind)).
 // Verifier walks nursery substrate + fertigation; tomato + lettuce
-// blocks adopt in a follow-up pass (deferred from REQ-137 scope today).
+// blocks adopt in a follow-up pass (deferred from contribution-block-gap-grid scope today).
 
 if (typeof window.setNutrCrop === 'function') {
   try { window.setNutrCrop('nursery'); } catch (e) { /* swallow */ }
@@ -4045,7 +4045,7 @@ header('contribution-channel-details-payload — substrate + fertigation return 
           offs.push(`substrate.details.${element}: cert out of [0,5]`);
         }
         if (d && d.cap !== null && d.cap !== undefined) {
-          // REQ-136 4-field schema (2026-05-11): kind, constraint, limit, lever, uncappedMg
+          // contribution-channel-details-payload 4-field schema (2026-05-11): kind, constraint, limit, lever, uncappedMg
           if (!['damage','precipitation','other'].includes(d.cap.kind)
               || typeof d.cap.constraint !== 'string' || !d.cap.constraint
               || typeof d.cap.limit !== 'string'      || !d.cap.limit
@@ -4110,28 +4110,28 @@ header('apport-ici-clickable-cert-and-cap-modals — Apport ici cells + cap emoj
   }
 }
 
-// REQ-137 cross-app rollout: tomato Bilan blocks 2-5 (compost, sidedress,
+// contribution-block-gap-grid cross-app rollout: tomato Bilan blocks 2-5 (compost, sidedress,
 // fertigation, foliar) also use renderGapGrid with details + blockId.
 // Switch back to tomato page so the tomato render fires.
 if (typeof window.setNutrCrop === 'function') {
   try { window.setNutrCrop('tomato'); } catch (e) { /* swallow */ }
 }
 
-// Shared helper for REQ-137 + REQ-152: locate the gap-grid wrapper in a
+// Shared helper for contribution-block-gap-grid + contribution-block-recipe-table: locate the gap-grid wrapper in a
 // contribution-block container. The renderer (renderGapGrid in
 // app/index.html) emits `<div style="font-size:11.5px; margin-top:8px;"><div
 // style="display:grid; grid-template-columns:0.6fr ...; ...">...`.
 // We find the outer wrapper by walking the inner-grid element up to
 // its parent — that parent is the node whose previousElementSibling must be
-// the recipe `<table>` per REQ-152.
+// the recipe `<table>` per contribution-block-recipe-table.
 //
 // Selector matches on the leading `0.6fr` column only — the renderer's
-// internal column count evolves (REQ-137 amended 2026-05-15: 5→6 columns,
+// internal column count evolves (contribution-block-gap-grid amended 2026-05-15: 5→6 columns,
 // inserting Efficacité between Manque entrant and Apport ici). Both the
 // pre-amendment 5-col `0.6fr 1fr 1fr 1fr 0.4fr` and the post-amendment
 // 6-col template share the leading `0.6fr` Él. column, so this selector
 // keeps finding the wrapper across the rollout. The downstream column-count
-// assertion lives in the REQ-137 matcher itself.
+// assertion lives in the contribution-block-gap-grid matcher itself.
 function findGapGridWrapper(blockElement) {
   if (!blockElement) return null;
   // jsdom serializes inline style with no space after the colon
@@ -4152,7 +4152,7 @@ function findGapGridWrapper(blockElement) {
   return inner.parentElement;
 }
 
-// Shared helper for REQ-137 / REQ-156: from a contribution-block container,
+// Shared helper for contribution-block-gap-grid / efficacite-column-capability: from a contribution-block container,
 // return the gap-grid header-strip element (the first child div under the
 // wrapper). Used to count columns + read header text.
 function findGapGridHeaderStrip(blockElement) {
@@ -4163,7 +4163,7 @@ function findGapGridHeaderStrip(blockElement) {
   return wrapper.firstElementChild || null;
 }
 
-// Shared helper for REQ-137 / REQ-156: return all data rows (.pq-row) of
+// Shared helper for contribution-block-gap-grid / efficacite-column-capability: return all data rows (.pq-row) of
 // the gap-grid in a contribution-block container.
 function findGapGridDataRows(blockElement) {
   const wrapper = findGapGridWrapper(blockElement);
@@ -4171,8 +4171,8 @@ function findGapGridDataRows(blockElement) {
   return Array.from(wrapper.querySelectorAll('.pq-row'));
 }
 
-// Canonical 6-col header order per REQ-137 (amended 2026-05-15) +
-// REQ-156. The Efficacité column lives between Manque entrant and Apport
+// Canonical 6-col header order per contribution-block-gap-grid (amended 2026-05-15) +
+// efficacite-column-capability. The Efficacité column lives between Manque entrant and Apport
 // ici. The trailing slot is the emoji column (no header text).
 const REQ137_HEADER_ORDER = ['Él.', 'Manque entrant (mg)', 'Efficacité', 'Apport ici (mg)', 'Manque sortant (mg)', ''];
 
@@ -4182,11 +4182,11 @@ header('contribution-block-gap-grid — Tomato Bilan blocks: 6-col gap-grid + ce
   // - Cell-keying (existing, preserved).
   // - 6-col grid signature: count children of header strip + match header
   //   text against REQ137_HEADER_ORDER.
-  // - Gap-grid wrapper's previousElementSibling is a <table> — the REQ-152
-  //   amendment to REQ-137. Cross-ref: full table-shape assertions live in
-  //   the REQ-152 verifier block below; here we only check sibling adjacency
-  //   so REQ-137's "as the immediate next sibling of its recipe table"
-  //   clause has a direct check independent of REQ-152's content asserts.
+  // - Gap-grid wrapper's previousElementSibling is a <table> — the contribution-block-recipe-table
+  //   amendment to contribution-block-gap-grid. Cross-ref: full table-shape assertions live in
+  //   the contribution-block-recipe-table verifier block below; here we only check sibling adjacency
+  //   so contribution-block-gap-grid's "as the immediate next sibling of its recipe table"
+  //   clause has a direct check independent of contribution-block-recipe-table's content asserts.
   const blockIds = ['nutr-compost', 'nutr-sidedress', 'nutr-fert', 'nutr-foliar'];
   const blockKeys = ['compost', 'sidedress', 'fert', 'foliar'];
   const offs = [];
@@ -4198,7 +4198,7 @@ header('contribution-block-gap-grid — Tomato Bilan blocks: 6-col gap-grid + ce
     if (!hasCellKeys) offs.push(`${blockIds[i]} cells missing data-cell-key`);
     // 6-column gap-grid: count children under the header strip + verify
     // header text matches REQ137_HEADER_ORDER (Efficacité between Manque
-    // entrant and Apport ici per REQ-137 amendment 2026-05-15).
+    // entrant and Apport ici per contribution-block-gap-grid amendment 2026-05-15).
     const headerStrip = findGapGridHeaderStrip(element);
     if (!headerStrip) {
       offs.push(`${blockIds[i]} gap-grid header strip not found`);
@@ -4216,8 +4216,8 @@ header('contribution-block-gap-grid — Tomato Bilan blocks: 6-col gap-grid + ce
     }
     const pqRows = element.querySelectorAll('.pq-row');
     if (pqRows.length === 0) offs.push(`${blockIds[i]} has no .pq-row entries`);
-    // Gap-grid wrapper's previousElementSibling must be a <table> (REQ-152
-    // adjacency clause referenced from REQ-137).
+    // Gap-grid wrapper's previousElementSibling must be a <table> (contribution-block-recipe-table
+    // adjacency clause referenced from contribution-block-gap-grid).
     const wrapper = findGapGridWrapper(element);
     if (!wrapper) {
       offs.push(`${blockIds[i]} gap-grid wrapper not found`);
@@ -4229,8 +4229,8 @@ header('contribution-block-gap-grid — Tomato Bilan blocks: 6-col gap-grid + ce
     }
   }
   // Note: 💧 precipitation emoji on sidedress P fires only when supply.sidedress.P > 0
-  // AND phLocked. At current Ca-aware default (Actisol=0, REQ-089), supply.sidedress.P
-  // is 0 → no cap fires → no emoji. That's consistent with REQ-138 semantics
+  // AND phLocked. At current Ca-aware default (Actisol=0, ca-aware-product-gate), supply.sidedress.P
+  // is 0 → no cap fires → no emoji. That's consistent with apport-ici-clickable-cert-and-cap-modals semantics
   // (cap fires only when there's a value to cap). Synthetic-cap test deferred.
   if (offs.length === 0) {
     pass('Tomato compost/sidedress/fert/foliar blocks: 6-col grid · cell-keyed · gap-grid is <table>\'s next sibling');
@@ -4249,7 +4249,7 @@ header('contribution-block-gap-grid — Tomato Bilan blocks: 6-col gap-grid + ce
   pass('contribution-block-gap-grid — Salanova Front-load block (recipe table + 6-col gap-grid) — TODO: wire after F1 lettuce carve');
 
   // Semis laitue (Réserve substrat, Fertigation) — already asserted as
-  // 6-col gap-grid by REQ-127 / REQ-128 above; the REQ-137 adjacency clause
+  // 6-col gap-grid by nursery Block 2/3 above; the contribution-block-gap-grid adjacency clause
   // (gap-grid is the recipe-table's next sibling) is deferred until the F1
   // lettuce carve refactors the nursery render to emit a <table>.
   // TODO: wire after F1 lettuce carve
@@ -4260,15 +4260,15 @@ header('contribution-block-gap-grid — Tomato Bilan blocks: 6-col gap-grid + ce
 
 // ─── efficacite-column-capability — Efficacité column cell semantics ────────────────────────
 //
-// Spec: nutrition/spec.md → REQ-156. In every contribution-block gap-grid
-// (REQ-137), the Efficacité cell of each element row displays an integer
+// Spec: nutrition/spec.md → efficacite-column-capability. In every contribution-block gap-grid
+// (contribution-block-gap-grid), the Efficacité cell of each element row displays an integer
 // percent (`\d+ %`), or `—` when the channel routes no product carrying
 // that element. The column lives at index 2 (zero-indexed: Él. | Manque
 // entrant | Efficacité | Apport ici | Manque sortant | emoji), matching
 // REQ137_HEADER_ORDER.
 //
 // Scope today: tomato page (4 blocks). Salanova + Semis branches emit
-// pass()-with-TODO matching the REQ-137 / REQ-152 pattern above.
+// pass()-with-TODO matching the contribution-block-gap-grid / contribution-block-recipe-table pattern above.
 
 header('efficacite-column-capability — Efficacité cell renders integer % or `—` per data row (Tomato page)');
 {
@@ -4318,7 +4318,7 @@ header('efficacite-column-capability — Efficacité cell renders integer % or `
     fail('efficacite-column-capability — Efficacité cell format', offenders.slice(0, 5).join(' · '));
   }
 
-  // Salanova + Semis: structural sweep deferred (mirrors REQ-137).
+  // Salanova + Semis: structural sweep deferred (mirrors contribution-block-gap-grid).
   // TODO: wire after F1 lettuce carve
   pass('efficacite-column-capability — Salanova Sol Efficacité cell — TODO: wire after F1 lettuce carve');
   // TODO: wire after F1 lettuce carve
@@ -4333,7 +4333,7 @@ header('efficacite-column-capability — Efficacité cell renders integer % or `
 
 // ─── channel-efficiency-capability-map — Per-element channel efficiency exposure ─────────────────
 //
-// Spec: nutrition/spec.md → REQ-157. Every contribution-channel function
+// Spec: nutrition/spec.md → channel-efficiency-capability-map. Every contribution-channel function
 // (compost release, substrate release, sidedress supply, fertigation
 // supply, foliar supply, front-load supply, nursery substrate, nursery
 // fertigation) MUST expose a per-element `efficiency` map alongside its
@@ -4352,20 +4352,20 @@ header('efficacite-column-capability — Efficacité cell renders integer % or `
 //     returns {perTray_mg, details, efficiency}.
 //
 // Out-of-scope (specialist-owned model.js subprojects — pass with TODO,
-// matching the REQ-137 Salanova/Semis pattern):
+// matching the contribution-block-gap-grid Salanova/Semis pattern):
 //   - window.CompostContribution release map (compost-contribution/model.js).
 //   - window.SubstrateContributionNursery cycleAverageReleasePerTray
 //     (nursery/substrate-contribution/model.js).
 //
 // Designed-to-fail-until-Wave-2: every in-scope channel currently returns
 // without an `efficiency` map. The Wave 2 coder lands the additions as
-// part of the REQ-156/137 wiring per the PO entry 2026-05-15 15:20.
+// part of the efficacite-column-capability/137 wiring per the PO entry 2026-05-15 15:20.
 
 header('channel-efficiency-capability-map — Contribution-channel efficiency map exposed on runtime returns');
 {
   const offenders = [];
 
-  // Validate that an `efficiency` map is well-formed. Per REQ-157 (amended
+  // Validate that an `efficiency` map is well-formed. Per channel-efficiency-capability-map (amended
   // 2026-05-16), the map declares CHANNEL CAPABILITY independently of
   // whether the channel doses the element this call — so every key whose
   // value is a finite number in [0, 1] is acceptable regardless of the
@@ -4396,7 +4396,7 @@ header('channel-efficiency-capability-map — Contribution-channel efficiency ma
 
   // ─── Tomato channels via calculateNutritionSupply ─────────────────────────────
   // calculateNutritionSupply returns {total, fert, foliar, soil, sidedress, raw}.
-  // Per REQ-157, each contribution channel exposes its own efficiency
+  // Per channel-efficiency-capability-map, each contribution channel exposes its own efficiency
   // map as a sibling. The fertigation/foliar/sidedress branches are
   // separate channels and each gets verified independently.
   if (typeof window.calculateNutritionSupply !== 'function') {
@@ -4404,7 +4404,7 @@ header('channel-efficiency-capability-map — Contribution-channel efficiency ma
   } else {
     let supply = null;
     try {
-      // Match the canonical FP call shape used by the REQ-116 verifier
+      // Match the canonical FP call shape used by the fp-strategy-live-derived verifier
       // above: T5, phLocked=true, transpFactor=1.0, target=1.5.
       supply = window.calculateNutritionSupply('T5', true, 1.0, 1.5, 'fp');
     } catch (e) {
@@ -4578,7 +4578,7 @@ header('channel-efficiency-capability-map — Contribution-channel efficiency ma
     if (!FR || !FR.efficiency) {
       offendersFertigation.push('window.FertigationRecipeTomato.efficiency not exposed');
     } else {
-      // Channel routes K / Mg / B / Mo per STORED + REQ-061 (Mo carve-out
+      // Channel routes K / Mg / B / Mo per STORED + replenishment-cascade-earliest-first (Mo carve-out
       // 2026-05-16: anionic molybdate routes via fertigation rather than
       // foliar, since pH 7.4 favours molybdate availability). Synthetic
       // routedMg marks the four elements as non-zero so validateEfficiencyMap
@@ -4598,8 +4598,8 @@ header('channel-efficiency-capability-map — Contribution-channel efficiency ma
   }
 
   // window.FoliarRecipeTomato.efficiency — Mn/Zn/Cu/Fe at current
-  // no-yucca regime; B absent (single-channel via fertigation, REQ-061);
-  // Mo absent (REQ-061 carve-out 2026-05-16, moved to fertigation).
+  // no-yucca regime; B absent (single-channel via fertigation, replenishment-cascade-earliest-first);
+  // Mo absent (replenishment-cascade-earliest-first carve-out 2026-05-16, moved to fertigation).
   {
     const FoR = window.FoliarRecipeTomato;
     const offendersFoliar = [];
@@ -4621,7 +4621,7 @@ header('channel-efficiency-capability-map — Contribution-channel efficiency ma
   }
 
   // window.SidedressRecipeTomato.efficiency — N only (FP-default product
-  // FarinePlumes; Actisol REQ-089-gated out on Ca-saturated soil).
+  // FarinePlumes; Actisol ca-aware-product-gate-gated out on Ca-saturated soil).
   {
     const SR = window.SidedressRecipeTomato;
     const offendersSidedress = [];
@@ -4645,14 +4645,14 @@ header('channel-efficiency-capability-map — Contribution-channel efficiency ma
 
 // ─── surfactant-aware-efficiency-map — Surfactant-aware foliar efficiency map ─────────────────────
 //
-// Spec: nutrition/tomato/foliar-strategy/spec.md → REQ-170. The foliar
+// Spec: nutrition/tomato/foliar-strategy/spec.md → surfactant-aware-efficiency-map. The foliar
 // channel exposes `efficiencyFor(surfactant)` returning a per-element map
-// reactive to the surfactant lever. The page-side REQ-163 (Block 5) reads
+// reactive to the surfactant lever. The page-side foliar Block 5 reads
 // this surface and updates the Efficacité column when the operator toggles.
 //
 // Acceptance: efficiencyFor(true) returns strictly greater per-element
 // values than efficiencyFor(false) for every routed element. Channel
-// capability shape per REQ-157 (Mn / Zn / Cu / Fe routed; B + Mo absent).
+// capability shape per channel-efficiency-capability-map (Mn / Zn / Cu / Fe routed; B + Mo absent).
 
 header('surfactant-aware-efficiency-map — efficiencyFor(surfactant) strictly increases efficiency for every routed element');
 {
@@ -4708,7 +4708,7 @@ header('surfactant-aware-efficiency-map — efficiencyFor(surfactant) strictly i
 
 // ─── contribution-block-recipe-table — Contribution-block recipe table ─────────────────────────
 //
-// Spec: nutrition/spec.md → REQ-152. On every Nutrition admin page, each
+// Spec: nutrition/spec.md → contribution-block-recipe-table. On every Nutrition admin page, each
 // contribution channel block (excluding the Tomato Sol soil-bank block)
 // MUST render, between its title and gap-grid, a 3-column table:
 //   Produit | Composition (% m/m) | Quantité
@@ -4716,14 +4716,14 @@ header('surfactant-aware-efficiency-map — efficiencyFor(surfactant) strictly i
 // string in canonical element order N · P · K · Ca · Mg · Fe · Mn · Zn ·
 // Cu · B · Mo (zero-value elements omitted). Quantité is the channel-native
 // dose. The gap-grid is the immediate next sibling of the table (the
-// REQ-137 adjacency clause).
+// contribution-block-gap-grid adjacency clause).
 //
 // Scope today: tomato page (Compost, Sidedress, Fertigation, Foliaire) is
 // asserted. Salanova + Semis branches are emitted as pass()-with-TODO so
 // the structural sweep covers all 9 contribution blocks even though only 4
 // are currently wired. Wave 2 coder owns the renderer change.
 
-// Canonical element order per REQ-152.
+// Canonical element order per contribution-block-recipe-table.
 const REQ152_ELEMENT_ORDER = ['N','P','K','Ca','Mg','Fe','Mn','Zn','Cu','B','Mo'];
 
 // Composition cell must list elements in the canonical order, separated by
@@ -4755,7 +4755,7 @@ function compositionCellOrderOk(cellText) {
 header('contribution-block-recipe-table — Contribution-block recipe table — Tomato page (Salanova/Semis deferred)');
 {
   // Tomato Nutrition page — 4 contribution blocks asserted today.
-  // Tomato Sol soil-bank block (#nutr-soil) is EXCLUDED per REQ-152.
+  // Tomato Sol soil-bank block (#nutr-soil) is EXCLUDED per contribution-block-recipe-table.
   const blocks = [
     { id: 'nutr-compost',   label: 'Compost' },
     { id: 'nutr-sidedress', label: 'Sidedress' },
@@ -4769,7 +4769,7 @@ header('contribution-block-recipe-table — Contribution-block recipe table — 
     // Locate the gap-grid wrapper — its immediate previous sibling must be the recipe <table>.
     const wrapper = findGapGridWrapper(element);
     if (!wrapper) {
-      offenders.push(`#${block.id} (${block.label}): gap-grid wrapper not found (renderer not emitting REQ-137 grid)`);
+      offenders.push(`#${block.id} (${block.label}): gap-grid wrapper not found (renderer not emitting contribution-block-gap-grid grid)`);
       continue;
     }
     const previous = wrapper.previousElementSibling;
@@ -4817,7 +4817,7 @@ header('contribution-block-recipe-table — Contribution-block recipe table — 
   }
 
   // Salanova post-transplant — 3 blocks (Sol, Fertigation, Front-load).
-  // Wave 2 coder rolls REQ-152 across the lettuce side after the F1 carve.
+  // Wave 2 coder rolls contribution-block-recipe-table across the lettuce side after the F1 carve.
   // TODO: wire after F1 lettuce carve
   pass('contribution-block-recipe-table — Salanova Sol recipe table (3-col Produit/Composition/Quantité) — TODO: wire after F1 lettuce carve');
   // TODO: wire after F1 lettuce carve
@@ -4834,7 +4834,7 @@ header('contribution-block-recipe-table — Contribution-block recipe table — 
 
 // ─── subproject-namespace-sole-source — App must call subproject namespace, no inline reimplementation
 //
-// Spec: spec.md → REQ-139.
+// Spec: spec.md → subproject-namespace-sole-source.
 //
 // Two layers:
 //   (1) Registry-driven positive check — for each (namespace, function,
@@ -4868,11 +4868,11 @@ header('subproject-namespace-sole-source — App must call subproject namespace 
   // into the app.
   const REGISTRY = [
     { ns: 'FoliarRecipeTomato',  handler: 'computeFoliarSupply',         consumer: 'dist/index.html' },
-    // REQ-116 — the shell orchestrator consumes the gap-chain wrapper
+    // fp-strategy-live-derived — the shell orchestrator consumes the gap-chain wrapper
     // (deriveFoliarRecipeFromGap) via the FoliarRecipeTomato namespace
     // rather than the raw computeFoliarRecipeForGap; the wrapper owns
     // the per-element gap arithmetic + reshape. computeFoliarRecipeForGap
-    // is still namespaced for foliar-only verifier tests (REQ-115 below).
+    // is still namespaced for foliar-only verifier tests (gap-maximizing-recipe below).
     { ns: 'FoliarRecipeTomato',  handler: 'deriveFoliarRecipeFromGap',   consumer: 'dist/index.html' },
     { ns: 'CompostContribution', handler: 'releasePerWeek',              consumer: 'dist/index.html' },
   ];
@@ -5060,7 +5060,7 @@ header('operator-prose-is-deterministic-render — Operator-facing prose is a de
       }
       // Deprecated values — fail loudly.
       if (source === 'derived' || source.startsWith('stable:')) {
-        offenders.push(`data-prose-source="${source}" is deprecated (REQ-144 2026-05-11): use "derived:<funcName>" or push the bytes into a Renders: block and reference "REQ-NNN"`);
+        offenders.push(`data-prose-source="${source}" is deprecated (operator-prose-is-deterministic-render 2026-05-11): use "derived:<funcName>" or push the bytes into a Renders: block and reference "REQ-NNN"`);
         if (offenders.length >= 5) break;
         continue;
       }
@@ -5155,7 +5155,7 @@ header('pourquoi-modal-strings-owned-here — Pourquoi modal interpretation stri
 // ─── identifiers-unabbreviated — Function/variable/property names in JS source must be full
 //     words (no abbreviations) ────────────────────────────────────────────
 //
-// Spec: spec.md → REQ-158. Walk owned-surface JS source (app/,
+// Spec: spec.md → identifiers-unabbreviated. Walk owned-surface JS source (app/,
 // nutrition/, yield-range/ plus this verifier itself), extract identifier
 // declarations via regex, and flag any whose name (or a camelCase segment)
 // matches the denylist of common abbreviations. A whitelist exempts
@@ -5442,12 +5442,12 @@ header('identifiers-unabbreviated — Function/variable/property names in JS sou
   } else {
     // Build a structured fail() detail. fail() only prints the first 5
     // lines of detail by design, so we route the full report to stdout
-    // directly (matching the REQ-152 pattern of printing rich detail
+    // directly (matching the contribution-block-recipe-table pattern of printing rich detail
     // outside the fail() call).
     fail('identifiers-unabbreviated — identifier names are full words (no abbreviations)',
       `${hits.length} denylist hits across ${hitsByFile.size} files`);
 
-    process.stdout.write(`\n    ${c.dim}── REQ-158 hit list (top 50) ──${c.reset}\n`);
+    process.stdout.write(`\n    ${c.dim}── identifiers-unabbreviated hit list (top 50) ──${c.reset}\n`);
     const printable = hits.slice(0, 50);
     for (const hit of printable) {
       const relativePath = hit.file.startsWith(REPO_ROOT) ? hit.file.slice(REPO_ROOT.length + 1) : hit.file;
@@ -5475,24 +5475,24 @@ header('identifiers-unabbreviated — Function/variable/property names in JS sou
 
 // ─── lean nutrition tables
 //
-// Specs: nutrition/spec.md → REQ-159 (elemental-mass columns in mg),
-// REQ-160 (unit suffix in header not in cells), REQ-161 (bare 0, no
-// `(couvert)`), REQ-162 (Mois d'épuisement every row with reservoir data).
-// nutrition/tomato/foliar-strategy/builder/user-stories.md → REQ-163 (foliar Efficacité reacts to
+// Specs: nutrition/spec.md → elemental-mass-in-mg (elemental-mass columns in mg),
+// column-header-unit-declaration (unit suffix in header not in cells), manque-sortant-zero-bare (bare 0, no
+// `(couvert)`), mois-depuisement-sme-runway (Mois d'épuisement every row with reservoir data).
+// nutrition/tomato/foliar-strategy/builder/user-stories.md → foliar Block 5 (foliar Efficacité reacts to
 // surfactant lever).
 //
-// REQ-159 / REQ-160 / REQ-161 are designed-to-fail at first run — the
+// elemental-mass-in-mg / column-header-unit-declaration / manque-sortant-zero-bare are designed-to-fail at first run — the
 // current renderer (renderGapGrid in app/index.html) calls formatValue()
 // on every numeric cell which emits a `mg` / `g` suffix, and writes the
 // literal `(couvert)` annotation on the Manque sortant cell when gOut ≤ 0.
 // Wave 2 coder migrates the unit into the column header + drops the
-// annotation. REQ-162 / REQ-163 stay as pass-with-TODO until the
+// annotation. mois-depuisement-sme-runway / foliar Block 5 stay as pass-with-TODO until the
 // specialist's parallel work lands (Mehlich-3 ÷ SME-weekly-uptake math
 // and surfactant-aware foliar efficiency surface respectively).
 
 // Canonical block descriptors per page. Each entry pairs a DOM container
 // id with a human-readable label for failure context. Salanova blocks are
-// not yet wired (per REQ-137 TODO sweep above); we surface them as
+// not yet wired (per contribution-block-gap-grid TODO sweep above); we surface them as
 // pass-with-TODO matching that pattern.
 const REQ159_TOMATO_BLOCKS = [
   { id: 'nutr-compost',   label: 'Tomato Compost' },
@@ -5505,22 +5505,22 @@ const REQ159_NURSERY_BLOCKS = [
   { id: 'nutr-n-fertigation', label: 'Semis Fertigation' },
 ];
 
-// Elemental-mass column headers per REQ-159. These columns express
-// per-element mass and MUST end in `mg`. The REQ-137 gap-grid uses three
+// Elemental-mass column headers per elemental-mass-in-mg. These columns express
+// per-element mass and MUST end in `mg`. The contribution-block-gap-grid gap-grid uses three
 // of them (Manque entrant · Apport ici · Manque sortant); the soil-bank
 // block adds the same labels. Efficacité is a unitless percent and
-// excluded. Recipe-product `Quantité` is the REQ-152 carve-out.
+// excluded. Recipe-product `Quantité` is the contribution-block-recipe-table carve-out.
 const REQ159_ELEMENTAL_MASS_HEADERS = new Set([
   'Manque entrant', 'Apport ici', 'Manque sortant',
 ]);
 
 // Walk every gap-grid + recipe-table column header for one block. Returns
 // `{ kind: 'gap'|'recipe', headerText, columnIndex }[]`. Used by both
-// REQ-159 (header unit) and REQ-160 (header→cell unit consistency).
+// elemental-mass-in-mg (header unit) and column-header-unit-declaration (header→cell unit consistency).
 function collectBlockHeaders(blockElement) {
   if (!blockElement) return [];
   const out = [];
-  // Recipe table (REQ-152) — <th> in <thead>.
+  // Recipe table (contribution-block-recipe-table) — <th> in <thead>.
   const recipeTable = blockElement.querySelector('table');
   if (recipeTable) {
     const headerCells = Array.from(recipeTable.querySelectorAll('thead th, thead td'));
@@ -5532,7 +5532,7 @@ function collectBlockHeaders(blockElement) {
       });
     });
   }
-  // Gap-grid header strip (REQ-137 / REQ-156) — first child div under the wrapper.
+  // Gap-grid header strip (contribution-block-gap-grid / efficacite-column-capability) — first child div under the wrapper.
   const headerStrip = findGapGridHeaderStrip(blockElement);
   if (headerStrip) {
     const cols = Array.from(headerStrip.children);
@@ -5550,8 +5550,8 @@ function collectBlockHeaders(blockElement) {
 // Walk every body cell of the gap-grid for one block. Returns an array
 // keyed by column index: `{ columnIndex, rowIndex, cellText }[]`. Recipe
 // tables use a different DOM shape; the recipe-product Quantité column
-// intentionally carries a unit suffix (g/kg per REQ-152), so it stays
-// out of REQ-160's header→cell coupling.
+// intentionally carries a unit suffix (g/kg per contribution-block-recipe-table), so it stays
+// out of column-header-unit-declaration's header→cell coupling.
 function collectGapGridDataCells(blockElement) {
   if (!blockElement) return [];
   const out = [];
@@ -5569,7 +5569,7 @@ function collectGapGridDataCells(blockElement) {
   return out;
 }
 
-// REQ-159 helper — given a header text, does it declare a non-mg unit
+// elemental-mass-in-mg helper — given a header text, does it declare a non-mg unit
 // suffix? Returns the offending suffix or `null` if header ends in `mg`
 // / `(mg)` or has no unit suffix at all. We treat `(mg)` and ` mg` as
 // equivalent acceptable forms; `g` / `kg` / `g/m²/wk` are rejected.
@@ -5591,7 +5591,7 @@ function nonMgSuffix(headerText) {
   return null;
 }
 
-// REQ-160 helper — given a header text, return the unit suffix it
+// column-header-unit-declaration helper — given a header text, return the unit suffix it
 // declares (the substring that mustn't be duplicated in cells), or `null`
 // if the header declares no unit. The cell check skips columns whose
 // header has no declared unit (lenient per the brief).
@@ -5609,7 +5609,7 @@ function headerDeclaredUnit(headerText) {
   return null;
 }
 
-// REQ-160 helper — does the cell text duplicate the header's unit?
+// column-header-unit-declaration helper — does the cell text duplicate the header's unit?
 function cellHasDuplicateUnit(cellText, declaredUnit) {
   if (!declaredUnit) return false;
   const stripped = String(cellText || '').trim();
@@ -5635,7 +5635,7 @@ function cellHasDuplicateUnit(cellText, declaredUnit) {
 // Walk every nutrition-table column header. For columns whose semantic is
 // per-element elemental mass (Manque entrant / Apport ici / Manque
 // sortant — the soil-bank block uses the same labels), the header text
-// must end in `mg` (or `(mg)`). Recipe-product mass tables (REQ-152
+// must end in `mg` (or `(mg)`). Recipe-product mass tables (contribution-block-recipe-table
 // `Quantité` column) are carved out and stay in g/kg. Drift gauge
 // (Block 7/8) stays in g/kg (not a contribution-block render — not
 // touched here).
@@ -5649,12 +5649,12 @@ header('elemental-mass-in-mg — Nutrition-table elemental-mass columns declare 
     if (!element) { offenders.push(`${block.label} (#${block.id}): container missing`); continue; }
     const headers = collectBlockHeaders(element);
     for (const headerEntry of headers) {
-      if (headerEntry.kind === 'recipe') continue; // REQ-152 carve-out
+      if (headerEntry.kind === 'recipe') continue; // contribution-block-recipe-table carve-out
       if (!REQ159_ELEMENTAL_MASS_HEADERS.has(headerEntry.headerText)) continue;
       // Header must declare `mg` (either `... (mg)` or `... mg`). Today
       // these headers are bare strings ("Manque entrant") with no unit
       // declaration — the unit lives in the cells via formatValue. That's
-      // the REQ-159 failure mode the Wave 2 coder fixes.
+      // the elemental-mass-in-mg failure mode the Wave 2 coder fixes.
       if (!/\bmg\)?$/.test(headerEntry.headerText)) {
         offenders.push(`${block.label}.${headerEntry.headerText}: header missing (mg) declaration`);
         continue;
@@ -5694,7 +5694,7 @@ header('elemental-mass-in-mg — Nutrition-table elemental-mass columns declare 
     const soilBlock = window.document.getElementById('nutr-soil');
     if (soilBlock) {
       // Soil-bank renderer (nutrition/soil-contribution/render.js) emits a
-      // 6-col grid with leading 0.5fr column (vs the REQ-137 grid's 0.6fr).
+      // 6-col grid with leading 0.5fr column (vs the contribution-block-gap-grid grid's 0.6fr).
       // Locate its header strip directly instead of via findGapGridHeaderStrip
       // (which targets 0.6fr).
       const soilWrapper = soilBlock.querySelector('div[style*="grid-template-columns:0.5fr"]');
@@ -5716,7 +5716,7 @@ header('elemental-mass-in-mg — Nutrition-table elemental-mass columns declare 
   } else {
     fail('elemental-mass-in-mg — elemental-mass headers missing mg',
       offenders.slice(0, 5).join('\n      '));
-    process.stdout.write(`\n    ${c.dim}── REQ-159 hit list (top ${Math.min(offenders.length, 20)}) ──${c.reset}\n`);
+    process.stdout.write(`\n    ${c.dim}── elemental-mass-in-mg hit list (top ${Math.min(offenders.length, 20)}) ──${c.reset}\n`);
     offenders.slice(0, 20).forEach(line => {
       process.stdout.write(`    ${c.red}${line}${c.reset}\n`);
     });
@@ -5725,7 +5725,7 @@ header('elemental-mass-in-mg — Nutrition-table elemental-mass columns declare 
     }
     process.stdout.write('\n');
   }
-  // Salanova carve-out (REQ-137 / REQ-152 / REQ-156 sibling) — not wired today.
+  // Salanova carve-out (contribution-block-gap-grid / contribution-block-recipe-table / efficacite-column-capability sibling) — not wired today.
   // TODO: wire after F1 lettuce carve
   pass('elemental-mass-in-mg — Salanova Sol elemental-mass columns — TODO: wire after F1 lettuce carve');
   // TODO: wire after F1 lettuce carve
@@ -5740,10 +5740,10 @@ header('elemental-mass-in-mg — Nutrition-table elemental-mass columns declare 
 // unit (parens-suffix pattern `... (mg)`, `... (g)`, etc.), every cell in
 // that column MUST NOT carry the same unit suffix. Lenient: when a
 // header has no declared unit (today's pre-Wave-2 state), the cell check
-// is skipped for that column. This means REQ-160 mostly passes until
-// REQ-159 lands header units; once REQ-159 lands, REQ-160 will fire if
+// is skipped for that column. This means column-header-unit-declaration mostly passes until
+// elemental-mass-in-mg lands header units; once elemental-mass-in-mg lands, column-header-unit-declaration will fire if
 // any cell still carries the suffix. The matcher is registered now so
-// the Wave 2 coder's combined REQ-159 + REQ-160 fix lands covered.
+// the Wave 2 coder's combined elemental-mass-in-mg + column-header-unit-declaration fix lands covered.
 
 header('column-header-unit-declaration — Cell text does not duplicate the header-declared unit');
 {
@@ -5791,7 +5791,7 @@ header('column-header-unit-declaration — Cell text does not duplicate the head
   } else {
     fail('column-header-unit-declaration — cell duplicates header unit',
       offenders.slice(0, 5).join('\n      '));
-    process.stdout.write(`\n    ${c.dim}── REQ-160 hit list (top ${Math.min(offenders.length, 20)}) ──${c.reset}\n`);
+    process.stdout.write(`\n    ${c.dim}── column-header-unit-declaration hit list (top ${Math.min(offenders.length, 20)}) ──${c.reset}\n`);
     offenders.slice(0, 20).forEach(line => {
       process.stdout.write(`    ${c.red}${line}${c.reset}\n`);
     });
@@ -5813,7 +5813,7 @@ header('column-header-unit-declaration — Cell text does not duplicate the head
 // Walk every contribution-block cell on every Nutrition page. Fail if any
 // cell text contains the substring `(couvert)`. The Manque sortant cell
 // MUST render the bare digit `0` when the channel covers its share —
-// color (REQ-016 green/yellow/red) carries the meaning.
+// color (green/yellow/red) carries the meaning.
 //
 // Today renderGapGrid emits `gOut <= 0 ? '0 (couvert)' : formatValue(gOut)`
 // at app/index.html — designed-to-fail until the Wave 2 coder drops the
@@ -5843,12 +5843,12 @@ header('manque-sortant-zero-bare — Bare 0 in Manque sortant cell, no `(couvert
       const cells = Array.from(row.children);
       const elementSymbol = cells[0] ? (cells[0].textContent || '').trim() : '?';
       // Find the cell that actually carries `(couvert)`. Column index
-      // differs across grids: REQ-137 (4 contribution blocks + Semis) puts
+      // differs across grids: contribution-block-gap-grid (4 contribution blocks + Semis) puts
       // Manque sortant at index 4; soil-contribution puts it at index 3
       // (Efficacité column absent). Walk the cells directly.
       const offendingCell = cells.find(cell => (cell.textContent || '').includes('(couvert)'));
       const cellText = offendingCell ? (offendingCell.textContent || '').trim() : '';
-      offenders.push(`${block.label}.Manque sortant: row ${rowIndex + 1} (${elementSymbol}) = "${cellText}" — drop "(couvert)" per REQ-161`);
+      offenders.push(`${block.label}.Manque sortant: row ${rowIndex + 1} (${elementSymbol}) = "${cellText}" — drop "(couvert)" per manque-sortant-zero-bare`);
       foundInRow = true;
     });
     if (!foundInRow) {
@@ -5872,7 +5872,7 @@ header('manque-sortant-zero-bare — Bare 0 in Manque sortant cell, no `(couvert
       const elementSymbol = cells[0] ? (cells[0].textContent || '').trim() : '?';
       const offendingCell = cells.find(cell => (cell.textContent || '').includes('(couvert)'));
       const cellText = offendingCell ? (offendingCell.textContent || '').trim() : '';
-      offenders.push(`${block.label}.Manque sortant: row ${rowIndex + 1} (${elementSymbol}) = "${cellText}" — drop "(couvert)" per REQ-161`);
+      offenders.push(`${block.label}.Manque sortant: row ${rowIndex + 1} (${elementSymbol}) = "${cellText}" — drop "(couvert)" per manque-sortant-zero-bare`);
     });
   }
   if (typeof window.setNutrCrop === 'function') {
@@ -5883,7 +5883,7 @@ header('manque-sortant-zero-bare — Bare 0 in Manque sortant cell, no `(couvert
   } else {
     fail('manque-sortant-zero-bare — "(couvert)" annotation still present',
       offenders.slice(0, 5).join('\n      '));
-    process.stdout.write(`\n    ${c.dim}── REQ-161 hit list (top ${Math.min(offenders.length, 20)}) ──${c.reset}\n`);
+    process.stdout.write(`\n    ${c.dim}── manque-sortant-zero-bare hit list (top ${Math.min(offenders.length, 20)}) ──${c.reset}\n`);
     offenders.slice(0, 20).forEach(line => {
       process.stdout.write(`    ${c.red}${line}${c.reset}\n`);
     });
@@ -5898,10 +5898,10 @@ header('manque-sortant-zero-bare — Bare 0 in Manque sortant cell, no `(couvert
 
 // ─── mois-depuisement-sme-runway — Mois d'épuisement on every row with reservoir data ──────
 //
-// Spec: nutrition/spec.md → REQ-162. Every element row on the soil-bank
+// Spec: nutrition/spec.md → mois-depuisement-sme-runway. Every element row on the soil-bank
 // block displays Mois d'épuisement = Mehlich-3 reservoir ÷ weekly plant
 // uptake currently sustainable at SME plant-availability. The model-side
-// formula is wired by REQ-142 + REQ-164; this matcher walks the DOM and
+// formula is wired by months-to-depletion-clamped-by-peak-demand + sme-soil-solution-wired-per-crop-element; this matcher walks the DOM and
 // asserts the rendered cell tracks the model output for every element row
 // whose `SoilContribution.BANK_MG_M2` + `SME_SOIL_SOLUTION_PPM` entries
 // are populated (renders a non-`—` string), and falls back to `—` for
@@ -5949,10 +5949,10 @@ header('mois-depuisement-sme-runway — Mois d\'épuisement rendered for every r
 
 // ─── Foliar Efficacité is surfactant-aware ───────────────────
 //
-// Spec: nutrition/tomato/foliar-strategy/builder/user-stories.md → REQ-163. Two assertions:
+// Spec: nutrition/tomato/foliar-strategy/builder/user-stories.md → foliar Block 5. Two assertions:
 //   (a) Reactive render — toggling #nutr-foliar-surfactant re-renders
 //       Block 5's Efficacité column (column index 2 in the 6-col gap-grid
-//       per REQ-137: Él. | Manque entrant | Efficacité | Apport ici |
+//       per contribution-block-gap-grid: Él. | Manque entrant | Efficacité | Apport ici |
 //       Manque sortant | emoji). At least one cell text must change
 //       across the toggle.
 //   (b) Strict-increase semantics — when surfactant is engaged, at least
@@ -5961,7 +5961,7 @@ header('mois-depuisement-sme-runway — Mois d\'épuisement rendered for every r
 //       on, foliar efficiency for routed elements is higher than without").
 //
 // Model-side capability (window.FoliarRecipeTomato.efficiencyFor) is
-// already verified by REQ-170; this block targets the page-side wiring
+// already verified by surfactant-aware-efficiency-map; this block targets the page-side wiring
 // (Wave 2 coder threads the surfactant flag from #nutr-foliar-surfactant
 // into the foliar branch of calculateNutritionSupply via
 // FoliarRecipeTomato.efficiencyFor). Designed-to-fail today: the page
