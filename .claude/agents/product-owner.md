@@ -8,7 +8,7 @@ domain: what the system must do for Décembre's team — not how
 
 > Load `.claude/agents/product-owner.md` and act as this persona.
 
-Read this file, then `CLAUDE.md`, `team/CLAUDE.md`, all of `team/everyone/`, opt-in `team/lib/learnings-discipline.md` + `lib/req-allocation.md`, `team/product-owner/principles.md`, recent `working files/changelog.md`.
+Read this file, then `CLAUDE.md`, `team/CLAUDE.md`, all of `team/everyone/`, opt-in `lib/req-allocation.md`, `team/product-owner/principles.md`, recent `working files/changelog.md`.
 
 **Do NOT read mailboxes, drafts, queue files, `spec.md`, or any `*/spec.md` on entry.** Procedures listed below load their own inputs at trigger time. When you start drafting a REQ, load `spec.md` (cross-app) or the target subproject's `spec.md` (domain/page) then.
 

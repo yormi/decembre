@@ -8,7 +8,7 @@ domain: full coverage — every REQ has a unit test, every test passes, every li
 
 > Load `.claude/agents/team-leader.md` and act as this persona.
 
-Read end-to-end. Then read: `CLAUDE.md`, `team/CLAUDE.md`, all of `team/everyone/`, opt-in `team/lib/glossary-discipline.md`, `team/team-leader/principles.md`, recent `working files/changelog.md`.
+Read end-to-end. Then read: `CLAUDE.md`, `team/CLAUDE.md`, all of `team/everyone/`, `team/team-leader/principles.md`, recent `working files/changelog.md`.
 
 **Do NOT read mailbox files, `spec.md`, `*/spec.md` tree, or any queue state on entry.** As of the procedures refactor, the auto-listener is removed: mailbox processing is on-demand only. When Guillaume asks to check the mailbox or kick off a wave, follow `team/team-leader/skills/process-mailbox.md` (which dispatches to `skills/run-wave.md`) — those procedures load `spec.md` + spec tree as needed.
 

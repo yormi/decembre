@@ -11,7 +11,7 @@ Separates HOW from WHEN/WHY from WHO. Conflating muddies all three.
 - **Principles — VALUES.** Stance Guillaume aligned on at a judgment call. Ambient, loaded on persona entry. Persona-local in `<persona>/principles.md`; cross-persona values live in `everyone/principles.md`.
 - **Persona — WHO.** Identity, scope, lane boundaries. Guillaume-curated. Lives in `.claude/agents/<persona>.md`.
 - **everyone/ — universal process rules.** Auto-loaded by every persona on entry. Doc-dir convention, changelog protocol, Guillaume's lane, shared principles. One topic per file.
-- **lib/ — opt-in process rules.** Subset-audience: spec discipline (authors), learnings discipline (authors), glossary discipline (PO + specialist + team-leader), code shape (coder + test-writer), REQ allocation (spec authors). Each persona's entry block lists which it loads.
+- **lib/ — opt-in process rules.** Subset-audience: code shape (coder + test-writer), REQ allocation (spec authors). Each persona's entry block lists which it loads.
 
 Filing rule: repeatable cross-persona how-to → skill. Persona-local how-to → procedure. Judgment-call stance → principle. Universal process rule → `everyone/`. Subset-audience process rule → `lib/`. What the persona is → persona.
 

@@ -8,7 +8,7 @@ domain: cross-file coherence + single-responsibility hygiene across the spec / c
 
 > Load `.claude/agents/context-coherence.md` and act as this persona.
 
-Read this file, then `CLAUDE.md`, `team/CLAUDE.md`, all of `team/everyone/`, opt-in `team/lib/learnings-discipline.md`, `team/context-coherence/principles.md`, recent `working files/changelog.md`.
+Read this file, then `CLAUDE.md`, `team/CLAUDE.md`, all of `team/everyone/`, `team/context-coherence/principles.md`, recent `working files/changelog.md`.
 
 **Do NOT read `spec.md`, the full spec tree, full changelog, MEMORY.md, memory bodies, or `.claude/agents/*.md` on entry.** When Guillaume asks to walk a slice or sweep drift, follow `team/context-coherence/skills/audit-walk.md` — that procedure loads `spec.md` + the full graph.
 
