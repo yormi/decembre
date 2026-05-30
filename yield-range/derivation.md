@@ -7,7 +7,7 @@ anchor (live cohort data) lives in
 
 ---
 
-## REQ-112 / REQ-172 — `canopyCapG` values per tray
+## canopy-cap-is-ceiling / nursery-canopy-cap-by-plateau
 
 `yield-range/data.js:CANOPY_CAP_BY_PLATEAU` = `{ 50: 25, 32: 39, 24: 52,
 18: 69 }` (g/plant). Breeder-anchored geometric scaling: each entry is
@@ -45,7 +45,7 @@ highest-priority gap). Refit `CANOPY_CAP_BY_PLATEAU` to observed
 asymptote when n ≥ 5 cohorts under best non-light conditions land
 for the relevant tray.
 
-## REQ-113 — Why no stress multipliers in the daily growth term
+## best-non-light-conditions
 
 The model is the upper-bound "best-case" prediction. Tomato-zone
 calibration data (heat-stressed, sub-optimal for lettuce) shows
@@ -59,10 +59,10 @@ collapse the model into a calibration to one specific stressed
 condition rather than a planning surface.
 
 If a stress-aware variant is ever needed, it belongs in a separate
-spec, not as a multiplier into REQ-115's growth term. See learnings.md
+spec, not as a multiplier into logistic-growth-no-decay's growth term. See learnings.md
 for the rejected senescence-branch alternative.
 
-## REQ-114 ↔ REQ-131 — DLI decomposition
+## dli-annual-sun-plus-led ↔ double-poly-transmission-decomposed
 
 Bench DLI is the sum of two transparent terms:
 
@@ -71,7 +71,7 @@ DLI_SUN_OUTDOOR_QC_ANNUAL × GH_LIGHT_TRANSMISSION_DOUBLE_POLY
   + (LED_PPFD × ledHours × 3600 / 1e6)
 ```
 
-REQ-131 owns the sun-side decomposition. Why two constants instead of
+double-poly-transmission-decomposed owns the sun-side decomposition. Why two constants instead of
 one post-transmission baked-in value? The film transmission updates
 independently of the outdoor-DLI baseline — when poly is replaced or
 ages (0.55 fresh → 0.45 aged), the operator-side adjustment touches
@@ -88,7 +88,7 @@ Constant choices:
 - `LED_PPFD = 200 µmol/m²/s` — installed bench LED capacity; cert 4
   (datasheet-anchored).
 
-## REQ-115 — Logistic growth, no decay
+## logistic-growth-no-decay
 
 ```
 W(d+1) = W(d) × (1 + RGR_MAX × (1 − W/cap) × f_light(dpp))
@@ -114,7 +114,7 @@ primary-source document currently lives in `nutrition/doc/`. The
 nearest on-disk anchors (`fertigation oligos éléments tomate avril.pdf`,
 `Recette fertigation oligo-éléments laitues - 1er mai 2026 PA.pdf`)
 cover fertigation chemistry, not growth physiology. Cert ladder per
-P-10: one mechanistic step from the breeder-anchored cap (REQ-172) is
+P-10: one mechanistic step from the breeder-anchored cap (nursery-canopy-cap-by-plateau) is
 the literature seedling-RGR band at cert 3; no further extrapolation
 this turn. Refinement trigger names where the literature band is
 expected to underpredict or overpredict for Décembre's regime.
@@ -123,7 +123,7 @@ expected to underpredict or overpredict for Décembre's regime.
 `DLI_bench = sun(16.5) + LED(11.5) = 28.02 mol/m²/d` (16 LED-hours),
 `cap = 25 g`, `RGR = 0.30` → `daysToTransplantPotential = d44`
 (W reaches `0.95 × 25 = 23.75 g` at d44). The asymptote curve under
-the spacing-factor decay (REQ-116) and `f_light` saturation:
+the spacing-factor decay (packed-canopy-spacing) and `f_light` saturation:
 `f_light ≈ 0.70` for d ≤ 14 (per-plant DLI ≈ 28, above the 0.7
 saturation floor); ramps to ≈ 0.90 by d = 28 (per-plant DLI = 11.2,
 on the linear ramp toward the optimum plateau). Per-tray timing at
@@ -168,7 +168,7 @@ data point.
 | 17 → 22 | linear ramp 1.0 → 0.7 (saturation) |
 | ≥ 22 | 0.7 (saturation floor) |
 
-## REQ-116 — Spacing-factor decay shape
+## packed-canopy-spacing
 
 Per-plant DLI = bench DLI × spacing_factor(d). The decay between bound
 endpoints (1.0 at d ≤ 14, 0.40 at d ≥ 28) is **linearly interpolated**
@@ -187,13 +187,13 @@ photo coverage analysis) at d=18, d=21, d=24 — if the curve is
 significantly non-linear (e.g. sigmoidal at canopy-closure threshold),
 refit to a 4-breakpoint shape.
 
-## REQ-117 — Days-to-potential threshold
+## days-to-potential-by-regime
 
 `POTENTIAL_THRESHOLD = 0.95`. First integer d where W ≥ 0.95 × cap.
 Logistic asymptote is approached but never reached; 95 % is the
 operator-meaningful "ready" mark.
 
-## REQ-118 — Trajectory window
+## trajectory-output-shape
 
 50 entries from day 0 to day 49 inclusive. `TRAJECTORY_MAXIMUM_DAYS = 49`
 covers the longest plausible nursery cycle (worst-case low-LED,
@@ -207,14 +207,14 @@ Live triggers across REQs:
 
 | Trigger | What it refines | When |
 |---|---|---|
-| Décembre best-case cohort (n ≥ 5, cooler zone, no bolting / VPD / mold) — asymptote vs d44 at 50-cell / DLI=28 / 16 LED-h | `RGR_MAXIMUM_LETTUCE_NURSERY` (REQ-115); refit **upward** if observed < d44 (literature too conservative for the regime), **downward** if > d44 — symmetric per [[P-03]] | per `doc/yield-range-calibration-2026-spring.md` § "How to add new observations" |
-| Salanova-specific or Rijk-Zwaan cultivar-trial RGR_max primary source lands in `nutrition/doc/` | `RGR_MAXIMUM_LETTUCE_NURSERY` (REQ-115) — cert ladder overrides cross-cultivar literature transferability | when the doc lands; supersedes the [[P-10]] missing-doc gap in the REQ-115 trace |
-| n ≥ 5 cohorts at non-50-cell trays | `CANOPY_CAP_BY_PLATEAU` (REQ-112 / REQ-172) | per `doc/yield-range-calibration-2026-spring.md` § "How to add new observations" |
+| Décembre best-case cohort (n ≥ 5, cooler zone, no bolting / VPD / mold) — asymptote vs d44 at 50-cell / DLI=28 / 16 LED-h | `RGR_MAXIMUM_LETTUCE_NURSERY` (logistic-growth-no-decay); refit **upward** if observed < d44 (literature too conservative for the regime), **downward** if > d44 — symmetric per [[P-03]] | per `doc/yield-range-calibration-2026-spring.md` § "How to add new observations" |
+| Salanova-specific or Rijk-Zwaan cultivar-trial RGR_max primary source lands in `nutrition/doc/` | `RGR_MAXIMUM_LETTUCE_NURSERY` (logistic-growth-no-decay) — cert ladder overrides cross-cultivar literature transferability | when the doc lands; supersedes the [[P-10]] missing-doc gap in the logistic-growth-no-decay trace |
+| n ≥ 5 cohorts at non-50-cell trays | `CANOPY_CAP_BY_PLATEAU` (canopy-cap-is-ceiling / nursery-canopy-cap-by-plateau) | per `doc/yield-range-calibration-2026-spring.md` § "How to add new observations" |
 | First 18-cell cohort under best non-light conditions | `CANOPY_CAP_BY_PLATEAU[18]` — geometric likely underpredicts (`h × ρ` rises at wider spacing); refit upward toward observed asymptote (plausible band 75-95 g vs predicted 69 g) | first 18-cell cohort weigh-in at d ≥ 28; smaller +5-10 % expected at 24-cell |
-| Site-specific pyranometer dataset | `DLI_SUN_OUTDOOR_QC_ANNUAL` (REQ-131) | when measurement equipment lands |
-| Poly film replacement or aging | `GH_LIGHT_TRANSMISSION_DOUBLE_POLY` (REQ-131) | at film swap; 0.55 fresh → 0.45 aged |
-| Per-plant PAR at d=18/21/24 | `NURSERY_SPACING_PACKED` shape (REQ-116) | when measurement equipment lands or photo-coverage analysis runs |
-| Rijk Zwaan breeder density curves | `FOLIAGE_HEIGHT_M` / `FOLIAGE_DENSITY_KG_PER_M3` independent anchors (REQ-172) — currently back-derived from the 50-cell anchor | when curves load |
+| Site-specific pyranometer dataset | `DLI_SUN_OUTDOOR_QC_ANNUAL` (double-poly-transmission-decomposed) | when measurement equipment lands |
+| Poly film replacement or aging | `GH_LIGHT_TRANSMISSION_DOUBLE_POLY` (double-poly-transmission-decomposed) | at film swap; 0.55 fresh → 0.45 aged |
+| Per-plant PAR at d=18/21/24 | `NURSERY_SPACING_PACKED` shape (packed-canopy-spacing) | when measurement equipment lands or photo-coverage analysis runs |
+| Rijk Zwaan breeder density curves | `FOLIAGE_HEIGHT_M` / `FOLIAGE_DENSITY_KG_PER_M3` independent anchors (nursery-canopy-cap-by-plateau) — currently back-derived from the 50-cell anchor | when curves load |
 
 ---
 
@@ -227,12 +227,12 @@ Daily grain throughout.
 Model plan lives in `working files/yield-range-extension-draft.md`.
 Settled inputs (2026-05-17):
 - `bench_dli_mol_per_m2_per_day` — `ledHours` stays a dynamic operator
-  input (max 18); existing REQ-114 formula preserved.
+  input (max 18); existing dli-annual-sun-plus-led formula preserved.
 - `per_plant_dli_share_field` curve — 1.0 until rosette covers
   spacing, then decays with 0.40 floor (cert 2 borrowed from packed
   nursery; refinement trigger = field cohort data).
 
-Nursery cap basis landed in the live REQ trace (REQ-112 / REQ-172
+Nursery cap basis landed in the live REQ trace (canopy-cap-is-ceiling / nursery-canopy-cap-by-plateau
 section above); no separate pending entry.
 
 Open inputs (block REQ landing):

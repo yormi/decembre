@@ -10,9 +10,9 @@
 //
 // Safe-band data sources used here:
 //   - CE (irrigation at dripper, tomato T3-T5): 2.0 – 3.0 mS/cm
-//     nutrition/chemistry/spec.md § REQ-024
+//     nutrition/chemistry/spec.md § predicted-ce-within-crop-stage-band
 //   - pH (irrigation at dripper compartment):  5.5 – 7.0
-//     nutrition/chemistry/spec.md § REQ-053
+//     nutrition/chemistry/spec.md § predicted-tank-ph-within-envelope
 //
 // Framework: node:test. Reuses the assembled-page jsdom fixture from
 // nutrition/tomato/shell/test-helpers.mjs.
@@ -49,7 +49,7 @@ describe('predicted-ph-ce-shown-on-builder-blocks — fertigation builder', () =
 
   test('predicted-ph-ce-shown-on-builder-blocks — predicted pH node renders a numeric value', () => {
     // Tank pH for fertigation at dripper sits inside the irrigation-at-dripper
-    // envelope (REQ-053, 5.5–7.0). Cap at agronomic plausibility 3.0–9.0 so
+    // envelope (predicted-tank-ph-within-envelope, 5.5–7.0). Cap at agronomic plausibility 3.0–9.0 so
     // the test catches a node that renders an empty string, "—", or a label.
     const { window } = loadTomatoApp();
     const phNode = window.document.querySelector('#nutr-fert [data-predicted="ph"]');
@@ -65,7 +65,7 @@ describe('predicted-ph-ce-shown-on-builder-blocks — fertigation builder', () =
 
   test('predicted-ph-ce-shown-on-builder-blocks — predicted CE node renders a numeric value', () => {
     // Predicted CE at the dripper for tomato fertigation sits in the
-    // REQ-024 band (1.5–3.0 across all stages). Bound at 0.1–8.0 to catch a
+    // predicted-ce-within-crop-stage-band (1.5–3.0 across all stages). Bound at 0.1–8.0 to catch a
     // node rendering empty or non-numeric content.
     const { window } = loadTomatoApp();
     const ceNode = window.document.querySelector('#nutr-fert [data-predicted="ce"]');
@@ -103,7 +103,7 @@ describe('predicted-ph-ce-clickable-modal — fertigation builder', () => {
   });
 
   test('predicted-ph-ce-clickable-modal — pH modal names the measurement point (dripper)', () => {
-    // Fertigation predicts the irrigation-at-dripper compartment per REQ-053.
+    // Fertigation predicts the irrigation-at-dripper compartment per predicted-tank-ph-within-envelope.
     // The modal text must surface the measurement point so the operator
     // knows where to point the blue lab pen for comparison.
     const { window } = loadTomatoApp();
@@ -119,7 +119,7 @@ describe('predicted-ph-ce-clickable-modal — fertigation builder', () => {
 
   test('predicted-ph-ce-clickable-modal — pH modal declares the safe band', () => {
     // Spec: "the safe band for the current crop and stage". For fertigation
-    // at the dripper, REQ-053 pins 5.5 – 7.0. The numerical bounds must be
+    // at the dripper, predicted-tank-ph-within-envelope pins 5.5 – 7.0. The numerical bounds must be
     // surfaced in the modal copy.
     const { window } = loadTomatoApp();
     const phNode = window.document.querySelector('#nutr-fert [data-predicted="ph"]');
@@ -157,7 +157,7 @@ describe('predicted-ph-ce-clickable-modal — fertigation builder', () => {
   });
 
   test('predicted-ph-ce-clickable-modal — CE modal declares the safe band for current stage', () => {
-    // REQ-024 irrigation-at-dripper bands: T1-T2 1.5–2.5, T3-T5 2.0–3.0.
+    // predicted-ce-within-crop-stage-band irrigation-at-dripper bands: T1-T2 1.5–2.5, T3-T5 2.0–3.0.
     // Default page stage may be either tomato segment; assert that one of
     // the two valid band pairs appears verbatim in the modal.
     const { window } = loadTomatoApp();
@@ -222,7 +222,7 @@ describe('predicted-ph-ce-coloured-by-band-position — fertigation builder', ()
 
   test('predicted-ph-ce-coloured-by-band-position — band position is consistent with the rendered value (CE)', () => {
     // Cross-check that the position attribute reflects the rendered number
-    // against the REQ-024 dripper band. T3-T5 band 2.0–3.0; width 1.0;
+    // against the predicted-ce-within-crop-stage-band dripper band. T3-T5 band 2.0–3.0; width 1.0;
     // 10% edge zone = [2.0, 2.1] ∪ [2.9, 3.0]. T1-T2 band 1.5–2.5; width 1.0;
     // 10% edge zone = [1.5, 1.6] ∪ [2.4, 2.5].
     const { window } = loadTomatoApp();

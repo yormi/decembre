@@ -40,13 +40,13 @@ substrate/product selection (operational).
 ```
 {
   perTray_mg: { N, P, K, Ca, Mg },     // mg/tray/wk averaged across cycle
-  details:    { el: {cert, cap}, … },  // REQ-136 per-element payload
-  efficiency: { N, P, K, Ca, Mg },     // REQ-157, ∈ [0, 1] per element
+  details:    { el: {cert, cap}, … },  // nutrition — contribution-channel-details-payload per-element payload
+  efficiency: { N, P, K, Ca, Mg },     // nutrition — channel-efficiency-capability-map, ∈ [0, 1] per element
 }
 ```
 
 `window.SubstrateContributionNursery.efficiency` also exposed at namespace
-level (REQ-157) — same object as the function's `efficiency` key.
+level (nutrition — channel-efficiency-capability-map) — same object as the function's `efficiency` key.
 
 OM2 contributes the 5 macros; feather meal contributes ONLY N (label
 13-0-0). Element coverage closed at the 5 macros (INV-1).
@@ -123,8 +123,8 @@ At runtime, `window.SubstrateContributionNursery` exists and exposes:
 | `theoreticalSubstrateReleasePerWeek`   | function |
 | `cycleAverageReleasePerTray`           | function |
 
-`efficiency` added per REQ-157 — channel-side contract for the
-Efficacité column (REQ-156).
+`efficiency` added per nutrition — channel-efficiency-capability-map — channel-side contract for the
+Efficacité column (nutrition — efficacite-column-capability).
 
 **Cert:** 5 (structural assertion).
 
@@ -143,5 +143,5 @@ Efficacité column (REQ-156).
 
 ## Inherited specs
 
-- **REQ-022** (`nutrition/spec.md`) — Every product Ecocert-allowed.
+- **nutrition/chemistry — every-product-ecocert-allowed** — Every product Ecocert-allowed.
   Feather meal: CAN/CGSB-32.311 ✓. OM2: CAN/CGSB-32.311 ✓.

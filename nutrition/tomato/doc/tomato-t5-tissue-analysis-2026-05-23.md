@@ -57,7 +57,7 @@ Per planche per week, T5:
 
 Effective N at T5 ≈ 2.23 g N / m² / wk via mineralization (Farine
 13 % × 70 % eff. after the 2026-05-23 refit; Actisol contribution
-zero — REQ-089 gates it out on Ca-saturated soil).
+zero — sidedress-recipe — ca-aware-product-gate gates it out on Ca-saturated soil).
 
 ### Foliar Spray A (single weekly tomato spray)
 
@@ -86,7 +86,7 @@ Target yield 1,5 kg / m² / sem.
 | N       | 4050   | 0     | 2229      | 0      | 752            | 2981  | **-26 %**    | déficient (-27 % of floor) | ✓ tight |
 | P       | 660    | 0     | ~50       | 0      | 17             | ~67   | **-90 %**    | déficient      | ✓      |
 | K       | 6000   | 4093  | 165       | 0      | ~1742 (capped) | ~6000 | ±0 %         | at floor       | ✓      |
-| Ca      | 2250   | 0     | 609       | 0      | 2250 (capped)  | ~2250 | ±0 %         | déficient      | ✓ REQ-081 transp-coupling |
+| Ca      | 2250   | 0     | 609       | 0      | 2250 (capped)  | ~2250 | ±0 %         | déficient      | ✓ plant-needs — ca-mg-biomass-transpiration-coupled |
 | Mg      | 855    | 360   | ~165      | 0      | 1190           | 1715  | +101 %       | mid-suff       | ✓      |
 | S       | ~600   | 2200  | ~150      | sulfates | low          | ~2400 | **+300 %**   | élevé          | ✓ sulfate chemistry |
 | Mn      | 7.5    | 5.8   | trace     | 5.4    | 0.45 (BD)      | 11.6  | +55 %        | élevé          | ✓ real (wash-confirmed) |
@@ -105,7 +105,7 @@ Every element direction in the observed tissue matches what the
 delivered-vs-demand math predicts. N short → tissue déficient.
 P massively short via lockout → tissue heavily déficient. K
 supply ≈ demand → tissue at floor with no luxury. Ca abundant in
-SME but transpiration-coupled (REQ-081) → tissue déficient. Mg
+SME but transpiration-coupled (plant-needs — ca-mg-biomass-transpiration-coupled) → tissue déficient. Mg
 over-supplied → mid-suff. Sulfate-chemistry over-delivers S →
 tissue élevé. Foliar micros modestly over-supply → tissue élevé.
 
@@ -164,9 +164,9 @@ trigger in `sidedress-recipe/derivation.md`.
 
 SME Ca = 238,8 ppm × 15 L transpiration = 3 582 mg / m² / wk
 apparent supply. Tissue still déficient. First-pass reason
-(REQ-081): Ca uptake is xylem-mobile only + transpiration-coupled
+(plant-needs — ca-mg-biomass-transpiration-coupled): Ca uptake is xylem-mobile only + transpiration-coupled
 — at sub-target transpiration, mass-flow doesn't physically deliver
-the SME-implied bulk. The plant takes its REQ-081-capped allocation,
+the SME-implied bulk. The plant takes its ca-mg-biomass-transpiration-coupled-capped allocation,
 not the SME ceiling. Operator lever: maintain high-transpiration
 regime (humidity, irrigation timing).
 
@@ -183,7 +183,7 @@ flux from K₂SO₄ 3 489 g + MgSO₄ 1 396 g/wk fertigation competing
 with Ca²⁺ for transporter sites (see § 4.7); (b) **P-starvation-
 limited root mass** — P at -90 % of demand restricts root growth,
 reducing total Ca-uptake surface even with abundant soil Ca. Both
-candidates sit in modelling gaps (REQ-155 only encodes the
+candidates sit in modelling gaps (fertigation-recipe — uptake-efficiency-factor only encodes the
 Ca→K/Mg direction, not the reverse; root-mass coupling is not
 modelled). The high-transpiration regime operator lever still helps
 for humidity / leaf wetness / Botrytis pressure even when Ca
@@ -208,13 +208,13 @@ is below lab floor 4.00 % and well under the
 Botrytis-resistance band 4.5-5.5 %; tomato leaves at this
 Ca level are documented as more susceptible across the
 literature. Soil Ca is abundant (Mehlich-3 10 989 kg/ha,
-SME 238 ppm); REQ-081 transpiration-coupling gates delivery
+SME 238 ppm); plant-needs — ca-mg-biomass-transpiration-coupled transpiration-coupling gates delivery
 to leaves. Note: a parallel hypothesis — cation antagonism
 at the root membrane (K⁺ + Mg²⁺ fertigation flux competing
 with Ca²⁺ uptake) — sits in a modelling gap not encoded by
 `PH_UPTAKE_FACTOR_AT_CURRENT_SOIL` (which only handles the
 Ca → K/Mg direction, not the reverse). Both delivery-side
-(REQ-081) and uptake-side (cation antagonism) candidates
+(plant-needs — ca-mg-biomass-transpiration-coupled) and uptake-side (cation antagonism) candidates
 remain in play; refinement gated on n ≥ 2 cohorts with
 paired tissue + Mehlich-3 + STORED-recipe traces.
 
@@ -254,7 +254,7 @@ below floor (3.46 % vs 4.00 %) despite three favourable
 upstream signals: (a) abundant soil Ca (Mehlich-3 10 989
 kg/ha, SME 238 ppm); (b) cold-leaf empirical signal
 showing healthy transpiration at the leaf-end (§ 4.5);
-(c) REQ-081 transpiration-coupling alone predicting full
+(c) plant-needs — ca-mg-biomass-transpiration-coupled transpiration-coupling alone predicting full
 Ca delivery at the panel-day climate conditions.
 
 **Mechanism.** Classical K:Ca and Mg:Ca antagonism at
@@ -269,7 +269,7 @@ is the ratio of competing ions at the root-surface
 microsite during fertigation events.
 
 **Modelling gap.** `PH_UPTAKE_FACTOR_AT_CURRENT_SOIL`
-(REQ-155, `fertigation-recipe/data.js:67`) encodes the
+(fertigation-recipe — uptake-efficiency-factor, `fertigation-recipe/data.js:67`) encodes the
 **reverse direction** of antagonism: Ca-saturated CEC
 discounts K, Mg, B uptake (K 0.90, Mg 0.85, B 0.80). The
 K+Mg → Ca direction has no hook in the model. Adding a
@@ -314,7 +314,7 @@ target.
 
 | Channel | STORED vs FP at T5 | Magnitude |
 |---------|---------------------|-----------|
-| Fertigation | identical by REQ-154 boot-pin (`wireFpFertigation`) | ±0 % — K₂SO₄ 3 489 g, MgSO₄ 1 396 g, Solubore 9 g match |
+| Fertigation | identical by fertigation-recipe — fp-target-mirrors-sizer boot-pin (`wireFpFertigation`) | ±0 % — K₂SO₄ 3 489 g, MgSO₄ 1 396 g, Solubore 9 g match |
 | Sidedress | **STORED < FP** | Farine 1 341 g/planche vs FP 1 773 g — STORED under-applies ~24 % (post-refit FP) |
 | Foliar (Spray A) | STORED slightly > FP | Mn / Zn / Mo over; Fe under |
 
@@ -400,7 +400,7 @@ compounds the S over-supply mathematically.
   moved 0.75 → 0.70 on 2026-05-23 (single-cohort refit to Sonneveld
   literature floor). Sub-floor refit (≤0.65) still gated on n ≥ 5
   cohorts with stage-tagged tissue + petiole sap NO₃-N tracking.
-  Actisol 0.60 untouched (REQ-089 gates it out of channel today).
+  Actisol 0.60 untouched (sidedress-recipe — ca-aware-product-gate gates it out of channel today).
 - **Per-stage tissue panels** — single T5 sample doesn't support
   stage-by-stage anchor refit. Refit triggers fire on n ≥ 5
   stage-tagged cohorts (per existing `plant-needs/derivation.md`

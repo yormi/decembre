@@ -14,8 +14,8 @@
 //       the band width to the nearest edge.
 //
 // Safe-band data (nutrition/chemistry/spec.md):
-//   - CE (substrate / root zone, all tomato stages): 1.5 – 3.5 mS/cm — REQ-024.
-//   - pH (soil root zone): NO band declared in REQ-053. The compartment list
+//   - CE (substrate / root zone, all tomato stages): 1.5 – 3.5 mS/cm — predicted-ce-within-crop-stage-band.
+//   - pH (soil root zone): NO band declared in predicted-tank-ph-within-envelope. The compartment list
 //     covers foliar tank, fertigation stock, irrigation at dripper, nursery —
 //     soil root zone is absent. All pH-modal + pH-colour assertions on the
 //     sidedress block are therefore `test.todo` until the chemistry spec
@@ -34,8 +34,8 @@ import { test, describe } from 'node:test';
 import assert from 'node:assert/strict';
 import { loadTomatoApp } from '../../shell/test-helpers.mjs';
 
-// Safe-band constants from nutrition/chemistry/spec.md REQ-024 (substrate /
-// root zone row). Tomato T1-T5 share the same substrate band 1.5 – 3.5.
+// Safe-band constants from nutrition/chemistry/spec.md predicted-ce-within-crop-stage-band
+// (substrate / root zone row). Tomato T1-T5 share the same substrate band 1.5 – 3.5.
 const CE_BAND_SOIL_ROOT_ZONE = { min: 1.5, max: 3.5 };
 const CE_BAND_WIDTH = CE_BAND_SOIL_ROOT_ZONE.max - CE_BAND_SOIL_ROOT_ZONE.min;
 const CE_YELLOW_MARGIN = CE_BAND_WIDTH * 0.10;
@@ -84,7 +84,7 @@ describe('predicted-ph-ce-shown-on-builder-blocks — sidedress block exposes pr
     const text = (ce.textContent || '').trim();
     assert.match(text, /\d+(\.\d+)?/,
       `predicted CE element text "${text}" must contain a numeric value`);
-    // Per REQ-160 (unit in header) the strip is a label/value pair; the unit
+    // Per column-header-unit-declaration (unit in header) the strip is a label/value pair; the unit
     // can sit on the label or the value. Either presence is acceptable.
     const block = window.document.getElementById('nutr-sidedress');
     const blockText = (block.textContent || '');
@@ -148,7 +148,7 @@ describe('predicted-ph-ce-clickable-modal — clicking opens a modal with measur
     ce.dispatchEvent(new window.MouseEvent('click', { bubbles: true }));
     const docText = (window.document.body.textContent || '').toLowerCase();
     // Spec verbatim: "how the blue lab pen maps to that point". The blue pen
-    // reads SME (lab sample) per nutrition/chemistry REQ-024 — the modal must
+    // reads SME (lab sample) per nutrition/chemistry predicted-ce-within-crop-stage-band — the modal must
     // surface that mapping.
     const mentionsBluePen =
       docText.includes('stylo bleu')
@@ -166,17 +166,17 @@ describe('predicted-ph-ce-clickable-modal — clicking opens a modal with measur
     assert.ok(ce, 'predicted CE element must exist (precondition)');
     ce.dispatchEvent(new window.MouseEvent('click', { bubbles: true }));
     const docText = window.document.body.textContent || '';
-    // CE band for substrate / root zone is 1.5 – 3.5 mS/cm (REQ-024) across
+    // CE band for substrate / root zone is 1.5 – 3.5 mS/cm (predicted-ce-within-crop-stage-band) across
     // tomato T1-T5. Numbers must appear in the modal.
     assert.ok(/1[.,]5/.test(docText) && /3[.,]5/.test(docText),
       `sidedress predicted-CE modal must show the safe band 1.5 – 3.5 mS/cm; `
       + `document text snippet: "${docText.slice(0, 300)}…"`);
   });
 
-  // pH compartment list (REQ-053) does NOT declare a soil-root-zone band.
+  // pH compartment list (predicted-tank-ph-within-envelope) does NOT declare a soil-root-zone band.
   // Until chemistry/spec.md adds one, the pH-modal claims cannot be tested.
   test.todo('predicted-ph-ce-clickable-modal — predicted pH modal declares the soil-root-zone pH safe band '
-    + '(blocked: REQ-053 does not list a soil-root-zone pH compartment; '
+    + '(blocked: predicted-tank-ph-within-envelope does not list a soil-root-zone pH compartment; '
     + 'nutrition/chemistry/spec.md must declare PH_MIN/PH_MAX for soil root zone first)');
 });
 
@@ -237,5 +237,5 @@ describe('predicted-ph-ce-coloured-by-band-position — green inside, red outsid
   });
 
   test.todo('predicted-ph-ce-coloured-by-band-position — predicted pH element carries colour signal matching its band position '
-    + '(blocked: REQ-053 does not declare a soil-root-zone pH band; chemistry spec must add PH_MIN/PH_MAX for soil root zone)');
+    + '(blocked: predicted-tank-ph-within-envelope does not declare a soil-root-zone pH band; chemistry spec must add PH_MIN/PH_MAX for soil root zone)');
 });

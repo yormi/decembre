@@ -1,6 +1,6 @@
 // Chemistry model — pH-response + effectiveEfficiency spec tests.
 //
-// Pins REQ-194: when computing effectiveEfficiency for any foliar-channel
+// Pins: when computing effectiveEfficiency for any foliar-channel
 // product, the result MUST be multiplied by foliarPhResponse(sprayPh) on
 // top of leaf-surface field modifiers (yucca, window timing). Soil pH is
 // passed through but is irrelevant for foliar products.
@@ -44,7 +44,7 @@ const SOIL_PH = 7.4;                                   // current Décembre soil
 const SPRAY_PH_A = 5.5;                                // foliarPhResponse = 1.0 (window peak)
 const SPRAY_PH_B = 7.5;                                // foliarPhResponse = 0.70 (high-pH penalty)
 
-test('REQ-194 — effectiveEfficiency for foliar products multiplies by foliarPhResponse(sprayPh)', () => {
+test('effectiveEfficiency for foliar products multiplies by foliarPhResponse(sprayPh)', () => {
   assert.ok(PRODUCT, 'PRODUCT not exposed on window');
 
   // Sanity-check the curve gives distinct values at the two pH anchors —
@@ -66,17 +66,17 @@ test('REQ-194 — effectiveEfficiency for foliar products multiplies by foliarPh
 
     const observedRatio = effB / effA;
     assert.ok(Math.abs(observedRatio - expectedRatio) < 0.01,
-      `${product}: effectiveEfficiency ratio sprayPh ${SPRAY_PH_B}/${SPRAY_PH_A} = ${observedRatio.toFixed(4)}, expected foliarPhResponse ratio ${expectedRatio.toFixed(4)} (REQ-194)`);
+      `${product}: effectiveEfficiency ratio sprayPh ${SPRAY_PH_B}/${SPRAY_PH_A} = ${observedRatio.toFixed(4)}, expected foliarPhResponse ratio ${expectedRatio.toFixed(4)}`);
   }
 });
 
-test('REQ-194 — soil pH is ignored for foliar-channel effective efficiency', () => {
+test('soil pH is ignored for foliar-channel effective efficiency', () => {
   // Foliar products bypass the rhizosphere; soil pH must not change the
   // returned efficiency at a fixed sprayPh.
   for (const { product, element } of FOLIAR_CASES) {
     const effLowSoil = effectiveEfficiency(product, element, 5.5, SPRAY_PH_A);
     const effHighSoil = effectiveEfficiency(product, element, 7.8, SPRAY_PH_A);
     assert.ok(Math.abs(effLowSoil - effHighSoil) < 1e-9,
-      `${product}: soil pH affected foliar efficiency (low-soil ${effLowSoil}, high-soil ${effHighSoil}) — REQ-194 requires foliar bypass`);
+      `${product}: soil pH affected foliar efficiency (low-soil ${effLowSoil}, high-soil ${effHighSoil}) — requires foliar bypass`);
   }
 });

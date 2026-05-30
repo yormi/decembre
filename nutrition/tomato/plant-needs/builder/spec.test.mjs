@@ -23,9 +23,9 @@
 //
 // Band data wired (cited):
 //   • CE band — Tomato T1-T2: 1.5–2.5 mS/cm; T3-T5: 2.0–3.0 mS/cm
-//     (nutrition/chemistry/spec.md:74-77 REQ-024 table)
+//     (nutrition/chemistry/spec.md:74-77 table)
 //   • pH band — Irrigation at dripper: 5.5–7.0
-//     (nutrition/chemistry/spec.md:199-204 REQ-053 table)
+//     (nutrition/chemistry/spec.md:199-204 table)
 //
 // Framework: node:test. Reuses the assembled-page jsdom fixture from
 // nutrition/tomato/shell/test-helpers.mjs.
@@ -60,7 +60,7 @@ describe('plant-needs builder scope — Block 1 has no dose or product editing i
 
   test('block-1-renders-demand-not-recipe — rows reflect calcNutrDemand output (mg/m²/wk)', () => {
     // Pins the renderer identity: Block 1 is demand, not a recipe.
-    // Cross-references the user-stories.md REQ-111 4-column layout
+    // Cross-references the user-stories.md 4-column layout
     // (Él. / Fruit / Biomasse / Total) — none of which is a dose.
     const { window } = loadTomatoApp();
     const rows = window.document.querySelectorAll('#nutr-needs .pq-row');
@@ -114,10 +114,10 @@ describe('predicted-ph-ce-coloured-by-band-position — plant-needs Block 1', ()
     // updates these tables, both the constants above and the cite
     // comments need to update together.
     assert.deepEqual(TOMATO_CE_BAND_T1_T2, [1.5, 2.5],
-      'CE band T1-T2 fixture drifted from chemistry/spec.md REQ-024');
+      'CE band T1-T2 fixture drifted from chemistry/spec.md');
     assert.deepEqual(TOMATO_CE_BAND_T3_T5, [2.0, 3.0],
-      'CE band T3-T5 fixture drifted from chemistry/spec.md REQ-024');
+      'CE band T3-T5 fixture drifted from chemistry/spec.md');
     assert.deepEqual(TOMATO_DRIPPER_PH_BAND, [5.5, 7.0],
-      'Dripper pH band fixture drifted from chemistry/spec.md REQ-053');
+      'Dripper pH band fixture drifted from chemistry/spec.md');
   });
 });

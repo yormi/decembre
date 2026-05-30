@@ -125,9 +125,9 @@ Bilan supply credit against per-tray weekly N demand.
 
 ---
 
-## Efficiency map (REQ-157) — channel-side contract for Efficacité column
+## Efficiency map (nutrition — channel-efficiency-capability-map) — channel-side contract for Efficacité column
 
-`window.SubstrateContributionNursery.efficiency` (REQ-157, also returned
+`window.SubstrateContributionNursery.efficiency` (nutrition — channel-efficiency-capability-map, also returned
 by `cycleAverageReleasePerTray` under `efficiency` key) declares the
 per-element share of applied substrate-product mass that becomes
 plant-available across the 5-week cycle.

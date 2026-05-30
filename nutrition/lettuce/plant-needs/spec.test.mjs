@@ -1,13 +1,13 @@
 // Tests for nutrition/lettuce/plant-needs/spec.md.
 //
-// One node:test file pinning every REQ in the subproject's spec:
-//   REQ-165 — Public API namespace window.PlantNeedsLettuce.
-//   REQ-166 — Demand scales linearly with mass-gain and inversely with cycleDays.
-//   REQ-167 — Supply composition: total = soil + fert + frontload.
-//   REQ-168 — Demand certainty floor (macros cert 4 / micros cert 3) — pinned
-//             via structural shape of LETTUCE_TISSUE_DW + demand output;
-//             per-element cert prose lives in derivation.md.
-//   REQ-169 — Canopy factor bounded [0.2, 0.7].
+// One node:test file pinning every claim in the subproject's spec:
+//   Public API namespace window.PlantNeedsLettuce.
+//   Demand scales linearly with mass-gain and inversely with cycleDays.
+//   Supply composition: total = soil + fert + frontload.
+//   Demand certainty floor (macros cert 4 / micros cert 3) — pinned
+//     via structural shape of LETTUCE_TISSUE_DW + demand output;
+//     per-element cert prose lives in derivation.md.
+//   Canopy factor bounded [0.2, 0.7].
 //   INV-1   — Element coverage closed across demand + every supply channel.
 //
 // Loaded source (data.js + calc.js + model.js) runs inside node:vm with a
@@ -38,7 +38,7 @@ const TEST_DEPENDENCIES = {
   frontloadDefaults: { featherMeal_g_per_m2: 50, mineralizationWeeks: 4 },
 };
 
-describe('REQ-165 — window.PlantNeedsLettuce public API surface', () => {
+describe('window.PlantNeedsLettuce public API surface', () => {
   const REQUIRED_KEYS = [
     'LETTUCE_DM_FRACTION',
     'LETTUCE_TISSUE_DW',
@@ -48,20 +48,20 @@ describe('REQ-165 — window.PlantNeedsLettuce public API surface', () => {
     'calculateLettuceNutritionSupply',
   ];
 
-  test('REQ-165 — namespace exists and is an object', () => {
+  test('namespace exists and is an object', () => {
     assert.ok(namespace, 'window.PlantNeedsLettuce must be defined after model.js loads');
     assert.equal(typeof namespace, 'object');
     assert.notEqual(namespace, null);
   });
 
-  test('REQ-165 — LETTUCE_DM_FRACTION is a number in (0, 1)', () => {
+  test('LETTUCE_DM_FRACTION is a number in (0, 1)', () => {
     assert.equal(typeof namespace.LETTUCE_DM_FRACTION, 'number');
     assert.ok(namespace.LETTUCE_DM_FRACTION > 0 && namespace.LETTUCE_DM_FRACTION < 1,
       `LETTUCE_DM_FRACTION must be in (0,1), got ${namespace.LETTUCE_DM_FRACTION}`);
   });
 
   for (const key of ['LETTUCE_TISSUE_DW', 'LETTUCE_FRONTLOAD_DEFAULTS', 'SME_LETTUCE_PPM']) {
-    test(`REQ-165 — ${key} is a non-null object on the namespace`, () => {
+    test(`${key} is a non-null object on the namespace`, () => {
       assert.equal(typeof namespace[key], 'object',
         `window.PlantNeedsLettuce.${key} must be an object`);
       assert.notEqual(namespace[key], null);
@@ -69,15 +69,15 @@ describe('REQ-165 — window.PlantNeedsLettuce public API surface', () => {
   }
 
   for (const key of ['calculateLettuceNutritionDemand', 'calculateLettuceNutritionSupply']) {
-    test(`REQ-165 — ${key} is a function on the namespace`, () => {
+    test(`${key} is a function on the namespace`, () => {
       assert.equal(typeof namespace[key], 'function',
         `window.PlantNeedsLettuce.${key} must be a function`);
     });
   }
 });
 
-describe('REQ-166 — Demand scales linearly with mass-gain, inversely with cycleDays', () => {
-  test('REQ-166 — doubling (targetG - transplantG) doubles demand per element (±0.1 %)', () => {
+describe('Demand scales linearly with mass-gain, inversely with cycleDays', () => {
+  test('doubling (targetG - transplantG) doubles demand per element (±0.1 %)', () => {
     const baseline = namespace.calculateLettuceNutritionDemand(30, 100, 14, 43);
     const doubled  = namespace.calculateLettuceNutritionDemand(30, 170, 14, 43);  // gain 140 vs 70
     for (const element of ALL_ELEMENTS) {
@@ -88,7 +88,7 @@ describe('REQ-166 — Demand scales linearly with mass-gain, inversely with cycl
     }
   });
 
-  test('REQ-166 — doubling density doubles demand per element (±0.1 %)', () => {
+  test('doubling density doubles demand per element (±0.1 %)', () => {
     const baseline = namespace.calculateLettuceNutritionDemand(30, 100, 14, 30);
     const doubled  = namespace.calculateLettuceNutritionDemand(30, 100, 14, 60);
     for (const element of ALL_ELEMENTS) {
@@ -99,7 +99,7 @@ describe('REQ-166 — Demand scales linearly with mass-gain, inversely with cycl
     }
   });
 
-  test('REQ-166 — doubling cycleDays halves demand per element (±0.1 %)', () => {
+  test('doubling cycleDays halves demand per element (±0.1 %)', () => {
     const short = namespace.calculateLettuceNutritionDemand(30, 100, 14, 43);
     const long  = namespace.calculateLettuceNutritionDemand(30, 100, 28, 43);
     for (const element of ALL_ELEMENTS) {
@@ -110,7 +110,7 @@ describe('REQ-166 — Demand scales linearly with mass-gain, inversely with cycl
     }
   });
 
-  test('REQ-166 — targetG ≤ transplantG → demand is zero for every element', () => {
+  test('targetG ≤ transplantG → demand is zero for every element', () => {
     const demand = namespace.calculateLettuceNutritionDemand(100, 30, 14, 43);
     for (const element of ALL_ELEMENTS) {
       assert.equal(demand[element], 0,
@@ -119,8 +119,8 @@ describe('REQ-166 — Demand scales linearly with mass-gain, inversely with cycl
   });
 });
 
-describe('REQ-167 — Supply composition: total = soil + fert + frontload', () => {
-  test('REQ-167 — total[element] === soil + fert + frontload, per element', () => {
+describe('Supply composition: total = soil + fert + frontload', () => {
+  test('total[element] === soil + fert + frontload, per element', () => {
     const supply = namespace.calculateLettuceNutritionSupply(50, 100, 43, false, 50, TEST_DEPENDENCIES);
     for (const element of ALL_ELEMENTS) {
       const expected = (supply.soil[element] || 0) + (supply.fert[element] || 0) + (supply.frontload[element] || 0);
@@ -129,7 +129,7 @@ describe('REQ-167 — Supply composition: total = soil + fert + frontload', () =
     }
   });
 
-  test('REQ-167 — phLocked gates P/Mn/Zn soil mass-flow at ≤ 100 mg/m²/wk', () => {
+  test('phLocked gates P/Mn/Zn soil mass-flow at ≤ 100 mg/m²/wk', () => {
     // Construct a dependency bag where ppm × flowL × canopyFactor would exceed 100.
     const heavyPpm = { ...TEST_DEPENDENCIES.smeLettucePpm, P: 100, Mn: 100, Zn: 100 };
     const heavyDeps = { ...TEST_DEPENDENCIES, smeLettucePpm: heavyPpm, weeklyMassFlowL: 50 };
@@ -140,7 +140,7 @@ describe('REQ-167 — Supply composition: total = soil + fert + frontload', () =
     }
   });
 
-  test('REQ-167 — phLocked Fe soil × 0.15', () => {
+  test('phLocked Fe soil × 0.15', () => {
     const unlocked = namespace.calculateLettuceNutritionSupply(50, 100, 43, false, 0, TEST_DEPENDENCIES);
     const locked   = namespace.calculateLettuceNutritionSupply(50, 100, 43, true,  0, TEST_DEPENDENCIES);
     if (unlocked.soil.Fe > 0) {
@@ -150,7 +150,7 @@ describe('REQ-167 — Supply composition: total = soil + fert + frontload', () =
     }
   });
 
-  test('REQ-167 — frontload delivers N only', () => {
+  test('frontload delivers N only', () => {
     const supply = namespace.calculateLettuceNutritionSupply(50, 100, 43, false, 50, TEST_DEPENDENCIES);
     for (const element of ALL_ELEMENTS) {
       if (element === 'N') {
@@ -163,13 +163,13 @@ describe('REQ-167 — Supply composition: total = soil + fert + frontload', () =
     }
   });
 
-  test('REQ-167 — frontload.efficiency.N set to mineralization efficiency when N > 0', () => {
+  test('frontload.efficiency.N set to mineralization efficiency when N > 0', () => {
     const supply = namespace.calculateLettuceNutritionSupply(50, 100, 43, false, 50, TEST_DEPENDENCIES);
     assert.equal(supply.frontload.efficiency.N, TEST_DEPENDENCIES.featherMealMineralizationEfficiency,
       `frontload.efficiency.N must equal featherMealMineralizationEfficiency`);
   });
 
-  test('REQ-167 — known-good fertigation supply at default LETTUCE recipe', () => {
+  test('known-good fertigation supply at default LETTUCE recipe', () => {
     // K  = 2996 g × 0.42  × 1000 / 100 = 12 583.2 mg K/m²/wk
     // Mg =  467 g × 0.0986 × 1000 / 100 =    460.46 mg Mg/m²/wk
     // Fe =  7.5 g × 0.20  × 1000 / 100 =     15.0 mg Fe/m²/wk (unlocked)
@@ -183,7 +183,7 @@ describe('REQ-167 — Supply composition: total = soil + fert + frontload', () =
   });
 });
 
-describe('REQ-168 — Demand certainty floor: 5 macros + 6 micros structurally present', () => {
+describe('Demand certainty floor: 5 macros + 6 micros structurally present', () => {
   // The spec ties per-element demand cert to LETTUCE_TISSUE_DW source quality
   // (macros cert 4, micros cert 3). Per-element cert annotations live in
   // derivation.md prose; the testable claim here is structural — every macro
@@ -193,7 +193,7 @@ describe('REQ-168 — Demand certainty floor: 5 macros + 6 micros structurally p
   const MACROS = ['N', 'P', 'K', 'Ca', 'Mg'];
   const MICROS = ['Fe', 'Mn', 'Zn', 'B', 'Cu', 'Mo'];
 
-  test('REQ-168 — LETTUCE_TISSUE_DW carries 5 macros, each numeric > 0', () => {
+  test('LETTUCE_TISSUE_DW carries 5 macros, each numeric > 0', () => {
     const tissue = namespace.LETTUCE_TISSUE_DW;
     for (const element of MACROS) {
       assert.equal(typeof tissue[element], 'number',
@@ -203,7 +203,7 @@ describe('REQ-168 — Demand certainty floor: 5 macros + 6 micros structurally p
     }
   });
 
-  test('REQ-168 — LETTUCE_TISSUE_DW carries 6 micros, each numeric > 0', () => {
+  test('LETTUCE_TISSUE_DW carries 6 micros, each numeric > 0', () => {
     const tissue = namespace.LETTUCE_TISSUE_DW;
     for (const element of MICROS) {
       assert.equal(typeof tissue[element], 'number',
@@ -213,7 +213,7 @@ describe('REQ-168 — Demand certainty floor: 5 macros + 6 micros structurally p
     }
   });
 
-  test('REQ-168 — demand output carries a positive entry for every macro + micro', () => {
+  test('demand output carries a positive entry for every macro + micro', () => {
     const demand = namespace.calculateLettuceNutritionDemand(30, 100, 14, 43);
     for (const element of [...MACROS, ...MICROS]) {
       assert.equal(typeof demand[element], 'number',
@@ -224,14 +224,14 @@ describe('REQ-168 — Demand certainty floor: 5 macros + 6 micros structurally p
   });
 });
 
-describe('REQ-169 — Canopy factor bounded [0.2, 0.7]', () => {
+describe('Canopy factor bounded [0.2, 0.7]', () => {
   for (const [label, currentG, targetG] of [
     ['stunted (currentG ≪ targetG)', 1, 100],
     ['mid-cycle',                    50, 100],
     ['mature (currentG ≈ targetG)', 100, 100],
     ['over-target',                 200, 100],
   ]) {
-    test(`REQ-169 — canopyFactor ∈ [0.2, 0.7] for ${label}`, () => {
+    test(`canopyFactor ∈ [0.2, 0.7] for ${label}`, () => {
       const supply = namespace.calculateLettuceNutritionSupply(
         currentG, targetG, 43, false, 0, TEST_DEPENDENCIES);
       assert.ok(supply.canopyFactor >= 0.2 - 1e-9 && supply.canopyFactor <= 0.7 + 1e-9,

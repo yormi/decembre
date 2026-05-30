@@ -1,7 +1,7 @@
 ---
 name: to-specs
 audience: product-owner
-description: PO-side spec writing. Two artifacts in scope — `user-stories.md` for PO surfaces (operator/builder/procedure/app UI) with Problem/Solution/<slug-entries>/Out of Scope/Further Notes; cross-app + domain-level `spec.md` (root `spec.md`, `nutrition/spec.md`, `nutrition/<crop>/spec.md`, `yield-range/spec.md`) for cross-cutting normative claims. Covers track gate, slug naming, atomic statement-only shape, forbidden content, lazy `REQ-NNN`→slug migration, namespace-prefix cross-refs. Triggers: "write a spec", "add a spec", "spec this", "user story", "capture as a rule", "lock this in", "migrate REQ-NNN".
+description: PO-side spec writing. Two artifacts in scope — `user-stories.md` for PO surfaces (operator/builder/procedure/app UI) with Problem/Solution/<slug-entries>/Out of Scope/Further Notes; cross-app + domain-level `spec.md` (root `spec.md`, `nutrition/spec.md`, `nutrition/<crop>/spec.md`, `yield-range/spec.md`) for cross-cutting normative claims. Covers track gate, slug naming, atomic statement-only shape, forbidden content, lazy legacy-id→slug migration, namespace-prefix cross-refs. Triggers: "write a spec", "add a spec", "spec this", "user story", "capture as a rule", "lock this in", "migrate a legacy id".
 ---
 
 Philosophy in `team/everyone/principles.md § spec-is-statement-only`. Model-surface spec writing is the specialist's — see `team/plant-nutrition-specialist/skills/to-specs.md`.
@@ -23,7 +23,7 @@ Decision rule: cross-cutting invariant or domain rule → spec. Grower-facing UI
 1. **Pick file.** Cross-app → root `spec.md`. Domain → `nutrition/<crop>/spec.md`. PO surface → nearest `<dir>/user-stories.md`. When in doubt, scope down.
 2. **Pick slug.** Kebab-case, unique in file, describes claim not implementation (`weekly-calendar-rendered`, not `render-weekly-cal-fn`).
 3. **Write `## <slug>` + one normative paragraph.** Atomic (two paragraphs = two entries). Statement-only — WHAT, not HOW, not WHY. Ruthless word density; every word load-bears. Plain English; no code identifiers unless load-bearing contract symbols. Same shape for both artifacts.
-4. **Editing a legacy `REQ-NNN`? Rename to slug** and fix in-file references. No repo-wide sweep; untouched legacy entries stay until next edit.
+4. **Editing a legacy numeric id? Rename to slug** and fix in-file references. No repo-wide sweep; untouched legacy entries stay until next edit.
 5. **Cross-references carry ancestor namespace:** `nutrition/tomato/foliar-strategy/operator — weekly-calendar-rendered`, not bare. Slugs unique per file.
 6. **Superseding? Edit in place.** Git holds history. No `~~strikethrough~~`, no "still technically holds" branches.
 
@@ -32,12 +32,12 @@ Decision rule: cross-cutting invariant or domain rule → spec. Grower-facing UI
 - **Wrapper sections.** Open with `## Problem` (grower's POV) + `## Solution` (grower's POV). Close with `## Out of Scope` + `## Further Notes` (optional).
 - **Slug entries sit at `## <slug>` level** alongside the wrappers — flat, no nesting under a `## User Stories` umbrella.
 - **Order is append-only.** New slug entries go after existing ones. Numbers (positional, e.g. `path#3`) are stable references in conversation; written cross-refs always use slug.
-- **No REQ-NNN allocation.** PO surfaces don't claim REQ ids. Slugs only.
+- **No central id allocation.** Spec ids are per-file-unique slugs. There is NO central REQ-NNN allocation, ledger, or claim-req.sh anymore — to add a spec entry, pick a unique kebab-case slug within that file (check existing headings for collision) and write `## <slug>`.
 
 ## Cross-app / domain `spec.md` extras
 
 - **No wrappers.** File is slug entries top to bottom.
-- **REQ-NNN allocation** still applies when a new claim lands (see `lib/req-allocation.md`).
+- **Spec ids are per-file-unique slugs.** There is NO central REQ-NNN allocation, ledger, or claim-req.sh anymore — to add a spec entry, pick a unique kebab-case slug within that file (check existing headings for collision) and write `## <slug>`.
 - **Stays statement-only.** Formulas / per-element data → specialist's model-layer `derivation.md` (you flag, specialist writes).
 
 ## Forbidden in the body (both artifacts)

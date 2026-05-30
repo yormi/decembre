@@ -210,7 +210,7 @@ on the depletion runway; replaced when the next reading lifts the
 element into the measurable range.
 
 **Coverage:** 10 of 11 gap-grid elements (Mo absent — not on the
-Mehlich-3 panel; routes via fertigation per the REQ-061 Mo carve-out).
+Mehlich-3 panel; routes via fertigation per the nutrition — replenishment-cascade-earliest-first Mo carve-out).
 
 ---
 

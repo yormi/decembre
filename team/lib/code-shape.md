@@ -22,12 +22,12 @@ Lazy migration: existing code stays until next touched; when you edit a calc/mod
 
 ## Comments + naming
 
-- **No trace comments** (`feedback_no_trace_comments.md`, CLAUDE.md 2026-05-12): trace lives in `<subproject>/derivation.md` + `learnings.md`. Don't add `// REQ-NNN: derived from X × Y`.
+- **No trace comments** (`feedback_no_trace_comments.md`, CLAUDE.md 2026-05-12): trace lives in `<subproject>/derivation.md` + `learnings.md`. Don't add `// <slug>: derived from X × Y`.
 - **No comments by default.** Only when WHY is non-obvious (hidden constraint, invariant, bug workaround). Never WHAT.
 - **Long variable names.** Spell out `temperature`, `request`, `index`. No `temp`, `req`, `idx`.
 
 ## Scope + UI text
 
 - **Spec is floor and ceiling.** Build only what the test (via the spec) demands. No "nice to have", no future-proofing.
-- **French user-facing text** (REQ-001/006/007): CE not EC, Algue not Kelp.
+- **French user-facing text** (`ui-language-ce-not-ec` / `ui-language-algue-not-kelp` / `ui-language-plain-french`): CE not EC, Algue not Kelp.
 - **No narrative in operator UI** (`feedback_no_unspecced_narrative.md`): deterministic derivation from spec/data. No `// stable —`. Test asserts page content → render via deterministic helper, not hand-written string.

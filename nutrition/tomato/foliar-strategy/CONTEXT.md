@@ -15,7 +15,7 @@ _Avoid_: foliar program, foliar plan, foliar protocol.
 
 **Foliar recipe**:
 One tank's mix — products, dose, surfactant flag. Many recipes
-per strategy. Each recipe is REQ-029-clean: ions in one recipe
+per strategy. Each recipe is chemistry — in-tank-ksp-precipitation-guard-clean: ions in one recipe
 must not precipitate with the recipe's own product set in-tank.
 _Avoid_: spray mix, tank recipe, foliar formula, oligo mix.
 

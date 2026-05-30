@@ -59,14 +59,15 @@ const WATCH_EXTS   = ['.html', '.css', '.js', '.md'];
 
 // Parse `Renders:` blocks out of a spec.md file.
 //
-// Convention (REQ-145+): inside a spec entry headed by `## REQ-NNN — title`,
-// every fenced code block whose info string is `render <key>` declares an
-// operator-facing string whose bytes the spec owns. The build collects them
-// into a SPEC_STRINGS map: { 'REQ-NNN': { '<key>': '<string>', ... }, ... }.
+// Convention: inside a spec entry headed by `## <slug>`, every fenced code
+// block whose info string is `render <key>` declares an operator-facing
+// string whose bytes the spec owns. The build collects them into a
+// SPEC_STRINGS map: { '<slug>': { '<key>': '<string>', ... }, ... }, keyed
+// by the entry's slug heading.
 //
 // Trailing/leading whitespace is trimmed; internal whitespace preserved.
-// Duplicate keys within the same REQ entry are an error (build fails).
-const REQ_HEADER_RE = /^##\s+(REQ-\d{3}[a-z]?)\b/gm;
+// Duplicate keys within the same entry are an error (build fails).
+const REQ_HEADER_RE = /^##\s+(.+?)\s*$/gm;
 const RENDER_FENCE_RE = /^```render\s+(\S+)\s*\r?\n([\s\S]*?)^```\s*$/gm;
 
 function extractSpecStringsFromFile(source, sourcePath) {

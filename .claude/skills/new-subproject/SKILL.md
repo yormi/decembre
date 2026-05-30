@@ -1,6 +1,6 @@
 ---
 name: new-subproject
-description: Use when carving out a new subproject under the spec tree (e.g. `nutrition/<crop>/<topic>/`, `yield-range/<topic>/`, a new top-level domain). Scaffolds the conventional file layout (`spec.md` + optional `derivation.md` / `data.js` / `calc.js` / `model.js`) and either starts blank ("from scratch") or extracts existing work (REQs, sections, code) out of a parent file into the new home. Mirrors the conventions established by `nutrition/tomato/plant-needs/`, `nutrition/tomato/sidedress-recipe/`, `nutrition/compost-contribution/`, `yield-range/`. Does NOT cover spec-entry writing itself — see the `to-specs` skill for slug naming + entry shape.
+description: Use when carving out a new subproject under the spec tree (e.g. `nutrition/<crop>/<topic>/`, `yield-range/<topic>/`, a new top-level domain). Scaffolds the conventional file layout (`spec.md` + optional `derivation.md` / `data.js` / `calc.js` / `model.js`) and either starts blank ("from scratch") or extracts existing work (spec entries, sections, code) out of a parent file into the new home. Mirrors the conventions established by `nutrition/tomato/plant-needs/`, `nutrition/tomato/sidedress-recipe/`, `nutrition/compost-contribution/`, `yield-range/`. Does NOT cover spec-entry writing itself — see the `to-specs` skill for slug naming + entry shape.
 ---
 
 # Carve out a subproject
@@ -14,13 +14,13 @@ Repeat answers back in one block before scaffolding.
 1. **Intent — what one question does this subproject answer?** One sentence. Becomes the opening paragraph of `spec.md`. If it doesn't compress to one sentence, push back — not carved cleanly enough.
 2. **Path.** Cross-crop nutrition → `nutrition/<topic>/`; crop-specific → `nutrition/<crop>/<topic>/`; standalone domain → `<topic>/`. Propose, let user redirect.
 3. **Mode — from scratch OR extracting?**
-   - From scratch: scaffold, leave REQ section with `<!-- specs to be added -->`.
+   - From scratch: scaffold, leave spec section with `<!-- specs to be added -->`.
    - Extracting: ask the extraction questions below.
 4. **Code component?** Owns constants/functions/`window.*` → scaffold `data.js` / `calc.js` / `model.js`. Spec-only → docs only.
 
 ### If extracting
 
-- Which spec entries move? (Keep their existing ids — slug or legacy `REQ-NNN`.)
+- Which spec entries move? (Keep their existing slug ids.)
 - Which parent `spec.md` sections move?
 - Which code symbols move? Map each to `data.js` / `calc.js` / `model.js`.
 - Source location? Usually `app/index.html` (build-source, not `dist/index.html`). Read `working files/changelog.md` and parent `spec.md` first.
@@ -63,13 +63,13 @@ Same scale as `nutrition/tomato/plant-needs/spec.md`.
 <!-- From scratch: -->
 <!-- specs to be added — see CLAUDE.md "Specs" section -->
 
-<!-- Extracting: paste moved REQ entries verbatim. -->
+<!-- Extracting: paste moved spec entries verbatim. -->
 
 ---
 
 ## Inherited specs
 
-- **REQ-NNN** (`<path>/spec.md`) — short description.
+- **`<slug>`** (`<path>/spec.md`) — short description.
 ```
 
 Match the closest sibling subproject's flavor — read it before writing.
@@ -109,7 +109,7 @@ If extracting, **move** symbols (don't copy). Verify byte-identical build when n
 
 ## Wire verification (if extracting wired specs)
 
-Spec ids don't change on extraction (whether slug or legacy `REQ-NNN`). If code moved behind a different path/namespace, update verifier `import` / `window.*` lookups. The behavior test asserts the claim, not the id keyword.
+Spec ids don't change on extraction. If code moved behind a different path/namespace, update verifier `import` / `window.*` lookups. The behavior test asserts the claim, not the id keyword.
 
 From scratch: don't pre-wire empty checks. Add verification when the first spec lands.
 
@@ -129,7 +129,7 @@ Search the changelog for `subproject created` to match established verbosity (sh
 
 ## Anti-patterns
 
-- **Spec ids are slugs (kebab-case), unique within their target spec file.** Extracting → keep existing ids (slug or legacy `REQ-NNN`). From scratch → pick descriptive slugs per the `to-specs` skill. No central ledger.
+- **Spec ids are slugs (kebab-case), unique within their target spec file.** There is NO central REQ-NNN allocation, ledger, or claim-req.sh anymore — to add a spec entry, pick a unique kebab-case slug within that file (check existing headings for collision) and write `## <slug>`. Extracting → keep existing slug ids. From scratch → pick descriptive slugs per the `to-specs` skill.
 - **No empty companion files.** Create `derivation.md` only with content.
 - **Move code when extracting, don't copy.** Duplicate constants in `app/index.html` create a divergence bomb. Replace source block with `@include` markers in the same slot to keep the build artifact byte-identical.
 - **Don't skip the parent-spec update.** A child invisible from the parent is invisible top-down.
@@ -138,7 +138,7 @@ Search the changelog for `subproject created` to match established verbosity (sh
 
 ## Cross-references
 
-- CLAUDE.md "Specs" section — what is/isn't a spec; REQ allocation; verifier model.
+- CLAUDE.md "Specs" section — what is/isn't a spec; verifier model.
 - `nutrition/tomato/plant-needs/` — canonical spec + derivation + code-triplet split.
 - `nutrition/tomato/sidedress-recipe/` — most recent extraction.
 - `nutrition/compost-contribution/` — cross-crop subproject at `nutrition/<topic>/`.

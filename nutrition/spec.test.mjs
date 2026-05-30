@@ -1,6 +1,6 @@
 // nutrition/ — domain-level cross-crop spec tests.
 //
-// Pins REQ-011 (channel-role coverage for every crop with a demand table
+// Pins channel-role coverage for every crop with a demand table
 // at nutrition/<crop>/plant-needs/model/data.js).
 //
 // Discovery is filesystem-based: scans nutrition/<crop>/plant-needs/model/
@@ -75,14 +75,14 @@ if (!fixture.loaded) {
 }
 const G = fixture.globals;
 
-test('REQ-011 — every crop with a demand table ships channel-role.js with full coverage + sum-to-1.0 ± 0.05', () => {
+test('every crop with a demand table ships channel-role.js with full coverage + sum-to-1.0 ± 0.05', () => {
   const crops = discoverCrops();
   assert.ok(crops.length > 0, 'expected at least one crop with plant-needs/model/data.js');
 
   for (const crop of crops) {
     const channelRolePath = resolve(__dirname, crop, 'channel-role.js');
     assert.ok(existsSync(channelRolePath),
-      `${crop}: nutrition/${crop}/channel-role.js missing (REQ-011)`);
+      `${crop}: nutrition/${crop}/channel-role.js missing`);
 
     // CHANNEL_ROLE for tomato is exposed on window via the page boot.
     // For future crops, the fixture's EXPOSE_NAMES list must surface that
@@ -123,7 +123,7 @@ test('REQ-011 — every crop with a demand table ships channel-role.js with full
   }
 });
 
-// ─── REQ-062 — Single fertigation tank per week ────────────────────────────
+// ─── Single fertigation tank per week ──────────────────────────────────────
 //
 // Normative claims (rewritten 2026-05-24):
 //   1. Tomato: at most ONE active fertigation recipe per stage
@@ -135,12 +135,12 @@ test('REQ-011 — every crop with a demand table ships channel-role.js with full
 //   3. The previous "single foliar spray per week" clause is RETIRED;
 //      foliar frequency is governed by
 //      nutrition/tomato/foliar-strategy — frequency-is-model-output.
-//      Covered structurally: nutrition/spec.md REQ-062 must NOT pin any
+//      Covered structurally: nutrition/spec.md single-fertigation-tank-per-week must NOT pin any
 //      foliar sprayCount ceiling. (Asserting that here would require
 //      parsing spec.md prose; the cross-ref is captured by tests in
 //      tomato/foliar-strategy/spec.test.mjs.)
 
-test('REQ-062 — tomato fertigation: STORED_RECIPE.tomato.fertigation[stage] is a single recipe (no parallel sub-tanks)', () => {
+test('tomato fertigation: STORED_RECIPE.tomato.fertigation[stage] is a single recipe (no parallel sub-tanks)', () => {
   const stored = G.STORED_RECIPE;
   assert.ok(stored && stored.tomato && stored.tomato.fertigation,
     'STORED_RECIPE.tomato.fertigation not exposed on window');
@@ -164,11 +164,11 @@ test('REQ-062 — tomato fertigation: STORED_RECIPE.tomato.fertigation[stage] is
       && Object.values(v).some(x => typeof x === 'number'));
     assert.equal(parallelTanks.length, 0,
       `STORED_RECIPE.tomato.fertigation.${stage} appears to hold parallel sub-tanks `
-      + `(${parallelTanks.length} nested recipe-shaped values); REQ-062 allows one recipe per stage`);
+      + `(${parallelTanks.length} nested recipe-shaped values); single-fertigation-tank-per-week allows one recipe per stage`);
   }
 });
 
-test('REQ-062 — tomato fertigation: computeStageRecipe(stage) returns a single flat recipe (no parallel sub-tanks)', () => {
+test('tomato fertigation: computeStageRecipe(stage) returns a single flat recipe (no parallel sub-tanks)', () => {
   const computeStageRecipe = G.computeStageRecipe;
   assert.equal(typeof computeStageRecipe, 'function',
     'computeStageRecipe not exposed on window');
@@ -185,12 +185,12 @@ test('REQ-062 — tomato fertigation: computeStageRecipe(stage) returns a single
       && Object.values(v).some(x => typeof x === 'number'));
     assert.equal(parallelTanks.length, 0,
       `computeStageRecipe('${stage}') returned ${parallelTanks.length} nested recipe-shaped values; `
-      + `REQ-062 requires a single flat recipe per stage`);
+      + `single-fertigation-tank-per-week requires a single flat recipe per stage`);
   }
   assert.ok(probedAny, 'computeStageRecipe accepted no probe stage from T1..T6');
 });
 
-test('REQ-062 — lettuce fertigation: LETTUCE is a flat object (one recipe, no parallel sub-tanks)', () => {
+test('lettuce fertigation: LETTUCE is a flat object (one recipe, no parallel sub-tanks)', () => {
   const lettuce = G.LETTUCE;
   assert.ok(lettuce && typeof lettuce === 'object',
     'LETTUCE fertigation recipe not exposed on window (test-helpers EXPOSE_NAMES must include it)');

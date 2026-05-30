@@ -23,7 +23,8 @@ Foliar dose is pinned from above by three constraints, not by demand:
 subproject *models the delivery* under coverage, doesn't *derive the
 dose* from demand.
 
-Model validates: delivered mg/m²/wk per element sits inside REQ-013/014
+Model validates: delivered mg/m²/wk per element sits inside
+`nutrition/tomato — under-fert-guard` / `nutrition/tomato — luxury-feeding-guard`
 demand band. Mn ~72 %, Fe ~84 %, Cu ~26 % (Cu toxicity-capped at 2 g; gap
 is structural and accepted — the narrow Cu²⁺ enzyme-damage threshold
 binds), Zn ~136 % (over the 1.3× luxury cap on the foliar channel alone
@@ -186,7 +187,7 @@ demand. Cu is the load-bearing case: narrow Cu²⁺ toxicity threshold
 (the same threshold that drove the 2026-05-06 axil-pool-image halving
 from 4 g to 2 g/15 L). Mo at 1 g/15 L (~7× demand on its wide tolerance
 band) was acceptable when Mo was on foliar; post-Mo-carve-out
-(REQ-061 2026-05-16) it is no longer iterated, but the per-element
+(`nutrition — replenishment-cascade-earliest-first` 2026-05-16) it is no longer iterated, but the per-element
 floor entry stays as a "if Mo returns" placeholder.
 
 | Element | Floor (g) | Rationale                                                         | Cert |
@@ -196,7 +197,7 @@ floor entry stays as a "if Mo returns" placeholder.
 | Cu      | 0.2       | Narrow toxicity threshold — load-bearing case                    | 3    |
 | Fe      | 0.5       | High-mass dose; floor never binds in practice (ideal_g large)    | 3    |
 | Mo      | 0.1       | Wide Sonneveld 50-200 mg/L tolerance; placeholder if Mo returns  | 3    |
-| B       | 0.5       | Single-channel via fertigation (REQ-061); placeholder for foliar fallback | 3 |
+| B       | 0.5       | Single-channel via fertigation (`nutrition — replenishment-cascade-earliest-first`); placeholder for foliar fallback | 3 |
 
 Operator weigh-scale resolution is the floor on Cu (0.2 g) — `±0.1 g` on
 the team's scales is the practical limit; below that we'd round to
@@ -240,7 +241,8 @@ highest-CE-contributor first."
 the foliar recipe; any CE-cap event traces back to Fe in practice.
 Proportional scaling penalizes all elements by the same ratio, which
 strips the small-demand cation micros (Mn, Cu) first — those are
-precisely the elements with no alternative channel under REQ-061
+precisely the elements with no alternative channel under
+`nutrition — replenishment-cascade-earliest-first`
 cascade order at current pH 7.4 lockout. Cu at 2 g already at the
 toxicity-cap floor: a 0.95× scaling pushes it to 1.9 g; the next
 0.5 g rounding drops it to 1.5 g; a third iteration zeros it via the
@@ -266,9 +268,9 @@ check, so this stays consistent with `nutrition/chemistry — foliar-ce-under-bu
 
 ---
 
-## Channel efficiency map (REQ-157 + `surfactant-aware-efficiency-map` surfactant-aware)
+## Channel efficiency map (`nutrition — channel-efficiency-capability-map` + `surfactant-aware-efficiency-map` surfactant-aware)
 
-`window.FoliarRecipeTomato.efficiency` (REQ-157) declares the per-element
+`window.FoliarRecipeTomato.efficiency` (`nutrition — channel-efficiency-capability-map`) declares the per-element
 delivery fraction at the default no-surfactant regime and default spray
 tank pH. `window.FoliarRecipeTomato.efficiencyFor(surfactant)` (`surfactant-aware-efficiency-map`)
 declares the same shape but reactive to the surfactant lever — the
@@ -301,10 +303,10 @@ the combined-axes literature band 2-4×.
 
 Elements absent from the map:
 
-- **B (Solubore)** — REQ-061 single-channel design routes B via
+- **B (Solubore)** — `nutrition — replenishment-cascade-earliest-first` single-channel design routes B via
   fertigation, not foliar. If foliar B is reinstated for a future
   spray-B-back scenario, add `B: 0.27` to the map.
-- **Mo (sodium molybdate)** — retired from foliar 2026-05-16 (REQ-061
+- **Mo (sodium molybdate)** — retired from foliar 2026-05-16 (`nutrition — replenishment-cascade-earliest-first`
   Mo carve-out). Molybdate is anionic and fully plant-available at our
   pH 7.4, so the foliar-bypass argument that keeps cation micros here
   doesn't apply. Mo moved to the fertigation barrel at the team's
@@ -381,7 +383,7 @@ TOMATO_FRUIT_EXPORT[el].g × 1500` (live data in
 `nutrition/tomato/plant-needs/data.js`).
 
 Active foliar elements only (Mo retired to fertigation 2026-05-16 per
-REQ-061 carve-out; B single-channel via fertigation per REQ-061):
+`nutrition — replenishment-cascade-earliest-first` carve-out; B single-channel via fertigation per `nutrition — replenishment-cascade-earliest-first`):
 
 | Element | Recipe g | Element % | Raw mg/m²/wk | × Coverage | Delivered mg/m²/wk | Demand T5 mg/m²/wk | % demand |
 |---------|---------:|----------:|-------------:|-----------:|-------------------:|-------------------:|---------:|
@@ -392,12 +394,12 @@ REQ-061 carve-out; B single-channel via fertigation per REQ-061):
 
 Mn + Cu + Fe are the standing under-fert calls (foliar is the only
 channel for these four cation micros under current pH 7.4 lockout per
-REQ-061). Coverage 0.30 (no yucca) is the steady-state delivery regime;
+`nutrition — replenishment-cascade-earliest-first`). Coverage 0.30 (no yucca) is the steady-state delivery regime;
 yucca is not on order and is not tracked as a refinement-trigger return
 path (see `learnings.md` § "Yucca return as a refinement trigger" for
 the rejected dose-restoration projection).
 
-**Zn over-luxury (136 % of demand)** is over REQ-014's 1.3× cap on the
+**Zn over-luxury (136 % of demand)** is over `nutrition/tomato — luxury-feeding-guard`'s 1.3× cap on the
 foliar channel alone (foliar is the only Zn channel). Three options
 discussed; choice = "hold, document, refine on tissue data" per P-11
 (don't over-precise; soil/tissue refinement). Cutting Zn from the spray
@@ -408,11 +410,11 @@ doesn't compound week-over-week the way soil-applied does). Refinement
 trigger named below ("Tissue Zn signals luxury / toxicity").
 
 Solubore in foliar = 0 (B single-channel via fertigation since
-2026-05-08, REQ-061). STORED still carries 7 g for legacy; next
+2026-05-08, `nutrition — replenishment-cascade-earliest-first`). STORED still carries 7 g for legacy; next
 `/retire-recipe` can zero it (fertigation 11 g Solubore covers demand).
 Sodium molybdate STORED still 1 g for legacy (Mo retired from foliar
 2026-05-16; gated on `/retire-recipe`; the model returns Mo: 0
-regardless of recipe contents per REQ-061 carve-out).
+regardless of recipe contents per `nutrition — replenishment-cascade-earliest-first` carve-out).
 
 ---
 
@@ -423,7 +425,7 @@ Schema carries N / P / K / Ca / Mg as explicit zeros:
 - **N**: urea burns; NO₃⁻ cuticle uptake ~0 (charged ion on hydrophobic
   surface).
 - **P**: cuticle barrier ~5-15 %; Ca-phosphate precipitation in tank.
-  Fails REQ-018's 5 % effective floor in spray pH. Fertigation owns P.
+  Fails `nutrition — no-decorative-products-at-current-ph`'s 5 % effective floor in spray pH. Fertigation owns P.
 - **K**: cuticle ~5 %; 6 g/m²/wk demand → ~120 g elemental K in tank.
   Hits burn cap + tank-volume limits before useful uptake.
 - **Ca** (reactivated 2026-05-24 — Test 1 Path B): foliar CaCl₂·2H₂O +
@@ -471,7 +473,7 @@ chain stays uniform.
   could burn ~8 mS/cm. Wednesday-AM operator timing pins the safer end.
 - **No pH coupling.** Soil pH crisis doesn't change foliar — cuticle
   bypasses root. When sulfur drops soil pH and fertigation Mn / Zn / Fe
-  come back online (REQ-018), foliar → backup, doses can drop
+  come back online (`nutrition — no-decorative-products-at-current-ph`), foliar → backup, doses can drop
   proportionally.
 
 ---
@@ -492,7 +494,7 @@ chain stays uniform.
     Sentís 3 % governs, retention irrelevant. `FOLIAR_COVERAGE_DEFAULT`
     refits ~0.03. Channel collapse: Zn 136 % → ~14 %, Mn ~72 % → ~7 %,
     Cu ~25 % → ~2.5 %; foliar becomes insurance. Team would need
-    fertigation Mn / Zn / Cu route, depends on soil pH < ~7.0 (REQ-018 /
+    fertigation Mn / Zn / Cu route, depends on soil pH < ~7.0 (`nutrition — no-decorative-products-at-current-ph` /
     `effectiveEff` gate).
 
   Until tissue data lands, `coverage-discount-on-delivery` stays cert 3 (no Décembre tissue
@@ -502,7 +504,7 @@ chain stays uniform.
   `/retire-recipe` zeros it — delivers ~1.1 mg B/m²/wk today; fertigation
   11 g delivers ~5.89 mg/m²/wk to bed (covers T5 demand 5.625 mg/m²/wk).
 - **Tissue Zn signals luxury / toxicity.** Foliar Zn delivered ~6.1 mg/m²/wk
-  vs T5 demand 4.5 = 136 %, over REQ-014's 1.3× cap on the foliar channel
+  vs T5 demand 4.5 = 136 %, over `nutrition/tomato — luxury-feeding-guard`'s 1.3× cap on the foliar channel
   alone. No soil-bank concern (foliar Zn doesn't compound week-over-week
   the way soil-applied does), no observed leaf-tip Zn-toxicity symptom to
   date, no Zn-fertigation channel available at pH 7.4. Holding 22 g/15 L
@@ -512,7 +514,7 @@ chain stays uniform.
 - **Soil pH drops below 7.0.** Sulfate-metal fertigation (FeSO₄, MnSO₄,
   ZnSO₄) viable. Foliar → insurance, loads can cut 50-70 %. Verifier
   surfaces it: `effectiveEff(MnSO4, fertigation, currentSoilPh) ≥ 0.05`
-  → REQ-018 passes for fertigation Mn; operator decision lands in
+  → `nutrition — no-decorative-products-at-current-ph` passes for fertigation Mn; operator decision lands in
   `/retire-recipe`.
 - **Spray B reintroduces foliar Ca.** If BER persists, foliar CaCl₂
   event-driven returns — reactivates `foliar.Ca`. Verify `nutrition/chemistry — in-tank-ksp-precipitation-guard` (Ca²⁺ ×

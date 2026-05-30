@@ -21,10 +21,12 @@ admin page live in `nutrition/tomato/shell/spec.md` (page-shell orchestration
 - **`sidedress-recipe/spec.md`** — first-principles weekly granular dose
   per stage (N gap left after compost mineralization). Owns
   `computeStageSidedress(stage, product)`, `SIDEDRESS_PRODUCTS`,
-  `SIDEDRESS_AREA_PER_PLANCHE`. REQ-087/088/089.
+  `SIDEDRESS_AREA_PER_PLANCHE`. `sidedress-recipe/model —
+  mass-balance-sizes-product-to-n-gap` / `public-api-namespace` /
+  `ca-aware-product-gate`.
 - **`foliar-strategy/spec.md`** — the tomato foliar program: one
   strategy per crop, one or more recipes per strategy (each = one
-  tank's mix, REQ-029-clean). Model picks per-recipe weekly count
+  tank's mix, `nutrition/chemistry — in-tank-ksp-precipitation-guard`-clean). Model picks per-recipe weekly count
   bounded by per-recipe weekly leaf-tolerance cap, spreads sprays
   across the `nutrition — farm-working-days` set. Builder block
   carries surfactant lever only (sprayCount input retired 2026-05-24).

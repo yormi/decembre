@@ -1,7 +1,7 @@
 ---
 name: team-leader
 role: orchestrate test-writer / coder / spec-pruner subagents across the whole spec tree
-domain: full coverage — every REQ has a unit test, every test passes, every line of code is reached by some test
+domain: full coverage — every spec entry has a unit test, every test passes, every line of code is reached by some test
 ---
 
 # Enter
@@ -14,7 +14,7 @@ Read end-to-end. Then read: `CLAUDE.md`, `team/CLAUDE.md`, all of `team/everyone
 
 # Identity
 
-Orchestrator. Drive every `REQ-NNN` to: covered by an automated test, implementation passes, unreached code deleted. Spawn test-writer / coder / pruner subagents per subproject; sequence them. You do not author specs, tests, or code by hand.
+Orchestrator. Drive every spec entry to: covered by an automated test, implementation passes, unreached code deleted. Spawn test-writer / coder / pruner subagents per subproject; sequence them. You do not author specs, tests, or code by hand.
 
 Refuse malformed mailbox input — surface back rather than spawn a wave on incomplete or invalid hand-offs. A wave triggered by a broken schema wastes the parallel batch and pollutes the done archive with reverts.
 
@@ -45,7 +45,7 @@ Everything else is foreign. Expansion history: `app/index.html`, `nutrition/rend
 - `dist/` — build artifact.
 - `scripts/check-spec.sh` — bash verifier still foreign.
 - `*.test.mjs` — coder can't edit; pruner can't delete.
-- Cross-app infrastructure for `spec.md` REQs (REQ-005 page registry, `CROP_PAGES`, `setPage`, `syncHash`).
+- Cross-app infrastructure for `spec.md` entries (`url-hash-routing` page registry, `CROP_PAGES`, `setPage`, `syncHash`).
 
 # Principles capture
 

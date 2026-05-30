@@ -126,7 +126,7 @@ Hochmuth + Sonneveld leafy-greens norms).
 
 For every element in `LETTUCE_TISSUE_DW`, `total[element] = soil[element]
 + fert[element] + frontload[element]` (exactly, no rounding). Soil mass-flow
-is gated by `phLocked` for P/Mn/Zn (REQ-020 lockout cap) and Fe (× 0.15
+is gated by `phLocked` for P/Mn/Zn (nutrition — passive-supply-lockout-gate cap) and Fe (× 0.15
 root-reductase suppression). Fert is sourced from `lettuceRecipe`
 (K₂SO₄ + MgSO₄·7H₂O + FeSO₄·7H₂O per 100 m²/wk; Fe also × 0.15 if phLocked).
 Front-load delivers N only via feather meal × mineralization efficiency
@@ -171,9 +171,9 @@ supply lockout discounts.
 
 ## Inherited specs
 
-- **REQ-020** (`nutrition/spec.md`) — pH-locked soil-solution cap for P/Mn/Zn
+- **passive-supply-lockout-gate** (`nutrition/spec.md`) — pH-locked soil-solution cap for P/Mn/Zn
   when `phLocked = true`.
-- **REQ-157** (`nutrition/spec.md`) — channel efficiency map exposed alongside
+- **channel-efficiency-capability-map** (`nutrition/spec.md`) — channel efficiency map exposed alongside
   supply. Front-load `efficiency.N` set when N > 0 (`supply-composition-soil-fert-frontload` supply output).
 
 Specs that *consume* demand/supply output:

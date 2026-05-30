@@ -8,8 +8,8 @@
 //   block-5-reactive-to-surfactant
 //     — toggling #nutr-foliar-surfactant re-renders Block 5 (dose card).
 //   efficacite-reactive-to-surfactant
-//     — same toggle changes the rendered Efficacité column per REQ-163's
-//       verbatim wording (held — wording carries over from REQ-163).
+//     — same toggle changes the rendered Efficacité column per the
+//       efficacite-column wording (held — wording carries over).
 //
 // Framework: node:test. Reuses the assembled-page jsdom fixture from
 // nutrition/tomato/shell/test-helpers.mjs (the only available bootstrap
@@ -20,7 +20,7 @@ import { test, describe } from 'node:test';
 import assert from 'node:assert/strict';
 import { loadTomatoApp } from '../../shell/test-helpers.mjs';
 
-// Helper mirrors shell/spec.test.mjs REQ-163(b): the foliar gap-grid is the
+// Helper mirrors the shell gap-grid test: the foliar gap-grid is the
 // inner div under #nutr-foliar with inline `grid-template-columns:0.6fr...`
 // (jsdom serializes inline style with no space after the colon). The 6
 // columns are: Él. | Manque entrant | Efficacité | Apport ici | Manque
@@ -216,20 +216,21 @@ describe('efficacite-reactive-to-surfactant — Efficacité column updates on su
 //   predicted-ph-ce-coloured-by-band-position
 //
 // Foliar measurement point = the TANK (per nutrition/chemistry/spec.md
-// REQ-025 — `predictedCE(recipe, dilution=1.0)`; the foliar burn cap
-// applies at the tank, not the dripper or soil). Tank pH likewise
+// § foliar-ce-under-burn-cap — `predictedCE(recipe, dilution=1.0)`; the
+// foliar burn cap applies at the tank, not the dripper or soil). Tank pH likewise
 // (`predictedTankPh`, see nutrition/tomato/foliar-strategy/operator/logic.js
 // lines 156-157 — the operator surface already names "pH cuve prévu").
 //
 // Safe band:
 //   CE — [0, FOLIAR_BURN_CAP_tomato] = [0, 8.0] mS/cm
-//        (nutrition/chemistry/spec.md REQ-025 line 85).
-//   pH — no foliar pH band declared in REQ-024 (irrigation/SME only) and
+//        (nutrition/chemistry/spec.md § foliar-ce-under-burn-cap).
+//   pH — no foliar pH band declared in § predicted-ce-within-crop-stage-band
+//        (irrigation/SME only) and
 //        no foliar-specific pH band lives in the chemistry/foliar-strategy
 //        specs. pH-band assertions are test.todo until spec lands.
 // ───────────────────────────────────────────────────────────────────────
 
-const FOLIAR_CE_CAP_TOMATO = 8.0; // mS/cm, REQ-025
+const FOLIAR_CE_CAP_TOMATO = 8.0; // mS/cm, foliar-ce-under-burn-cap
 const PREDICTED_CE_SELECTOR = '[data-predicted-ce], .predicted-ce';
 const PREDICTED_PH_SELECTOR = '[data-predicted-ph], .predicted-ph';
 
@@ -262,7 +263,7 @@ describe('predicted-ph-ce-shown-on-builder-blocks — Block 5 surfaces predicted
   });
 
   test('predicted-ph-ce-shown-on-builder-blocks — predicted-CE numeric text matches predictedCE(recipe, 1.0) within ±0.05 mS/cm', () => {
-    // Foliar prediction targets the tank — dilution = 1.0 (REQ-025).
+    // Foliar prediction targets the tank — dilution = 1.0 (foliar-ce-under-burn-cap).
     const { window } = loadTomatoApp();
     const block5 = window.document.getElementById('nutr-foliar');
     const node = queryPredictedCe(block5);
@@ -275,7 +276,7 @@ describe('predicted-ph-ce-shown-on-builder-blocks — Block 5 surfaces predicted
       `predicted-CE rendered value parsed as non-finite from "${text}"`);
     assert.ok(rendered >= 0 && rendered <= FOLIAR_CE_CAP_TOMATO * 1.5,
       `predicted-CE rendered value ${rendered} mS/cm is implausible for foliar tank `
-      + `(burn cap = ${FOLIAR_CE_CAP_TOMATO} mS/cm per REQ-025)`);
+      + `(burn cap = ${FOLIAR_CE_CAP_TOMATO} mS/cm per foliar-ce-under-burn-cap)`);
   });
 
   test('predicted-ph-ce-shown-on-builder-blocks — predicted-pH numeric text is in plausible foliar-tank range (3.5–8.5)', () => {
@@ -330,9 +331,9 @@ describe('predicted-ph-ce-clickable-modal — clicking a predicted number opens 
   });
 
   test('predicted-ph-ce-clickable-modal — modal text names the foliar tank (cuve) as the measurement point', () => {
-    // Foliar prediction targets the tank — REQ-025 evaluates `predictedCE`
-    // at dilution=1.0 (tank concentration). Modal must declare that
-    // measurement point, in French ("cuve") per CLAUDE.md / REQ-007.
+    // Foliar prediction targets the tank — foliar-ce-under-burn-cap evaluates
+    // `predictedCE` at dilution=1.0 (tank concentration). Modal must declare
+    // that measurement point, in French ("cuve") per CLAUDE.md / ui-language-plain-french.
     const { window } = loadTomatoApp();
     const document = window.document;
     const block5 = document.getElementById('nutr-foliar');
@@ -366,7 +367,7 @@ describe('predicted-ph-ce-clickable-modal — clicking a predicted number opens 
       + `got: "${(modal.textContent || '').slice(0, 200)}"`);
   });
 
-  test('predicted-ph-ce-clickable-modal — modal declares the foliar CE safe band (REQ-025 burn cap 8.0 mS/cm tomato)', () => {
+  test('predicted-ph-ce-clickable-modal — modal declares the foliar CE safe band (foliar-ce-under-burn-cap burn cap 8.0 mS/cm tomato)', () => {
     const { window } = loadTomatoApp();
     const document = window.document;
     const block5 = document.getElementById('nutr-foliar');
@@ -378,15 +379,15 @@ describe('predicted-ph-ce-clickable-modal — clicking a predicted number opens 
     );
     assert.ok(modal, 'modal must be open after click');
     const text = (modal.textContent || '');
-    // The cap = 8.0 mS/cm (REQ-025). Accept "8", "8.0", or "8,0".
+    // The cap = 8.0 mS/cm (foliar-ce-under-burn-cap). Accept "8", "8.0", or "8,0".
     assert.ok(/\b8(?:[.,]0)?\b/.test(text),
-      'modal must declare the foliar CE safe-band edge (8.0 mS/cm per REQ-025) — '
+      'modal must declare the foliar CE safe-band edge (8.0 mS/cm per foliar-ce-under-burn-cap) — '
       + `got: "${text.slice(0, 200)}"`);
   });
 
   test.todo(
     'predicted-ph-ce-clickable-modal — modal declares the foliar tank-pH safe band '
-    + '(spec-gap: no foliar pH band defined in REQ-024 or foliar-strategy specs)'
+    + '(spec-gap: no foliar pH band defined in predicted-ce-within-crop-stage-band or foliar-strategy specs)'
   );
 });
 
@@ -415,7 +416,7 @@ describe('predicted-ph-ce-coloured-by-band-position — predicted CE / pH colour
 
   test('predicted-ph-ce-coloured-by-band-position — predicted-CE rendered inside [0, 8.0 mS/cm] is green', () => {
     // The current STORED_RECIPE.tomato.foliaire oligo recipe sits well
-    // below 8.0 mS/cm (REQ-025 burn cap); the predicted-CE node should
+    // below 8.0 mS/cm (foliar-ce-under-burn-cap); the predicted-CE node should
     // therefore render in the green band-state.
     const { window } = loadTomatoApp();
     const block5 = window.document.getElementById('nutr-foliar');

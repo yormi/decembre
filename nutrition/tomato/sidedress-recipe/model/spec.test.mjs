@@ -2,9 +2,9 @@
 //
 // Covers:
 //   INV-1   — stage coverage closed (shape + non-negativity)
-//   REQ-087 — mass-balance: chosen product sized to N gap after compost
-//   REQ-088 — window.SidedressRecipeTomato public API namespace
-//   REQ-089 — Ca-aware product gate
+//   mass-balance: chosen product sized to N gap after compost
+//   window.SidedressRecipeTomato public API namespace
+//   Ca-aware product gate
 //
 // Loads dist/index.html via jsdom (see ./test-helpers.mjs) so the model
 // runs against its real dependency wiring (RECIPE_INPUTS, BIOMASS_DEMAND,
@@ -45,10 +45,10 @@ describe('INV-1 — stage coverage is closed (shape + non-negativity)', () => {
 });
 
 // ────────────────────────────────────────────────────────────────────────
-// REQ-087 — Mass-balance: chosen product sized to N gap after compost
+// Mass-balance: chosen product sized to N gap after compost
 // ────────────────────────────────────────────────────────────────────────
 
-describe('REQ-087 — chosen product sized to N gap after compost', () => {
+describe('chosen product sized to N gap after compost', () => {
   // Product field-name in the flat output. Mirrors the mapping inside
   // calc.js so a rename there fails this test loudly.
   const FIELD_FOR = {
@@ -73,7 +73,7 @@ describe('REQ-087 — chosen product sized to N gap after compost', () => {
   // RECIPE_INPUTS.stageYield so the suite tracks any future stage addition.
   for (const productKey of ['FarinePlumes', 'AlfalfaMeal']) {
     for (const stage of ['T1', 'T2', 'T3', 'T4', 'T5']) {
-      test(`REQ-087 — ${productKey} @ ${stage}: g_per_planche matches mass-balance ±5 g`, () => {
+      test(`${productKey} @ ${stage}: g_per_planche matches mass-balance ±5 g`, () => {
         const expected = expectedGPerPlanche(stage, productKey);
         const result   = ph1.computeStageSidedress(stage, productKey);
         const actual   = result[FIELD_FOR[productKey]];
@@ -91,7 +91,7 @@ describe('REQ-087 — chosen product sized to N gap after compost', () => {
     }
   }
 
-  test('REQ-087 — formula is product-agnostic (alfalfa : farine ratio = inverse of n_pct × eff at T5)', () => {
+  test('formula is product-agnostic (alfalfa : farine ratio = inverse of n_pct × eff at T5)', () => {
     // Same N gap, different denominators → ratio of doses equals the inverse
     // ratio of (n_pct × eff). Pinning this guards against a regression that
     // would couple the formula to one product's chemistry.
@@ -108,7 +108,7 @@ describe('REQ-087 — chosen product sized to N gap after compost', () => {
     );
   });
 
-  test('REQ-087 — T1/T2 zero (vegetative N covered by compost residual alone)', () => {
+  test('T1/T2 zero (vegetative N covered by compost residual alone)', () => {
     // Per derivation.md: at T1/T2 offtake ≤ compost release, so n_needed
     // clamps to 0. Pinned because the team relies on this to skip sidedress
     // before fruit set.
@@ -119,7 +119,7 @@ describe('REQ-087 — chosen product sized to N gap after compost', () => {
     }
   });
 
-  test('REQ-087 — n_needed clamps at 0 (no negative dose when compost > offtake)', () => {
+  test('n_needed clamps at 0 (no negative dose when compost > offtake)', () => {
     // Defensive: if a future yield-curve revision brings stage demand below
     // compost release, the model must clamp instead of returning a negative
     // dose. T1/T2 already exercise this in current data; this test pins the
@@ -133,15 +133,15 @@ describe('REQ-087 — chosen product sized to N gap after compost', () => {
 });
 
 // ────────────────────────────────────────────────────────────────────────
-// REQ-088 — Public API namespace window.SidedressRecipeTomato
+// Public API namespace window.SidedressRecipeTomato
 // ────────────────────────────────────────────────────────────────────────
 
-describe('REQ-088 — window.SidedressRecipeTomato public API', () => {
-  test('REQ-088 — namespace exists at runtime', () => {
+describe('window.SidedressRecipeTomato public API', () => {
+  test('namespace exists at runtime', () => {
     assert.ok(window.SidedressRecipeTomato, 'window.SidedressRecipeTomato is missing');
   });
 
-  test('REQ-088 — exposes required keys', () => {
+  test('exposes required keys', () => {
     const SR = window.SidedressRecipeTomato;
     const expectedKeys = [
       'AREA_PER_PLANCHE',
@@ -154,15 +154,15 @@ describe('REQ-088 — window.SidedressRecipeTomato public API', () => {
     assert.deepEqual(missing, [], `missing keys: ${missing.join(', ')}`);
   });
 
-  test('REQ-088 — AREA_PER_PLANCHE is a positive number', () => {
+  test('AREA_PER_PLANCHE is a positive number', () => {
     assert.equal(typeof window.SidedressRecipeTomato.AREA_PER_PLANCHE, 'number');
     assert.ok(window.SidedressRecipeTomato.AREA_PER_PLANCHE > 0);
   });
 
-  test('REQ-088 — PRODUCTS is an object keyed by product name with n_pct/eff/ca_pct', () => {
+  test('PRODUCTS is an object keyed by product name with n_pct/eff/ca_pct', () => {
     const products = window.SidedressRecipeTomato.PRODUCTS;
     assert.equal(typeof products, 'object');
-    // PRODUCTS surfaces the table REQ-089 reads from. Each entry must
+    // PRODUCTS surfaces the table the Ca-aware gate reads from. Each entry must
     // declare ca_pct so the gate has data to test against.
     for (const [key, p] of Object.entries(products)) {
       assert.equal(typeof p.ca_pct, 'number', `${key}.ca_pct must be a number`);
@@ -171,7 +171,7 @@ describe('REQ-088 — window.SidedressRecipeTomato public API', () => {
     }
   });
 
-  test('REQ-088 — computeStageSidedress is a function returning the documented shape', () => {
+  test('computeStageSidedress is a function returning the documented shape', () => {
     const SR = window.SidedressRecipeTomato;
     assert.equal(typeof SR.computeStageSidedress, 'function');
     const t5 = SR.computeStageSidedress('T5');
@@ -182,7 +182,7 @@ describe('REQ-088 — window.SidedressRecipeTomato public API', () => {
     assert.equal(typeof t5.chosen,        'string');
   });
 
-  test('REQ-088 — FIRST_PRINCIPLES_BY_STAGE populated for every stage', () => {
+  test('FIRST_PRINCIPLES_BY_STAGE populated for every stage', () => {
     // wireFpSidedress IIFE in calc.js fills this at script load. Pinning
     // it here catches a regression where a renaming or load-order issue
     // leaves the skeleton object empty.
@@ -194,10 +194,10 @@ describe('REQ-088 — window.SidedressRecipeTomato public API', () => {
     }
   });
 
-  test('REQ-088 — MINIMUM_EFFICIENCY retains backwards-compat keys for legacy consumers', () => {
+  test('MINIMUM_EFFICIENCY retains backwards-compat keys for legacy consumers', () => {
     // Legacy consumers (calculateNutritionSupply, computeStageRecipe,
-    // buildNutriment) still read these specific keys. Spec REQ-088 calls
-    // out MINIMUM_EFFICIENCY explicitly as the derived backwards-compat view.
+    // buildNutriment) still read these specific keys. The public-API spec
+    // calls out MINIMUM_EFFICIENCY explicitly as the derived backwards-compat view.
     const minimumEfficiency = window.SidedressRecipeTomato.MINIMUM_EFFICIENCY;
     for (const key of ['Actisol_N', 'Actisol_P', 'Actisol_K', 'FarinePlumes_N']) {
       assert.equal(typeof minimumEfficiency[key], 'number', `MINIMUM_EFFICIENCY.${key} must be a number`);
@@ -208,11 +208,11 @@ describe('REQ-088 — window.SidedressRecipeTomato public API', () => {
 });
 
 // ────────────────────────────────────────────────────────────────────────
-// REQ-089 — Ca-aware product gate
+// Ca-aware product gate
 // ────────────────────────────────────────────────────────────────────────
 
-describe('REQ-089 — Ca-aware product gate', () => {
-  test('REQ-089 — chosen product is always Ca-free (default invocation, every stage)', () => {
+describe('Ca-aware product gate', () => {
+  test('chosen product is always Ca-free (default invocation, every stage)', () => {
     const stages = Object.keys(ph1.RECIPE_INPUTS.stageYield);
     const offenders = [];
     for (const stage of stages) {
@@ -229,7 +229,7 @@ describe('REQ-089 — Ca-aware product gate', () => {
     assert.deepEqual(offenders, [], offenders.join('; '));
   });
 
-  test('REQ-089 — explicit Ca-bearing request returns g_per_planche === 0 (defensive gate)', () => {
+  test('explicit Ca-bearing request returns g_per_planche === 0 (defensive gate)', () => {
     // Iterate every entry with ca_pct > 0 — any new Ca-bearing product
     // gets gated automatically without verifier edits.
     const caBearing = Object.entries(ph1.SIDEDRESS_PRODUCTS)
@@ -257,7 +257,7 @@ describe('REQ-089 — Ca-aware product gate', () => {
     assert.deepEqual(offenders, [], offenders.join('; '));
   });
 
-  test('REQ-089 — Actisol carries Ca > 0 in SIDEDRESS_PRODUCTS (gate has something to reject)', () => {
+  test('Actisol carries Ca > 0 in SIDEDRESS_PRODUCTS (gate has something to reject)', () => {
     // If Actisol's ca_pct ever drops to 0 (e.g. supplier reformulation or a
     // typo), the defensive-gate test above could pass vacuously. Pin the
     // input shape explicitly.
@@ -269,7 +269,7 @@ describe('REQ-089 — Ca-aware product gate', () => {
     );
   });
 
-  test('REQ-089 — unknown product key returns g_per_planche === 0 (no crash)', () => {
+  test('unknown product key returns g_per_planche === 0 (no crash)', () => {
     // Defensive: a typo or renamed product key should fall back to
     // all-zeros, not throw. Mirrors the `if (!spec || ...)` early-return
     // in calc.js.

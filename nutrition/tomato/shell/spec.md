@@ -10,7 +10,7 @@ rules in `nutrition/spec.md`.
 
 ---
 
-## REQ-104 — Header inputs are exactly five scalars
+## header-inputs-five-scalars
 
 **Statement:** The Bilan accepts exactly five operator inputs in the header
 card: `target` (kg/m²/wk), `solarPerGram` (J/g, default 7), `stage`
@@ -21,7 +21,7 @@ No `current` input — the page answers "what's needed at target", not
 
 ---
 
-## REQ-105 — Light ceiling derived from operator-driven J/g
+## light-ceiling-from-operator-j-per-g
 
 **Statement:** The header surfaces
 `lightCeiling_kg_m2_wk = (weekly_J_cm² ÷ (solarPerGram × 1000))`, where
@@ -31,7 +31,7 @@ When `target > ceiling`, the card shifts to a warning style (orange bg +
 
 ---
 
-## REQ-106 — FP recipe mode locks stage to T5
+## fp-recipe-mode-locks-t5
 
 **Statement:** When `recipeMode === 'fp'`, the stage selector is forced
 to `T5`. Switching off T5 while in FP mode auto-reverts mode to `stored`.
@@ -40,7 +40,7 @@ keeps mode + stage as a consistent pair. Default `recipeMode = 'fp'`.
 
 ---
 
-## REQ-107 — Recipe-mode toggle: First principles on the left, default
+## recipe-mode-toggle-fp-left-default-right
 
 **Statement:** The recipe-mode toggle button order is
 `[First principles] [Stockée]` (left → right). "First principles"
@@ -52,7 +52,7 @@ instead.
 
 ---
 
-## REQ-004 — Bilan reads from source-of-truth recipes
+## bilan-reads-source-of-truth-recipes
 
 **Statement:** The Bilan nutriments page (admin) MUST compute its supply
 numbers by reading from the same constants/recipes that drive the
@@ -66,7 +66,7 @@ it on next render with no separate edit.
 |---|---|---|---|
 | Fertigation tomate | `computeStageRecipe(stage)` | `calcNutrSupply` calls it directly | wired |
 | Foliaire (single weekly spray) | `FOLIAR.tomato.A` (label strings, e.g., `"22 g"`) | `calcNutrSupply` parses the label strings | wired |
-| ~~Foliaire Spray B (CaCl₂ anti-BER)~~ | retired 2026-05-06 — Teris industrial-grade CaCl₂ Ecocert listing was unverified (REQ-002 audit risk). BER prevention now via ventilation + humidity. | n/a | removed |
+| ~~Foliaire Spray B (CaCl₂ anti-BER)~~ | retired 2026-05-06 — Teris industrial-grade CaCl₂ Ecocert listing was unverified (nutrition — ecocert-only-products audit risk). BER prevention now via ventilation + humidity. | n/a | removed |
 | Sol — engrais sol tomate (PA Taillon × 1,5) | `TOMATO_SIDEDRESS[stage]` — Actisol 5-3-2 + farine de plumes 13-0-0 g/planche/sem per stage | `calcNutrSupply` reads it; renders as Bilan Block 3 ("Engrais sol granulaire"). Note: soil page HTML displays the same numbers — currently hand-synced; ideal future state = HTML rendered from this constant. | wired |
 | Export fruit tomate | `TOMATO_FRUIT_EXPORT` — g/kg fresh fruit, fruit-only nutrient export (no vegetative tissue). Yara fruit-vs-vegetative split (N/P/K 60%, Ca 5%, Mg 25%, micros 60% default) applied to whole-plant `TOMATO_REMOVAL`. Replaces `TOMATO_REMOVAL × yield` on the demand side (2026-05-04) so it doesn't double-count canopy growth already in `BIOMASS_DEMAND`. | `calcNutrDemand(yield, stage)` reads it directly: `fruit_mg = yield × TOMATO_FRUIT_EXPORT × 1000`. | wired |
 | Demande végétative tomate (T1-T5) | `BIOMASS_DEMAND[stage]` — mg/m²/sem per element per stage (build-out of canopy, roots, trusses). Sources: Haifa F-144 stage program + Sonneveld/Voogt ratios. T4-T5 revised 2026-05-04 to represent the FULL ongoing canopy growth (no longer ~30%/15% of T3) since it's now paired with the fruit-only `TOMATO_FRUIT_EXPORT`. | `calcNutrDemand(yield, stage)` adds it on top of fruit export so T1-T3 (low/no fruit) shows real demand. Bilan Block 1 renders fruit + biomasse breakdown. | wired |
@@ -83,6 +83,6 @@ it on next render with no separate edit.
 
 ---
 
-## REQ-153 — Bloc « Recette stockée vs calculée (drift) » : ratio FP / Stockée
+## stored-vs-computed-drift-block
 
 Pour chaque élément affiché dans le bloc « Recette stockée vs calculée (drift) » de la page Nutrition tomate (admin, mode T5), le ratio rendu est `recette premiers principes ÷ recette stockée`. 100 % ⇒ stockée et FP coïncident ; > 100 % ⇒ la stockée sous-fournit la cible FP ; < 100 % ⇒ la stockée sur-fournit.

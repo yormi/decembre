@@ -10,9 +10,9 @@
 //             regardless of CONTRIBUTING.
 //   REQ-143 — window.SoilContribution exposes the documented key list +
 //             function types.
-//   REQ-145 — Pourquoi modal interpretation strings (verifier-only — bytes
+//   pourquoi-modal-strings-owned-here — Pourquoi modal interpretation strings (verifier-only — bytes
 //             owned by spec, consumed by renderSpec in app/index.html;
-//             coverage handled by scripts/check-recipes.mjs REQ-145 matcher).
+//             coverage handled by scripts/check-recipes.mjs pourquoi-modal-strings-owned-here matcher).
 //   REQ-164 — SME_SOIL_SOLUTION_PPM + TRANSPIRATION_L_PER_M2_PER_WEEK
 //             cover every banked crop × every gap-grid element.
 //
@@ -404,7 +404,7 @@ describe('renderGrid — structural contract (helper for REQ-143 / REQ-162)', ()
 });
 
 // ────────────────────────────────────────────────────────────────────────
-// REQ-145 — Boron pourquoi-modal dispatches to micros-foliar-routed
+// pourquoi-modal-strings-owned-here — Boron pourquoi-modal dispatches to micros-foliar-routed
 // ────────────────────────────────────────────────────────────────────────
 //
 // Two pins added 2026-05-17 alongside the spec's 6 → 7 key extension
@@ -419,7 +419,7 @@ describe('renderGrid — structural contract (helper for REQ-143 / REQ-162)', ()
 //      function — so the page-render path is the only behavioral surface.
 //
 //   2. Structural pin. The Node verifier (scripts/check-recipes.mjs around
-//      line 5180) maintains `expectedKeys` for REQ-145; the spec maintains
+//      line 5180) maintains `expectedKeys` for pourquoi-modal-strings-owned-here; the spec maintains
 //      the same set as ` ```render <key>` ` blocks. Both must agree on the
 //      7-key set. Equality is already enforced by the verifier itself but
 //      a node:test pin guards against silent drift when one file moves
@@ -443,8 +443,8 @@ function ensureDistBuilt() {
   execSync(`node ${BUILD_SCRIPT}`, { cwd: REPO_ROOT, stdio: 'pipe' });
 }
 
-describe('REQ-145 — boron pourquoi-modal key dispatches to micros-foliar-routed', () => {
-  test('REQ-145 — soil.B interpretation key is micros-foliar-routed (not B-fert-routed, not default-not-mehlich)', () => {
+describe('pourquoi-modal-strings-owned-here — boron pourquoi-modal key dispatches to micros-foliar-routed', () => {
+  test('pourquoi-modal-strings-owned-here — soil.B interpretation key is micros-foliar-routed (not B-fert-routed, not default-not-mehlich)', () => {
     ensureDistBuilt();
     const html = readFileSync(DIST_INDEX, 'utf8');
     const virtualConsole = new VirtualConsole();
@@ -463,8 +463,8 @@ describe('REQ-145 — boron pourquoi-modal key dispatches to micros-foliar-route
     const entry = pourquoi['soil.B'];
     assert.ok(entry, 'window.currentPourquoi["soil.B"] missing — buildNutrimentTomato did not register B row');
     assert.ok(entry.interpretation, 'soil.B has no interpretation object');
-    assert.equal(entry.interpretation.requirementId, 'REQ-145',
-      `soil.B interpretation.requirementId = ${entry.interpretation.requirementId} (expected REQ-145)`);
+    assert.equal(entry.interpretation.requirementId, 'pourquoi-modal-strings-owned-here',
+      `soil.B interpretation.requirementId = ${entry.interpretation.requirementId} (expected pourquoi-modal-strings-owned-here)`);
     assert.equal(entry.interpretation.key, 'micros-foliar-routed',
       `soil.B interpretation.key = "${entry.interpretation.key}" (expected "micros-foliar-routed"; ` +
       `dispatcher in nutrition/tomato/app/logic.js around line 209 routes B to a stale key)`);
@@ -472,15 +472,15 @@ describe('REQ-145 — boron pourquoi-modal key dispatches to micros-foliar-route
 });
 
 // ────────────────────────────────────────────────────────────────────────
-// REQ-145 — Structural pin: verifier expectedKeys equals spec render-keys
+// pourquoi-modal-strings-owned-here — Structural pin: verifier expectedKeys equals spec render-keys
 // ────────────────────────────────────────────────────────────────────────
 
-describe('REQ-145 — expectedKeys set in verifier matches Renders: keys in spec.md', () => {
-  test('REQ-145 — 7-key set agreement (verifier ↔ spec)', () => {
+describe('pourquoi-modal-strings-owned-here — expectedKeys set in verifier matches Renders: keys in spec.md', () => {
+  test('pourquoi-modal-strings-owned-here — 7-key set agreement (verifier ↔ spec)', () => {
     const specSource = readFileSync(SPEC_MD, 'utf8');
     const verifierSource = readFileSync(VERIFIER_PATH, 'utf8');
 
-    // Spec: extract ` ```render <key>` ` blocks below the REQ-145 header.
+    // Spec: extract ` ```render <key>` ` blocks below the pourquoi-modal-strings-owned-here header.
     // The spec uses ` ```render Ca` ` / ` ```render P` ` / ` ```render
     // K-fert-routed` ` / etc. as the canonical declaration.
     const renderRe = /```render\s+([A-Za-z0-9_-]+)\b/g;
@@ -490,16 +490,16 @@ describe('REQ-145 — expectedKeys set in verifier matches Renders: keys in spec
       specKeys.add(match[1]);
     }
 
-    // Verifier: locate the REQ-145 expectedKeys assignment (only one in the
-    // REQ-145 section — anchored to the REQ-145 header comment block).
-    const sectionStart = verifierSource.indexOf('REQ-145 — Pourquoi modal interpretation strings');
+    // Verifier: locate the pourquoi-modal-strings-owned-here expectedKeys assignment (only one in the
+    // pourquoi-modal-strings-owned-here section — anchored to the pourquoi-modal-strings-owned-here header comment block).
+    const sectionStart = verifierSource.indexOf('pourquoi-modal-strings-owned-here — Pourquoi modal interpretation strings');
     assert.ok(sectionStart > 0,
-      'REQ-145 section header not found in scripts/check-recipes.mjs');
+      'pourquoi-modal-strings-owned-here section header not found in scripts/check-recipes.mjs');
     const sectionSlice = verifierSource.slice(sectionStart, sectionStart + 4000);
     const expectedKeysRe = /const expectedKeys\s*=\s*\[([^\]]+)\]/;
     const keysMatch = sectionSlice.match(expectedKeysRe);
     assert.ok(keysMatch,
-      'expectedKeys array not found within REQ-145 section of check-recipes.mjs');
+      'expectedKeys array not found within pourquoi-modal-strings-owned-here section of check-recipes.mjs');
     const verifierKeys = new Set(
       keysMatch[1]
         .split(',')
@@ -508,7 +508,7 @@ describe('REQ-145 — expectedKeys set in verifier matches Renders: keys in spec
     );
 
     assert.equal(specKeys.size, 7,
-      `spec.md REQ-145 declares ${specKeys.size} render keys (expected 7): ${[...specKeys].join(', ')}`);
+      `spec.md pourquoi-modal-strings-owned-here declares ${specKeys.size} render keys (expected 7): ${[...specKeys].join(', ')}`);
     assert.equal(verifierKeys.size, 7,
       `verifier expectedKeys has ${verifierKeys.size} entries (expected 7): ${[...verifierKeys].join(', ')}`);
 
@@ -522,7 +522,7 @@ describe('REQ-145 — expectedKeys set in verifier matches Renders: keys in spec
     // Spot-check the new key is in the set on both sides (regression guard
     // for the 6 → 7 extension landed 2026-05-17).
     assert.ok(specKeys.has('micros-foliar-routed'),
-      'spec.md REQ-145 missing micros-foliar-routed render block');
+      'spec.md pourquoi-modal-strings-owned-here missing micros-foliar-routed render block');
     assert.ok(verifierKeys.has('micros-foliar-routed'),
       'verifier expectedKeys missing micros-foliar-routed entry');
   });

@@ -2,7 +2,7 @@
 
 ## read-primary-source-not-summary
 
-When a PO diagnostic or REQ hinges on primary-source completeness (lab reports, datasheets, agronomist correspondence), read the source file directly — never trust summary docs (`farm-baseline-updated.md`, data.js comments, prior session memory). *Because:* the Mois d'épuisement diagnosis (2026-05-16) trusted `farm-baseline-updated.md`'s Mehlich-3 summary which omitted micros + N; Berger Report 39088 actually covers every gap-grid element except Mo. Error propagated into REQ-162 / REQ-164 wiring. (2026-05-16)
+When a PO diagnostic or spec entry hinges on primary-source completeness (lab reports, datasheets, agronomist correspondence), read the source file directly — never trust summary docs (`farm-baseline-updated.md`, data.js comments, prior session memory). *Because:* the Mois d'épuisement diagnosis (2026-05-16) trusted `farm-baseline-updated.md`'s Mehlich-3 summary which omitted micros + N; Berger Report 39088 actually covers every gap-grid element except Mo. Error propagated into mois-depuisement-sme-runway / sme-soil-solution-wired-per-crop-element wiring. (2026-05-16)
 
 ## no-implementation-language-in-specs
 
@@ -14,7 +14,7 @@ When PO (or any agent) slips on a global CLAUDE.md rule despite the rule being i
 
 ## sibling-req-on-different-question
 
-When extending a per-element contract with a field that answers a *different* question than existing fields, draft a sibling REQ rather than amend in place — even when the new field sits on the same payload key. *Because:* conflating questions under one REQ muddles downstream readers and the test-writer's job (REQ-157 sibling to REQ-136, 2026-05-15). (2026-05-15)
+When extending a per-element contract with a field that answers a *different* question than existing fields, draft a sibling spec entry rather than amend in place — even when the new field sits on the same payload key. *Because:* conflating questions under one entry muddles downstream readers and the test-writer's job (channel-efficiency-capability-map sibling to contribution-channel-details-payload, 2026-05-15). (2026-05-15)
 
 ## revert-coder-lane-drift
 
@@ -22,8 +22,8 @@ When PO has drifted into coder lane (touched `app/index.html`, partials, rendere
 
 ## ui-reqs-coder-lane
 
-UI / renderer / DOM-shape REQs go to the team-leader mailbox (coder lane), never to the specialist queue. Specialist queue is for model / derivation / calibration / data only. *Because:* REQ-152 went to specialist queue, was correctly rejected as scope, sat un-implemented for two days. (2026-05-14)
+UI / renderer / DOM-shape spec entries go to the team-leader mailbox (coder lane), never to the specialist queue. Specialist queue is for model / derivation / calibration / data only. *Because:* contribution-block-recipe-table went to specialist queue, was correctly rejected as scope, sat un-implemented for two days. (2026-05-14)
 
 ## dual-queue-on-spec-change
 
-Every spec change writes to both `team-leader/from-product-owner.md` (always) AND `plant-nutrition-specialist/from-product-owner.md` (only when the change implies model-layer work per [[ui-reqs-coder-lane]]). *Because:* single-queue notification silently skips wave scheduling; REQ-153 sat unwired. (2026-05-13)
+Every spec change writes to both `team-leader/from-product-owner.md` (always) AND `plant-nutrition-specialist/from-product-owner.md` (only when the change implies model-layer work per [[ui-reqs-coder-lane]]). *Because:* single-queue notification silently skips wave scheduling; stored-vs-computed-drift-block sat unwired. (2026-05-13)

@@ -119,7 +119,7 @@ echo
 # Ch7=A). The node verifier runs after the bash checks below.
 
 # ─── REQ-004 — Bilan reads from source-of-truth recipes ───
-echo "REQ-004 — Bilan reads from source-of-truth recipes"
+echo "bilan-reads-source-of-truth-recipes — Bilan reads from source-of-truth recipes"
 
 check_match \
   "Bilan appelle computeStageRecipe(stage) (fertigation)" \
@@ -145,7 +145,7 @@ check_match \
 
 # ─── REQ-005 — URL hash reflects current page (and subpage) ───
 echo
-echo "REQ-005 — URL hash reflects current page (and subpage)"
+echo "url-hash-routing — URL hash reflects current page (and subpage)"
 
 check_match "parseHash() défini" 'function parseHash\('
 check_match "syncHash() défini"  'function syncHash\('
@@ -184,7 +184,7 @@ fi
 
 # ─── REQ-009 — Solar weekly 20-year averages ───
 echo
-echo "REQ-009 — SOLAR_BY_WEEK = moyennes 20 ans (semaines 1-18)"
+echo "solar-by-week-20yr-average — SOLAR_BY_WEEK = moyennes 20 ans (semaines 1-18)"
 
 # Format: "week:value". Single bash array, looped over to verify each line in
 # index.html. If any week deviates, the consolidated check fails with the
@@ -253,25 +253,6 @@ else
   printf "  Install Node.js + run \`npm install\` to enable REQ-010+ verification.\n"
 fi
 
-# ─── Ledger coverage (soft, informational) ───
-# Counts spec REQs that have no row in team/req-ledger.md.
-# Pre-wrapper REQs (everything before REQ-155) don't have ledger rows by
-# construction; the count is informational, not a failure. Drift up over
-# time = wrapper bypass; drift down = backfill.
-LEDGER_FILE="team/req-ledger.md"
-if [ -f "$LEDGER_FILE" ]; then
-  SPEC_REQS=$(
-    {
-      grep -hoE 'REQ-[0-9]+[a-z]*' spec.md 2>/dev/null
-      find nutrition yield-range -name 'spec.md' -type f -exec grep -hoE 'REQ-[0-9]+[a-z]*' {} + 2>/dev/null
-    } | sort -u
-  )
-  LEDGER_REQS=$(grep -hoE 'REQ-[0-9]+[a-z]*' "$LEDGER_FILE" 2>/dev/null | sort -u)
-  UNLEDGERED=$(comm -23 <(echo "$SPEC_REQS") <(echo "$LEDGER_REQS") | grep -c 'REQ-' || true)
-else
-  UNLEDGERED="(no ledger)"
-fi
-
 # ─── Final ───
 echo
 echo "════════════════════════════════════════════════════════════"
@@ -295,8 +276,6 @@ else
     echo "  (Node failures listed in the node-verifier section above.)"
   fi
 fi
-printf "    REQs un-ledgered: %s (informational; pre-wrapper or bypass)\n" \
-  "$UNLEDGERED"
 echo "════════════════════════════════════════════════════════════"
 echo
 

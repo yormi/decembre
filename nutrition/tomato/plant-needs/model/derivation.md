@@ -284,7 +284,7 @@ not a polling queue.
   report date). *Action:* compute `predicted_annual = TOMATO_REMOVAL ×
   measured_yield_kg_per_m²` vs measured uptake; if |Δ| ≤ 25 % per macro,
   bump T1-T3 + T5 macro cert 2 → 3 in `TOMATO_DEMAND_CERT`. If |Δ| > 25
-  %, refit `TOMATO_REMOVAL[macro].g` in `data.js` (REQ-033 Tier-B floor
+  %, refit `TOMATO_REMOVAL[macro].g` in `data.js` (`nutrition/tomato — tomato-removal-biased-high` Tier-B floor
   binds — stay at or above {Yara, Sonneveld, Koller} mean), then
   re-derive `BIOMASS_DEMAND[T5]` per the top-down formula and
   `BIOMASS_DEMAND[T4] = T5 × 0.85`.

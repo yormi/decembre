@@ -110,13 +110,13 @@ and ±50 % per micro. Will replace the v1 "split-sum reconciles" identity.
 
 ## Inherited specs
 
-- **REQ-033** (`nutrition/tomato/spec.md`) — `TOMATO_REMOVAL` macros sit
+- **tomato — tomato-removal-biased-high** — `TOMATO_REMOVAL` macros sit
   at or above the inter-source mean of {Yara, Sonneveld, Koller}.
   Anchors Term 1 and the T5 derivation of Term 2.
 
 Specs that *consume* demand output:
 
-- **REQ-013** (`nutrition/tomato/spec.md`) — supply ≥ 0.9 × demand
-- **REQ-014** (`nutrition/tomato/spec.md`) — supply ≤ 1.3 × demand
-- **REQ-011** (`nutrition/tomato/spec.md`) — `CHANNEL_ROLE` covers every
+- **tomato — under-fert-guard** — supply ≥ 0.9 × demand
+- **tomato — luxury-feeding-guard** — supply ≤ 1.3 × demand
+- **tomato — channel-role-coverage** — `CHANNEL_ROLE` covers every
   element in `BIOMASS_DEMAND`

@@ -3,7 +3,7 @@
 //
 // SLUG coverage:
 //   strategy-contains-recipes              — strategy.recipes is an array of
-//                                            independent REQ-029-clean recipes
+//                                            independent in-tank-ksp-precipitation-guard-clean recipes
 //   frequency-is-model-output              — sprayCount comes from the model
 //                                            (computeFoliarStrategy), not the
 //                                            operator UI
@@ -47,8 +47,8 @@ describe('strategy-contains-recipes — strategy comprises a list of independent
       `strategy must contain ≥1 recipe; got ${strategy.recipes.length}`);
   });
 
-  test('strategy-contains-recipes — each recipe carries the per-recipe REQ-029 contract shape', () => {
-    // Per spec.md § strategy-contains-recipes + model/spec.md REQ-195:
+  test('strategy-contains-recipes — each recipe carries the per-recipe in-tank-ksp-precipitation-guard contract shape', () => {
+    // Per spec.md § strategy-contains-recipes + model/spec.md strategy-is-independent-recipes:
     // each recipe is independent (own kind, own targetElements, own doses,
     // own sprayCount, own days, own weeklyLeafToleranceCap).
     const FRT = win.FoliarRecipeTomato;
@@ -76,8 +76,8 @@ describe('strategy-contains-recipes — strategy comprises a list of independent
   test('strategy-contains-recipes — recipes are independent (distinct targetElements per kind)', () => {
     // Independence is structural: each recipe has its own target element set
     // (oligo → Mn/Zn/Cu/Fe/B; Ca → Ca when it lands). No element appears in
-    // two recipe targetElements lists simultaneously (cross-recipe REQ-029
-    // satisfied automatically — see model/spec.md REQ-195).
+    // two recipe targetElements lists simultaneously (cross-recipe in-tank-ksp-precipitation-guard
+    // satisfied automatically — see model/spec.md strategy-is-independent-recipes).
     const FRT = win.FoliarRecipeTomato;
     const { recipes } = FRT.computeFoliarStrategy('T5', SAMPLE_GAP);
     const seen = new Map(); // element -> kind
@@ -151,7 +151,7 @@ describe('sprays-spread-across-farm-working-days — recipe.days ⊆ {Mon..Fri}'
   test('sprays-spread-across-farm-working-days — recipe.days length matches sprayCount', () => {
     // The day-assignment rule must place exactly sprayCount days; no
     // duplicates, no extras, no gaps. Spread evenness is governed by
-    // model/spec.md REQ-198 and tested at the model layer; here we pin the
+    // model/spec.md sprays-spread-across-farm-working-days and tested at the model layer; here we pin the
     // length contract.
     const FRT = win.FoliarRecipeTomato;
     const { recipes } = FRT.computeFoliarStrategy('T5', SAMPLE_GAP);

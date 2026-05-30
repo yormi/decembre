@@ -37,7 +37,7 @@ cert 2 derived chemistry). Reused unchanged except local `ecFactor` (§3).
 | K (elemental) | 0.00414 | 0.5 % K₂O × (78 / 94.2) | 4 |
 | density assumption | 1.0 g/mL | typical liquid hydrolysate | 3 |
 
-Role: P balance. 1.75 % P = 4 × Ocean's P. Closes REQ-101 (50 % P-supply)
+Role: P balance. 1.75 % P = 4 × Ocean's P. Closes default-recipe-p-supply-half-demand (50 % P-supply)
 where Ocean alone can't reach.
 
 ### Acadie Algues liquides (Acadian Seaplants; liquid kelp)
@@ -101,10 +101,10 @@ alone — see `learnings.md`.
 ## 4. Recipe sizing — `NURSERY_RECIPE_DEFAULT`
 
 Constraints:
-- **CE** ≤ 3.0 mS/cm (REQ-098)
-- **pH** ∈ [4.5, 6.5] (REQ-099)
+- **CE** ≤ 3.0 mS/cm (predicted-ce-under-nursery-cap)
+- **pH** ∈ [4.5, 6.5] (predicted-tank-ph-in-nursery-envelope)
 - **N supply** ≥ 1 400 mg/tray (50 % of inline 2 800, `n-supply-half-demand-floor`)
-- **P supply** ≥ 158 mg/tray (50 % of 315, REQ-101)
+- **P supply** ≥ 158 mg/tray (50 % of 315, default-recipe-p-supply-half-demand)
 
 Mass-flow per knob (per tray, per week, mg element):
 
@@ -127,7 +127,7 @@ Kelp   Z g/L:  K = Z × 1.25 × 0.01   × 1000 = 12.5 Z
 Search heuristic: lock Z = 2 g/L; solve {X, Y} for max(N supply) subject to
 CE ≤ 3.0 and P ≥ 158. Picked `X = 7, Y = 6, Z = 2`:
 - N 1 463 mg = 52 % of 2 800 target (clears `n-supply-half-demand-floor`, edge-close).
-- P 170 mg = 54 % of 315 (clears REQ-101 with room).
+- P 170 mg = 54 % of 315 (clears default-recipe-p-supply-half-demand with room).
 - CE 2.55 + 0.10 baseline = 2.65 mS/cm (~0.4 mS/cm head-room under 3.0 cap).
 - pH 5.25 (centre of [4.5, 6.5]).
 
@@ -168,7 +168,7 @@ Recompute recipe or ecFactor calibration when:
    → push doses up. Ca <1.5 % or Mg <0.3 % → source organic supplement.
 4. **Manufacturer EC datasheet.** Acadie technical sheet conductivity per
    dilution would replace single-point calibration.
-5. **Tray-finishing pilot results (90 g → 110 g).** `n-supply-half-demand-floor` / REQ-101
+5. **Tray-finishing pilot results (90 g → 110 g).** `n-supply-half-demand-floor` / default-recipe-p-supply-half-demand
    thresholds + default doses shift in lockstep.
 6. **`nutrition/nursery/plant-needs` lands.** When
    `window.PlantNeedsNursery.demandPerTray('N')` is wired, `n-supply-half-demand-floor` reads

@@ -44,6 +44,28 @@ Cap is per-unit-area. **One bed = 54.7 m²; whole tomato block = 7 × 54.7 = 382
 
 Basis: tilled = veg-garden incorporated ceiling (acid diluted through tilled 15–20 cm); standing-crop = established-planting ceiling (no till near live roots → acid-microzone risk). Both cert 3 (extension literature, not tomato-specific). The earlier "2 kg/100 m²" was a turf-surface number — superseded; it under-caps the tilled case.
 
+#### What the cap governs — total acid, NOT oxidation rate (cert 4)
+
+The per-pass cap is a **buffer/dilution ceiling**, not a throughput
+limit. Every kg of S⁰ eventually yields the same ~3 kg H₂SO₄
+regardless of particle size — total acid = f(mass), not f(rate). The
+cap answers: how many moles of acid can this root-zone *volume* absorb
+(carbonate + CEC buffer) and dilute (tilled 20 cm vs surface band)
+before damaging acid microzones form near live roots. That ceiling is
+stoichiometric + geometric → **particle-size-independent**: a fine,
+fast product (Microthiol 9 µm) and a coarse one carry the same mass
+cap. This is also why the two tiers split on *incorporation depth*,
+not on speed.
+
+Faster oxidation changes the **peak, not the total**: the same acid
+delivered in a shorter burst → lower transient pH minimum + higher
+*instantaneous* O₂ demand (sharper H₂S risk on a wet bed). That is a
+**rate hazard, controlled by cadence + the guardrails (pH retest,
+aeration, EC) — not by the per-pass mass cap.** For a fast product,
+hold the mass ceiling but flatten the peak under it: split into
+smaller increments, retest pH at 2 wk (not 4), never dose waterlogged.
+See `learnings/microthiol-kumulus-soil-use-agronomic-risks`.
+
 ### Passes to titrate carbonate, by tier
 
 | Calcimeter % | CaCO₃ (kg) | S to titrate (kg) | Passes @ 2.5 kg/bed | Passes @ 5.4 kg/bed | Read |

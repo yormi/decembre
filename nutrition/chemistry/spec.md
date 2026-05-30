@@ -18,7 +18,9 @@ elements`.
 ## recipe-mode-per-product
 
 Every product entry in `PRODUCT` has `mode: 'flux' | 'concentration'`.
-Flux-mode products participate in the demand-supply balance (REQ-013/014).
+Flux-mode products participate in the demand-supply balance
+(`nutrition/tomato/spec.md — under-fert-guard` /
+`nutrition/tomato/spec.md — luxury-feeding-guard`).
 Concentration-mode products participate in the tank-concentration envelope
 (concentration-dose-within-band).
 

@@ -112,9 +112,9 @@ in the Caveats list below (no cold-season scalar wired today).
 
 ---
 
-## Channel efficiency map (REQ-157)
+## Channel efficiency map (nutrition — channel-efficiency-capability-map)
 
-`window.SidedressRecipeTomato.efficiency` (REQ-157) declares the
+`window.SidedressRecipeTomato.efficiency` (nutrition — channel-efficiency-capability-map) declares the
 per-element delivery fraction the channel currently routes.
 
 | Element | Value | Source                                                  |
@@ -152,7 +152,7 @@ this map gains K and P entries — needs a derivation update in lockstep.
 700-1 050 mg N/m²/wk; compost residual releases ~1 100 mg N/m²/wk →
 sidedress contribution clamps to zero. Compatible with the cross-cycle
 N excess at T1 / T2 declared in `ACCEPTED_EXCESSES` (declared in
-`app/index.html`, REQ-014 governed by `nutrition/tomato/spec.md`):
+`app/index.html`, nutrition/tomato — luxury-feeding-guard governed by `nutrition/tomato/spec.md`):
 T1.N / T2.N entries accept the residual N over-supply on the grounds
 that the compost amendment cannot be undone and the bank draws down
 through T3-T5. Sidedress hard-zero is the channel-side expression of
@@ -207,7 +207,7 @@ that policy — adding more N at T1 / T2 would deepen the same excess.
   1 655 → 1 773 g/planche/wk; STORED ramp gated on `/retire-recipe`.
   Full trace in `nutrition/tomato/doc/tomato-t5-tissue-analysis-2026-05-23.md`.
 - **`stageYield` retunes.** Dose shifts proportionally; no model edit.
-- **Compost release shifts** (REQ-079 verifier drift, or compost ages
+- **Compost release shifts** (nutrition/compost-contribution — release-values-within-mass-balance-band verifier drift, or compost ages
   per `compost-contribution/spec.md` decline curve). Re-derives
   automatically.
 

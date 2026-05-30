@@ -38,4 +38,4 @@ FP-target churn and admin-page output are invisible to the team per [[stored-is-
 
 ## pin-constant-to-derivation
 
-When a derived value (FP target, model output) and a hand-coded constant are supposed to be equal, pin the constant to the function output via a structural invariant REQ + verifier, not documentation or trust. *Because:* hand-locked anchors silently drift after a reference-frame shift (REQ-098 dropping compost-subtraction made PA Taillon a 58% Mg mismatch, 2026-05-14). (2026-05-14)
+When a derived value (FP target, model output) and a hand-coded constant are supposed to be equal, pin the constant to the function output via a structural invariant spec entry + verifier, not documentation or trust. *Because:* hand-locked anchors silently drift after a reference-frame shift (`mass-balance-derivation` dropping compost-subtraction made PA Taillon a 58% Mg mismatch, 2026-05-14). (2026-05-14)

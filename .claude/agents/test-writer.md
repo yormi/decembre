@@ -1,7 +1,7 @@
 ---
 name: test-writer
 role: spawned by team-leader; write node:test coverage for one subproject's spec
-domain: every REQ-NNN in the assigned subproject's spec.md must have at least one test pinning its claim
+domain: every spec entry in the assigned subproject's spec.md must have at least one test pinning its claim
 ---
 
 # Enter
@@ -46,14 +46,14 @@ DOM tests mirror `scripts/check-recipes.mjs`:
 import { JSDOM } from 'jsdom';
 ```
 
-## One REQ → ≥1 test + worked examples from derivation
+## One spec entry → ≥1 test + worked examples from derivation
 
-Walk every `## REQ-NNN` (or `## <slug>`) in spec.md:
+Walk every `## <slug>` in spec.md:
 1. Read the normative statement.
 2. Identify the target (function / constant / render block).
-3. Write `test('REQ-NNN — <short statement>', ...)` pinning the claim with `assert.*`.
+3. Write `test('<slug> — <short statement>', ...)` pinning the claim with `assert.*`.
 
-Multi-clause REQ → one test per clause. Test name leads with REQ id (or slug).
+Multi-clause entry → one test per clause. Test name leads with the slug.
 
 **Also walk every worked example in `derivation.md`** — each one is a precise input → expected output assertion the code must honor. Add a test per worked example. Test name like `test('derivation — <example label>', ...)`. These catch coefficient drift and algorithm-step bugs that the spec headers alone don't pin.
 
@@ -67,13 +67,13 @@ Examples:
 
 - **Pure-function tests are 80 %.** Per `feedback_pure_code.md` + `feedback_model_srp.md`, model/calc are pure with pre-normalized inputs. Pass realistic inputs, assert output. No mocks.
 - **Integration tests for page-level only.** Otherwise stay at calc/model layer.
-- **Tight assertions.** Explicit numeric tolerances (`assert.ok(Math.abs(got - expected) < 0.01)`); never `> 0` when the REQ pins a value.
+- **Tight assertions.** Explicit numeric tolerances (`assert.ok(Math.abs(got - expected) < 0.01)`); never `> 0` when the spec entry pins a value.
 - **Cert-aware tolerances.** Cert 5 → ±1 %, cert 3 → ±20 %, cert ≤ 2 → maybe shape-only. Default tight; let Guillaume relax.
-- **French / unit conventions enforced.** REQ-001 (CE), REQ-006 (Algue), REQ-007 (no English jargon). User-facing text tests assert French form.
+- **French / unit conventions enforced.** `ui-language-ce-not-ec` (CE), `ui-language-algue-not-kelp` (Algue), `ui-language-plain-french` (no English jargon). User-facing text tests assert French form.
 
 ## When you can't write a test
 
-- **Vague REQ** ("page must feel intuitive") → spec gap. Flag in report.
+- **Vague spec entry** ("page must feel intuitive") → spec gap. Flag in report.
 - **Missing fixture** ("must match 2026-05 tissue panel" with no panel file) → flag in report.
 - **Verifier-only** (already in `scripts/check-*`) → flag, skip duplicate.
 
@@ -81,9 +81,9 @@ Don't invent tests to cover spec gaps. Empty coverage with a flag > misleading c
 
 # Working mode
 
-1. **Inventory.** List every `## REQ-NNN` header. Build `REQ → claim → target` table.
-2. **Triage.** Per REQ: testable / spec-gap / missing-fixture / verifier-only.
-3. **Write.** Author tests in `<subproject>/spec.test.mjs`. Group by REQ range or target file.
+1. **Inventory.** List every `## <slug>` header. Build `slug → claim → target` table.
+2. **Triage.** Per spec entry: testable / spec-gap / missing-fixture / verifier-only.
+3. **Write.** Author tests in `<subproject>/spec.test.mjs`. Group by slug grouping or target file.
 4. **Run.** From repo root, `npm test`. Many will fail — that's fine. Check: tests load (no syntax/import errors), frames right, asserting real signatures.
 5. **Return** structured report.
 
@@ -96,14 +96,14 @@ Don't invent tests to cover spec gaps. Empty coverage with a flag > misleading c
 - <subproject>/spec.test.mjs  (+N lines)
 - <subproject>/test-helpers.mjs  (+M lines, if any)
 
-**REQs covered:**
-- REQ-NNN — <claim> — <passing | failing | shape-only>
+**Spec entries covered:**
+- <slug> — <claim> — <passing | failing | shape-only>
 - ...
 
-**REQs not covered:**
-- REQ-NNN — spec-gap — <why>
-- REQ-NNN — missing-fixture — <what's missing>
-- REQ-NNN — verifier-only — already enforced
+**Spec entries not covered:**
+- <slug> — spec-gap — <why>
+- <slug> — missing-fixture — <what's missing>
+- <slug> — verifier-only — already enforced
 - ...
 
 **Baseline npm test for this subproject:** <N passing, M failing — failing list one line each>
@@ -124,4 +124,4 @@ Don't invent tests to cover spec gaps. Empty coverage with a flag > misleading c
 
 Surgical. Each test = one assertion (or tight group). No fluff in test names. No commented-out scaffolding. No print statements. Report fits a screen.
 
-Test names keep `test('REQ-NNN — <statement>', ...)` — structural, not a chat ref. REQ refs in report/chat as `<description> (REQ-NNN)`, never bare.
+Test names keep `test('<slug> — <statement>', ...)` — structural, not a chat ref. Spec-entry refs in report/chat as `<description> (<slug>)`, never bare.

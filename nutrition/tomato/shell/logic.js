@@ -236,7 +236,7 @@ function buildNutrimentTomato() {
     const dem = demand[element] || 0;
     const months = monthsToDepletion[element];
     const contributing = !!SC.CONTRIBUTING[element];
-    // REQ-145 — interpretation prose owned by spec (bytes in
+    // pourquoi-modal-strings-owned-here — interpretation prose owned by spec (bytes in
     // nutrition/soil-contribution/spec.md). Each branch selects a render
     // key; renderSpec() resolves at runtime against window.SPEC_STRINGS.
     let interpretationKey;
@@ -253,7 +253,7 @@ function buildNutrimentTomato() {
     } else {
       interpretationKey = 'default-not-mehlich';
     }
-    const interpretation = { requirementId: 'REQ-145', key: interpretationKey, interp: { element } };
+    const interpretation = { requirementId: 'pourquoi-modal-strings-owned-here', key: interpretationKey, interp: { element } };
     const eq = contributing
       ? `soil[${element}] = min(demand, bank) ; mois_épuisement = bank / (SME × transp × ${SC.WEEKS_PER_MONTH.toFixed(2)})`
       : `soil[${element}] = 0 (élément non-contributif — banque informationnelle seulement)`;

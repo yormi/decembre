@@ -1,9 +1,9 @@
 // Tests for nutrition/tomato/plant-needs/spec.md.
 //
-// One node:test file pinning every REQ in the subproject's spec:
-//   REQ-081 — Ca and Mg biomass demand coupled to transpiration.
-//   REQ-082 — Stage-transition continuity (|Δ|/prev ≤ 2.5 per element).
-//   REQ-083 — Public API namespace window.PlantNeedsTomato.
+// One node:test file pinning every rule in the subproject's spec:
+//   Ca and Mg biomass demand coupled to transpiration.
+//   Stage-transition continuity (|Δ|/prev ≤ 2.5 per element).
+//   Public API namespace window.PlantNeedsTomato.
 //
 // Loaded source (data.js + calc.js + model.js) is executed in a node:vm
 // sandbox with a `window` host object; see test-helpers.mjs.
@@ -15,7 +15,7 @@ import { loadPlantNeedsTomato } from './test-helpers.mjs';
 
 const { namespace } = loadPlantNeedsTomato();
 
-// Element sets locked by REQ-081: Ca/Mg biomass scales with transpFactor;
+// Ca/Mg biomass scales with transpFactor;
 // the rest of TOMATO_FRUIT_EXPORT does not. Kept inline (not derived from
 // TRANSP_COUPLED_BIOMASS) so this test pins the spec, not the data table.
 const COUPLED_ELEMENTS = ['Ca', 'Mg'];
@@ -26,8 +26,8 @@ const REPRESENTATIVE_YIELD = 1.5;     // target kg/m²/wk
 const REPRESENTATIVE_STAGE = 'T5';    // pleine production — full BIOMASS_DEMAND
 const FLOAT_TOLERANCE = 1e-9;         // exact-multiplication checks
 
-describe('REQ-081 — Ca and Mg biomass demand coupled to transpiration', () => {
-  test('REQ-081 — Ca biomass scales linearly with transpFactor across [0.4, 0.7, 1.0]', () => {
+describe('Ca and Mg biomass demand coupled to transpiration', () => {
+  test('Ca biomass scales linearly with transpFactor across [0.4, 0.7, 1.0]', () => {
     const baseline = namespace.calculateNutritionDemand(REPRESENTATIVE_YIELD, REPRESENTATIVE_STAGE, 1.0);
     assert.ok(baseline.Ca.biomass > 0,
       'precondition: Ca biomass at tf=1.0 must be positive');
@@ -39,7 +39,7 @@ describe('REQ-081 — Ca and Mg biomass demand coupled to transpiration', () => 
     }
   });
 
-  test('REQ-081 — Mg biomass scales linearly with transpFactor across [0.4, 0.7, 1.0]', () => {
+  test('Mg biomass scales linearly with transpFactor across [0.4, 0.7, 1.0]', () => {
     const baseline = namespace.calculateNutritionDemand(REPRESENTATIVE_YIELD, REPRESENTATIVE_STAGE, 1.0);
     assert.ok(baseline.Mg.biomass > 0,
       'precondition: Mg biomass at tf=1.0 must be positive');
@@ -52,7 +52,7 @@ describe('REQ-081 — Ca and Mg biomass demand coupled to transpiration', () => 
   });
 
   for (const element of DECOUPLED_ELEMENTS) {
-    test(`REQ-081 — ${element} biomass unchanged across transpFactor in [0.4, 0.7, 1.0]`, () => {
+    test(`${element} biomass unchanged across transpFactor in [0.4, 0.7, 1.0]`, () => {
       const baseline = namespace.calculateNutritionDemand(REPRESENTATIVE_YIELD, REPRESENTATIVE_STAGE, 1.0);
       for (const transpFactor of [0.4, 0.7, 1.0]) {
         const scaled = namespace.calculateNutritionDemand(REPRESENTATIVE_YIELD, REPRESENTATIVE_STAGE, transpFactor);
@@ -62,18 +62,18 @@ describe('REQ-081 — Ca and Mg biomass demand coupled to transpiration', () => 
     });
   }
 
-  test('REQ-081 — fruit-export term is never scaled by transpFactor (all 11 elements)', () => {
+  test('fruit-export term is never scaled by transpFactor (all 11 elements)', () => {
     const baseline = namespace.calculateNutritionDemand(REPRESENTATIVE_YIELD, REPRESENTATIVE_STAGE, 1.0);
     for (const transpFactor of [0.4, 0.7, 1.0]) {
       const scaled = namespace.calculateNutritionDemand(REPRESENTATIVE_YIELD, REPRESENTATIVE_STAGE, transpFactor);
       for (const element of ALL_ELEMENTS) {
         assert.equal(scaled[element].fruit, baseline[element].fruit,
-          `${element} fruit at tf=${transpFactor} must match baseline (REQ-081: fruit never scaled)`);
+          `${element} fruit at tf=${transpFactor} must match baseline (fruit never scaled)`);
       }
     }
   });
 
-  test('REQ-081 — total = fruit + biomass after transpFactor applied', () => {
+  test('total = fruit + biomass after transpFactor applied', () => {
     const result = namespace.calculateNutritionDemand(REPRESENTATIVE_YIELD, REPRESENTATIVE_STAGE, 0.6);
     for (const element of ALL_ELEMENTS) {
       const expectedTotal = result[element].fruit + result[element].biomass;
@@ -83,7 +83,7 @@ describe('REQ-081 — Ca and Mg biomass demand coupled to transpiration', () => 
     }
   });
 
-  test('REQ-081 — default transpFactor is 1.0 (Ca/Mg biomass equal full-transp value)', () => {
+  test('default transpFactor is 1.0 (Ca/Mg biomass equal full-transp value)', () => {
     const explicit = namespace.calculateNutritionDemand(REPRESENTATIVE_YIELD, REPRESENTATIVE_STAGE, 1.0);
     const defaulted = namespace.calculateNutritionDemand(REPRESENTATIVE_YIELD, REPRESENTATIVE_STAGE);
     for (const element of ALL_ELEMENTS) {
@@ -94,7 +94,7 @@ describe('REQ-081 — Ca and Mg biomass demand coupled to transpiration', () => 
     }
   });
 
-  test('REQ-081 — known-good numerical outputs at yield=1.5, T5, tf=1.0', () => {
+  test('known-good numerical outputs at yield=1.5, T5, tf=1.0', () => {
     // Pins the formula: fruit = yield × export_g × 1000, biomass = BIOMASS_DEMAND[stage].
     // N : 2.7 × 0.60 = 1.62 g/kg → 2430 mg/m²/wk fruit; BIOMASS_DEMAND.T5.N = 1620
     // Ca: 1.5 × 0.05 = 0.075 g/kg → 112.5 mg/m²/wk fruit; BIOMASS_DEMAND.T5.Ca = 2138
@@ -111,30 +111,30 @@ describe('REQ-081 — Ca and Mg biomass demand coupled to transpiration', () => 
       `Ca biomass should be 2138 mg/m²/wk, got ${result.Ca.biomass}`);
   });
 
-  test('REQ-081 — known-good Ca biomass at yield=1.5, T5, tf=0.6 (= 2138 × 0.6 = 1282.8)', () => {
+  test('known-good Ca biomass at yield=1.5, T5, tf=0.6 (= 2138 × 0.6 = 1282.8)', () => {
     const result = namespace.calculateNutritionDemand(1.5, 'T5', 0.6);
     assert.ok(Math.abs(result.Ca.biomass - 1282.8) < 1e-6,
       `Ca biomass at tf=0.6 should be 1282.8, got ${result.Ca.biomass}`);
-    // Fruit term untouched — REQ-081
+    // Fruit term untouched
     assert.ok(Math.abs(result.Ca.fruit - 112.5) < 1e-6,
       `Ca fruit at tf=0.6 must remain 112.5, got ${result.Ca.fruit}`);
   });
 });
 
-describe('REQ-082 — Stage-transition continuity |Δ|/prev ≤ 2.5 per element', () => {
+describe('Stage-transition continuity |Δ|/prev ≤ 2.5 per element', () => {
   const MAX_RELATIVE_JUMP = 2.5;
-  // Sort by numeric T-index, not insertion order — REQ-082 talks about adjacent
+  // Sort by numeric T-index, not insertion order — adjacent
   // stage pairs (Tn, Tn+1), which is a property of the stage axis, not the
   // BIOMASS_DEMAND object's key order.
   const stageIndex = key => Number(key.slice(1));
 
-  test('REQ-082 — BIOMASS_DEMAND covers T1..T5 contiguously', () => {
+  test('BIOMASS_DEMAND covers T1..T5 contiguously', () => {
     const stages = Object.keys(namespace.BIOMASS_DEMAND).sort((a, b) => stageIndex(a) - stageIndex(b));
     assert.deepEqual(stages, ['T1', 'T2', 'T3', 'T4', 'T5'],
       `BIOMASS_DEMAND stages must be exactly T1..T5, got ${stages.join(',')}`);
   });
 
-  test('REQ-082 — every adjacent (Tn, Tn+1) per-element jump stays ≤ 2.5×', () => {
+  test('every adjacent (Tn, Tn+1) per-element jump stays ≤ 2.5×', () => {
     const biomass = namespace.BIOMASS_DEMAND;
     const stages = Object.keys(biomass).sort((a, b) => stageIndex(a) - stageIndex(b));
     const offenders = [];
@@ -162,11 +162,11 @@ describe('REQ-082 — Stage-transition continuity |Δ|/prev ≤ 2.5 per element'
       }
     }
     assert.equal(offenders.length, 0,
-      `REQ-082 violations:\n  ${offenders.join('\n  ')}`);
+      `Stage-transition continuity violations:\n  ${offenders.join('\n  ')}`);
   });
 });
 
-describe('REQ-083 — Public API namespace window.PlantNeedsTomato', () => {
+describe('Public API namespace window.PlantNeedsTomato', () => {
   // Spec table fixes the eight keys + their kinds. Test = structural pin.
   const REQUIRED_OBJECTS = [
     'TOMATO_FRUIT_EXPORT',
@@ -177,14 +177,14 @@ describe('REQ-083 — Public API namespace window.PlantNeedsTomato', () => {
   ];
   const REQUIRED_FUNCTIONS = ['calculateNutritionDemand', 'certFor'];
 
-  test('REQ-083 — window.PlantNeedsTomato exists and is an object', () => {
+  test('window.PlantNeedsTomato exists and is an object', () => {
     assert.ok(namespace, 'window.PlantNeedsTomato must be defined after model.js loads');
     assert.equal(typeof namespace, 'object');
     assert.notEqual(namespace, null);
   });
 
   for (const key of REQUIRED_OBJECTS) {
-    test(`REQ-083 — ${key} is an object on the namespace`, () => {
+    test(`${key} is an object on the namespace`, () => {
       assert.notEqual(namespace[key], undefined,
         `window.PlantNeedsTomato.${key} must be present`);
       assert.equal(typeof namespace[key], 'object',
@@ -195,13 +195,13 @@ describe('REQ-083 — Public API namespace window.PlantNeedsTomato', () => {
   }
 
   for (const key of REQUIRED_FUNCTIONS) {
-    test(`REQ-083 — ${key} is a function on the namespace`, () => {
+    test(`${key} is a function on the namespace`, () => {
       assert.equal(typeof namespace[key], 'function',
         `window.PlantNeedsTomato.${key} must be a function`);
     });
   }
 
-  test('REQ-083 — certFor returns a number in [0, 5] on the transferability scale', () => {
+  test('certFor returns a number in [0, 5] on the transferability scale', () => {
     for (const stage of ['T1', 'T2', 'T3', 'T4', 'T5']) {
       for (const element of Object.keys(namespace.TOMATO_FRUIT_EXPORT)) {
         const cert = namespace.certFor(stage, element);

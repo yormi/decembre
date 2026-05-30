@@ -42,7 +42,7 @@ on the Savaria label (plus Mg, assumed conservative — see `derivation.md`):
   (mass released per unit area per week, applied to the bed).
 - `window.CompostContribution.efficiency` — values in `[0, 1]`
   (share of applied compost mass plant-available within year 1 for that
-  element under current Décembre conditions; see REQ-157 + `derivation.md`).
+  element under current Décembre conditions; see nutrition — channel-efficiency-capability-map + `derivation.md`).
 
 ```
 releasePerWeek: { N, P, K, Ca, Mg }
@@ -100,8 +100,8 @@ At runtime, `window.CompostContribution` exists and exposes:
 | `efficiency`                   | object   |
 | `theoreticalReleasePerWeek`    | function |
 
-`efficiency` (REQ-157) is the channel-side contract for the Efficacité
-column (REQ-156). Numerically equal to `MINERALIZATION_YEAR1` in the
+`efficiency` (nutrition — channel-efficiency-capability-map) is the channel-side contract for the Efficacité
+column (nutrition — efficacite-column-capability). Numerically equal to `MINERALIZATION_YEAR1` in the
 current model (pH-lockout already baked into per-element rates),
 re-exposed for the canonical-handle reason.
 
@@ -130,8 +130,8 @@ fires (whichever comes first):
 
 ## Inherited specs
 
-- **REQ-022** (`nutrition/spec.md`) — Every product mentioned in the app
+- **nutrition/chemistry — every-product-ecocert-allowed** — Every product mentioned in the app
   is Ecocert-allowed. Savaria ORGANIMIX is on the certified-input list
   (see `nutrition/info/compost.pdf`).
-- **REQ-002** (`nutrition/spec.md`) — No forbidden products. Savaria is
+- **nutrition — ecocert-only-products** — No forbidden products. Savaria is
   organic shrimp compost + calcitic lime (CAN/CGSB-32.311 §4.2).

@@ -19,7 +19,7 @@ assumed).
 
 Cross-channel: sidedress is part of the replenishment chain (compost →
 sidedress → fertigation → foliar). Chain bounds in `nutrition/tomato/spec.md`
-(REQ-013 / REQ-014).
+(`nutrition/tomato — under-fert-guard` / `nutrition/tomato — luxury-feeding-guard`).
 
 ---
 
@@ -102,8 +102,8 @@ At runtime, `window.SidedressRecipeTomato` exists and exposes:
 | `computeStageSidedress`      | function |
 
 `MINIMUM_EFFICIENCY` is a derived backwards-compat view for legacy
-consumers in `app/index.html`. `efficiency` added per REQ-157 —
-channel-side contract for Efficacité column (REQ-156); per-element
+consumers in `app/index.html`. `efficiency` added per `nutrition — channel-efficiency-capability-map` —
+channel-side contract for Efficacité column (`nutrition — efficacite-column-capability`); per-element
 delivery fraction at the channel's current FP-default product
 (FarinePlumes); N-only at 0.70 (Sonneveld mineralization, lit floor); K / P / other
 macros absent (no routing under current product mix).
@@ -138,7 +138,7 @@ Sidedress consumes plant-needs and compost-contribution outputs:
 
 Specs that *consume* sidedress output:
 
-- **REQ-013 / REQ-014** (`nutrition/tomato/spec.md`) — supply chain bounds.
+- **`nutrition/tomato — under-fert-guard` / `nutrition/tomato — luxury-feeding-guard`** (`nutrition/tomato/spec.md`) — supply chain bounds.
   Sidedress N is one of four channels summed against demand.
 - **`nutrition/chemistry — every-product-ecocert-allowed`** — every product Ecocert-allowed.
   Farine de plumes 13-0-0 ✓. Eco-luzerne 3-0.5-2 CAN/CGSB-32.311
@@ -149,4 +149,4 @@ Specs that *consume* sidedress output:
   calendar). When filed, this REQ inheritance flips to ✓ and the
   default-product swap becomes operator-callable (still gated by
   `/retire-recipe` for STORED).
-- **REQ-002** (`nutrition/spec.md`) — no forbidden products.
+- **`nutrition — ecocert-only-products`** (`nutrition/spec.md`) — no forbidden products.

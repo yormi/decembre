@@ -17,10 +17,10 @@ Layer specs:
 ## strategy-contains-recipes
 
 A foliar strategy comprises one or more foliar recipes. Each
-recipe is one tank's mix and is REQ-029-clean: ions within a
+recipe is one tank's mix and is `chemistry — in-tank-ksp-precipitation-guard`-clean: ions within a
 single recipe must not precipitate in-tank. Different recipes
 may be sprayed back-to-back on the same day in separate tanks
-(REQ-029 governs in-tank, not in-canopy).
+(`chemistry — in-tank-ksp-precipitation-guard` governs in-tank, not in-canopy).
 
 ---
 

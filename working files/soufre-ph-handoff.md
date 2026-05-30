@@ -1,102 +1,125 @@
 # Soil-pH sulphur programme — handoff
 
-**Date:** 2026-05-29 · specialist (plant-nutrition) session.
-Model lands in `nutrition/tomato/soil-ph/model/` + `nutrition/lettuce/soil-ph/model/` (spec + derivation + learnings). This doc = decision conclusion + open gates. Scope: sonotube-free beds only.
+**Updated:** 2026-05-30 · specialist (plant-nutrition). Scope: sonotube-free beds.
+Model: `nutrition/{tomato,lettuce}/soil-ph/model/` (spec + derivation + learnings).
+This doc = decision + gates + plan. Numbers/chains live in the derivations.
 
-## The decision in one line
+## Decision
 
-Lower bed pH with **micronized elemental sulphur**, dosed off a measured carbonate %, applied **monthly** under EC+pH monitoring. Form (micronized vs bentonite) is the speed lever; the calcimeter test is the go/no-go.
+Lower bed pH with **micronized elemental sulphur**, dosed off a measured
+carbonate %, under EC+pH monitoring. **Calcimeter = go/no-go.** Micronized
+(not bentonite) is what enables the fast cadence.
 
-## Dose caps (per pass, per bed)
+## Why — what the pH lever actually unlocks (per T5 tissue)
 
-| Crop · bed | Tilled (bare bed) | Standing crop |
+Not wholesale; element by element. Detail: `tomato/soil-ph/model/learnings/
+what-the-ph-lever-actually-addresses-per-t5-tissue`.
+
+| Goal | Lever | pH/sulphur role |
 |---|---|---|
-| Tomato (54.7 m²) | ~5.4 kg | ~2.5 kg/month |
-| Lettuce (30.4 m²) | ~3.0 kg | ~1.4 kg/month |
+| **P −90 %** | pH-drawdown | **Direct.** P is *locked, not absent* — Mehlich 557 kg/ha vault vs SME 1.1 ppm |
+| Drop foliar micro spray | pH-drawdown | Direct — lifts pH-suppressed root micro uptake (Fe ×0.15 lockout) |
+| Botrytis / vigor | mixed | Only the **P-half** (pH→P→root mass); rest is other levers |
+| N −26 % | sidedress Farine ramp | **None** |
+| Ca antagonism | fertigation K/Mg trim | **None** — trim already done 2026-05-28; spent (K at floor, K₂SO₄ only organic K → S is structural). Remaining Ca: foliar Ca (in) + pH→P→roots |
 
-- Rates: tilled ~9.8 kg/100 m², standing ~4.5 kg/100 m². Do NOT port tomato's 5.4 kg to a lettuce bed (~2× over).
-- Lettuce default = **tilled-at-flip** (fast turnover); tomato default = **monthly surface**.
+Compost confirmed **stopped** (one-time lime load) → fixed carbonate pool,
+no Sisyphus loop.
 
-## Cadence
+## Crops — lettuce leads
 
-- **Monthly is safe and effective with micronized powder** (half-oxidises in ~6–10 days at 20–30 °C; mostly converted in 2–4 weeks → no runaway stacking).
-- The "≤400 lb/acre/yr" annual cap is a throughput/unmonitored-grower default, NOT a hard ceiling. Replaced by measured guardrails.
-- Faster than monthly (biweekly) is possible with 200/300-mesh, but retest turnaround + EC pulse recovery make ~2 weeks the practical floor.
+- **Lettuce = strongest, most *direct* case.** Photos: roots confined to the
+  plug, won't colonise the calcareous bed. Bicarbonate + P-lockout (SME P 0.8)
+  throttle rooting; sulphur attacks both. **Salinity cleared** (CE 1.08, Na/RAS
+  low) → no backfire. Tills at every flip → faster tier + constant windows.
+- **Lettuce gate:** root *browning/necrosis* in photos is NOT pH — rule out
+  wet-plug anaerobism + root pathogen first. `lettuce/soil-ph/model/learnings/
+  stuck-browning-roots-ph-indicated-salinity-cleared`.
+- **Tomato = slower, indirect, standing-crop.** Between-cycles tilled lever, or
+  biweekly-standing for a mid-crop nudge.
 
-## Guardrails (replace the annual cap)
+## Dose caps (per pass, per bed — agronomic ceiling, not target)
+
+| Crop · bed | Tilled (bare) | Standing crop |
+|---|---|---|
+| Tomato (54.7 m²) | ~5.4 kg | ~2.5 kg |
+| Lettuce (30.4 m²) | ~3.0 kg | ~1.4 kg |
+
+Rates: tilled ~9.8, standing ~4.5 kg/100 m². Don't port tomato's 5.4 to lettuce (~2× over).
+Product dose = elemental S ÷ 0.90 if using Tiger 90CR.
+
+## Cadence + guardrails
+
+- **Biweekly is the practical floor** (micronized half-life ~6–10 d; tighter
+  stacks unoxidised S). Monthly = safe steady-state.
+- **"≤400 lb/acre/yr" cap = throughput/H₂S default, NOT a ceiling** — replaced
+  by measured guardrails.
+- Gypsum salinity self-limits (CaSO₄ ~2.4 g/L; EC self-caps ~2.0–2.2 dS/m).
 
 | | Tomato | Lettuce |
 |---|---|---|
-| EC stop (ECe) | ≤ 2.5 dS/m | ≤ 1.3 dS/m (salt-sensitive; check pre-transplant) |
-| pH retest | every 4 wk before dosing | every flip / 4 wk |
+| EC stop (ECe) | ≤ 2.5 dS/m | ≤ 1.3 (salt-sensitive; check pre-transplant) |
+| pH retest | 4 wk (2 wk if biweekly) | every flip / 4 wk |
 | pH floor | 6.2 | 6.0 |
-| Aeration | never dose a waterlogged bed (H₂S root burn) |
+| Aeration | never dose a waterlogged bed (H₂S root burn) | |
 
-Gypsum salinity self-limits (CaSO₄ solubility ~2.4 g/L; soil-solution EC self-caps ~2.0–2.2 dS/m) — salt buildup is largely a red herring on irrigated calcareous soil.
+**Overshoot:** buffered while carbonate remains; risk starts once it's gone.
+At ≤0.1 % the buffer is thin → retest every 2 wk past wk 3.
 
-## Overshoot
+## Timeline (tomato, ≤0.1 % carbonate, standing crop)
 
-While free carbonate remains, acid is buffered → can't overshoot. Overshoot risk begins only once carbonate is consumed (= the titration-pass count). Lowest-carbonate beds are the riskiest (1–3 passes); retest before each pass once carbonate is gone.
+Full chain + signal layering: `tomato/soil-ph/model/derivation.md` § Time-to-effect.
 
-## Programme total (combined tomato + lettuce, ~520 m²)
+- **Biweekly → first plant-visible signs ~2–3 months** (monthly ~6–8 mo).
+  Chemical stages compress with cadence; the ~1.5–2 mo biological tail does not.
+- Binding term is the **CEC-buffered drawdown** (CEC 33, cert 2), not carbonate.
+- Tilled bare-bed window roughly halves it vs standing.
 
-| Calcimeter % | Total S | Read |
+| Week | Signal | If absent |
 |---|---|---|
-| ~0 / 0.1% | ~70–100 kg | feasible, 1 season |
-| 0.5% | ~230 kg | multi-pass |
-| 1% | ~400 kg | impractical |
-| 2% | ~730 kg | manage around high pH instead |
+| 3–4 | soil pH probe drops | **flat by wk 5 → abort, carbonate wrong** |
+| 4–8 | sap / SME P rises | — |
+| 8–12 | new apex growth greener | — |
 
-= carbonate titration (0.32 × CaCO₃ mass) + ~68 kg post-carbonate pH-drop term. Buy ~50–100 kg to start; reorder after calcimeter + first retest.
+Judge **new tissue only** — old deficient leaves don't recover (P phloem-mobile).
 
-## Product / sourcing conclusion
+## Plan — tomato P-unlock, biweekly, standing
 
-**Only keep micronized/powder forms.** Speed ladder (oxidation, warm moist soil): hard granular (slowest) < bentonite-degradable incl. **Tiger 90CR** (baseline, weeks–months) < micronized powder (~2–4× faster) < 9 µm wettable (~3–5×). Going bentonite→bentonite buys no speed; only the jump to micronized does.
+**Pre-flight (no sulphur until all pass):**
+1. Calcimeter + buffer-pH (SMP), tomato bed → need ≤0.1 %. Higher → multi-cycle, replan.
+2. Lock certified micronized S (Sulgro lead). Tiger 90CR usable but slower + cert unconfirmed.
+3. Baseline: soil pH probe + one petiole-sap P.
 
-Confirmed-existing micronized/powder products:
+**Program:**
+4. Open **1.5 kg S/bed biweekly**, surface-band + scratch-in, water in, keep aerobic.
+5. Ramp to **2.5 kg/bed** after first clean EC+pH retest.
+6. Weekly pH probe + EC; skip next dose if EC → 2.5 or pH → 6.5; floor 6.2.
 
-| Product | Maker | Form | Price / pack | Cert | Note |
-|---|---|---|---|---|---|
-| **Sulgro** | Sultech (Alberta) | micronized powder | distributor quote — no retail pack | verify OMRI/Ecocert | **best Canadian lead** — domestic, no freight; B2B-only, new (2026) |
-| Greenway Organic Elemental Sulfur Powder | Greenway (US) | micronized ≥98% | $190 / 50 lb (currency per site selector); 1 lb $31 | verify Ecocert/COR | US-shipped → add freight + duty |
-| Microthiol Disperss / Kumulus DF / Acoidal | UPL / BASF | micronized wettable 9 µm | $59.95 / 30 lb USD (~$4.40/kg) | OMRI but **fungicide label** | cheapest + fastest, but off-label for soil → certifier sign-off |
+## Product / sourcing
 
-Dropped: Green Earth 300 g (discontinued, fungicide dust); Greenway 5 lb via Amazon.ca (currently unavailable); TerraLink "+90S" (granular/bentonite, not powder); Pestell 50 lb (feed/fungicide grade, not organic-listed).
+**Micronized/powder only.** Speed ladder: granular < bentonite (Tiger 90CR) <
+micronized (~2–4×) < 9 µm wettable (~3–5×). Bentonite→bentonite buys no speed.
 
-**Cert rule:** elemental sulphur is allowed under CAN/CGSB-32.311 at any particle size — but the *specific product* must be on a Canada-recognized list (Ecocert/COR/CARTV), not just US-OMRI, and signed off by our certifier before first use.
+| Product | Form | Price | Cert | Note |
+|---|---|---|---|---|
+| **Sulgro** (Sultech, AB) | micronized | distributor quote | verify OMRI/Ecocert | **best Canadian lead** — domestic, B2B-only |
+| Greenway Organic (US) | micronized ≥98% | $190/50 lb | verify Ecocert/COR | US freight + duty |
+| Microthiol / Kumulus DF | wettable 9 µm | ~$4.40/kg | OMRI, **fungicide label** | cheapest/fastest but off-label for soil → certifier sign-off |
 
-## Open gates (blockers)
+Dropped: Green Earth (discontinued), Greenway 5 lb (unavailable), TerraLink +90S
+(granular), Pestell (feed grade). **Cert rule:** elemental S allowed (CAN/CGSB-
+32.311) but the *product* needs Ecocert/COR/CARTV listing + certifier sign-off.
 
-1. **Calcimeter / free-carbonate % (+ buffer-pH/SMP)** — go/no-go; picks the dose row + total. Nothing trustworthy without it.
-2. **Direct Mehlich-3 water-pH** — have tomato 7.28; lettuce is SME 7.48 + estimated ~7.77 water (cert 2).
-3. **Root-zone target pH band** — PO gap for both crops (no slug yet).
-4. **Product choice + certificate** — get Sulgro distributor quote + Ecocert/COR status; or certifier ruling on Microthiol off-label.
+## Open gates
 
-## 2026-05-30 — scope review (sharpened against T5 tissue + field photos)
+1. **Calcimeter + buffer-pH/SMP** — the go/no-go; picks dose row + timeline.
+2. **Lettuce root-browning differential** — wet-plug anaerobism vs pathogen.
+3. **Root-zone target pH band** — PO gap, both crops (no slug yet).
+4. **Product certificate** — Sulgro Ecocert/COR, or certifier ruling on Microthiol.
+5. **Direct lettuce water-pH** — have SME 7.48 + estimated ~7.77 (cert 2).
 
-Decision unchanged; **what the programme is for** is sharpened. Durable
-detail in `nutrition/tomato/soil-ph/model/learnings/what-the-ph-lever-actually-addresses-per-t5-tissue`
-and `nutrition/lettuce/soil-ph/model/learnings/stuck-browning-roots-ph-indicated-salinity-cleared`.
+## Cert caveats
 
-- **pH lever reaches each goal through specific elements, not wholesale.**
-  Tomato: P (direct), micros (direct — lifts pH-suppressed root uptake so
-  the foliar micro spray can be retired), Ca (indirect via P→root mass).
-  NOT N (sidedress ramp) and NOT the Ca cation-antagonism half. The K/Mg
-  trim for that antagonism was **already done 2026-05-28** (T5 MgSO₄ 1000 g,
-  K₂SO₄ 5500 g) and is now spent — K is at tissue floor and K₂SO₄ is the only
-  organic soluble K, so its S over-supply is structural. Remaining Ca levers:
-  foliar Ca (in) + pH→P→roots.
-- **Lettuce is the strongest, most *direct* pH case** — field photos show
-  roots confined to the plug, refusing to colonise the calcareous bed.
-  Bicarbonate + P-lockout (SME P 0.8) directly throttle rooting; sulphur
-  attacks both. **Salinity cleared** as the cause (CE 1.08, Na/RAS low) →
-  sulphur won't backfire on the salt-sensitive crop.
-- **New open gate (lettuce):** root *browning/necrosis* in the photos is
-  NOT a pH problem — rule out wet-plug anaerobism + root pathogen before
-  dosing. Sulphur does nothing for those.
-- **Compost confirmed stopped** (one-time lime load) → fixed carbonate
-  pool, the titration is realistic, no Sisyphus loop.
-
-## Cert caveats on the numbers
-
-Stoichiometry cert 5; caps cert 3 (extension lit, not tomato-specific); cadence cert 3–4; post-carbonate pH-drop term cert 2 (CEC-extrapolated); which calcimeter row cert 0 (unmeasured). A buffer-pH/SMP test converts the softest terms to cert 4.
+Stoichiometry cert 5; caps cert 3; cadence 3–4; CEC drawdown + biological lag
+cert 2; which calcimeter row cert 0 (unmeasured). Buffer-pH/SMP lifts the soft
+terms to cert 4.

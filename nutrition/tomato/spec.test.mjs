@@ -1,10 +1,10 @@
 // nutrition/tomato/ — domain-level integration spec tests.
 //
-// Pins the four REQs declared in nutrition/tomato/spec.md:
-//   - REQ-011 — CHANNEL_ROLE covers every demand element
-//   - REQ-013 — Σ(channel_supply) ≥ 0.9 × demand (under-fert guard)
-//   - REQ-014 — Σ(channel_supply) ≤ 1.3 × demand (luxury / waste guard)
-//   - REQ-033 — TOMATO_REMOVAL biased toward high end of refs (N/P/K/Mg)
+// Pins the four claims declared in nutrition/tomato/spec.md:
+//   - channel-role-coverage — CHANNEL_ROLE covers every demand element
+//   - under-fert-guard — Σ(channel_supply) ≥ 0.9 × demand
+//   - luxury-feeding-guard — Σ(channel_supply) ≤ 1.3 × demand
+//   - tomato-removal-biased-high — TOMATO_REMOVAL biased toward high end of refs (N/P/K/Mg)
 //
 // These claims are integration-shaped: they assert how the children
 // (plant-needs / fertigation-recipe / sidedress-recipe / foliar-strategy +
@@ -16,6 +16,9 @@
 // numerical / structural claim of the REQ, not on the shape of any
 // (now-removed) Verification clause. Tests should fail if the
 // implementation is stubbed, returns zeros, or drifts numerically.
+//
+// Spec entries: channel-role-coverage, under-fert-guard, luxury-feeding-guard,
+// tomato-removal-biased-high (all in nutrition/tomato/spec.md).
 
 import { test, describe } from 'node:test';
 import assert from 'node:assert/strict';
@@ -35,22 +38,22 @@ const STAGES = ['T1', 'T2', 'T3', 'T4', 'T5'];
 const MASS_BALANCE_ELEMENTS = ['N', 'P', 'K', 'Mg'];
 const SOIL_PH_NOW = 7.4;
 
-// ─── REQ-011 — CHANNEL_ROLE covers every demand element ────────────────
+// ─── channel-role-coverage — CHANNEL_ROLE covers every demand element ──
 //
 // Normative claim: A CHANNEL_ROLE constant maps every element appearing in
 // BIOMASS_DEMAND[stage] (and TOMATO_FRUIT_EXPORT) to its delivery channel(s)
 // — fertigation, sidedress, frontload, foliar, passive — with explicit
 // fractions per channel.
 
-describe('REQ-011 — CHANNEL_ROLE covers every demand element', () => {
+describe('CHANNEL_ROLE covers every demand element', () => {
   test('CHANNEL_ROLE / BIOMASS_DEMAND / TOMATO_FRUIT_EXPORT exposed', () => {
     assert.ok(G.CHANNEL_ROLE, 'CHANNEL_ROLE missing on window');
     assert.ok(G.BIOMASS_DEMAND, 'BIOMASS_DEMAND missing on window');
     assert.ok(G.TOMATO_FRUIT_EXPORT, 'TOMATO_FRUIT_EXPORT missing on window');
   });
 
-  test('REQ-011 — BIOMASS_DEMAND and TOMATO_FRUIT_EXPORT are populated (load-bearing)', () => {
-    // Guard against silently-stubbed demand tables — REQ-011's coverage
+  test('BIOMASS_DEMAND and TOMATO_FRUIT_EXPORT are populated (load-bearing)', () => {
+    // Guard against silently-stubbed demand tables — the coverage
     // claim is vacuously true if both inputs are empty.
     const stageElementCount = STAGES.reduce(
       (sum, s) => sum + Object.keys(G.BIOMASS_DEMAND[s] || {}).length, 0);
@@ -61,7 +64,7 @@ describe('REQ-011 — CHANNEL_ROLE covers every demand element', () => {
       `TOMATO_FRUIT_EXPORT under-populated: ${exportElements.length} elements (expected ≥ 11)`);
   });
 
-  test('REQ-011 — every BIOMASS_DEMAND[stage] element appears in CHANNEL_ROLE', () => {
+  test('every BIOMASS_DEMAND[stage] element appears in CHANNEL_ROLE', () => {
     const demandElements = new Set();
     for (const stage of STAGES) {
       const row = G.BIOMASS_DEMAND[stage] || {};
@@ -72,14 +75,14 @@ describe('REQ-011 — CHANNEL_ROLE covers every demand element', () => {
       `BIOMASS_DEMAND elements missing from CHANNEL_ROLE: ${missing.join(', ')}`);
   });
 
-  test('REQ-011 — every TOMATO_FRUIT_EXPORT element appears in CHANNEL_ROLE', () => {
+  test('every TOMATO_FRUIT_EXPORT element appears in CHANNEL_ROLE', () => {
     const exportElements = Object.keys(G.TOMATO_FRUIT_EXPORT);
     const missing = exportElements.filter(el => !G.CHANNEL_ROLE[el]);
     assert.deepEqual(missing, [],
       `TOMATO_FRUIT_EXPORT elements missing from CHANNEL_ROLE: ${missing.join(', ')}`);
   });
 
-  test('REQ-011 — each CHANNEL_ROLE entry uses only known channel keys', () => {
+  test('each CHANNEL_ROLE entry uses only known channel keys', () => {
     const KNOWN = new Set(['fertigation', 'sidedress', 'frontload', 'foliar', 'passive']);
     const offenders = [];
     for (const [el, channels] of Object.entries(G.CHANNEL_ROLE)) {
@@ -91,7 +94,7 @@ describe('REQ-011 — CHANNEL_ROLE covers every demand element', () => {
       `CHANNEL_ROLE uses unknown channel keys: ${offenders.join(', ')}`);
   });
 
-  test('REQ-011 — each element has at least one channel with fraction > 0 (no orphans)', () => {
+  test('each element has at least one channel with fraction > 0 (no orphans)', () => {
     // Spec: "explicit fractions per channel". An element whose channels map
     // exists but contains only zero-fractions is in CHANNEL_ROLE in name
     // only — it satisfies set-membership coverage but no channel actually
@@ -177,7 +180,7 @@ function totalSupplyMg(stage, el) {
     + fertigationEffectiveMg(stage, el, SOIL_PH_NOW);
 }
 
-// ─── REQ-013 — Σ(channel_supply) ≥ 0.9 × demand (under-fert guard) ────
+// ─── under-fert-guard — Σ(channel_supply) ≥ 0.9 × demand ──────────────
 //
 // Normative claim: For every (flux element × stage),
 // Σ(channel_supply) ≥ 0.9 × demand_total[stage, element]. Below 0.9 requires
@@ -188,7 +191,7 @@ function totalSupplyMg(stage, el) {
 // { stage, element, reason } entries. Each entry's `reason` must be
 // non-empty (the spec's "silent failure not allowed" intent).
 
-describe('REQ-013 — Σ(channel_supply) ≥ 0.9 × demand (under-fert guard)', () => {
+describe('Σ(channel_supply) ≥ 0.9 × demand (under-fert guard)', () => {
   test('required globals exposed', () => {
     assert.equal(typeof G.computeStageRecipe, 'function', 'computeStageRecipe missing');
     assert.ok(G.STORED_RECIPE && G.STORED_RECIPE.tomato && G.STORED_RECIPE.tomato.sidedress,
@@ -197,14 +200,15 @@ describe('REQ-013 — Σ(channel_supply) ≥ 0.9 × demand (under-fert guard)', 
     assert.ok(Array.isArray(G.ACCEPTED_DEFICITS), 'ACCEPTED_DEFICITS not an array');
   });
 
-  test('REQ-013 — computeStageRecipe(T5) recomputed from upstream constants (load-bearing anti-stub)', () => {
+  test('computeStageRecipe(T5) recomputed from upstream constants (load-bearing anti-stub)', () => {
     // Recompute the mass-balance formula from upstream constants per
-    // fertigation-recipe REQ-098 + REQ-155. Order of operations (matches
+    // fertigation-recipe mass-balance-derivation + uptake-efficiency-factor.
+    // Order of operations (matches
     // calc.js): plant demand is divided by PH_UPTAKE_FACTOR_AT_CURRENT_SOIL[el]
     // FIRST (B2-REV uptake-factor inflation, 2026-05-15), THEN compost +
     // sidedress are subtracted at face value. The B1-REV reversal earlier
     // the same day restored the compost-subtraction term. Return shape grew
-    // to { kSulfate, mgSulfate, solubore } per REQ-155.
+    // to { kSulfate, mgSulfate, solubore } per uptake-efficiency-factor.
     //
     // The domain test pins computeStageRecipe('T5') to this recomputation
     // so the anti-stub guard auto-tracks future formula changes without a
@@ -213,10 +217,10 @@ describe('REQ-013 — Σ(channel_supply) ≥ 0.9 × demand (under-fert guard)', 
     assert.ok(t5 && typeof t5 === 'object', 'computeStageRecipe(T5) did not return an object');
     assert.equal(typeof t5.kSulfate, 'number', 'computeStageRecipe(T5).kSulfate not numeric');
     assert.equal(typeof t5.mgSulfate, 'number', 'computeStageRecipe(T5).mgSulfate not numeric');
-    // Regression guard: REQ-155 grew the return shape to 3 keys; pin
+    // Regression guard: uptake-efficiency-factor grew the return shape to 3 keys; pin
     // solubore as numeric / finite / non-negative so a future drift back
     // to a 2-key surface fails loudly.
-    assert.equal(typeof t5.solubore, 'number', 'computeStageRecipe(T5).solubore not numeric (REQ-155)');
+    assert.equal(typeof t5.solubore, 'number', 'computeStageRecipe(T5).solubore not numeric (uptake-efficiency-factor)');
     assert.ok(Number.isFinite(t5.solubore), 'computeStageRecipe(T5).solubore not finite');
     assert.ok(t5.solubore >= 0, 'computeStageRecipe(T5).solubore must be non-negative');
 
@@ -239,7 +243,7 @@ describe('REQ-013 — Σ(channel_supply) ≥ 0.9 × demand (under-fert guard)', 
     const kExpected      = Math.round(kNeededMg / 1000 / G.PRODUCT_PCT.K2SO4_K * totalArea);
 
     // Mg demand → demand_to_bed (÷ uptake Mg) → − compost (sidedress products
-    // carry no Mg per REQ-098).
+    // carry no Mg per mass-balance-derivation).
     const mgOfftakeMg     = G.TOMATO_FRUIT_EXPORT.Mg.g * stageYield * 1000 + G.BIOMASS_DEMAND.T5.Mg;
     const mgDemandToBedMg = mgOfftakeMg / uMg;
     const mgCompostMg     = compostMg_g_per_m2 * 1000;
@@ -250,7 +254,7 @@ describe('REQ-013 — Σ(channel_supply) ≥ 0.9 × demand (under-fert guard)', 
     assert.ok(Math.abs(t5.mgSulfate - mgExpected) <= 5, `mgSulfate ${t5.mgSulfate} vs expected ${mgExpected} (±5g)`);
   });
 
-  test('REQ-013 — every (stage × macro) ≥ 0.9 × demand or annotated in ACCEPTED_DEFICITS', () => {
+  test('every (stage × macro) ≥ 0.9 × demand or annotated in ACCEPTED_DEFICITS', () => {
     const offenders = [];
     for (const stage of STAGES) {
       for (const el of MASS_BALANCE_ELEMENTS) {
@@ -270,10 +274,10 @@ describe('REQ-013 — Σ(channel_supply) ≥ 0.9 × demand (under-fert guard)', 
       }
     }
     assert.deepEqual(offenders, [],
-      `REQ-013 violations:\n  ${offenders.join('\n  ')}`);
+      `under-fert-guard violations:\n  ${offenders.join('\n  ')}`);
   });
 
-  test('REQ-013 — at least one (stage × macro) is materially evaluated (anti-stub)', () => {
+  test('at least one (stage × macro) is materially evaluated (anti-stub)', () => {
     // Guard against the BIOMASS_DEMAND-stubbed-to-zero failure mode: the
     // (stage × macro) supply check above silently passes when demand = 0
     // everywhere. Assert that at least one combination has demand ≥ 1000
@@ -292,13 +296,13 @@ describe('REQ-013 — Σ(channel_supply) ≥ 0.9 × demand (under-fert guard)', 
       + `the under-fert guard isn't exercising its body in a meaningful way`);
   });
 
-  test('REQ-013 — every ACCEPTED_DEFICITS entry carries a non-empty `reason`', () => {
+  test('every ACCEPTED_DEFICITS entry carries a non-empty `reason`', () => {
     const empty = G.ACCEPTED_DEFICITS.filter(d => !d.reason || !d.reason.trim());
     assert.equal(empty.length, 0,
       `ACCEPTED_DEFICITS entries without reason: ${empty.map(d => `${d.stage}.${d.element}`).join(', ')}`);
   });
 
-  test('REQ-013 — ACCEPTED_DEFICITS does not blanket-accept every (stage × macro)', () => {
+  test('ACCEPTED_DEFICITS does not blanket-accept every (stage × macro)', () => {
     // 5 stages × 4 macros = 20 (stage, macro) pairs. If ACCEPTED_DEFICITS
     // listed all 20, the guard would be silently disabled. Spec's intent:
     // an *explicit* annotation per gap, not a blanket waiver.
@@ -312,15 +316,15 @@ describe('REQ-013 — Σ(channel_supply) ≥ 0.9 × demand (under-fert guard)', 
 
 });
 
-// ─── REQ-014 — Σ(channel_supply) ≤ 1.3 × demand (luxury / waste guard) ─
+// ─── luxury-feeding-guard — Σ(channel_supply) ≤ 1.3 × demand ──────────
 
-describe('REQ-014 — Σ(channel_supply) ≤ 1.3 × demand (luxury / waste guard)', () => {
+describe('Σ(channel_supply) ≤ 1.3 × demand (luxury / waste guard)', () => {
   test('required globals exposed', () => {
     assert.equal(typeof G.computeStageRecipe, 'function', 'computeStageRecipe missing');
     assert.ok(Array.isArray(G.ACCEPTED_EXCESSES), 'ACCEPTED_EXCESSES not an array');
   });
 
-  test('REQ-014 — every (stage × macro) ≤ 1.3 × demand or annotated in ACCEPTED_EXCESSES', () => {
+  test('every (stage × macro) ≤ 1.3 × demand or annotated in ACCEPTED_EXCESSES', () => {
     const offenders = [];
     for (const stage of STAGES) {
       for (const el of MASS_BALANCE_ELEMENTS) {
@@ -340,16 +344,16 @@ describe('REQ-014 — Σ(channel_supply) ≤ 1.3 × demand (luxury / waste guard
       }
     }
     assert.deepEqual(offenders, [],
-      `REQ-014 violations:\n  ${offenders.join('\n  ')}`);
+      `luxury-feeding-guard violations:\n  ${offenders.join('\n  ')}`);
   });
 
-  test('REQ-014 — every ACCEPTED_EXCESSES entry carries a non-empty `reason`', () => {
+  test('every ACCEPTED_EXCESSES entry carries a non-empty `reason`', () => {
     const empty = G.ACCEPTED_EXCESSES.filter(e => !e.reason || !e.reason.trim());
     assert.equal(empty.length, 0,
       `ACCEPTED_EXCESSES entries without reason: ${empty.map(e => `${e.stage}.${e.element}`).join(', ')}`);
   });
 
-  test('REQ-014 — ACCEPTED_EXCESSES does not blanket-accept every (stage × macro)', () => {
+  test('ACCEPTED_EXCESSES does not blanket-accept every (stage × macro)', () => {
     const accepted = new Set(G.ACCEPTED_EXCESSES
       .filter(e => MASS_BALANCE_ELEMENTS.includes(e.element)
         && STAGES.includes(e.stage))
@@ -358,7 +362,7 @@ describe('REQ-014 — Σ(channel_supply) ≤ 1.3 × demand (luxury / waste guard
       `ACCEPTED_EXCESSES covers ${accepted.size}/20 (stage × macro) pairs — looks like a blanket waiver`);
   });
 
-  test('REQ-014 — no (stage × macro) is both in ACCEPTED_DEFICITS and ACCEPTED_EXCESSES', () => {
+  test('no (stage × macro) is both in ACCEPTED_DEFICITS and ACCEPTED_EXCESSES', () => {
     // Same (stage, macro) can't simultaneously be < 0.9× AND > 1.3× of
     // demand. If both annotations exist, one is stale and the model has
     // drifted out from under its annotations.
@@ -374,7 +378,7 @@ describe('REQ-014 — Σ(channel_supply) ≤ 1.3 × demand (luxury / waste guard
   });
 });
 
-// ─── REQ-033 — TOMATO_REMOVAL biased toward high end of references ────
+// ─── tomato-removal-biased-high — TOMATO_REMOVAL biased toward high end ─
 //
 // Normative claim: For every macro element with multi-source published demand
 // data (N, P, K, Mg), the value used in TOMATO_REMOVAL is at or above the
@@ -386,7 +390,7 @@ describe('REQ-014 — Σ(channel_supply) ≤ 1.3 × demand (luxury / waste guard
 //   K : Yara 3.3,  Sonneveld 4.0,  Koller 4.48 → mean 3.927
 //   Mg: Yara 0.54, Sonneveld 0.67, Koller 0.5  → mean 0.57
 
-describe('REQ-033 — TOMATO_REMOVAL ≥ inter-source mean (high-end bias)', () => {
+describe('TOMATO_REMOVAL ≥ inter-source mean (high-end bias)', () => {
   const REFS = {
     N:  { yara: 2.3,  sonneveld: 2.5,  koller: 2.9  },
     P:  { yara: 0.36, sonneveld: 0.57, koller: 0.39 },
@@ -402,7 +406,7 @@ describe('REQ-033 — TOMATO_REMOVAL ≥ inter-source mean (high-end bias)', () 
   });
 
   for (const [el, mean] of Object.entries(REF_MEAN)) {
-    test(`REQ-033 — TOMATO_REMOVAL.${el} ≥ ${mean.toFixed(3)} g/kg (inter-source mean)`, () => {
+    test(`TOMATO_REMOVAL.${el} ≥ ${mean.toFixed(3)} g/kg (inter-source mean)`, () => {
       const entry = G.TOMATO_REMOVAL[el];
       assert.ok(entry, `TOMATO_REMOVAL.${el} missing`);
       assert.equal(typeof entry.g, 'number',
@@ -412,7 +416,7 @@ describe('REQ-033 — TOMATO_REMOVAL ≥ inter-source mean (high-end bias)', () 
     });
   }
 
-  test('REQ-033 — TOMATO_REMOVAL values within sane upper bound (typo guard)', () => {
+  test('TOMATO_REMOVAL values within sane upper bound (typo guard)', () => {
     // The spec biases UPWARD toward the inter-source mean. It does NOT
     // license arbitrary inflation. A typo (e.g., N=27 instead of 2.7)
     // would pass the ≥ mean check trivially and silently inflate demand
@@ -431,13 +435,13 @@ describe('REQ-033 — TOMATO_REMOVAL ≥ inter-source mean (high-end bias)', () 
       `TOMATO_REMOVAL values implausibly high:\n  ${offenders.join('\n  ')}`);
   });
 
-  test('REQ-033 — TOMATO_FRUIT_EXPORT macros tracks TOMATO_REMOVAL × fruit fraction', () => {
-    // The REQ scope explicitly names TOMATO_FRUIT_EXPORT as part of the
+  test('TOMATO_FRUIT_EXPORT macros tracks TOMATO_REMOVAL × fruit fraction', () => {
+    // The spec scope explicitly names TOMATO_FRUIT_EXPORT as part of the
     // demand-anchor. data.js documents the fruit-fraction split:
     //   N/P/K = 0.60, Ca = 0.05, Mg = 0.25.
     // The high-end bias on TOMATO_REMOVAL must propagate into the actively-
     // consumed TOMATO_FRUIT_EXPORT — otherwise the wired demand model
-    // doesn't inherit the bias and the spec's REQ-033 protection is a dead
+    // doesn't inherit the bias and the spec's tomato-removal-biased-high protection is a dead
     // letter. Pin N/P/K/Mg fruit values to TOMATO_REMOVAL × fraction
     // within tight tolerance.
     const FRACTION = { N: 0.60, P: 0.60, K: 0.60, Mg: 0.25 };

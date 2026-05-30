@@ -59,7 +59,7 @@ CaCl₂·2H₂O EC table (cert 4 from solution tables):
 |---:|---:|---:|
 | 0.3 | 3 | 5 mS/cm |
 | 0.6 | 6 | 9 mS/cm |
-| **0.7** | **7** | **10 mS/cm** ← REQ-025 cap |
+| **0.7** | **7** | **10 mS/cm** ← chemistry — foliar-ce-under-burn-cap cap |
 | 1.0 | 10 | 17 mS/cm |
 
 **Max: 100 g CaCl₂·2H₂O per 15 L tank** (0.67 %, EC ≈ 9 mS/cm with safety margin).
@@ -84,7 +84,7 @@ Per-spray delivery is fixed at the burn-cap × coverage product. The lever is **
 | Tanks per spray event | 1 (covers 382.9 m² at operator-confirmed 40 mL/m² drip ceiling) |
 | Target | foliage + fruit + stems indiscriminate (stems important for cell-wall hardening on disease side) |
 | Delivered per spray | 71 mg Ca/m² applied × 0.40 = **28 mg Ca/m²/wk** |
-| Tank — separate from oligo spray | YES (REQ-029 — Ca²⁺ + SO₄²⁻ → gypsum precip) |
+| Tank — separate from oligo spray | YES (chemistry — in-tank-ksp-precipitation-guard — Ca²⁺ + SO₄²⁻ → gypsum precip) |
 
 **Frequency paths (canopy gap 315 mg/m²/wk):**
 
@@ -235,7 +235,7 @@ Net: broadcast bone meal at pH 7.4 is ~10-20 % as P-available as the same dose a
 
 Vendor verification BEFORE deploying. If only fish-bone / bone-meal extract is cleanly allowed, expect lower cuticle uptake → may need higher concentration or more frequent application; flag if Test 4 read is "tissue P unchanged."
 
-**Tank compatibility.** P²⁻ + Ca²⁺ → Ca-phosphate precipitation (REQ-029). Foliar P CANNOT mix with the cluster CaCl₂ spray (Test 1). Separate spray events.
+**Tank compatibility.** P²⁻ + Ca²⁺ → Ca-phosphate precipitation (chemistry — in-tank-ksp-precipitation-guard). Foliar P CANNOT mix with the cluster CaCl₂ spray (Test 1). Separate spray events.
 
 ---
 

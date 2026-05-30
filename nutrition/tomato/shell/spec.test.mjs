@@ -1,17 +1,14 @@
-// Tests for nutrition/tomato/app/user-stories.md.
-//
-// REQs covered (13): REQ-104, REQ-105, REQ-106, REQ-107, REQ-108, REQ-109,
-// REQ-110, REQ-111, REQ-113, REQ-114, REQ-004, REQ-153, REQ-163.
+// Tests for the tomato shell header + Bilan surface.
 //
 // Strategy (post-2026-05-12 spec rewrite — no more `**Verification:**`
 // sub-sections to lean on):
-//   - Behavioral REQs (REQ-104 mutability, REQ-106 lock+revert, REQ-107
-//     default-selected, REQ-108 demand→render, REQ-110 reactivity,
-//     REQ-111 numeric match, REQ-113 wire-through, REQ-114 reactivity)
+//   - Behavioral checks (header mutability, FP lock+revert, toggle
+//     default-selected, demand→render, reactivity, numeric match,
+//     foliar wire-through)
 //     are exercised: mutate state, call the setter / dispatch the event,
 //     assert the visible downstream result.
-//   - Structural REQs (REQ-104 count, REQ-105 default + no-7000 literal,
-//     REQ-107 button order + label, REQ-109 three-piece modal) stay as
+//   - Structural checks (header count, default + no-7000 literal,
+//     button order + label, three-piece modal) stay as
 //     direct DOM / source greps but every grep is paired with at least
 //     one behavioral assertion so logic removal would still fail something.
 
@@ -25,9 +22,9 @@ import {
   readPhase1StoredFertigationT5,
 } from './test-helpers.mjs';
 
-// ─── REQ-104 — Header inputs are exactly five scalars ──────────────────
+// ─── Header inputs are exactly five scalars ──────────────────
 
-describe('REQ-104 — Header inputs are exactly five scalars', () => {
+describe('Header inputs are exactly five scalars', () => {
   // The five scalars: target, solarPerGram, stage, phLocked, recipeMode.
   // recipeMode is a two-button toggle (one logical input), so the DOM
   // surface is 6 ids but the operator turns 5 knobs.
@@ -40,19 +37,19 @@ describe('REQ-104 — Header inputs are exactly five scalars', () => {
     'nutr-recipe-stored',
   ];
 
-  test('REQ-104 — every required header input id is present in the DOM', () => {
+  test('every required header input id is present in the DOM', () => {
     const { window } = loadTomatoApp();
     const missing = REQUIRED_IDS.filter(id => !window.document.getElementById(id));
     assert.deepEqual(missing, [], `missing ids: ${missing.join(', ')}`);
   });
 
-  test('REQ-104 — nutr-current is absent (retired 2026-05-09; no 6th scalar)', () => {
+  test('nutr-current is absent (retired 2026-05-09; no 6th scalar)', () => {
     const { window } = loadTomatoApp();
     assert.equal(window.document.getElementById('nutr-current'), null,
       'nutr-current should not exist in markup');
   });
 
-  test('REQ-104 — types: target=number, solarPerGram=number, phlocked=checkbox, recipe=2 BUTTONs', () => {
+  test('types: target=number, solarPerGram=number, phlocked=checkbox, recipe=2 BUTTONs', () => {
     const { window } = loadTomatoApp();
     const document = window.document;
     assert.equal(document.getElementById('nutr-target').type, 'number');
@@ -62,23 +59,23 @@ describe('REQ-104 — Header inputs are exactly five scalars', () => {
     assert.equal(document.getElementById('nutr-recipe-stored').tagName, 'BUTTON');
   });
 
-  test('REQ-104 — card body has no other top-level number/checkbox inputs beyond the 5', () => {
+  test('card body has no other top-level number/checkbox inputs beyond the 5', () => {
     // Behavioral guard against silent re-introduction of a 6th header
     // scalar. Restricted to the "Cible & contexte" card — block-local
-    // foliar inputs (REQ-113) and other downstream inputs are out of scope.
+    // foliar inputs and other downstream inputs are out of scope.
     const { window } = loadTomatoApp();
     const headerCard = window.document.querySelector('#nutr-tomato-content .card');
     assert.ok(headerCard, 'header card not found');
     const scalarInputs = headerCard.querySelectorAll('input[type="number"], input[type="checkbox"]');
     // Allowed: nutr-target, nutr-solar-per-gram, nutr-phlocked. Anything else
-    // is an unspecified header knob and breaks REQ-104.
+    // is an unspecified header knob and breaks the five-scalar rule.
     const allowed = new Set(['nutr-target', 'nutr-solar-per-gram', 'nutr-phlocked']);
     const extras = Array.from(scalarInputs).map(inp => inp.id).filter(id => !allowed.has(id));
     assert.deepEqual(extras, [],
       `unexpected scalar inputs in header card: ${extras.join(', ')}`);
   });
 
-  test('REQ-104 — mutating nutr-target re-renders downstream (target wires to buildNutriment)', () => {
+  test('mutating nutr-target re-renders downstream (target wires to buildNutriment)', () => {
     // Load-bearing: if the input is present but not wired, the page would
     // serve a constant. Mutate from default to a distinct value and assert
     // a downstream block reflects the change.
@@ -98,28 +95,28 @@ describe('REQ-104 — Header inputs are exactly five scalars', () => {
   });
 });
 
-// ─── REQ-105 — Light ceiling derived from operator-driven J/g ──────────
+// ─── Light ceiling derived from operator-driven J/g ──────────
 
-describe('REQ-105 — Light ceiling derived from solarPerGram input', () => {
-  test('REQ-105 — solar-per-gram input default value is 7', () => {
+describe('Light ceiling derived from solarPerGram input', () => {
+  test('solar-per-gram input default value is 7', () => {
     const { window } = loadTomatoApp();
     const input = window.document.getElementById('nutr-solar-per-gram');
     assert.equal(input.value, '7');
   });
 
-  test('REQ-105 — logic.js ceiling formula has no hardcoded /7000 literal', () => {
+  test('logic.js ceiling formula has no hardcoded /7000 literal', () => {
     const body = readLogicJs();
     assert.doesNotMatch(body, /lightCeiling\s*=\s*weeklyJ\s*\/\s*7000\b/);
   });
 
-  test('REQ-105 — ceiling formula divides by (solarPerGram × 1000)', () => {
+  test('ceiling formula divides by (solarPerGram × 1000)', () => {
     // Source pin: catches the case where the literal is gone but the
     // operator input isn't actually consumed.
     const body = readLogicJs();
     assert.match(body, /weeklyJ\s*\/\s*\(\s*solarPerGram\s*\*\s*1000\s*\)/);
   });
 
-  test('REQ-105 — mutating solarPerGram 7 → 14 halves the displayed ceiling', () => {
+  test('mutating solarPerGram 7 → 14 halves the displayed ceiling', () => {
     // Behavioral: ceiling = weekly_J ÷ (solarPerGram × 1000). Doubling
     // solarPerGram must halve the headline number.
     const { window } = loadTomatoApp();
@@ -142,11 +139,11 @@ describe('REQ-105 — Light ceiling derived from solarPerGram input', () => {
       `ceiling@7 / ceiling@14 = ${ratio.toFixed(3)}, expected ~2.0 (halving)`);
   });
 
-  // REQ-105 warning-style — color flip is hard to assert (CSS var leakage
-  // in jsdom; see note in REQ-104 above). The ⚠ message half IS observable
+  // warning-style: color flip is hard to assert (CSS var leakage
+  // in jsdom; see note above). The ⚠ message half IS observable
   // — its dedicated #nutr-light-ceiling-warning node only renders content
   // when target > ceiling.
-  test('REQ-105 — ⚠ message appears only when target > ceiling', () => {
+  test('⚠ message appears only when target > ceiling', () => {
     const { window } = loadTomatoApp();
     const target = window.document.getElementById('nutr-target');
     const warn = window.document.getElementById('nutr-light-ceiling-warning');
@@ -178,15 +175,15 @@ describe('REQ-105 — Light ceiling derived from solarPerGram input', () => {
   });
 });
 
-// ─── REQ-106 — FP recipe mode locks stage to T5 ────────────────────────
+// ─── FP recipe mode locks stage to T5 ────────────────────────
 
-describe('REQ-106 — FP mode locks stage to T5; auto-revert; default fp', () => {
-  test("REQ-106 — default nutrRecipeMode is 'fp' (source declaration)", () => {
+describe('FP mode locks stage to T5; auto-revert; default fp', () => {
+  test("default nutrRecipeMode is 'fp' (source declaration)", () => {
     const html = readAppIndexHtml();
     assert.match(html, /let nutrRecipeMode\s*=\s*'fp'/);
   });
 
-  test('REQ-106 — initial render: T5 button has .active (FP @ T5 default)', () => {
+  test('initial render: T5 button has .active (FP @ T5 default)', () => {
     // Behavioral pin on the default state. nutrRecipeMode is declared with
     // `let` and lives in the page script's module scope (not on window);
     // the observable signal is the .active class on the stage button +
@@ -202,7 +199,7 @@ describe('REQ-106 — FP mode locks stage to T5; auto-revert; default fp', () =>
     assert.equal(mode, 'fp', `nutrRecipeMode should default to 'fp' (got '${mode}')`);
   });
 
-  test('REQ-106 — setNutrRecipeMode("fp") from T2 snaps stage to T5', () => {
+  test('setNutrRecipeMode("fp") from T2 snaps stage to T5', () => {
     // Behavioral: load-bearing for "FP recipe mode locks stage to T5". A
     // regex match on logic.js would pass even with `if (false) nutrStage = 'T5'`.
     const { window } = loadTomatoApp();
@@ -221,7 +218,7 @@ describe('REQ-106 — FP mode locks stage to T5; auto-revert; default fp', () =>
     window.setNutrRecipeMode('fp');
   });
 
-  test('REQ-106 — setNutrStage("T2") while in FP auto-reverts mode to stored', () => {
+  test('setNutrStage("T2") while in FP auto-reverts mode to stored', () => {
     // Behavioral: the auto-revert clause. If removed, mode stays 'fp' on T2.
     const { window } = loadTomatoApp();
     window.setNutrRecipeMode('fp');
@@ -237,7 +234,7 @@ describe('REQ-106 — FP mode locks stage to T5; auto-revert; default fp', () =>
     window.setNutrRecipeMode('fp');
   });
 
-  test('REQ-106 — setNutrRecipeMode + setNutrStage trigger syncHash (URL persists pair)', () => {
+  test('setNutrRecipeMode + setNutrStage trigger syncHash (URL persists pair)', () => {
     // Behavioral side of the hash-persistence clause: assert the URL hash
     // updates when the (mode, stage) pair changes.
     const { window } = loadTomatoApp();
@@ -263,10 +260,10 @@ describe('REQ-106 — FP mode locks stage to T5; auto-revert; default fp', () =>
   });
 });
 
-// ─── REQ-107 — Toggle: First principles left, default; products-in-play ─
+// ─── Toggle: First principles left, default; products-in-play ─
 
-describe('REQ-107 — Toggle: First principles left + default; products-in-play retired', () => {
-  test('REQ-107 — FP button is the first BUTTON child of the toggle parent', () => {
+describe('Toggle: First principles left + default; products-in-play retired', () => {
+  test('FP button is the first BUTTON child of the toggle parent', () => {
     const { window } = loadTomatoApp();
     const fpButton = window.document.getElementById('nutr-recipe-fp');
     const storedButton = window.document.getElementById('nutr-recipe-stored');
@@ -280,7 +277,7 @@ describe('REQ-107 — Toggle: First principles left + default; products-in-play 
       `Stockée button is not second child (got id="${buttons[1]?.id}")`);
   });
 
-  test('REQ-107 — FP label text contains "First principles" (English term-of-art)', () => {
+  test('FP label text contains "First principles" (English term-of-art)', () => {
     const { window } = loadTomatoApp();
     const fpButton = window.document.getElementById('nutr-recipe-fp');
     const text = (fpButton.textContent || '').trim();
@@ -288,10 +285,10 @@ describe('REQ-107 — Toggle: First principles left + default; products-in-play 
     assert.doesNotMatch(text, /Premiers principes/);
   });
 
-  test('REQ-107 — FP is the active mode at initial render (default = fp)', () => {
+  test('FP is the active mode at initial render (default = fp)', () => {
     // Behavioral pin on the "default = fp" clause. nutrRecipeMode is a
     // module-scoped `let` (not on window); peek via window.eval. Distinct
-    // from REQ-106's source-grep on the declaration line because here we
+    // from the source-grep on the declaration line because here we
     // assert the runtime state actually settled to 'fp' after init.
     const { window } = loadTomatoApp();
     const mode = window.eval('nutrRecipeMode');
@@ -299,27 +296,27 @@ describe('REQ-107 — Toggle: First principles left + default; products-in-play 
       `nutrRecipeMode should default to 'fp' on initial load (got '${mode}')`);
   });
 
-  test('REQ-107 — nutr-products list is removed from the page markup', () => {
+  test('nutr-products list is removed from the page markup', () => {
     const { window } = loadTomatoApp();
     assert.equal(window.document.getElementById('nutr-products'), null,
       'nutr-products should be retired from the header');
   });
 
-  test('REQ-107 — recipe-mode helper note renders empty (no unspecced prose)', () => {
+  test('recipe-mode helper note renders empty (no unspecced prose)', () => {
     const { window } = loadTomatoApp();
     const note = window.document.getElementById('nutr-recipe-mode-note');
     if (note) {
       const text = (note.textContent || '').trim();
       assert.equal(text.length, 0,
-        `helper note has ${text.length} chars — must be empty per REQ-107`);
+        `helper note has ${text.length} chars — must be empty`);
     }
   });
 });
 
-// ─── REQ-108 — Block 1 demand sourced from PlantNeedsTomato ────────────
+// ─── Block 1 demand sourced from PlantNeedsTomato ────────────
 
-describe('REQ-108 — Block 1 demand sourced from PN.calculateNutritionDemand', () => {
-  test('REQ-108 — window.PlantNeedsTomato.calculateNutritionDemand exists at runtime', () => {
+describe('Block 1 demand sourced from PN.calculateNutritionDemand', () => {
+  test('window.PlantNeedsTomato.calculateNutritionDemand exists at runtime', () => {
     // Behavioral: the spec references the public API by name. If the
     // namespace shape changes (e.g. method renamed), the Bilan breaks.
     const { window } = loadTomatoApp();
@@ -328,26 +325,26 @@ describe('REQ-108 — Block 1 demand sourced from PN.calculateNutritionDemand', 
       'PN.calculateNutritionDemand must be a function');
   });
 
-  test('REQ-108 — logic.js Block 1 calls PN.calculateNutritionDemand (no inline reimplementation)', () => {
+  test('logic.js Block 1 calls PN.calculateNutritionDemand (no inline reimplementation)', () => {
     const body = readLogicJs();
     assert.match(body, /PN\.calculateNutritionDemand|window\.PlantNeedsTomato\.calculateNutritionDemand/);
   });
 
-  test('REQ-108 — Block 1 render section has no bare BIOMASS_DEMAND[ access', () => {
+  test('Block 1 render section has no bare BIOMASS_DEMAND[ access', () => {
     const body = readLogicJs();
     const block1 = body.match(/Block 1[\s\S]*?nutr-needs.*?innerHTML/);
     assert.ok(block1, 'Block 1 marker not found in logic.js');
     assert.doesNotMatch(block1[0], /(?<!\.)\bBIOMASS_DEMAND\s*\[/);
   });
 
-  test('REQ-108 — Block 1 render section has no bare TOMATO_FRUIT_EXPORT[ access', () => {
+  test('Block 1 render section has no bare TOMATO_FRUIT_EXPORT[ access', () => {
     const body = readLogicJs();
     const block1 = body.match(/Block 1[\s\S]*?nutr-needs.*?innerHTML/);
     assert.ok(block1, 'Block 1 marker not found in logic.js');
     assert.doesNotMatch(block1[0], /(?<!\.)\bTOMATO_FRUIT_EXPORT\s*\[/);
   });
 
-  test('REQ-108 — rendered Block 1 totals match PN.calculateNutritionDemand output (N at T5, target 1.5)', () => {
+  test('rendered Block 1 totals match PN.calculateNutritionDemand output (N at T5, target 1.5)', () => {
     // Load-bearing behavioral assertion: pin that the value rendered in
     // Block 1 actually came from the API call. Set target=1.5, stage=T5,
     // read N from the row, compare to PN.calculateNutritionDemand(1.5, 'T5', 1.0).N.total.
@@ -384,10 +381,10 @@ describe('REQ-108 — Block 1 demand sourced from PN.calculateNutritionDemand', 
   });
 });
 
-// ─── REQ-109 — Block 1 row click opens cert + equation + plugged modal ─
+// ─── Block 1 row click opens cert + equation + plugged modal ─
 
-describe('REQ-109 — Block 1 row click opens minimal pourquoi modal', () => {
-  test('REQ-109 — row count in #nutr-needs equals PN.TOMATO_FRUIT_EXPORT keys count', () => {
+describe('Block 1 row click opens minimal pourquoi modal', () => {
+  test('row count in #nutr-needs equals PN.TOMATO_FRUIT_EXPORT keys count', () => {
     const { window } = loadTomatoApp();
     const PN = window.PlantNeedsTomato;
     assert.ok(PN, 'window.PlantNeedsTomato must be defined');
@@ -397,7 +394,7 @@ describe('REQ-109 — Block 1 row click opens minimal pourquoi modal', () => {
       `row count ${rows.length} ≠ TOMATO_FRUIT_EXPORT keys ${expected}`);
   });
 
-  test('REQ-109 — every row wires showPourquoi("demand.<el>") on click', () => {
+  test('every row wires showPourquoi("demand.<el>") on click', () => {
     const { window } = loadTomatoApp();
     const rows = window.document.querySelectorAll('#nutr-needs .pq-row');
     assert.ok(rows.length > 0, 'expected at least one row in #nutr-needs');
@@ -407,7 +404,7 @@ describe('REQ-109 — Block 1 row click opens minimal pourquoi modal', () => {
     }
   });
 
-  test('REQ-109 — opening a demand modal leaves the interpretation node empty', () => {
+  test('opening a demand modal leaves the interpretation node empty', () => {
     // Spec: "No interpretation prose, no per-element rationale paragraphs."
     const { window } = loadTomatoApp();
     assert.equal(typeof window.showPourquoi, 'function', 'showPourquoi must be exposed');
@@ -416,11 +413,11 @@ describe('REQ-109 — Block 1 row click opens minimal pourquoi modal', () => {
     if (interp) {
       const text = (interp.textContent || '').trim();
       assert.equal(text.length, 0,
-        'modal interpretation node should be empty per REQ-109');
+        'modal interpretation node should be empty');
     }
   });
 
-  test('REQ-109 — opening a demand modal populates cert badge (piece 1 of 3)', () => {
+  test('opening a demand modal populates cert badge (piece 1 of 3)', () => {
     const { window } = loadTomatoApp();
     window.showPourquoi('demand.N');
     const title = window.document.getElementById('pq-modal-title');
@@ -429,7 +426,7 @@ describe('REQ-109 — Block 1 row click opens minimal pourquoi modal', () => {
       'cert badge (diag-cert-N) must be rendered in pq-modal-title');
   });
 
-  test('REQ-109 — opening a demand modal populates equation (piece 2 of 3)', () => {
+  test('opening a demand modal populates equation (piece 2 of 3)', () => {
     const { window } = loadTomatoApp();
     window.showPourquoi('demand.N');
     const equation = window.document.getElementById('pq-modal-eq');
@@ -438,21 +435,21 @@ describe('REQ-109 — Block 1 row click opens minimal pourquoi modal', () => {
       'equation node must contain `demand[el] = …`');
   });
 
-  test('REQ-109 — opening a demand modal populates plugged numbers (piece 3 of 3)', () => {
+  test('opening a demand modal populates plugged numbers (piece 3 of 3)', () => {
     const { window } = loadTomatoApp();
     window.showPourquoi('demand.N');
     const plugged = window.document.getElementById('pq-modal-plugged');
     assert.ok(plugged, 'pq-modal-plugged must exist');
     const text = (plugged.textContent || '').trim();
-    assert.ok(text.length > 0, 'plugged-numbers node must not be empty per REQ-109');
+    assert.ok(text.length > 0, 'plugged-numbers node must not be empty');
     assert.match(text, /\d/, 'plugged-numbers should contain at least one digit');
   });
 });
 
-// ─── REQ-110 — Block 1 reactive to target + stage ──────────────────────
+// ─── Block 1 reactive to target + stage ──────────────────────
 
-describe('REQ-110 — Block 1 reactive to target + stage changes', () => {
-  test('REQ-110 — mutating nutr-target re-renders Block 1 with new numbers', () => {
+describe('Block 1 reactive to target + stage changes', () => {
+  test('mutating nutr-target re-renders Block 1 with new numbers', () => {
     const { window } = loadTomatoApp();
     const target = window.document.getElementById('nutr-target');
     const needs = window.document.getElementById('nutr-needs');
@@ -467,7 +464,7 @@ describe('REQ-110 — Block 1 reactive to target + stage changes', () => {
     assert.notEqual(before, after, 'Block 1 text should change when target shifts');
   });
 
-  test('REQ-110 — clicking a different stage button re-renders Block 1', () => {
+  test('clicking a different stage button re-renders Block 1', () => {
     const { window } = loadTomatoApp();
     const needs = window.document.getElementById('nutr-needs');
     const t5Button = window.document.querySelector('[data-nstage="T5"]');
@@ -482,10 +479,10 @@ describe('REQ-110 — Block 1 reactive to target + stage changes', () => {
   });
 });
 
-// ─── REQ-111 — Block 1 row layout: 4 columns + values from {fruit,biomass,total} ─
+// ─── Block 1 row layout: 4 columns + values from {fruit,biomass,total} ─
 
-describe('REQ-111 — Block 1 row layout: 4 columns (Él. / Fruit / Biomasse / Total)', () => {
-  test('REQ-111 — header row contains "Fruit" and "Biomasse" labels', () => {
+describe('Block 1 row layout: 4 columns (Él. / Fruit / Biomasse / Total)', () => {
+  test('header row contains "Fruit" and "Biomasse" labels', () => {
     const { window } = loadTomatoApp();
     const needs = window.document.getElementById('nutr-needs');
     const text = needs.textContent || '';
@@ -493,7 +490,7 @@ describe('REQ-111 — Block 1 row layout: 4 columns (Él. / Fruit / Biomasse / T
     assert.match(text, /Biomasse/);
   });
 
-  test('REQ-111 — every row has exactly 4 child cells (Él. / Fruit / Biomasse / Total)', () => {
+  test('every row has exactly 4 child cells (Él. / Fruit / Biomasse / Total)', () => {
     const { window } = loadTomatoApp();
     const rows = window.document.querySelectorAll('#nutr-needs .pq-row');
     assert.ok(rows.length > 0, 'expected at least one row in #nutr-needs');
@@ -503,7 +500,7 @@ describe('REQ-111 — Block 1 row layout: 4 columns (Él. / Fruit / Biomasse / T
     }
   });
 
-  test('REQ-111 — N row at T5 / target=1.5 splits into matching fruit + biomass terms', () => {
+  test('N row at T5 / target=1.5 splits into matching fruit + biomass terms', () => {
     // Load-bearing behavioral assertion: the spec says values come from
     // calculateNutritionDemand returning the {fruit, biomass, total} shape. Pin
     // that the Fruit and Biomasse cells correspond to the API's split,
@@ -552,10 +549,10 @@ describe('REQ-111 — Block 1 row layout: 4 columns (Él. / Fruit / Biomasse / T
   });
 });
 
-// ─── REQ-114 — Block 5 reactive to spray count + surfactant ────────────
+// ─── Block 5 reactive to spray count + surfactant ────────────
 
-describe('REQ-114 — Block 5 reactive to sprayCount + surfactant changes', () => {
-  test('REQ-114 — supply path threads {sprayCount, surfactant} into computeFoliarSupply', () => {
+describe('Block 5 reactive to sprayCount + surfactant changes', () => {
+  test('supply path threads {sprayCount, surfactant} into computeFoliarSupply', () => {
     // Behavioral assertion that the FoliarRecipeTomato.computeFoliarSupply
     // contract is honored: doubling sprayCount roughly doubles the
     // delivered Mn (sprayCount multiplies delivery linearly per
@@ -578,7 +575,7 @@ describe('REQ-114 — Block 5 reactive to sprayCount + surfactant changes', () =
   });
 });
 
-// ─── REQ-004 — Bilan reads from source-of-truth recipes ────────────────
+// ─── Bilan reads from source-of-truth recipes ────────────────
 //
 // Spec table enumerates 5 source-of-truth bindings the Bilan supply
 // function must reference: computeStageRecipe(stage), STORED_RECIPE.tomato
@@ -586,33 +583,33 @@ describe('REQ-114 — Block 5 reactive to sprayCount + surfactant changes', () =
 // TOMATO_FRUIT_EXPORT[el]. Source-grep pairs the consumer (app/index.html)
 // + runtime check that calculateNutritionSupply produces non-trivial output.
 
-describe('REQ-004 — Bilan reads from source-of-truth recipes', () => {
-  test('REQ-004 — calculateNutritionSupply calls computeStageRecipe(stage)', () => {
+describe('Bilan reads from source-of-truth recipes', () => {
+  test('calculateNutritionSupply calls computeStageRecipe(stage)', () => {
     const html = readAppIndexHtml();
     assert.match(html, /computeStageRecipe\(stage\)/);
   });
 
-  test('REQ-004 — Bilan reads STORED_RECIPE.tomato.foliaire.A (weekly spray)', () => {
+  test('Bilan reads STORED_RECIPE.tomato.foliaire.A (weekly spray)', () => {
     const html = readAppIndexHtml();
     assert.match(html, /STORED_RECIPE\.tomato\.foliaire\.A/);
   });
 
-  test('REQ-004 — Bilan reads STORED_RECIPE.tomato.sidedress[stage] (granular)', () => {
+  test('Bilan reads STORED_RECIPE.tomato.sidedress[stage] (granular)', () => {
     const html = readAppIndexHtml();
     assert.match(html, /STORED_RECIPE\.tomato\.sidedress\[stage\]/);
   });
 
-  test('REQ-004 — Bilan reads BIOMASS_DEMAND[stage] (vegetative demand)', () => {
+  test('Bilan reads BIOMASS_DEMAND[stage] (vegetative demand)', () => {
     const html = readAppIndexHtml();
     assert.match(html, /BIOMASS_DEMAND\[stage\]/);
   });
 
-  test('REQ-004 — Bilan reads TOMATO_FRUIT_EXPORT[el] (fruit export per element)', () => {
+  test('Bilan reads TOMATO_FRUIT_EXPORT[el] (fruit export per element)', () => {
     const html = readAppIndexHtml();
     assert.match(html, /TOMATO_FRUIT_EXPORT\[el\]/);
   });
 
-  test('REQ-004 — runtime: calculateNutritionSupply returns supply.fert with K and Mg numbers', () => {
+  test('runtime: calculateNutritionSupply returns supply.fert with K and Mg numbers', () => {
     const { window } = loadTomatoApp();
     assert.equal(typeof window.calculateNutritionSupply, 'function',
       'calculateNutritionSupply must be exposed on window');
@@ -623,7 +620,7 @@ describe('REQ-004 — Bilan reads from source-of-truth recipes', () => {
     assert.ok(supply.fert.K > 0, 'fert.K should be positive at T5');
   });
 
-  test('REQ-004 — stored fertigation K matches STORED_RECIPE.tomato.fertigation[T5].kSulfate × analysis', () => {
+  test('stored fertigation K matches STORED_RECIPE.tomato.fertigation[T5].kSulfate × analysis', () => {
     // Load-bearing: pin that the *value* returned by calculateNutritionSupply is
     // actually derived from STORED_RECIPE, not a hardcoded constant. We
     // don't write to STORED_RECIPE; we just read it (via window.eval since
@@ -642,16 +639,16 @@ describe('REQ-004 — Bilan reads from source-of-truth recipes', () => {
   });
 });
 
-// ─── REQ-153 — Drift ratio direction is FP ÷ Stockée ───────────────────
+// ─── Drift ratio direction is FP ÷ Stockée ───────────────────
 //
 // Block « Recette stockée vs calculée (drift) » in #nutr-phase1: the ratio
 // rendered per element is `FP ÷ Stockée`. 100 % = parity; > 100 % = stored
 // under-supplies vs FP; < 100 % = stored over-supplies. The current impl
 // renders the inverse (Stored ÷ FP, formatted as "X.XX×") — this test pins
-// the direction REQ-153 demands and must fail until the renderer flips.
+// the direction the spec demands and must fail until the renderer flips.
 
-describe('REQ-153 — Drift gauge ratio direction is FP ÷ Stockée', () => {
-  test('REQ-153 — when FP = 1.5 × Stored for K2SO4, the rendered K2SO4 ratio cell shows 150', () => {
+describe('Drift gauge ratio direction is FP ÷ Stockée', () => {
+  test('when FP = 1.5 × Stored for K2SO4, the rendered K2SO4 ratio cell shows 150', () => {
     // Arrange: read the current stored K2SO4 dose at T5 (read-only — never
     // mutate STORED_RECIPE per test-writer hard constraints), then set
     // FP_RECIPE_T5.fertigation.K2SO4 so FP ÷ Stored = 1.5 exactly. Force
@@ -676,17 +673,17 @@ describe('REQ-153 — Drift gauge ratio direction is FP ÷ Stockée', () => {
       const ratioCellText = (kRow.children[kRow.children.length - 1].textContent || '')
         .trim()
         .replace(',', '.');
-      // REQ-153: FP ÷ Stored = 1.5 → cell should render "150" (or "150 %").
+      // FP ÷ Stored = 1.5 → cell should render "150" (or "150 %").
       assert.match(
         ratioCellText,
         /\b150\b/,
-        `K2SO4 ratio cell should render "150" (FP ÷ Stored × 100) per REQ-153; got "${ratioCellText}"`
+        `K2SO4 ratio cell should render "150" (FP ÷ Stored × 100); got "${ratioCellText}"`
       );
       // Defensive guard against the inverted direction (Stored ÷ FP ≈ 0.67).
       assert.doesNotMatch(
         ratioCellText,
         /0[.,]?67/,
-        `K2SO4 ratio cell rendered "${ratioCellText}" — that's Stored÷FP, the inverted direction REQ-153 rejects`
+        `K2SO4 ratio cell rendered "${ratioCellText}" — that's Stored÷FP, the inverted direction`
       );
     } finally {
       restore();
@@ -694,9 +691,9 @@ describe('REQ-153 — Drift gauge ratio direction is FP ÷ Stockée', () => {
   });
 });
 
-// ─── REQ-163 — Foliar Efficacité reactive to surfactant lever ──────────
+// ─── Foliar Efficacité reactive to surfactant lever ──────────
 //
-// Spec: nutrition/tomato/app/user-stories.md → REQ-163. Two clauses:
+// Spec: nutrition/tomato/app/user-stories.md. Two clauses:
 //   (a) Capability passthrough — the foliar consumer the page renders
 //       from must read a surfactant-aware efficiency map. Today the page
 //       binds `foliar.efficiency = window.FoliarRecipeTomato.efficiency`
@@ -707,14 +704,14 @@ describe('REQ-153 — Drift gauge ratio direction is FP ÷ Stockée', () => {
 //       on/off → this test fails.
 //   (b) Reactive render — toggling #nutr-foliar-surfactant must change at
 //       least one cell text in the Efficacité column (index 2) of the
-//       foliar gap-grid. REQ-114 already pins that *some* Block 5 text
+//       foliar gap-grid. A sibling test already pins that *some* Block 5 text
 //       changes on toggle (dose labels shift via computeFoliarSupply), but
 //       the Efficacité column specifically is fed by the static map and
 //       won't move until Wave 2 lands.
 //
 // Helper: locate the gap-grid wrapper inside #nutr-foliar by walking the
 // inline grid-template-columns marker the renderer emits. Matches the
-// approach scripts/check-recipes.mjs uses for REQ-137 / REQ-156.
+// approach scripts/check-recipes.mjs uses for the efficacite-column checks.
 
 // Find the gap-grid wrapper div under a block container. The wrapper's
 // first child is the 6-col header strip; subsequent children are `.pq-row`
@@ -729,8 +726,8 @@ function findFoliarGapGridDataRows(window) {
   return Array.from(wrapper.querySelectorAll('.pq-row'));
 }
 
-describe('REQ-163 — Foliar Efficacité reactive to surfactant lever', () => {
-  test('REQ-163(a) — supply.foliar.efficiency differs between surfactant off / on for ≥1 routed element', () => {
+describe('Foliar Efficacité reactive to surfactant lever', () => {
+  test('supply.foliar.efficiency differs between surfactant off / on for ≥1 routed element', () => {
     // Capability passthrough: the page's nutrition-supply function must
     // read a surfactant-aware efficiency surface. The route in scope is
     // window.calculateNutritionSupply(stage, phLocked, transp, target, mode)
@@ -745,7 +742,7 @@ describe('REQ-163 — Foliar Efficacité reactive to surfactant lever', () => {
     // calculateNutritionSupply's foliar branch via efficiencyFor(surfactant).
     const { window } = loadTomatoApp();
     const surf = window.document.getElementById('nutr-foliar-surfactant');
-    assert.ok(surf, '#nutr-foliar-surfactant must exist (REQ-113)');
+    assert.ok(surf, '#nutr-foliar-surfactant must exist');
     assert.equal(typeof window.calculateNutritionSupply, 'function',
       'window.calculateNutritionSupply must be exposed');
 
@@ -775,7 +772,7 @@ describe('REQ-163 — Foliar Efficacité reactive to surfactant lever', () => {
       + `Wave 2: route surfactant through calculateNutritionSupply via FoliarRecipeTomato.efficiencyFor(surfactant).`);
 
     // Bonus check: with surfactant ON, at least one routed element must
-    // have a strictly higher efficiency than OFF. Spec REQ-163: "with
+    // have a strictly higher efficiency than OFF. Spec: "with
     // surfactant on, foliar efficiency for routed elements is higher
     // than without."
     const anyHigher = routed.some(element =>
@@ -788,21 +785,21 @@ describe('REQ-163 — Foliar Efficacité reactive to surfactant lever', () => {
       + `off=${JSON.stringify(efficiencyOff)} on=${JSON.stringify(efficiencyOn)}`);
   });
 
-  test('REQ-163(b) — toggling #nutr-foliar-surfactant changes ≥1 Efficacité cell text in #nutr-foliar', () => {
+  test('toggling #nutr-foliar-surfactant changes ≥1 Efficacité cell text in #nutr-foliar', () => {
     // Reactive render: the Efficacité column (index 2 in the 6-col gap-grid
-    // per REQ-137: Él. | Manque entrant | Efficacité | Apport ici | Manque
+    // per the gap-grid layout: Él. | Manque entrant | Efficacité | Apport ici | Manque
     // sortant | emoji) MUST update when the operator toggles the surfactant
-    // lever. REQ-114 already asserts SOME text in Block 5 changes on toggle
+    // lever. A sibling test already asserts SOME text in Block 5 changes on toggle
     // (dose labels shift via computeFoliarSupply); this assertion narrows
     // to the Efficacité column specifically, which is fed by the static
     // map today and stays put across the toggle.
     const { window } = loadTomatoApp();
     // Use stored mode so the foliar branch renders deterministically
-    // against STORED_RECIPE.tomato.foliaire (matches REQ-114's reactive
+    // against STORED_RECIPE.tomato.foliaire (matches the reactive
     // test pattern).
     window.setNutrRecipeMode('stored');
     const surf = window.document.getElementById('nutr-foliar-surfactant');
-    assert.ok(surf, '#nutr-foliar-surfactant must exist (REQ-113)');
+    assert.ok(surf, '#nutr-foliar-surfactant must exist');
 
     const EFFICACITE_COL_INDEX = 2;
     const readEfficaciteCells = () => {

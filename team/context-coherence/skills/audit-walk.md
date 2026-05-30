@@ -15,9 +15,9 @@
 
 ### 1. Cross-reference rot
 
-For each pointer in the graph (REQ-NNN mentions, file paths, symbols, persona refs, memory entries, changelog claims), check the referent still exists and means what the pointer thinks.
+For each pointer in the graph (spec-entry refs, file paths, symbols, persona refs, memory entries, changelog claims), check the referent still exists and means what the pointer thinks.
 
-Probe: retired REQs cited as live; moved/renamed files; renamed constants/symbols; changelog claims contradicting current grep; `dist/index.html` diverging from `app/index.html` + partials.
+Probe: retired spec entries cited as live; moved/renamed files; renamed constants/symbols; changelog claims contradicting current grep; `dist/index.html` diverging from `app/index.html` + partials.
 
 ### 2. Single-responsibility violations
 
@@ -27,9 +27,9 @@ Defaults: `spec.md` should be normative claims only (derivation prose → `deriv
 
 ### 3. Layer drift
 
-Layers: cross-app REQ → domain REQ → subproject REQ → derivation → data → calc → model → app. Lower answers to higher, never reverse.
+Layers: cross-app spec → domain spec → subproject spec → derivation → data → calc → model → app. Lower answers to higher, never reverse.
 
-Probe: PO REQs prescribing HOW (mechanism belongs in derivation); derivations supporting un-REQ'd behavior (delete or push up a new REQ via PO); code asserting facts no REQ states; `CLAUDE.md` rules that should be auto-enforceable specs; memory entries contradicting current code.
+Probe: PO spec entries prescribing HOW (mechanism belongs in derivation); derivations supporting un-specced behavior (delete or push up a new spec entry via PO); code asserting facts no spec entry states; `CLAUDE.md` rules that should be auto-enforceable specs; memory entries contradicting current code.
 
 ## Finding format
 
@@ -44,7 +44,7 @@ Probe: PO REQs prescribing HOW (mechanism belongs in derivation); derivations su
   - blocking = wrong action, cert violation, broken verifier, rotted load-bearing pointer
   - important = misleads reader / future Claude; compounds if ignored
   - minor = cleanup, low blast radius
-**Proposed move:** <concrete restructure — extract to X, retire REQ-N, update memory M, delete dead ref R>
+**Proposed move:** <concrete restructure — extract to X, retire spec entry S, update memory M, delete dead ref R>
 **Owner of the fix:** [self (mechanical) | product-owner | plant-nutrition-specialist | model-challenger | code agent | Guillaume]
 **Cert:** 0–5 on the *drift claim itself*
 ```

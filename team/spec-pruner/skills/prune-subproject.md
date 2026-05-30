@@ -8,17 +8,17 @@
 2. Sibling `derivation.md` + `learnings.md`
 3. `calc.js`, `model.js`, `data.js` in scope
 4. `*/app/` partial if present
-5. `spec.md` (full) — for cross-app REQ traceability
+5. `spec.md` (full) — for cross-app spec traceability
 
 ## Per-subproject phases
 
 **Phase −1 — Clean tree.** `git status`. Dirty → refuse, ask Guillaume to commit/stash. Every prune session starts clean so it reverts with `git reset --hard HEAD`. Never bypass.
 
-**Phase 0 — Inventory.** Read subproject's `spec.md`, list every REQ-NNN owned. Read `derivation.md`, `learnings.md`, `calc.js`, `model.js`, `data.js`, any `*/app/` partial. List files + line counts.
+**Phase 0 — Inventory.** Read subproject's `spec.md`, list every spec entry (slug) owned. Read `derivation.md`, `learnings.md`, `calc.js`, `model.js`, `data.js`, any `*/app/` partial. List files + line counts.
 
-**Phase 1 — REQ → code map.** Per REQ, identify which functions / constants / render blocks / derivation sections implement it. Surface gaps both ways:
-- REQ with no implementation → escalate to specialist.
-- Implementation with no REQ → your candidates.
+**Phase 1 — spec → code map.** Per spec entry, identify which functions / constants / render blocks / derivation sections implement it. Surface gaps both ways:
+- Spec entry with no implementation → escalate to specialist.
+- Implementation with no spec entry → your candidates.
 
 **Phase 2 — Walk file-by-file, surface candidates.** Numbered list. Don't delete yet.
 
@@ -34,7 +34,7 @@
 ### C1 — <file>:<line-range>
 
 **What it does:** [one sentence]
-**Traces to REQ:** none in `<subproject>/spec.md` or `spec.md`. [or: "supports REQ-NNN" — not a candidate]
+**Traces to spec:** none in `<subproject>/spec.md` or `spec.md`. [or: "supports <slug>" — not a candidate]
 **Used by:** [call sites with file:line, or "no caller found" — show the grep used]
 **Cascade if removed:** [observable behavior change]
 **My read:** [REMOVE / BORDERLINE / KEEP, surfaced for review]
@@ -42,7 +42,7 @@
 [CONFIRM / KEEP / NEED_MORE_INFO]
 ```
 
-Default toward KEEP at cert ≤ 3. Cost of an extra constant ≪ cost of breaking a passing verifier.
+Default toward KEEP at certainty ≤ 3. Cost of an extra constant ≪ cost of breaking a passing verifier.
 
 ## What you prune
 
@@ -52,7 +52,7 @@ Default toward KEEP at cert ≤ 3. Cost of an extra constant ≪ cost of breakin
 
 - Intro paragraphs, "hypothèses" bullets, framing copy, non-auto-derived advice strings.
 - `// stable —` / `data-prose-source="stable:..."` escape hatches.
-- Render branches not traceable to a REQ.
+- Render branches not traceable to a spec entry.
 - Helper text explaining calculation rather than the team action.
 
 Cutting rule (CLAUDE.md): operator-facing content excludes anything not a dynamic input or not useful to know what action to take.
@@ -61,38 +61,38 @@ Cutting rule (CLAUDE.md): operator-facing content excludes anything not a dynami
 
 - Dead functions (no caller anywhere).
 - Unused constants.
-- Branches for scenarios no REQ requires (crops, stages, products not in spec).
-- Old calibration left next to current without REQ tie.
+- Branches for scenarios no spec entry requires (crops, stages, products not in spec).
+- Old calibration left next to current without spec tie.
 - **Trace comments.** Per CLAUDE.md (2026-05-12): trace lives in `<subproject>/derivation.md` + `learnings.md`. Move first if info isn't already there, then delete from code.
 
-**Keep:** spec-mandated invariants (`// REQ-082` pointers), minimum local context (single-line unit annotations are fine; multi-line derivation isn't).
+**Keep:** spec-mandated invariants (`// ca-mg-biomass-transpiration-coupled` pointers), minimum local context (single-line unit annotations are fine; multi-line derivation isn't).
 
 ### `derivation.md`
 
 Move first to `<subproject>/learnings.md` (create if missing), then delete:
-- Defenses against rejected alternatives no current REQ requires.
-- Rationale for behavior no current REQ requires.
+- Defenses against rejected alternatives no current spec entry requires.
+- Rationale for behavior no current spec entry requires.
 - Citations for superseded values.
 
 **Never just nuke.** Rejected-alternative reasoning is load-bearing for organic-cert audits and re-evaluation when new data arrives.
 
-**Keep:** why-this-number for every constant a current REQ depends on.
+**Keep:** why-this-number for every constant a current spec entry depends on.
 
 ### Never touch (during pruning)
 
 - `spec.md` — PO + specialist own those.
 - `STORED_RECIPE.tomato.fertigation` / `.sidedress` / `.foliaire` — `/retire-recipe` only.
 - `RECIPE_HISTORY` — audit trail.
-- Cross-app infrastructure for `spec.md` REQs (REQ-005 page registry, `CROP_PAGES`, `setPage`, `syncHash`).
+- Cross-app infrastructure for `spec.md` entries (`url-hash-routing` page registry, `CROP_PAGES`, `setPage`, `syncHash`).
 - `working files/` — not production.
 - `data.js` calibration values that look unused — verify across the whole spec tree first.
 
 ## Spec gaps
 
-> **Spec gap surfaced:** `calc.js:88-104` implements Ca↔Mg antagonism but no REQ mentions it. Spec missing a REQ, or code should go. Hand to PO/specialist; do not decide.
+> **Spec gap surfaced:** `calc.js:88-104` implements Ca↔Mg antagonism but no spec entry mentions it. Spec missing an entry, or code should go. Hand to PO/specialist; do not decide.
 
 Surface, don't fix.
 
 ## STORED-recipe drift
 
-> **Stored-recipe item surfaced:** STORED_RECIPE.tomato.fertigation includes X at Y g/L, no REQ requires it. **Not my call** — `/retire-recipe`. Flagging for awareness.
+> **Stored-recipe item surfaced:** STORED_RECIPE.tomato.fertigation includes X at Y g/L, no spec entry requires it. **Not my call** — `/retire-recipe`. Flagging for awareness.

@@ -55,7 +55,7 @@ const c = {
   reset:  useColor ? '\x1b[0m'    : '',
 };
 
-// ─── REQ-002 — Forbidden products (non-Ecocert-Canada synthetics) ──────
+// ─── ecocert-only-products — Forbidden products (non-Ecocert-Canada synthetics) ──────
 //
 // Curated blocklist of common synthetic fertilizers / spray products that
 // fail CAN/CGSB-32.311 (Permitted Substances List for organic crop production).
@@ -316,7 +316,7 @@ const computeStageSidedress = ph1.computeStageSidedress;
 const INCOMPATIBLE_RECIPES = ph1.INCOMPATIBLE_RECIPES;
 const MIX_ORDER            = ph1.MIX_ORDER;
 
-// ─── REQ-001 — DOM-walked French CE check ──────────────────────────────
+// ─── ui-language-ce-not-ec — DOM-walked French CE check ──────────────────────────────
 //
 // Migrated from bash (Ch5 = A). Walk every text node, compose visible text
 // per element, regex against the same forbidden patterns the bash verifier
@@ -385,7 +385,7 @@ function runEcPattern(name, re) {
 
 for (const p of FORBIDDEN_EC_PATTERNS) runEcPattern(p.name, p.re);
 
-// ─── REQ-006 — DOM-walked Kelp check ───────────────────────────────────
+// ─── ui-language-algue-not-kelp — DOM-walked Kelp check ───────────────────────────────────
 
 header("REQ-006 — 'Algue' au lieu de 'Kelp' (DOM walk)");
 
@@ -403,7 +403,7 @@ header("REQ-006 — 'Algue' au lieu de 'Kelp' (DOM walk)");
   else fail("Aucun 'Kelp' dans le texte HTML rendu", hits.join('\n'));
 }
 
-// ─── REQ-007 — Jargon scan, scoped to non-admin pages ──────────────────
+// ─── ui-language-plain-french — Jargon scan, scoped to non-admin pages ──────────────────
 //
 // Ch6 = A scoped to non-admin: admin pages are jargon-tolerant (Bilan
 // nutriment, diagnostic). Walk text nodes that are NOT inside any element
@@ -441,7 +441,7 @@ for (const term of JARGON_DENY) {
   else fail(`Aucun '${term}' (jargon, hors pages admin)`, hits.join('\n'));
 }
 
-// ─── REQ-008 — getWeekNumber pinned-date tests ─────────────────────────
+// ─── iso-week-numbering — getWeekNumber pinned-date tests ─────────────────────────
 //
 // Ch7 = A. Replace bash `|| 7` and `4 -` greps with a runtime correctness
 // check: monkey-patch Date inside the function's closure by overriding
@@ -480,9 +480,9 @@ if (typeof getWeekNumber !== 'function') {
   }
 }
 
-// ─── REQ-010 — every PRODUCT[*].mode is 'flux' or 'concentration' ──────
+// ─── recipe-mode-per-product — every PRODUCT[*].mode is 'flux' or 'concentration' ──────
 
-header('REQ-010 — Every PRODUCT[*].mode declared');
+header('recipe-mode-per-product — Every PRODUCT[*].mode declared');
 
 if (!PRODUCT) {
   fail('PRODUCT exposed', 'window.PRODUCT not available');
@@ -500,9 +500,9 @@ if (!PRODUCT) {
   }
 }
 
-// ─── REQ-011 — CHANNEL_ROLE covers every demand element ────────────────
+// ─── channel-role-coverage — CHANNEL_ROLE covers every demand element ────────────────
 
-header('REQ-011 — CHANNEL_ROLE couvre tous les éléments de demande');
+header('channel-role-coverage — CHANNEL_ROLE couvre tous les éléments de demande');
 
 if (!CHANNEL_ROLE || !BIOMASS_DEMAND || !TOMATO_FRUIT_EXPORT) {
   fail('CHANNEL_ROLE / BIOMASS_DEMAND / TOMATO_FRUIT_EXPORT exposés',
@@ -521,7 +521,7 @@ if (!CHANNEL_ROLE || !BIOMASS_DEMAND || !TOMATO_FRUIT_EXPORT) {
   }
 }
 
-// ─── REQ-081 — Ca/Mg biomass scaled by transpFactor; others unchanged ──
+// ─── ca-mg-biomass-transpiration-coupled — Ca/Mg biomass scaled by transpFactor; others unchanged ──
 //
 // calculateNutritionDemand(yield, stage, transpFactor) must apply transpFactor to the
 // biomass term for Ca and Mg only. Verified by calling at tf=1.0 vs tf=0.5
@@ -529,7 +529,7 @@ if (!CHANNEL_ROLE || !BIOMASS_DEMAND || !TOMATO_FRUIT_EXPORT) {
 //
 // Spec: nutrition/tomato/plant-needs/spec.md → REQ-081.
 
-header('REQ-081 — Ca/Mg biomass demand × transpFactor');
+header('ca-mg-biomass-transpiration-coupled — Ca/Mg biomass demand × transpFactor');
 
 if (!calculateNutritionDemand) {
   fail('calculateNutritionDemand exposé', 'missing on window');
@@ -564,7 +564,7 @@ if (!calculateNutritionDemand) {
   }
 }
 
-// ─── REQ-082 — Stage-transition continuity for BIOMASS_DEMAND ───────────
+// ─── stage-transition-continuity — Stage-transition continuity for BIOMASS_DEMAND ───────────
 //
 // Catches order-of-magnitude hand-edit errors in BIOMASS_DEMAND[stage][element]
 // (typo dropping/adding a digit, factor-of-10 unit slip, etc.). Threshold
@@ -575,7 +575,7 @@ if (!calculateNutritionDemand) {
 //
 // Spec: nutrition/tomato/plant-needs/spec.md → REQ-082.
 
-header('REQ-082 — BIOMASS_DEMAND stage-transition continuity (≤ 250 %)');
+header('stage-transition-continuity — BIOMASS_DEMAND stage-transition continuity (≤ 250 %)');
 
 if (!BIOMASS_DEMAND) {
   fail('BIOMASS_DEMAND exposed', 'missing');
@@ -607,7 +607,7 @@ if (!BIOMASS_DEMAND) {
   }
 }
 
-// ─── REQ-083 — PlantNeedsTomato public API namespace ────────────────────
+// ─── plant-needs-tomato-namespace — PlantNeedsTomato public API namespace ────────────────────
 //
 // Asserts window.PlantNeedsTomato exists at runtime and exposes the
 // expected public API. Renames or removals fail loudly here, before
@@ -615,7 +615,7 @@ if (!BIOMASS_DEMAND) {
 //
 // Spec: nutrition/tomato/plant-needs/spec.md → REQ-083.
 
-header('REQ-083 — window.PlantNeedsTomato public API surface');
+header('plant-needs-tomato-namespace — window.PlantNeedsTomato public API surface');
 
 const PN = window.PlantNeedsTomato;
 if (!PN) {
@@ -639,7 +639,7 @@ if (!PN) {
   }
 }
 
-// ─── REQ-079 — Compost release within mass-balance sanity band ──────────
+// ─── release-values-within-mass-balance-band — Compost release within mass-balance sanity band ──────────
 //
 // Asserts every COMPOST_RELEASE_PER_WEEK value falls within [0.5×, 1.5×]
 // of the theoretical formula: (applied_g_per_m2 × year1_fraction / 52) ×
@@ -648,7 +648,7 @@ if (!PN) {
 //
 // Spec: nutrition/compost-contribution/spec.md → REQ-079.
 
-header('REQ-079 — Compost release within ±50 % of mass-balance');
+header('release-values-within-mass-balance-band — Compost release within ±50 % of mass-balance');
 
 if (!COMPOST_RELEASE_PER_WEEK || !COMPOST_LABEL_PCT
     || !COMPOST_MINERALIZATION_YEAR1 || !COMPOST_AMENDMENT) {
@@ -682,11 +682,11 @@ if (!COMPOST_RELEASE_PER_WEEK || !COMPOST_LABEL_PCT
   }
 }
 
-// ─── REQ-080 — CompostContribution public API namespace ─────────────────
+// ─── public-api-namespace — CompostContribution public API namespace ─────────────────
 //
 // Spec: nutrition/compost-contribution/spec.md → REQ-080.
 
-header('REQ-080 — window.CompostContribution public API surface');
+header('public-api-namespace — window.CompostContribution public API surface');
 
 const CC = window.CompostContribution;
 if (!CC) {
@@ -752,7 +752,7 @@ header('Compost INV-1 — Element coverage closed across 4 maps');
 // Spec: nutrition/soil-contribution/spec.md → REQ-140 (bank shape), REQ-141
 // (CONTRIBUTING scoping), REQ-142 (months-to-depletion), REQ-143 (namespace).
 
-header('REQ-140 — SoilContribution.BANK_MG_M2.tomato declared in mg/m²');
+header('bank-per-crop-mehlich3-reservoir — SoilContribution.BANK_MG_M2.tomato declared in mg/m²');
 {
   const SC = window.SoilContribution;
   if (!SC || !SC.BANK_MG_M2 || !SC.BANK_MG_M2.tomato) {
@@ -768,7 +768,7 @@ header('REQ-140 — SoilContribution.BANK_MG_M2.tomato declared in mg/m²');
   }
 }
 
-header('REQ-141 — Only CONTRIBUTING elements (P, Ca) participate in the gap chain');
+header('only-ca-p-participate-in-gap-chain — Only CONTRIBUTING elements (P, Ca) participate in the gap chain');
 {
   const SC = window.SoilContribution;
   if (!SC) {
@@ -795,7 +795,7 @@ header('REQ-141 — Only CONTRIBUTING elements (P, Ca) participate in the gap ch
   }
 }
 
-header('REQ-142 — monthsToDepletion = bank ÷ min(mass-flow, plant peak demand) × WEEKS_PER_MONTH; null for turnover-bound');
+header('months-to-depletion-clamped-by-peak-demand — monthsToDepletion = bank ÷ min(mass-flow, plant peak demand) × WEEKS_PER_MONTH; null for turnover-bound');
 {
   const SC = window.SoilContribution;
   if (!SC) {
@@ -873,7 +873,7 @@ header('REQ-142 — monthsToDepletion = bank ÷ min(mass-flow, plant peak demand
   }
 }
 
-header('REQ-143 — window.SoilContribution public API surface');
+header('public-api-on-soil-contribution-namespace — window.SoilContribution public API surface');
 {
   const SC = window.SoilContribution;
   if (!SC) {
@@ -897,14 +897,14 @@ header('REQ-143 — window.SoilContribution public API surface');
   }
 }
 
-// ─── REQ-164 — SME soil-solution + transpiration wired per crop / element ──
+// ─── sme-soil-solution-wired-per-crop-element — SME soil-solution + transpiration wired per crop / element ──
 //
 // Spec: nutrition/soil-contribution/spec.md → REQ-164. Every crop that has
 // a SOIL_BANK_MG_M2 entry must also have an SME_SOIL_SOLUTION_PPM entry
 // covering every element on the gap grid (N, P, K, Ca, Mg, Fe, Mn, Zn, B,
 // Cu, Mo), plus a positive TRANSPIRATION_L_PER_M2_PER_WEEK value.
 
-header('REQ-164 — SME soil-solution + transpiration wired for every banked crop / gap-grid element');
+header('sme-soil-solution-wired-per-crop-element — SME soil-solution + transpiration wired for every banked crop / gap-grid element');
 {
   const SC = window.SoilContribution;
   if (!SC) {
@@ -981,7 +981,7 @@ if (!computeStageSidedress) {
   }
 }
 
-// ─── REQ-087 — Sidedress mass-balance: chosen product sized to N gap ─────
+// ─── mass-balance-sizes-product-to-n-gap — Sidedress mass-balance: chosen product sized to N gap ─────
 //
 // computeStageSidedress(stage, product).g_per_planche must equal the
 // mass-balance derivation within ±5 g rounding tolerance, for the wired
@@ -993,7 +993,7 @@ if (!computeStageSidedress) {
 //
 // Spec: nutrition/tomato/sidedress-recipe/spec.md → REQ-087.
 
-header('REQ-087 — Sidedress g_per_planche matches mass-balance formula');
+header('mass-balance-sizes-product-to-n-gap — Sidedress g_per_planche matches mass-balance formula');
 
 if (!computeStageSidedress || !SIDEDRESS_PRODUCTS || !SIDEDRESS_AREA_PER_PLANCHE
     || !TOMATO_FRUIT_EXPORT || !BIOMASS_DEMAND
@@ -1043,11 +1043,11 @@ if (!computeStageSidedress || !SIDEDRESS_PRODUCTS || !SIDEDRESS_AREA_PER_PLANCHE
   }
 }
 
-// ─── REQ-088 — SidedressRecipeTomato public API namespace ───────────────
+// ─── public-api-namespace — SidedressRecipeTomato public API namespace ───────────────
 //
 // Spec: nutrition/tomato/sidedress-recipe/spec.md → REQ-088.
 
-header('REQ-088 — window.SidedressRecipeTomato public API surface');
+header('public-api-namespace — window.SidedressRecipeTomato public API surface');
 
 const SR = window.SidedressRecipeTomato;
 if (!SR) {
@@ -1074,7 +1074,7 @@ if (!SR) {
   }
 }
 
-// ─── REQ-089 — Ca-aware product gate ────────────────────────────────────
+// ─── ca-aware-product-gate — Ca-aware product gate ────────────────────────────────────
 //
 // Generalizes from "actisol_g === 0" to "no Ca-bearing product can be
 // selected by computeStageSidedress while soil is Ca-saturated". Two
@@ -1088,7 +1088,7 @@ if (!SR) {
 //
 // Spec: nutrition/tomato/sidedress-recipe/spec.md → REQ-089.
 
-header('REQ-089 — Ca-aware product gate (chosen product ca_pct === 0)');
+header('ca-aware-product-gate — Ca-aware product gate (chosen product ca_pct === 0)');
 
 if (!computeStageSidedress || !SIDEDRESS_PRODUCTS) {
   fail('computeStageSidedress + SIDEDRESS_PRODUCTS exposed', 'missing on window');
@@ -1132,7 +1132,7 @@ if (!computeStageSidedress || !SIDEDRESS_PRODUCTS) {
   }
 }
 
-// ─── REQ-098 — Fertigation mass-balance derivation matches the formula ──
+// ─── mass-balance-derivation — Fertigation mass-balance derivation matches the formula ──
 //
 // computeStageRecipe(stage).{kSulfate, mgSulfate, solubore} must equal the
 // mass-balance derivation within ±5 g rounding tolerance. Per element,
@@ -1152,7 +1152,7 @@ if (!computeStageSidedress || !SIDEDRESS_PRODUCTS) {
 //
 // Spec: nutrition/tomato/fertigation-recipe/spec.md → REQ-098 + REQ-155.
 
-header('REQ-098 — computeStageRecipe matches mass-balance formula');
+header('mass-balance-derivation — computeStageRecipe matches mass-balance formula');
 
 const CC_release = window.CompostContribution && window.CompostContribution.releasePerWeek;
 const uptake_phase1 = ph1.PH_UPTAKE_FACTOR_AT_CURRENT_SOIL;
@@ -1212,11 +1212,11 @@ if (!computeStageRecipe || !TOMATO_FRUIT_EXPORT || !BIOMASS_DEMAND
   }
 }
 
-// ─── REQ-099 — FertigationRecipeTomato public API namespace ─────────────
+// ─── public-api-namespace — FertigationRecipeTomato public API namespace ─────────────
 //
 // Spec: nutrition/tomato/fertigation-recipe/spec.md → REQ-099.
 
-header('REQ-099 — window.FertigationRecipeTomato public API surface');
+header('public-api-namespace — window.FertigationRecipeTomato public API surface');
 
 const FR = window.FertigationRecipeTomato;
 if (!FR) {
@@ -1245,7 +1245,7 @@ if (!FR) {
 // REQ-100 (mode-aware MIXING_FACTOR) retired 2026-05-10 — concept dropped,
 // fertigation supply now reported at full barrel mass. Number not reused.
 
-// ─── REQ-154 — FIRST_PRINCIPLES_T5_FERTIGATION pinned to computeStageRecipe('T5')
+// ─── fp-target-mirrors-sizer — FIRST_PRINCIPLES_T5_FERTIGATION pinned to computeStageRecipe('T5')
 //
 // Spec: nutrition/tomato/fertigation-recipe/spec.md → REQ-154.
 // The FP T5 fertigation target equals the mass-balance derivation output
@@ -1254,7 +1254,7 @@ if (!FR) {
 // learnings.md; pinning prevents the K/Mg drift the legacy anchor surfaced
 // after the REQ-098 amendment dropped compost-subtraction.
 
-header('REQ-154 — FIRST_PRINCIPLES_T5_FERTIGATION values = computeStageRecipe(T5) output');
+header('fp-target-mirrors-sizer — FIRST_PRINCIPLES_T5_FERTIGATION values = computeStageRecipe(T5) output');
 
 if (!FIRST_PRINCIPLES_T5_FERTIGATION || !computeStageRecipe || !FP_RECIPE_T5) {
   fail('REQ-154 prerequisites exposed',
@@ -1288,7 +1288,7 @@ if (!FIRST_PRINCIPLES_T5_FERTIGATION || !computeStageRecipe || !FP_RECIPE_T5) {
   }
 }
 
-// ─── REQ-155 — PH_UPTAKE_FACTOR_AT_CURRENT_SOIL applied to fertigation sizing
+// ─── uptake-efficiency-factor — PH_UPTAKE_FACTOR_AT_CURRENT_SOIL applied to fertigation sizing
 //
 // Spec: nutrition/tomato/fertigation-recipe/spec.md → REQ-155.
 // Asserts the constant exists with K/Mg/B keys at the expected cert-2
@@ -1296,7 +1296,7 @@ if (!FIRST_PRINCIPLES_T5_FERTIGATION || !computeStageRecipe || !FP_RECIPE_T5) {
 // correlation is covered by REQ-098 (which now applies the factor in the
 // expected-value calculation).
 
-header('REQ-155 — PH_UPTAKE_FACTOR_AT_CURRENT_SOIL: per-element bed→plant factor');
+header('uptake-efficiency-factor — PH_UPTAKE_FACTOR_AT_CURRENT_SOIL: per-element bed→plant factor');
 
 const uf = ph1.PH_UPTAKE_FACTOR_AT_CURRENT_SOIL;
 if (!uf) {
@@ -1319,9 +1319,9 @@ if (!uf) {
   }
 }
 
-// ─── REQ-011 — fraction sums per element in CHANNEL_ROLE within 1.0 ± 0.05
+// ─── channel-role-coverage — fraction sums per element in CHANNEL_ROLE within 1.0 ± 0.05
 
-header('REQ-011 — Aucun double flux-ownership (sommes 1.0 ± 0.05)');
+header('channel-role-coverage — Aucun double flux-ownership (sommes 1.0 ± 0.05)');
 
 if (!CHANNEL_ROLE) {
   fail('CHANNEL_ROLE exposed', 'missing');
@@ -1340,9 +1340,9 @@ if (!CHANNEL_ROLE) {
   }
 }
 
-// ─── REQ-019 — phClass covers every element in product.base ────────────
+// ─── phclass-covers-every-element — phClass covers every element in product.base ────────────
 
-header('REQ-019 — PRODUCT.phClass couvre tout élément de PRODUCT.base');
+header('phclass-covers-every-element — PRODUCT.phClass couvre tout élément de PRODUCT.base');
 
 if (!PRODUCT) {
   fail('PRODUCT exposed', 'missing');
@@ -1367,9 +1367,9 @@ if (!PRODUCT) {
   }
 }
 
-// ─── REQ-022 — every product in any active recipe has organicAllowed: true
+// ─── every-product-ecocert-allowed — every product in any active recipe has organicAllowed: true
 
-header('REQ-022 — Produits des recettes actives organicAllowed: true');
+header('every-product-ecocert-allowed — Produits des recettes actives organicAllowed: true');
 
 if (!PRODUCT) {
   fail('PRODUCT exposed', 'missing');
@@ -1399,9 +1399,9 @@ if (!PRODUCT) {
   }
 }
 
-// ─── REQ-023 — every product has an ecFactor (number, 0 explicit) ──────
+// ─── ec-factor-covers-every-product — every product has an ecFactor (number, 0 explicit) ──────
 
-header('REQ-023 — Tout produit a ecFactor (numberérique, 0 explicite)');
+header('ec-factor-covers-every-product — Tout produit a ecFactor (numberérique, 0 explicite)');
 
 if (!PRODUCT) {
   fail('PRODUCT exposed', 'missing');
@@ -1419,9 +1419,9 @@ if (!PRODUCT) {
   }
 }
 
-// ─── REQ-029a — every product has non-empty ions and chemistryTags ─────
+// ─── product-declares-ions-and-chemistry-tags — every product has non-empty ions and chemistryTags ─────
 
-header('REQ-029a — Tout produit a ions et chemistryTags non vides');
+header('product-declares-ions-and-chemistry-tags — Tout produit a ions et chemistryTags non vides');
 
 if (!PRODUCT) {
   fail('PRODUCT exposed', 'missing');
@@ -1442,14 +1442,14 @@ if (!PRODUCT) {
   }
 }
 
-// ─── REQ-029b — every (cation × anion) pair is in KSP_PAIRS or KSP_SAFE ─
+// ─── every-cation-anion-pair-classified — every (cation × anion) pair is in KSP_PAIRS or KSP_SAFE ─
 //
 // Cation/anion classification follows the validator embedded in index.html
 // (validatePhase1ModelCoverage IIFE at line 3882): cations end in '+' or
 // have an explicit suffix like '2+', anions end in '-' or '-N' (charge
 // notation). We use the exact same lists declared there.
 
-header('REQ-029b — Toute paire cation × anion classifiée');
+header('every-cation-anion-pair-classified — Toute paire cation × anion classifiée');
 
 if (!PRODUCT || !KSP_PAIRS || !KSP_SAFE) {
   fail('PRODUCT / KSP_PAIRS / KSP_SAFE exposés', 'missing');
@@ -1483,9 +1483,9 @@ if (!PRODUCT || !KSP_PAIRS || !KSP_SAFE) {
   }
 }
 
-// ─── REQ-029c — every distinct chemistryTags tag is classified ─────────
+// ─── every-chemistry-tag-classified — every distinct chemistryTags tag is classified ─────────
 
-header('REQ-029c — Tout chemistryTags est classifié');
+header('every-chemistry-tag-classified — Tout chemistryTags est classifié');
 
 if (!PRODUCT || !TAG_INCOMPATIBILITIES || !TAGS_INERT) {
   fail('PRODUCT / TAG_INCOMPATIBILITIES / TAGS_INERT exposés', 'missing');
@@ -1508,14 +1508,14 @@ if (!PRODUCT || !TAG_INCOMPATIBILITIES || !TAGS_INERT) {
   }
 }
 
-// ─── REQ-033 — TOMATO_REMOVAL biased toward high end of references ─────
+// ─── tomato-removal-biased-high — TOMATO_REMOVAL biased toward high end of references ─────
 //
 // Inter-source mean across {Yara high-end, Sonneveld 2009, Koller 2016 avg}
 // for each macro element with multi-source data. TOMATO_REMOVAL value must
 // be ≥ this mean (or carry an `acceptedDeficit` annotation, not yet supported
 // in the data shape — for now, hard threshold).
 
-header('REQ-033 — TOMATO_REMOVAL ≥ inter-source mean (high-end bias)');
+header('tomato-removal-biased-high — TOMATO_REMOVAL ≥ inter-source mean (high-end bias)');
 
 if (!TOMATO_REMOVAL) {
   fail('TOMATO_REMOVAL exposé', 'window.TOMATO_REMOVAL not available');
@@ -1620,14 +1620,14 @@ const STAGES = ['T1', 'T2', 'T3', 'T4', 'T5'];
 const MASS_BALANCE_ELEMENTS = ['N', 'P', 'K', 'Mg'];  // CHANNEL_ROLE elements with non-foliar supply
 const SOIL_PH_NOW = 7.4;  // current soil pH per CLAUDE.md (April 2026 Berger)
 
-// ─── REQ-013 — Σ(channel_supply) ≥ 0.9 × demand per (element, stage) ──────
+// ─── under-fert-guard — Σ(channel_supply) ≥ 0.9 × demand per (element, stage) ──────
 //
 // Failures are expected when nothing can be done about it (P pH-locked at
 // soil pH ≥ 7, no organic + chemistry-compatible remediation path) — those
 // MUST appear in ACCEPTED_DEFICITS with a documented reason. Unaccepted
 // deficits = real failures that must fix the model or the recipe.
 
-header('REQ-013 — Couverture macro ≥ 0.9 × demande (gaps acceptés annotés)');
+header('under-fert-guard — Couverture macro ≥ 0.9 × demande (gaps acceptés annotés)');
 
 if (typeof computeStageRecipe !== 'function' || !TOMATO_SIDEDRESS || !RECIPE_INPUTS || !ACCEPTED_DEFICITS) {
   fail('REQ-013 — required globals exposed', 'computeStageRecipe / TOMATO_SIDEDRESS / RECIPE_INPUTS / ACCEPTED_DEFICITS missing');
@@ -1661,7 +1661,7 @@ if (typeof computeStageRecipe !== 'function' || !TOMATO_SIDEDRESS || !RECIPE_INP
   }
 }
 
-// ─── REQ-014 — Σ(channel_supply) ≤ 1.3 × demand (luxury / waste guard) ────
+// ─── luxury-feeding-guard — Σ(channel_supply) ≤ 1.3 × demand (luxury / waste guard) ────
 //
 // Excess > 1.3 × demand is accepted iff (a) entry exists in ACCEPTED_EXCESSES
 // with a reason AND (b) the UI surfaces a warning to the operator so over-
@@ -1669,7 +1669,7 @@ if (typeof computeStageRecipe !== 'function' || !TOMATO_SIDEDRESS || !RECIPE_INP
 // model failure unless there's a documented reason it can't be undone (e.g.
 // past compost amendment that's still mineralizing).
 
-header('REQ-014 — Sur-apport macro ≤ 1.3 × demande (excès acceptés annotés + warning UI)');
+header('luxury-feeding-guard — Sur-apport macro ≤ 1.3 × demande (excès acceptés annotés + warning UI)');
 
 if (typeof computeStageRecipe !== 'function' || !TOMATO_SIDEDRESS || !RECIPE_INPUTS || !ACCEPTED_EXCESSES) {
   fail('REQ-014 — required globals exposed', 'computeStageRecipe / TOMATO_SIDEDRESS / RECIPE_INPUTS / ACCEPTED_EXCESSES missing');
@@ -1707,14 +1707,14 @@ if (typeof computeStageRecipe !== 'function' || !TOMATO_SIDEDRESS || !RECIPE_INP
   }
 }
 
-// ─── REQ-015 — Concentration-driven dose / solubility declared ────────────
+// ─── concentration-dose-within-band — Concentration-driven dose / solubility declared ────────────
 //
 // REQ-015 envelopes (efficacy_min / safety_max) aren't in PRODUCT shape today.
 // Best mechanizable proxy: every PRODUCT entry MUST declare solubilityCap_g_per_L
 // (existing field). This catches the add-product-without-data case so a real
 // efficacy/safety band can be added next.
 
-header('REQ-015 — Tout produit déclare solubilityCap_g_per_L (placeholder)');
+header('concentration-dose-within-band — Tout produit déclare solubilityCap_g_per_L (placeholder)');
 
 if (!PRODUCT) {
   fail('PRODUCT exposed', 'missing');
@@ -1737,7 +1737,7 @@ if (!PRODUCT) {
 // removed (stored = computed by construction). See RECIPE_HISTORY entry
 // (retired 2026-05-08). REQ-153 (2026-05-13) replaces it for Block 8 direction.
 
-// ─── REQ-153 — Block 8 drift gauge renders ratio FP ÷ Stored ──────────────
+// ─── stored-vs-computed-drift-block — Block 8 drift gauge renders ratio FP ÷ Stored ──────────────
 //
 // For each element shown in the Tomato Nutrition admin page's Block 8
 // "Recette stockée vs calculée (drift)", the rendered ratio is
@@ -1748,7 +1748,7 @@ if (!PRODUCT) {
 //
 // Spec: nutrition/tomato/shell/spec.md → REQ-153.
 
-header('REQ-153 — Block 8 drift gauge renders FP ÷ Stored (≥100 % = under-supply)');
+header('stored-vs-computed-drift-block — Block 8 drift gauge renders FP ÷ Stored (≥100 % = under-supply)');
 
 if (!STORED_RECIPE || !FP_RECIPE_T5 || typeof window.buildNutriment !== 'function') {
   fail('REQ-153 — STORED_RECIPE / FP_RECIPE_T5 / buildNutriment exposed', 'one or more globals missing');
@@ -1786,9 +1786,9 @@ if (!STORED_RECIPE || !FP_RECIPE_T5 || typeof window.buildNutriment !== 'functio
   }
 }
 
-// ─── REQ-017 — pH-aware effective efficiency in [0,1] ─────────────────────
+// ─── ph-aware-effective-efficiency — pH-aware effective efficiency in [0,1] ─────────────────────
 
-header('REQ-017 — effectiveEfficiency(product, element, pH) renvoie [0,1] pour soilPh=7.0');
+header('ph-aware-effective-efficiency — effectiveEfficiency(product, element, pH) renvoie [0,1] pour soilPh=7.0');
 
 if (typeof effectiveEfficiency !== 'function' || !PRODUCT) {
   fail('REQ-017 — effectiveEfficiency exposed', 'function or PRODUCT missing');
@@ -1810,14 +1810,14 @@ if (typeof effectiveEfficiency !== 'function' || !PRODUCT) {
   }
 }
 
-// ─── REQ-018 — No "decorative" products at current pH ─────────────────────
+// ─── no-decorative-products-at-current-ph — No "decorative" products at current pH ─────────────────────
 //
 // Active recipes today: computeStageRecipe (K2SO4, MgSO4-7H2O via fertigation),
 // FOLIAR.tomato.A (MnSO4, ZnSO4, Solubore, CuSO4, NaMolybdate, FeSO4-7H2O),
 // TOMATO_SIDEDRESS (Actisol-5-3-2, FarinePlumes). For each, walk product.base
 // and assert effectiveEfficiency(product, element, soilPh) ≥ 0.05 unless flagged decorative.
 
-header('REQ-018 — Aucun produit "décoratif" (efficiency < 5%) sans drapeau');
+header('no-decorative-products-at-current-ph — Aucun produit "décoratif" (efficiency < 5%) sans drapeau');
 
 if (typeof effectiveEfficiency !== 'function' || !PRODUCT) {
   fail('REQ-018 — effectiveEfficiency / PRODUCT exposés', 'missing');
@@ -1851,9 +1851,9 @@ if (typeof effectiveEfficiency !== 'function' || !PRODUCT) {
   }
 }
 
-// ─── REQ-020 — pH lockout gate (FeSO4 effective efficiency drops with rising pH) ─
+// ─── passive-supply-lockout-gate — pH lockout gate (FeSO4 effective efficiency drops with rising pH) ─
 
-header('REQ-020 — Lockout pH: effectiveEfficiency(FeSO4, Fe, 7.4) < (Fe, 6.5)');
+header('passive-supply-lockout-gate — Lockout pH: effectiveEfficiency(FeSO4, Fe, 7.4) < (Fe, 6.5)');
 
 if (typeof effectiveEfficiency !== 'function' || !PRODUCT || !PRODUCT['FeSO4-7H2O']) {
   fail('REQ-020 — FeSO4 / effectiveEfficiency exposed', 'missing');
@@ -1870,14 +1870,14 @@ if (typeof effectiveEfficiency !== 'function' || !PRODUCT || !PRODUCT['FeSO4-7H2
   }
 }
 
-// ─── REQ-021 — Solubility cap per fertigation product ─────────────────────
+// ─── solubility-cap-per-product — Solubility cap per fertigation product ─────────────────────
 //
 // For active recipes, compute effective concentration (g per L stock barrel)
 // and assert it's below the product's solubility cap. Stock barrel size is
 // not currently exposed; use a conservative 500 L as proxy. K2SO4 at T5
 // (~3500 g) → 7 g/L, well below 100 g/L cap. Foliar tank: 15 L master vol.
 
-header('REQ-021 — Concentration in tank ≤ solubilityCap_g_per_L');
+header('solubility-cap-per-product — Concentration in tank ≤ solubilityCap_g_per_L');
 
 if (!PRODUCT || typeof computeStageRecipe !== 'function') {
   fail('REQ-021 — PRODUCT / computeStageRecipe exposed', 'missing');
@@ -1932,14 +1932,14 @@ if (!PRODUCT || typeof computeStageRecipe !== 'function') {
   }
 }
 
-// ─── REQ-024 — Predicted CE within crop-stage band ────────────────────────
+// ─── predicted-ce-within-crop-stage-band — Predicted CE within crop-stage band ────────────────────────
 //
 // Approximate band 0.3–2.0 mS/cm for fertigation contribution at the dripper
 // (above the ~0.10 baseline of city water). predictedCE(recipe, dilution,
 // waterCE) computes CE; pass dilution=Dosatron-typical 0.02 (1:50). For each
 // tomato stage, sum K₂SO₄ + MgSO₄ contribution and assert within band.
 
-header('REQ-024 — predictedCE par stage dans la bande [0.3, 2.0] mS/cm (stages opérationnels)');
+header('predicted-ce-within-crop-stage-band — predictedCE par stage dans la bande [0.3, 2.0] mS/cm (stages opérationnels)');
 
 if (typeof ph1.predictedCE !== 'function' || typeof computeStageRecipe !== 'function') {
   fail('REQ-024 — predictedCE / computeStageRecipe exposés', 'missing');
@@ -1973,9 +1973,9 @@ if (typeof ph1.predictedCE !== 'function' || typeof computeStageRecipe !== 'func
   }
 }
 
-// ─── REQ-025 — Foliar tank CE under burn cap ──────────────────────────────
+// ─── foliar-ce-under-burn-cap — Foliar tank CE under burn cap ──────────────────────────────
 
-header('REQ-025 — Foliar predictedCE < 10.0 mS/cm (tomato leaf burn cap)');
+header('foliar-ce-under-burn-cap — Foliar predictedCE < 10.0 mS/cm (tomato leaf burn cap)');
 
 if (typeof ph1.predictedCE !== 'function' || !FOLIAR || !FOLIAR.tomato) {
   fail('REQ-025 — predictedCE / FOLIAR exposés', 'missing');
@@ -2009,7 +2009,7 @@ if (typeof ph1.predictedCE !== 'function' || !FOLIAR || !FOLIAR.tomato) {
   }
 }
 
-// ─── REQ-029 — In-tank Ksp check (precipitation guard, recipe-level) ──────
+// ─── in-tank-ksp-precipitation-guard — In-tank Ksp check (precipitation guard, recipe-level) ──────
 //
 // Active tanks:
 //   - Fertigation stock: K2SO4 + MgSO4-7H2O (cations K+, Mg2+; anions SO4-2)
@@ -2017,7 +2017,7 @@ if (typeof ph1.predictedCE !== 'function' || !FOLIAR || !FOLIAR.tomato) {
 // For each, walk cation × anion pairs across products in the tank, and assert
 // none hit a KSP_PAIRS entry with no override. KSP_SAFE matches → ok.
 
-header('REQ-029 — Aucune paire précipitante dans une recette active');
+header('in-tank-ksp-precipitation-guard — Aucune paire précipitante dans une recette active');
 
 if (!PRODUCT || !KSP_PAIRS || !KSP_SAFE) {
   fail('REQ-029 — PRODUCT / KSP_PAIRS / KSP_SAFE exposed', 'missing');
@@ -2057,9 +2057,9 @@ if (!PRODUCT || !KSP_PAIRS || !KSP_SAFE) {
   }
 }
 
-// ─── REQ-030 — INCOMPATIBLE_RECIPES declared ──────────────────────────────
+// ─── incompatible-recipes-declared — INCOMPATIBLE_RECIPES declared ──────────────────────────────
 
-header('REQ-030 — INCOMPATIBLE_RECIPES constante déclarée');
+header('incompatible-recipes-declared — INCOMPATIBLE_RECIPES constante déclarée');
 
 if (typeof INCOMPATIBLE_RECIPES === 'undefined' || INCOMPATIBLE_RECIPES === undefined) {
   fail('REQ-030 — INCOMPATIBLE_RECIPES non exposé',
@@ -2077,9 +2077,9 @@ if (typeof INCOMPATIBLE_RECIPES === 'undefined' || INCOMPATIBLE_RECIPES === unde
   else fail('REQ-030 — INCOMPATIBLE_RECIPES entrées malformées', bad.join('\n'));
 }
 
-// ─── REQ-031 — MIX_ORDER per multi-product recipe ─────────────────────────
+// ─── mix-order-per-multi-product-recipe — MIX_ORDER per multi-product recipe ─────────────────────────
 
-header('REQ-031 — MIX_ORDER constante déclarée pour recettes multi-produits');
+header('mix-order-per-multi-product-recipe — MIX_ORDER constante déclarée pour recettes multi-produits');
 
 if (typeof MIX_ORDER === 'undefined' || MIX_ORDER === undefined) {
   fail('REQ-031 — MIX_ORDER non exposé',
@@ -2097,13 +2097,13 @@ if (typeof MIX_ORDER === 'undefined' || MIX_ORDER === undefined) {
   else fail('REQ-031 — MIX_ORDER entrées malformées', bad.join('\n'));
 }
 
-// ─── REQ-032 — Stock barrel time-stability ────────────────────────────────
+// ─── stock-barrel-time-stability — Stock barrel time-stability ────────────────────────────────
 //
 // PRODUCT entries already declare maximumStableHours — assert non-empty for active
 // fertigation/foliar products. This is the schema half of REQ-032; the UI
 // "stock-age warning" remains TODO.
 
-header('REQ-032 — maximumStableHours déclaré sur tout produit en recette active');
+header('stock-barrel-time-stability — maximumStableHours déclaré sur tout produit en recette active');
 
 if (!PRODUCT) {
   fail('REQ-032 — PRODUCT exposed', 'missing');
@@ -2127,14 +2127,14 @@ if (!PRODUCT) {
   }
 }
 
-// ─── REQ-053 — Predicted tank pH within compartment envelope ──────────────
+// ─── predicted-tank-ph-within-envelope — Predicted tank pH within compartment envelope ──────────────
 //
 // Bands per REQ-053:
 //   Foliar tank: 5.0–7.0
 //   Fertigation stock: 4.5–7.5
 // Use predictedTankPh on each active recipe (g/L for each product in tank).
 
-header('REQ-053 — predictedTankPh dans la bande [4.0, 7.5] (chelate-stable)');
+header('predicted-tank-ph-within-envelope — predictedTankPh dans la bande [4.0, 7.5] (chelate-stable)');
 
 if (typeof predictedTankPh !== 'function' || !FOLIAR || typeof computeStageRecipe !== 'function') {
   fail('REQ-053 — predictedTankPh / FOLIAR / computeStageRecipe exposés', 'missing');
@@ -2175,7 +2175,7 @@ if (typeof predictedTankPh !== 'function' || !FOLIAR || typeof computeStageRecip
   }
 }
 
-// ─── REQ-054 — Chelate stability pH range respected ───────────────────────
+// ─── chelate-stability-ph-range-respected — Chelate stability pH range respected ───────────────────────
 //
 // Walk PRODUCT for any with chemistryTags containing 'chelate-*' tag; each
 // must declare stablePhRange. Then for active recipes, predictedTankPh must
@@ -2184,7 +2184,7 @@ if (typeof predictedTankPh !== 'function' || !FOLIAR || typeof computeStageRecip
 // is the canonical foliar Fe), so the pass is trivial. Assert anyway so the
 // check fires loudly when a chelate is reintroduced.
 
-header('REQ-054 — Chelate stablePhRange déclaré + respecté en recette active');
+header('chelate-stability-ph-range-respected — Chelate stablePhRange déclaré + respecté en recette active');
 
 if (!PRODUCT) {
   fail('REQ-054 — PRODUCT exposed', 'missing');
@@ -2203,9 +2203,9 @@ if (!PRODUCT) {
   }
 }
 
-// ─── REQ-055 — Foliar uptake pH multiplier ────────────────────────────────
+// ─── foliar-uptake-ph-curve — Foliar uptake pH multiplier ────────────────────────────────
 
-header('REQ-055 — foliarPhResponse retourne (0,1] sur la bande pH 4-9');
+header('foliar-uptake-ph-curve — foliarPhResponse retourne (0,1] sur la bande pH 4-9');
 
 if (typeof foliarPhResponse !== 'function') {
   fail('REQ-055 — foliarPhResponse exposé', 'function not found');
@@ -2228,13 +2228,13 @@ if (typeof foliarPhResponse !== 'function') {
   }
 }
 
-// ─── REQ-060 — Narrative auto-derive coherence (count `// stable —`) ──────
+// ─── narrative-derived-from-live-data — Narrative auto-derive coherence (count `// stable —`) ──────
 //
 // Real REQ-060 needs a STALE_PHRASE table + render-walk. Mechanizable proxy:
 // count occurrences of the convention `// stable —` in index.html — confirms
 // the discipline is in use. Calibrate threshold from current count.
 
-header('REQ-060 — Convention "// stable —" en usage (compte ≥ 5)');
+header('narrative-derived-from-live-data — Convention "// stable —" en usage (compte ≥ 5)');
 
 {
   const STABLE_RE = /\/\/ stable —/g;
@@ -2247,14 +2247,14 @@ header('REQ-060 — Convention "// stable —" en usage (compte ≥ 5)');
   }
 }
 
-// ─── REQ-061 — Cascade order (foliar > 0 only when earlier channels short) ─
+// ─── replenishment-cascade-earliest-first — Cascade order (foliar > 0 only when earlier channels short) ─
 //
 // For each (stage, element) with a non-foliar replenishment chain, assert that if
 // FOLIAR.tomato.A contains a dose for `element`, then offtake > compost + sidedress
 // + fertigation. Foliar-only elements (Mn/Zn/Cu/B/Mo/Fe per CHANNEL_ROLE) are
 // SKIPPED — for them foliar IS the earliest non-passive channel.
 
-header('REQ-061 — Foliar dose only when earlier channels insufficient');
+header('replenishment-cascade-earliest-first — Foliar dose only when earlier channels insufficient');
 
 if (!FOLIAR || !FOLIAR.tomato || !CHANNEL_ROLE) {
   fail('REQ-061 — FOLIAR / CHANNEL_ROLE exposés', 'missing');
@@ -2293,7 +2293,7 @@ if (!FOLIAR || !FOLIAR.tomato || !CHANNEL_ROLE) {
   }
 }
 
-// ─── REQ-062 — Single fertigation tank per week ──────────────────────────
+// ─── single-fertigation-tank-per-week — Single fertigation tank per week ──────────────────────────
 //
 // Per-crop one-tank rule (foliar-singleton half retired 2026-05-17):
 //   - tomato fertigation: computeStageRecipe(stage) returns one tank composition
@@ -2301,7 +2301,7 @@ if (!FOLIAR || !FOLIAR.tomato || !CHANNEL_ROLE) {
 //   - lettuce fertigation: LETTUCE constant exists and is flat (one production
 //     fertigation recipe, with feSulfate as part of the same tank)
 
-header('REQ-062 — Single fertigation tank per week');
+header('single-fertigation-tank-per-week — Single fertigation tank per week');
 
 if (!LETTUCE) {
   fail('REQ-062 — LETTUCE exposed', 'missing');
@@ -2349,9 +2349,9 @@ if (typeof computeStageRecipe !== 'function') {
   }
 }
 
-// ─── REQ-002 — No forbidden (non-Ecocert-Canada) products in app copy ───
+// ─── ecocert-only-products — No forbidden (non-Ecocert-Canada) products in app copy ───
 
-header('REQ-002 — Pas de produits non-Ecocert dans le copy de l\'app');
+header('ecocert-only-products — Pas de produits non-Ecocert dans le copy de l\'app');
 
 {
   // Strip code comments to avoid false positives on "// removed urea-like
@@ -2446,7 +2446,7 @@ if (!nurseryNs) {
   }
 }
 
-// ─── REQ-090 — Linearity in targetG ─────────────────────────────────────
+// ─── demand-linear-in-target-weight — Linearity in targetG ─────────────────────────────────────
 //
 // calculateNurseryDemand(2g, days, cells) returns 2× the values of
 // calculateNurseryDemand(1g, days, cells), per element, on perTray_mg. Asserted
@@ -2454,7 +2454,7 @@ if (!nurseryNs) {
 //
 // Spec: nutrition/nursery/plant-needs/spec.md → REQ-090.
 
-header('REQ-090 — Nursery demand linear in targetG (±0.1 %)');
+header('demand-linear-in-target-weight — Nursery demand linear in targetG (±0.1 %)');
 
 if (!nurseryNs || typeof nurseryNs.calculateNurseryDemand !== 'function') {
   fail('calculateNurseryDemand exposed on window.PlantNeedsNursery',
@@ -2478,14 +2478,14 @@ if (!nurseryNs || typeof nurseryNs.calculateNurseryDemand !== 'function') {
   }
 }
 
-// ─── REQ-091 — Inverse-linearity in cycleDays ───────────────────────────
+// ─── demand-inverse-linear-in-cycle-length — Inverse-linearity in cycleDays ───────────────────────────
 //
 // calculateNurseryDemand(g, 70, cells).perTray_mg is exactly half of
 // calculateNurseryDemand(g, 35, cells).perTray_mg, per element. ±0.1 %.
 //
 // Spec: nutrition/nursery/plant-needs/spec.md → REQ-091.
 
-header('REQ-091 — Nursery demand inverse-linear in cycleDays (±0.1 %)');
+header('demand-inverse-linear-in-cycle-length — Nursery demand inverse-linear in cycleDays (±0.1 %)');
 
 if (!nurseryNs || typeof nurseryNs.calculateNurseryDemand !== 'function') {
   fail('calculateNurseryDemand exposed on window.PlantNeedsNursery',
@@ -2509,14 +2509,14 @@ if (!nurseryNs || typeof nurseryNs.calculateNurseryDemand !== 'function') {
   }
 }
 
-// ─── REQ-092 — N demand band sanity check at defaults ───────────────────
+// ─── nitrogen-demand-in-band-at-defaults — N demand band sanity check at defaults ───────────────────
 //
 // At defaults (90 g, 35 d, 50 cells), N perPlant_mg ∈ [50, 70]. Catches
 // order-of-magnitude typos in DM, tissue concentration, or cycle length.
 //
 // Spec: nutrition/nursery/plant-needs/spec.md → REQ-092.
 
-header('REQ-092 — Nursery N demand ∈ [50, 70] mg/plant/wk au défaut');
+header('nitrogen-demand-in-band-at-defaults — Nursery N demand ∈ [50, 70] mg/plant/wk au défaut');
 
 if (!nurseryNs || typeof nurseryNs.calculateNurseryDemand !== 'function') {
   fail('calculateNurseryDemand exposed on window.PlantNeedsNursery',
@@ -2534,7 +2534,7 @@ if (!nurseryNs || typeof nurseryNs.calculateNurseryDemand !== 'function') {
   }
 }
 
-// ─── REQ-093 — window.PlantNeedsNursery public API surface ──────────────
+// ─── public-api-namespace — window.PlantNeedsNursery public API surface ──────────────
 //
 // Asserts the namespace exists and exposes the declared keys; spot-checks
 // that calculateNurseryDemand returns shape `{ perPlant_mg, perTray_mg }` per
@@ -2542,7 +2542,7 @@ if (!nurseryNs || typeof nurseryNs.calculateNurseryDemand !== 'function') {
 //
 // Spec: nutrition/nursery/plant-needs/spec.md → REQ-093.
 
-header('REQ-093 — window.PlantNeedsNursery public API surface');
+header('public-api-namespace — window.PlantNeedsNursery public API surface');
 
 if (!nurseryNs) {
   fail('window.PlantNeedsNursery exists',
@@ -2615,9 +2615,9 @@ const LETTUCE_TEST_DEPENDENCIES = {
   frontloadDefaults: { featherMeal_g_per_m2: 50, mineralizationWeeks: 4 },
 };
 
-// ─── REQ-165 — window.PlantNeedsLettuce public API surface ──────────────
+// ─── public-api-namespace — window.PlantNeedsLettuce public API surface ──────────────
 
-header('REQ-165 — window.PlantNeedsLettuce public API surface');
+header('public-api-namespace — window.PlantNeedsLettuce public API surface');
 
 if (!lettucePlantNeedsNs) {
   fail('window.PlantNeedsLettuce exists',
@@ -2636,9 +2636,9 @@ if (!lettucePlantNeedsNs) {
   }
 }
 
-// ─── REQ-166 — Demand scales linearly with mass-gain, inversely with cycleDays
+// ─── demand-scales-with-mass-and-cycle — Demand scales linearly with mass-gain, inversely with cycleDays
 
-header('REQ-166 — Lettuce demand: ×2 gain → ×2 demand; ×2 cycleDays → ÷2 demand');
+header('demand-scales-with-mass-and-cycle — Lettuce demand: ×2 gain → ×2 demand; ×2 cycleDays → ÷2 demand');
 
 if (!lettucePlantNeedsNs || typeof lettucePlantNeedsNs.calculateLettuceNutritionDemand !== 'function') {
   fail('calculateLettuceNutritionDemand exposed on window.PlantNeedsLettuce',
@@ -2667,9 +2667,9 @@ if (!lettucePlantNeedsNs || typeof lettucePlantNeedsNs.calculateLettuceNutrition
   }
 }
 
-// ─── REQ-167 — Supply composition: total = soil + fert + frontload ─────
+// ─── supply-composition-soil-fert-frontload — Supply composition: total = soil + fert + frontload ─────
 
-header('REQ-167 — Lettuce supply total = soil + fert + frontload (per element)');
+header('supply-composition-soil-fert-frontload — Lettuce supply total = soil + fert + frontload (per element)');
 
 if (!lettucePlantNeedsNs || typeof lettucePlantNeedsNs.calculateLettuceNutritionSupply !== 'function') {
   fail('calculateLettuceNutritionSupply exposed on window.PlantNeedsLettuce',
@@ -2698,7 +2698,7 @@ if (!lettucePlantNeedsNs || typeof lettucePlantNeedsNs.calculateLettuceNutrition
   }
 }
 
-// ─── REQ-168 — Demand certainty floor (macros cert 4, micros cert 3) ───
+// ─── demand-certainty-floor — Demand certainty floor (macros cert 4, micros cert 3) ───
 //
 // LETTUCE_TISSUE_DW source quality is the structural anchor: macros (N, P, K,
 // Ca, Mg) at cert 4 per Hochmuth 1991 + Sonneveld 2009 leafy-greens; micros
@@ -2708,7 +2708,7 @@ if (!lettucePlantNeedsNs || typeof lettucePlantNeedsNs.calculateLettuceNutrition
 // nutrition/lettuce/plant-needs/derivation.md and is surfaced via the
 // integrator pourquoi modal — not enforced by code today.
 
-header('REQ-168 — Lettuce demand: 5 macros + 6 micros structurally present');
+header('demand-certainty-floor — Lettuce demand: 5 macros + 6 micros structurally present');
 
 if (!lettucePlantNeedsNs || !lettucePlantNeedsNs.LETTUCE_TISSUE_DW) {
   fail('LETTUCE_TISSUE_DW exposed', lettucePlantNeedsLoadError || 'missing');
@@ -2726,9 +2726,9 @@ if (!lettucePlantNeedsNs || !lettucePlantNeedsNs.LETTUCE_TISSUE_DW) {
   }
 }
 
-// ─── REQ-169 — Canopy factor bounded [0.2, 0.7] ────────────────────────
+// ─── canopy-factor-bounded — Canopy factor bounded [0.2, 0.7] ────────────────────────
 
-header('REQ-169 — Lettuce supply canopyFactor ∈ [0.2, 0.7]');
+header('canopy-factor-bounded — Lettuce supply canopyFactor ∈ [0.2, 0.7]');
 
 if (!lettucePlantNeedsNs || typeof lettucePlantNeedsNs.calculateLettuceNutritionSupply !== 'function') {
   fail('calculateLettuceNutritionSupply exposed on window.PlantNeedsLettuce',
@@ -2805,9 +2805,9 @@ if (!SCN) {
   }
 }
 
-// ─── REQ-094 — Front-load cap ≤ 9 g feather meal/tray + INV-2 mass balance
+// ─── feather-meal-front-load-cap — Front-load cap ≤ 9 g feather meal/tray + INV-2 mass balance
 
-header('REQ-094 — Substrate front-load cap ≤ 9 g + INV-2 release-curve mass balance');
+header('feather-meal-front-load-cap — Substrate front-load cap ≤ 9 g + INV-2 release-curve mass balance');
 
 if (!SCN) {
   fail('SubstrateContributionNursery namespace available',
@@ -2838,9 +2838,9 @@ if (!SCN) {
   }
 }
 
-// ─── REQ-095 — Linearity in feather meal input ──────────────────────────
+// ─── linear-in-feather-meal-input — Linearity in feather meal input ──────────────────────────
 
-header('REQ-095 — Substrate release linéaire en feather meal (OM2 invariant)');
+header('linear-in-feather-meal-input — Substrate release linéaire en feather meal (OM2 invariant)');
 
 if (!SCN || typeof SCN.theoreticalSubstrateReleasePerWeek !== 'function') {
   fail('theoreticalSubstrateReleasePerWeek exposed', substrateLoadError || 'function missing');
@@ -2876,9 +2876,9 @@ if (!SCN || typeof SCN.theoreticalSubstrateReleasePerWeek !== 'function') {
   }
 }
 
-// ─── REQ-096 — Cycle-average matches mass-balance (±10 %) ───────────────
+// ─── cycle-average-matches-mass-balance — Cycle-average matches mass-balance (±10 %) ───────────────
 
-header('REQ-096 — Cycle-average substrate release matches mass-balance');
+header('cycle-average-matches-mass-balance — Cycle-average substrate release matches mass-balance');
 
 if (!SCN || typeof SCN.cycleAverageReleasePerTray !== 'function'
     || !SCN.FEATHER_MEAL_LABEL_PCT
@@ -2917,9 +2917,9 @@ if (!SCN || typeof SCN.cycleAverageReleasePerTray !== 'function'
   }
 }
 
-// ─── REQ-097 — Public API namespace + INV-1 element coverage ────────────
+// ─── public-api-namespace — Public API namespace + INV-1 element coverage ────────────
 
-header('REQ-097 — window.SubstrateContributionNursery public API surface');
+header('public-api-namespace — window.SubstrateContributionNursery public API surface');
 
 if (!SCN) {
   fail('SubstrateContributionNursery exists',
@@ -3012,7 +3012,7 @@ header('Foliar INV-1 — Element coverage closed + numeric output');
   }
 }
 
-// ─── REQ-101 — Coverage discount applied to foliar delivery ──────────────
+// ─── coverage-discount-on-delivery — Coverage discount applied to foliar delivery ──────────────
 //
 // For pinned elements (Mn, Fe), recompute the formula
 //   delivered = recipe_g × element_pct × 1000 / area × FOLIAR_COVERAGE_DEFAULT
@@ -3022,7 +3022,7 @@ header('Foliar INV-1 — Element coverage closed + numeric output');
 //
 // Spec: nutrition/tomato/foliar-strategy/spec.md → REQ-101.
 
-header('REQ-101 — Foliar delivery applies FOLIAR_COVERAGE_DEFAULT (Mn, Fe)');
+header('coverage-discount-on-delivery — Foliar delivery applies FOLIAR_COVERAGE_DEFAULT (Mn, Fe)');
 
 {
   const FRT = window.FoliarRecipeTomato;
@@ -3062,11 +3062,11 @@ header('REQ-101 — Foliar delivery applies FOLIAR_COVERAGE_DEFAULT (Mn, Fe)');
   }
 }
 
-// ─── REQ-103 — FoliarRecipeTomato public API namespace ──────────────────
+// ─── public-api-namespace — FoliarRecipeTomato public API namespace ──────────────────
 //
 // Spec: nutrition/tomato/foliar-strategy/spec.md → REQ-103.
 
-header('REQ-103 — window.FoliarRecipeTomato public API surface');
+header('public-api-namespace — window.FoliarRecipeTomato public API surface');
 
 {
   const FRT = window.FoliarRecipeTomato;
@@ -3096,14 +3096,14 @@ header('REQ-103 — window.FoliarRecipeTomato public API surface');
   }
 }
 
-// ─── REQ-112 — computeFoliarSupply takes sprayCount + surfactant ───────
+// ─── supply-accepts-spray-count-surfactant — computeFoliarSupply takes sprayCount + surfactant ───────
 //
 // Defaults match prior single-arg behavior; sprayCount=2 doubles every
 // element; surfactant=true scales by FOLIAR_COVERAGE_WITH_YUCCA / DEFAULT.
 //
 // Spec: nutrition/tomato/foliar-strategy/spec.md → REQ-112.
 
-header('REQ-112 — computeFoliarSupply(stage, opts) — sprayCount + surfactant levers');
+header('supply-accepts-spray-count-surfactant — computeFoliarSupply(stage, opts) — sprayCount + surfactant levers');
 
 {
   const FRT = window.FoliarRecipeTomato;
@@ -3173,11 +3173,11 @@ header('REQ-112 — computeFoliarSupply(stage, opts) — sprayCount + surfactant
   }
 }
 
-// ─── REQ-115 — computeFoliarRecipeForGap derives gap-maximizing recipe
+// ─── gap-maximizing-recipe — computeFoliarRecipeForGap derives gap-maximizing recipe
 //
 // Spec: nutrition/tomato/foliar-strategy/spec.md → REQ-115.
 
-header('REQ-115 — computeFoliarRecipeForGap (min-dose clamp + surfactant + burn cap + CE scale)');
+header('gap-maximizing-recipe — computeFoliarRecipeForGap (min-dose clamp + surfactant + burn cap + CE scale)');
 
 {
   const FRT = window.FoliarRecipeTomato;
@@ -3301,7 +3301,7 @@ header('REQ-115 — computeFoliarRecipeForGap (min-dose clamp + surfactant + bur
   }
 }
 
-// ─── REQ-116 — FP foliar recipe live-derived from pre-foliar gap chain ──
+// ─── fp-strategy-live-derived — FP foliar recipe live-derived from pre-foliar gap chain ──
 //
 // Spec: nutrition/tomato/foliar-strategy/spec.md → REQ-116.
 //
@@ -3314,7 +3314,7 @@ header('REQ-115 — computeFoliarRecipeForGap (min-dose clamp + surfactant + bur
 // expose it, page DOM not initialized, etc.) the verifier reports the
 // failure cleanly rather than crashing the whole run.
 
-header('REQ-116 — FP foliar recipe live-derived from pre-foliar gap chain (calculateNutritionSupply integration)');
+header('fp-strategy-live-derived — FP foliar recipe live-derived from pre-foliar gap chain (calculateNutritionSupply integration)');
 
 {
   const calculateNutritionSupply = window.calculateNutritionSupply;
@@ -3373,7 +3373,7 @@ header('REQ-116 — FP foliar recipe live-derived from pre-foliar gap chain (cal
 // formula, recipe-mode toggle behaviour. Spec:
 // nutrition/tomato/shell/spec.md → REQ-104..107.
 
-header('REQ-104 — Header inputs are exactly five scalars (no nutr-current)');
+header('header-inputs-five-scalars — Header inputs are exactly five scalars (no nutr-current)');
 
 const REQUIRED_HEADER_INPUTS = [
   'nutr-target',
@@ -3395,7 +3395,7 @@ const REQUIRED_HEADER_INPUTS = [
   }
 }
 
-header('REQ-105 — Light ceiling reactive to solarPerGram (mutate input → text changes)');
+header('light-ceiling-from-operator-j-per-g — Light ceiling reactive to solarPerGram (mutate input → text changes)');
 
 {
   const inp = window.document.getElementById('nutr-solar-per-gram');
@@ -3448,7 +3448,7 @@ header('REQ-105 — Light ceiling reactive to solarPerGram (mutate input → tex
   }
 }
 
-header('REQ-106 — FP mode locks stage to T5 (auto-revert + default fp)');
+header('fp-recipe-mode-locks-t5 — FP mode locks stage to T5 (auto-revert + default fp)');
 
 {
   let logicJsBody = '';
@@ -3478,7 +3478,7 @@ header('REQ-106 — FP mode locks stage to T5 (auto-revert + default fp)');
   }
 }
 
-header('REQ-107 — Recipe toggle: First principles left, default; products-in-play removed');
+header('recipe-mode-toggle-fp-left-default-right — Recipe toggle: First principles left, default; products-in-play removed');
 
 {
   const fpBtn = window.document.getElementById('nutr-recipe-fp');
@@ -3530,7 +3530,7 @@ header('REQ-107 — Recipe toggle: First principles left, default; products-in-p
 // Section 2 of the Bilan UI specs. Spec:
 // nutrition/tomato/plant-needs/builder/user-stories.md → REQ-108..111.
 
-header('REQ-108 — Block 1 calls PN.calculateNutritionDemand (no bare-global lookups in render)');
+header('Block 1 calls PN.calculateNutritionDemand (no bare-global lookups in render)');
 
 {
   let logicJsBody = '';
@@ -3558,7 +3558,7 @@ header('REQ-108 — Block 1 calls PN.calculateNutritionDemand (no bare-global lo
   }
 }
 
-header('REQ-109 — Block 1 row click opens cert + equation + plugged modal (no interpretation prose)');
+header('Block 1 row click opens cert + equation + plugged modal (no interpretation prose)');
 
 {
   const PN = window.PlantNeedsTomato;
@@ -3603,7 +3603,7 @@ header('REQ-109 — Block 1 row click opens cert + equation + plugged modal (no 
   }
 }
 
-header('REQ-110 — Block 1 reactive to target + stage changes');
+header('Block 1 reactive to target + stage changes');
 
 {
   const targetInp = window.document.getElementById('nutr-target');
@@ -3642,7 +3642,7 @@ header('REQ-110 — Block 1 reactive to target + stage changes');
   }
 }
 
-header('REQ-111 — Block 1 row layout: 4 columns (Él. / Fruit / Biomasse / Total)');
+header('Block 1 row layout: 4 columns (Él. / Fruit / Biomasse / Total)');
 
 {
   const needsElement = window.document.getElementById('nutr-needs');
@@ -3677,7 +3677,7 @@ header('REQ-111 — Block 1 row layout: 4 columns (Él. / Fruit / Biomasse / Tot
 // All five checks read the live `window.FertigationNursery` namespace,
 // which is mounted by the @included data.js + calc.js + model.js trio.
 
-header('REQ-122 — nurseryRecipeSupply scales linearly with applicationsPerWeek');
+header('supply-scales-linearly-with-applications — nurseryRecipeSupply scales linearly with applicationsPerWeek');
 {
   const FN = window.FertigationNursery;
   if (!FN || typeof FN.nurseryRecipeSupply !== 'function') {
@@ -3707,7 +3707,7 @@ header('REQ-122 — nurseryRecipeSupply scales linearly with applicationsPerWeek
   }
 }
 
-header('REQ-123 — minimumApplicationsPerWeek returns integer ≤ 7 or null');
+header('min-applications-solves-full-coverage — minimumApplicationsPerWeek returns integer ≤ 7 or null');
 {
   const FN = window.FertigationNursery;
   if (!FN || typeof FN.minimumApplicationsPerWeek !== 'function') {
@@ -3745,7 +3745,7 @@ header('REQ-123 — minimumApplicationsPerWeek returns integer ≤ 7 or null');
   }
 }
 
-header('REQ-124 — nurseryElementsBySource splits sourced vs unsourced');
+header('elements-sourced-vs-unsourced — nurseryElementsBySource splits sourced vs unsourced');
 {
   const FN = window.FertigationNursery;
   if (!FN || typeof FN.nurseryElementsBySource !== 'function') {
@@ -3791,7 +3791,7 @@ header('REQ-124 — nurseryElementsBySource splits sourced vs unsourced');
   }
 }
 
-header('REQ-125 — nurseryRecipeCE signature has no frequency parameter');
+header('ec-cap-per-fertigation-not-per-week — nurseryRecipeCE signature has no frequency parameter');
 {
   const FN = window.FertigationNursery;
   if (!FN || typeof FN.nurseryRecipeCE !== 'function') {
@@ -3816,7 +3816,7 @@ header('REQ-125 — nurseryRecipeCE signature has no frequency parameter');
   }
 }
 
-header('REQ-126 — applicationsPerWeek coerced to integer ∈ [1, 7]');
+header('applications-per-week-positive-integer — applicationsPerWeek coerced to integer ∈ [1, 7]');
 {
   const FN = window.FertigationNursery;
   if (!FN || typeof FN.nurseryRecipeSupply !== 'function') {
@@ -3874,7 +3874,7 @@ if (typeof window.setNutrCrop === 'function') {
   try { window.setNutrCrop('nursery'); } catch (e) { /* swallow */ }
 }
 
-header('REQ-130 — Block 1 (Besoins): 3-col table (Él / Par plant / Cert)');
+header('Block 1 (Besoins): 3-col table (Él / Par plant / Cert)');
 {
   const needsElement = window.document.getElementById('nutr-n-needs');
   if (!needsElement) {
@@ -3928,7 +3928,7 @@ function assertSixColGapGrid(blockElement) {
   return { ok: true };
 }
 
-header('REQ-127 — Block 2 (substrate) layout: recipe header + 6-col gap-grid');
+header('Block 2 (substrate) layout: recipe header + 6-col gap-grid');
 {
   const subElement = window.document.getElementById('nutr-n-substrate');
   if (!subElement) {
@@ -3950,7 +3950,7 @@ header('REQ-127 — Block 2 (substrate) layout: recipe header + 6-col gap-grid')
   }
 }
 
-header('REQ-128 — Block 3 (fertigation) layout: recipe header + CE/pH + 6-col gap-grid');
+header('Block 3 (fertigation) layout: recipe header + CE/pH + 6-col gap-grid');
 {
   const fertigationElement = window.document.getElementById('nutr-n-fertigation');
   if (!fertigationElement) {
@@ -3976,7 +3976,7 @@ header('REQ-128 — Block 3 (fertigation) layout: recipe header + CE/pH + 6-col 
   }
 }
 
-header('REQ-129 — Gap chain order demand → substrate → fertigation');
+header('Gap chain order demand → substrate → fertigation');
 {
   // Behavioral check: read the calc-side outputs and assert that what Block 3
   // shows as "manque entrant" equals what Block 2 shows as "manque sortant",
@@ -4027,7 +4027,7 @@ if (typeof window.setNutrCrop === 'function') {
   try { window.setNutrCrop('nursery'); } catch (e) { /* swallow */ }
 }
 
-header('REQ-136 — substrate + fertigation return details{element: {cert, cap}}');
+header('contribution-channel-details-payload — substrate + fertigation return details{element: {cert, cap}}');
 {
   const SCN = window.SubstrateContributionNursery;
   const FN  = window.FertigationNursery;
@@ -4084,7 +4084,7 @@ header('REQ-136 — substrate + fertigation return details{element: {cert, cap}}
   }
 }
 
-header('REQ-138 — Apport ici cells + cap emojis keyed per (block, element)');
+header('apport-ici-clickable-cert-and-cap-modals — Apport ici cells + cap emojis keyed per (block, element)');
 {
   const subElement = window.document.getElementById('nutr-n-substrate');
   const fertigationElement = window.document.getElementById('nutr-n-fertigation');
@@ -4176,7 +4176,7 @@ function findGapGridDataRows(blockElement) {
 // ici. The trailing slot is the emoji column (no header text).
 const REQ137_HEADER_ORDER = ['Él.', 'Manque entrant (mg)', 'Efficacité', 'Apport ici (mg)', 'Manque sortant (mg)', ''];
 
-header('REQ-137 — Tomato Bilan blocks: 6-col gap-grid + cell-keying + gap-grid is recipe-table\'s next sibling');
+header('contribution-block-gap-grid — Tomato Bilan blocks: 6-col gap-grid + cell-keying + gap-grid is recipe-table\'s next sibling');
 {
   // Tomato page — 4 contribution blocks asserted today.
   // - Cell-keying (existing, preserved).
@@ -4258,7 +4258,7 @@ header('REQ-137 — Tomato Bilan blocks: 6-col gap-grid + cell-keying + gap-grid
   pass('REQ-137 — Semis Fertigation block (recipe-table adjacency) — TODO: wire after F1 lettuce carve');
 }
 
-// ─── REQ-156 — Efficacité column cell semantics ────────────────────────
+// ─── efficacite-column-capability — Efficacité column cell semantics ────────────────────────
 //
 // Spec: nutrition/spec.md → REQ-156. In every contribution-block gap-grid
 // (REQ-137), the Efficacité cell of each element row displays an integer
@@ -4270,7 +4270,7 @@ header('REQ-137 — Tomato Bilan blocks: 6-col gap-grid + cell-keying + gap-grid
 // Scope today: tomato page (4 blocks). Salanova + Semis branches emit
 // pass()-with-TODO matching the REQ-137 / REQ-152 pattern above.
 
-header('REQ-156 — Efficacité cell renders integer % or `—` per data row (Tomato page)');
+header('efficacite-column-capability — Efficacité cell renders integer % or `—` per data row (Tomato page)');
 {
   const blocks = [
     { id: 'nutr-compost',   label: 'Compost' },
@@ -4331,7 +4331,7 @@ header('REQ-156 — Efficacité cell renders integer % or `—` per data row (To
   pass('REQ-156 — Semis Fertigation Efficacité cell — TODO: wire after F1 lettuce carve');
 }
 
-// ─── REQ-157 — Per-element channel efficiency exposure ─────────────────
+// ─── channel-efficiency-capability-map — Per-element channel efficiency exposure ─────────────────
 //
 // Spec: nutrition/spec.md → REQ-157. Every contribution-channel function
 // (compost release, substrate release, sidedress supply, fertigation
@@ -4361,7 +4361,7 @@ header('REQ-156 — Efficacité cell renders integer % or `—` per data row (To
 // without an `efficiency` map. The Wave 2 coder lands the additions as
 // part of the REQ-156/137 wiring per the PO entry 2026-05-15 15:20.
 
-header('REQ-157 — Contribution-channel efficiency map exposed on runtime returns');
+header('channel-efficiency-capability-map — Contribution-channel efficiency map exposed on runtime returns');
 {
   const offenders = [];
 
@@ -4643,7 +4643,7 @@ header('REQ-157 — Contribution-channel efficiency map exposed on runtime retur
   }
 }
 
-// ─── REQ-170 — Surfactant-aware foliar efficiency map ─────────────────────
+// ─── surfactant-aware-efficiency-map — Surfactant-aware foliar efficiency map ─────────────────────
 //
 // Spec: nutrition/tomato/foliar-strategy/spec.md → REQ-170. The foliar
 // channel exposes `efficiencyFor(surfactant)` returning a per-element map
@@ -4654,7 +4654,7 @@ header('REQ-157 — Contribution-channel efficiency map exposed on runtime retur
 // values than efficiencyFor(false) for every routed element. Channel
 // capability shape per REQ-157 (Mn / Zn / Cu / Fe routed; B + Mo absent).
 
-header('REQ-170 — efficiencyFor(surfactant) strictly increases efficiency for every routed element');
+header('surfactant-aware-efficiency-map — efficiencyFor(surfactant) strictly increases efficiency for every routed element');
 {
   const FoR = window.FoliarRecipeTomato;
   const offenders = [];
@@ -4706,7 +4706,7 @@ header('REQ-170 — efficiencyFor(surfactant) strictly increases efficiency for 
   }
 }
 
-// ─── REQ-152 — Contribution-block recipe table ─────────────────────────
+// ─── contribution-block-recipe-table — Contribution-block recipe table ─────────────────────────
 //
 // Spec: nutrition/spec.md → REQ-152. On every Nutrition admin page, each
 // contribution channel block (excluding the Tomato Sol soil-bank block)
@@ -4752,7 +4752,7 @@ function compositionCellOrderOk(cellText) {
   return true;
 }
 
-header('REQ-152 — Contribution-block recipe table — Tomato page (Salanova/Semis deferred)');
+header('contribution-block-recipe-table — Contribution-block recipe table — Tomato page (Salanova/Semis deferred)');
 {
   // Tomato Nutrition page — 4 contribution blocks asserted today.
   // Tomato Sol soil-bank block (#nutr-soil) is EXCLUDED per REQ-152.
@@ -4832,7 +4832,7 @@ header('REQ-152 — Contribution-block recipe table — Tomato page (Salanova/Se
   pass('REQ-152 — Semis Fertigation recipe table (3-col Produit/Composition/Quantité) — TODO: wire after F1 lettuce carve');
 }
 
-// ─── REQ-139 — App must call subproject namespace, no inline reimplementation
+// ─── subproject-namespace-sole-source — App must call subproject namespace, no inline reimplementation
 //
 // Spec: spec.md → REQ-139.
 //
@@ -4851,7 +4851,7 @@ header('REQ-152 — Contribution-block recipe table — Tomato page (Salanova/Se
 //       fertigation/sidedress shapes once computeFertigationSupply +
 //       computeSidedressSupply land in their subprojects.
 
-header('REQ-139 — App must call subproject namespace (no inline reimplementation)');
+header('subproject-namespace-sole-source — App must call subproject namespace (no inline reimplementation)');
 
 {
   let consumerSrc = '';
@@ -4915,7 +4915,7 @@ header('REQ-139 — App must call subproject namespace (no inline reimplementati
   }
 }
 
-// ─── REQ-144 — Operator-facing prose is a deterministic render of spec ──
+// ─── operator-prose-is-deterministic-render — Operator-facing prose is a deterministic render of spec ──
 //
 // Inside any container marked `data-prose-check="strict"`, every visible
 // text node must have an ancestor with `data-prose-source` set to one of:
@@ -4935,7 +4935,7 @@ header('REQ-139 — App must call subproject namespace (no inline reimplementati
 // not checked. Containers opt in as they're touched; new operator
 // surfaces opt in from day one.
 
-header('REQ-144 — Operator-facing prose is a deterministic render of spec (opt-in)');
+header('operator-prose-is-deterministic-render — Operator-facing prose is a deterministic render of spec (opt-in)');
 
 {
   const strictContainers = Array.from(
@@ -5077,40 +5077,40 @@ header('REQ-144 — Operator-facing prose is a deterministic render of spec (opt
   }
 }
 
-// ─── REQ-145 — Pourquoi modal interpretation strings owned by spec ─────
+// ─── pourquoi-modal-strings-owned-here — Pourquoi modal interpretation strings owned by spec ─────
 //
-// REQ-145 lives in nutrition/soil-contribution/spec.md and declares 7
+// pourquoi-modal-strings-owned-here lives in nutrition/soil-contribution/spec.md and declares 7
 // Renders: blocks (Ca, P, K-fert-routed, Mg-fert-routed, N-not-mehlich,
 // micros-foliar-routed, default-not-mehlich). The build pipeline parses
 // them into window.SPEC_STRINGS. Checks:
 //   (a) every key declared in the spec must be reachable via SPEC_STRINGS
 //       (the build picked them up)
-//   (b) every renderSpec('REQ-145', '<key>', …) call in consumer source
+//   (b) every renderSpec('pourquoi-modal-strings-owned-here', '<key>', …) call in consumer source
 //       must reference a declared key (no typos, no orphans)
 
-header('REQ-145 — Pourquoi modal interpretation strings (renderSpec call sites match Renders: keys)');
+header('pourquoi-modal-strings-owned-here — Pourquoi modal interpretation strings (renderSpec call sites match Renders: keys)');
 
 {
   const expectedKeys = ['Ca', 'P', 'K-fert-routed', 'Mg-fert-routed', 'N-not-mehlich', 'micros-foliar-routed', 'default-not-mehlich'];
-  const specStrings = window.SPEC_STRINGS && window.SPEC_STRINGS['REQ-145'];
+  const specStrings = window.SPEC_STRINGS && window.SPEC_STRINGS['pourquoi-modal-strings-owned-here'];
   const offenders = [];
 
   if (!specStrings) {
-    offenders.push('window.SPEC_STRINGS["REQ-145"] missing — build step did not inject Renders: blocks');
+    offenders.push('window.SPEC_STRINGS["pourquoi-modal-strings-owned-here"] missing — build step did not inject Renders: blocks');
   } else {
     for (const key of expectedKeys) {
       if (!Object.prototype.hasOwnProperty.call(specStrings, key)) {
-        offenders.push(`REQ-145 missing render key "${key}" in SPEC_STRINGS`);
+        offenders.push(`pourquoi-modal-strings-owned-here missing render key "${key}" in SPEC_STRINGS`);
       }
     }
 
-    // Scan consumer sources for renderSpec('REQ-145', '<key>', …) calls and
+    // Scan consumer sources for renderSpec('pourquoi-modal-strings-owned-here', '<key>', …) calls and
     // assert each <key> is in expectedKeys.
     const consumers = [
       join(REPO_ROOT, 'app', 'index.html'),
       join(REPO_ROOT, 'nutrition', 'tomato', 'shell', 'logic.js'),
     ];
-    const callRe = /renderSpec\(\s*['"]REQ-145['"]\s*,\s*['"]([^'"]+)['"]/g;
+    const callRe = /renderSpec\(\s*['"]pourquoi-modal-strings-owned-here['"]\s*,\s*['"]([^'"]+)['"]/g;
     let callsFound = 0;
     for (const path of consumers) {
       let text;
@@ -5120,13 +5120,13 @@ header('REQ-145 — Pourquoi modal interpretation strings (renderSpec call sites
         callsFound++;
         const key = m[1];
         if (!expectedKeys.includes(key)) {
-          offenders.push(`renderSpec('REQ-145', '${key}') in ${path}: key not declared in spec`);
+          offenders.push(`renderSpec('pourquoi-modal-strings-owned-here', '${key}') in ${path}: key not declared in spec`);
         }
       }
     }
 
-    // Indirect calls via { requirementId: 'REQ-145', key: '<key>' } — also valid call site.
-    const indirectRe = /requirementId:\s*['"]REQ-145['"]\s*,\s*key:\s*([^,}]+)/g;
+    // Indirect calls via { requirementId: 'pourquoi-modal-strings-owned-here', key: '<key>' } — also valid call site.
+    const indirectRe = /requirementId:\s*['"]pourquoi-modal-strings-owned-here['"]\s*,\s*key:\s*([^,}]+)/g;
     for (const path of consumers) {
       let text;
       try { text = readFileSync(path, 'utf8'); } catch { continue; }
@@ -5141,18 +5141,18 @@ header('REQ-145 — Pourquoi modal interpretation strings (renderSpec call sites
     }
 
     if (callsFound === 0) {
-      offenders.push('no consumer found for REQ-145 — renderSpec(\'REQ-145\', …) absent in app/index.html or nutrition/tomato/shell/logic.js');
+      offenders.push('no consumer found for pourquoi-modal-strings-owned-here — renderSpec(\'pourquoi-modal-strings-owned-here\', …) absent in app/index.html or nutrition/tomato/shell/logic.js');
     }
   }
 
   if (offenders.length === 0) {
-    pass(`SPEC_STRINGS['REQ-145'] has ${Object.keys(specStrings).length} keys · 6 consumer call sites resolve OK`);
+    pass(`SPEC_STRINGS['pourquoi-modal-strings-owned-here'] has ${Object.keys(specStrings).length} keys · 6 consumer call sites resolve OK`);
   } else {
-    fail('REQ-145 — pourquoi modal interpretation strings', offenders.join('\n'));
+    fail('pourquoi-modal-strings-owned-here — pourquoi modal interpretation strings', offenders.join('\n'));
   }
 }
 
-// ─── REQ-158 — Function/variable/property names in JS source must be full
+// ─── identifiers-unabbreviated — Function/variable/property names in JS source must be full
 //     words (no abbreviations) ────────────────────────────────────────────
 //
 // Spec: spec.md → REQ-158. Walk owned-surface JS source (app/,
@@ -5167,7 +5167,7 @@ header('REQ-145 — Pourquoi modal interpretation strings (renderSpec call sites
 // Test files (*.test.mjs, test-helpers.mjs) are excluded — PO entry scopes
 // to runtime app source only ("JS source in app/, nutrition/, yield-range/").
 
-header('REQ-158 — Function/variable/property names in JS source must be full words (no abbreviations)');
+header('identifiers-unabbreviated — Function/variable/property names in JS source must be full words (no abbreviations)');
 {
   const DENYLIST = new Set([
     'eff', 'idx', 'req', 'temp', 'calc', 'cfg', 'init', 'min', 'max',
@@ -5630,7 +5630,7 @@ function cellHasDuplicateUnit(cellText, declaredUnit) {
   return new RegExp(declaredUnit.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '\\s*$').test(stripped);
 }
 
-// ─── REQ-159 — Elemental-mass columns use milligrams ───────────────────
+// ─── elemental-mass-in-mg — Elemental-mass columns use milligrams ───────────────────
 //
 // Walk every nutrition-table column header. For columns whose semantic is
 // per-element elemental mass (Manque entrant / Apport ici / Manque
@@ -5640,7 +5640,7 @@ function cellHasDuplicateUnit(cellText, declaredUnit) {
 // (Block 7/8) stays in g/kg (not a contribution-block render — not
 // touched here).
 
-header('REQ-159 — Nutrition-table elemental-mass columns declare mg in header');
+header('elemental-mass-in-mg — Nutrition-table elemental-mass columns declare mg in header');
 {
   const offenders = [];
   // Tomato page — currently active per the last setNutrCrop call above.
@@ -5734,7 +5734,7 @@ header('REQ-159 — Nutrition-table elemental-mass columns declare mg in header'
   pass('REQ-159 — Salanova Front-load elemental-mass columns — TODO: wire after F1 lettuce carve');
 }
 
-// ─── REQ-160 — Unit suffix lives in header, not in cells ───────────────
+// ─── column-header-unit-declaration — Unit suffix lives in header, not in cells ───────────────
 //
 // Walk every nutrition-table data cell. If the column header declares a
 // unit (parens-suffix pattern `... (mg)`, `... (g)`, etc.), every cell in
@@ -5745,7 +5745,7 @@ header('REQ-159 — Nutrition-table elemental-mass columns declare mg in header'
 // any cell still carries the suffix. The matcher is registered now so
 // the Wave 2 coder's combined REQ-159 + REQ-160 fix lands covered.
 
-header('REQ-160 — Cell text does not duplicate the header-declared unit');
+header('column-header-unit-declaration — Cell text does not duplicate the header-declared unit');
 {
   const offenders = [];
   for (const block of REQ159_TOMATO_BLOCKS) {
@@ -5808,7 +5808,7 @@ header('REQ-160 — Cell text does not duplicate the header-declared unit');
   pass('REQ-160 — Salanova Front-load cells — TODO: wire after F1 lettuce carve');
 }
 
-// ─── REQ-161 — Bare 0 communicates coverage; no `(couvert)` ────────────
+// ─── manque-sortant-zero-bare — Bare 0 communicates coverage; no `(couvert)` ────────────
 //
 // Walk every contribution-block cell on every Nutrition page. Fail if any
 // cell text contains the substring `(couvert)`. The Manque sortant cell
@@ -5821,7 +5821,7 @@ header('REQ-160 — Cell text does not duplicate the header-declared unit');
 // nutrition/soil-contribution/render.js carries the same pattern; we walk
 // it explicitly so it doesn't slip.
 
-header('REQ-161 — Bare 0 in Manque sortant cell, no `(couvert)` annotation');
+header('manque-sortant-zero-bare — Bare 0 in Manque sortant cell, no `(couvert)` annotation');
 {
   const offenders = [];
   const blocksToWalk = [
@@ -5896,7 +5896,7 @@ header('REQ-161 — Bare 0 in Manque sortant cell, no `(couvert)` annotation');
   pass('REQ-161 — Salanova blocks — TODO: wire after F1 lettuce carve');
 }
 
-// ─── REQ-162 — Mois d'épuisement on every row with reservoir data ──────
+// ─── mois-depuisement-sme-runway — Mois d'épuisement on every row with reservoir data ──────
 //
 // Spec: nutrition/spec.md → REQ-162. Every element row on the soil-bank
 // block displays Mois d'épuisement = Mehlich-3 reservoir ÷ weekly plant
@@ -5907,7 +5907,7 @@ header('REQ-161 — Bare 0 in Manque sortant cell, no `(couvert)` annotation');
 // are populated (renders a non-`—` string), and falls back to `—` for
 // elements without bank or SME data.
 
-header('REQ-162 — Mois d\'épuisement rendered for every row with reservoir + SME data');
+header('mois-depuisement-sme-runway — Mois d\'épuisement rendered for every row with reservoir + SME data');
 {
   const SC = window.SoilContribution;
   const block = window.document.getElementById('nutr-soil');
@@ -5947,7 +5947,7 @@ header('REQ-162 — Mois d\'épuisement rendered for every row with reservoir + 
   }
 }
 
-// ─── REQ-163 — Foliar Efficacité is surfactant-aware ───────────────────
+// ─── Foliar Efficacité is surfactant-aware ───────────────────
 //
 // Spec: nutrition/tomato/foliar-strategy/builder/user-stories.md → REQ-163. Two assertions:
 //   (a) Reactive render — toggling #nutr-foliar-surfactant re-renders
@@ -5967,7 +5967,7 @@ header('REQ-162 — Mois d\'épuisement rendered for every row with reservoir + 
 // FoliarRecipeTomato.efficiencyFor). Designed-to-fail today: the page
 // binds the static `.efficiency` map regardless of lever state.
 
-header('REQ-163 — Foliar Efficacité column reactive to surfactant lever');
+header('Foliar Efficacité column reactive to surfactant lever');
 {
   const surfInput = window.document.getElementById('nutr-foliar-surfactant');
   const foliarBlock = window.document.getElementById('nutr-foliar');

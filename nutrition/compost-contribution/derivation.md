@@ -69,7 +69,7 @@ Merged transferability scale (`min` across contributing inputs):
 
 ---
 
-## Efficiency map (REQ-157)
+## Efficiency map (nutrition — channel-efficiency-capability-map)
 
 `window.CompostContribution.efficiency[el] = COMPOST_MINERALIZATION_YEAR1[el]`.
 Year-1 mineralization IS the efficiency for compost (pH-lockout already

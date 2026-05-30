@@ -2,12 +2,12 @@
 
 **Trigger:** work spans 4+ subprojects in one session — tree-wide hygiene sweep, model-wide reframe, post-batch cleanup, or Guillaume says "fan out" / "triage".
 
-Overrides "one REQ per turn" at the orchestrator level. That rule still binds each Phase 1 deputy inside its own lane.
+Overrides "one spec entry per turn" at the orchestrator level. That rule still binds each Phase 1 deputy inside its own lane.
 
 ## When to fan-out vs single-turn
 
 - **Fan-out**: 4+ subprojects in scope, tree-wide hygiene, post-batch sweep, cross-cutting reframe touching many subprojects.
-- **Single-turn** (the default Working-mode rule, "one REQ per turn, then pause"): 1-2 REQ touches, focused challenger response, one fork to resolve.
+- **Single-turn** (the default Working-mode rule, "one spec entry per turn, then pause"): 1-2 spec-entry touches, focused challenger response, one fork to resolve.
 
 ## Phase 0 — Triage deputy (1 sub-agent, blocking)
 
@@ -40,17 +40,20 @@ KEY TASKS
 
 END STATE
 - <concrete criterion — not "spec is solid", but specifics
-  like "REQ-141 rationale rephrased so a cold reader sees the
-  bank/sizer split without re-reading the path-1 rejection">
+  like "only-ca-p-participate-in-gap-chain rationale rephrased so a
+  cold reader sees the bank/sizer split without re-reading the
+  path-1 rejection">
 
 RULES OF ENGAGEMENT
 - Lane: own spec.md / derivation.md / learnings.md / this todo file
 - Forbidden (P-06): app/index.html, */app/page.html, */app/logic.js,
   dist/, calc.js, model.js, data.js, spec.md
 - Verifier scripts (scripts/check-recipes.mjs, check-spec.sh):
-  MAY edit if REQ changes
-- REQ claims: `scripts/claim-req.sh <spec-path> plant-nutrition-specialist`
-  (flock race-safe across parallel deputies)
+  MAY edit if a spec entry changes
+- Spec ids are per-file-unique slugs. There is NO central REQ-NNN
+  allocation, ledger, or claim-req.sh anymore — to add a spec entry,
+  pick a unique kebab-case slug within that file (check existing
+  headings for collision) and write `## <slug>`.
 - Changelog: one line per material change, no trimming
 - Deviation from intent: only with explicit justification in report
 
@@ -78,9 +81,9 @@ Each deputy executes the intent with judgment. Item states are delete-inline by 
 - **Deferred** — keep with `- [ ] [DEFERRED: <reason>] <item>`; orchestrator picks up next round.
 - **Cross-cutting / out of lane** — keep with `- [ ] [CROSS-CUTTING: flagged inline in report] <item>`; orchestrator routes.
 
-Sub-agent inline report: completed (with REQ refs) · deferred · what's still imprecise · cross-cutting flags · files written. The report is where completion is visible; the todo file just shows what remains open.
+Sub-agent inline report: completed (with slug refs) · deferred · what's still imprecise · cross-cutting flags · files written. The report is where completion is visible; the todo file just shows what remains open.
 
-Sub-agents append team-leader inbox per spec mutation (following `skills/notify-team-leader.md`) + one changelog line per material change (no trim — Phase 2 cleans up if count overshoots). REQ claims race-safe via `claim-req.sh`'s flock; changelog/team-leader-inbox appends are short enough that loss risk is acceptable.
+Sub-agents append team-leader inbox per spec mutation (following `skills/notify-team-leader.md`) + one changelog line per material change (no trim — Phase 2 cleans up if count overshoots). Spec ids are per-file-unique slugs — no claim step; collision-safety is the deputy checking existing headings in its own file before writing `## <slug>`. Changelog/team-leader-inbox appends are short enough that loss risk is acceptable.
 
 ## Phase 2 — Synthesis + cleanup
 
@@ -89,5 +92,5 @@ After all deputies return:
 - Read each report; synthesize one "what needs precision to call each subproject's spec solid" digest for Guillaume.
 - Delete fully-resolved todo files outright. Audit trail lives in changelog + team-leader inbox + git history — keeping done todos as archive duplicates signal. **No `todo/done/` sibling.**
 - Todo files with only `[DEFERRED]` or `[CROSS-CUTTING]` lines remaining stay open; resume mode picks them up next round.
-- Route cross-cutting concerns: team-leader inbox for coder cascades (page-level wiring, test pins, pruner sweeps), PO escalation for REQ-collision or PO-spec gaps.
+- Route cross-cutting concerns: team-leader inbox for coder cascades (page-level wiring, test pins, pruner sweeps), PO escalation for slug-collision or PO-spec gaps.
 - Trim changelog only if it overshot (sub-agents skipped trim by design).

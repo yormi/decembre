@@ -1,28 +1,26 @@
 // Tests for nutrition/lettuce/app/user-stories.md.
 //
-// REQs covered (5): REQ-176, REQ-177, REQ-178, REQ-179, REQ-180.
-//
 // Strategy: mirror nutrition/tomato/app/spec.test.mjs — jsdom over the
 // assembled dist/index.html, flip the Nutrition crop sub-toggle to Salanova
 // so #nutr-lettuce-content renders, then assert against the live DOM.
 //
-// Baseline expectation (2026-05-17): REQ-176 (6th front-load input still in
-// place), REQ-179 (4th `interpretation` field still in the registerPourquoi
-// payload at logic.js ~line 102) MUST fail against current source. The Wave 2
-// coder will flip them green. REQ-177, REQ-178, REQ-180 should pass today.
+// Baseline expectation (2026-05-17): five-scalar header (6th front-load input
+// still in place), 3-piece modal (4th `interpretation` field still in the
+// registerPourquoi payload at logic.js ~line 102) MUST fail against current
+// source. The Wave 2 coder will flip them green; the rest should pass today.
 
 import { test, describe } from 'node:test';
 import assert from 'node:assert/strict';
 import { loadLettuceApp, readLogicJs } from './test-helpers.mjs';
 
-// ─── REQ-176 — Header inputs are exactly five scalars ──────────────────
+// ─── Header inputs are exactly five scalars ──────────────────
 //
 // Spec names the five scalars in camelCase (transplantG, targetG, cycleDays,
 // density, phLocked). The DOM-id convention on this subpage is `nutr-l-<x>`
-// — assert by direct id lookup. Critically, REQ-176 rejects a sixth
-// front-load operator input: the weekly feather-meal rate ships planted-in.
+// — assert by direct id lookup. Critically, a sixth front-load operator
+// input is rejected: the weekly feather-meal rate ships planted-in.
 
-describe('REQ-176 — Salanova Bilan header inputs are exactly five scalars', () => {
+describe('Salanova Bilan header inputs are exactly five scalars', () => {
   // Mapping spec scalar → DOM id on the Salanova header card.
   const SCALAR_TO_DOM_ID = {
     transplantG: 'nutr-l-transplant',
@@ -32,7 +30,7 @@ describe('REQ-176 — Salanova Bilan header inputs are exactly five scalars', ()
     phLocked:    'nutr-l-phlocked',
   };
 
-  test('REQ-176 — every required scalar DOM id is present', () => {
+  test('every required scalar DOM id is present', () => {
     const { window } = loadLettuceApp();
     const missing = Object.entries(SCALAR_TO_DOM_ID)
       .filter(([, id]) => !window.document.getElementById(id))
@@ -40,20 +38,20 @@ describe('REQ-176 — Salanova Bilan header inputs are exactly five scalars', ()
     assert.deepEqual(missing, [], `missing scalar inputs: ${missing.join(', ')}`);
   });
 
-  test('REQ-176 — sixth front-load input nutr-l-frontload is absent', () => {
+  test('sixth front-load input nutr-l-frontload is absent', () => {
     // Current source still ships `nutr-l-frontload` (and its sibling
-    // logic.js front-load reads). REQ-176 rejects it — the weekly rate ships
+    // logic.js front-load reads). It is rejected — the weekly rate ships
     // as a planted-in default, not an operator knob. This test fails today
     // and flips green when the coder removes the field.
     const { window } = loadLettuceApp();
     assert.equal(
       window.document.getElementById('nutr-l-frontload'),
       null,
-      'nutr-l-frontload must be retired (REQ-176: no sixth front-load input)',
+      'nutr-l-frontload must be retired (no sixth front-load input)',
     );
   });
 
-  test('REQ-176 — types: 4× number, 1× checkbox', () => {
+  test('types: 4× number, 1× checkbox', () => {
     const { window } = loadLettuceApp();
     const document = window.document;
     assert.equal(document.getElementById('nutr-l-transplant').type, 'number');
@@ -63,11 +61,11 @@ describe('REQ-176 — Salanova Bilan header inputs are exactly five scalars', ()
     assert.equal(document.getElementById('nutr-l-phlocked').type, 'checkbox');
   });
 
-  test('REQ-176 — header card body has no other top-level number/checkbox inputs beyond the 5', () => {
+  test('header card body has no other top-level number/checkbox inputs beyond the 5', () => {
     // Behavioral guard: count every <input type="number"|"checkbox"> directly
     // inside the Salanova header card and assert each id is in the allowed
     // five-scalar set. Anything else (e.g. nutr-l-frontload) is an
-    // unspecified header knob and breaks REQ-176.
+    // unspecified header knob and breaks the five-scalar rule.
     const { window } = loadLettuceApp();
     const headerCard = window.document.querySelector('#nutr-lettuce-content .card');
     assert.ok(headerCard, 'header card not found inside #nutr-lettuce-content');
@@ -83,15 +81,15 @@ describe('REQ-176 — Salanova Bilan header inputs are exactly five scalars', ()
   });
 });
 
-// ─── REQ-177 — Plant-need block demand source ──────────────────────────
+// ─── Plant-need block demand source ──────────────────────────
 //
 // Spec pins the call shape: the render path must invoke
 // window.PlantNeedsLettuce.calculateLettuceNutritionDemand(transplantG,
 // targetG, cycleDays, density). No bare-global access to LETTUCE_TISSUE_DW /
 // LETTUCE_DM_FRACTION in the render path source.
 
-describe('REQ-177 — Plant-need block demand source', () => {
-  test('REQ-177 — buildNutrimentLettuce calls PN.calculateLettuceNutritionDemand with four scalars', () => {
+describe('Plant-need block demand source', () => {
+  test('buildNutrimentLettuce calls PN.calculateLettuceNutritionDemand with four scalars', () => {
     // Behavioral spy. Patch the namespace function, force a re-render via
     // setNutrCrop('lettuce'), assert ≥1 call with the expected arg shape.
     const { window } = loadLettuceApp();
@@ -127,7 +125,7 @@ describe('REQ-177 — Plant-need block demand source', () => {
     }
   });
 
-  test('REQ-177 (structural-only) — render-path source has no bare LETTUCE_TISSUE_DW / LETTUCE_DM_FRACTION access', () => {
+  test('(structural-only) render-path source has no bare LETTUCE_TISSUE_DW / LETTUCE_DM_FRACTION access', () => {
     // Property-descriptor spies on the bare globals are invasive in jsdom
     // (the constants are declared with `const` inside the page-script IIFE
     // and are not configurable). Fall back to a structural grep on
@@ -150,14 +148,14 @@ describe('REQ-177 — Plant-need block demand source', () => {
   });
 });
 
-// ─── REQ-178 — Plant-need block row layout: 2 columns ──────────────────
+// ─── Plant-need block row layout: 2 columns ──────────────────
 //
 // Header row: 2 column-cells (Él. / Besoin). Each data row: 2 cells. No
-// fruit/biomass split — diverges from tomato's 4-col layout per REQ-166
+// fruit/biomass split — diverges from tomato's 4-col layout
 // (lettuce has no flowering transition).
 
-describe('REQ-178 — Plant-need block row layout: 2 columns', () => {
-  test('REQ-178 — #nutr-l-needs header strip has exactly 2 column-cells', () => {
+describe('Plant-need block row layout: 2 columns', () => {
+  test('#nutr-l-needs header strip has exactly 2 column-cells', () => {
     const { window } = loadLettuceApp();
     const needs = window.document.getElementById('nutr-l-needs');
     assert.ok(needs, '#nutr-l-needs must exist');
@@ -172,7 +170,7 @@ describe('REQ-178 — Plant-need block row layout: 2 columns', () => {
     );
   });
 
-  test('REQ-178 — every .pq-row in #nutr-l-needs has exactly 2 child cells', () => {
+  test('every .pq-row in #nutr-l-needs has exactly 2 child cells', () => {
     const { window } = loadLettuceApp();
     const rows = window.document.querySelectorAll('#nutr-l-needs .pq-row');
     assert.ok(rows.length > 0, 'expected at least one .pq-row in #nutr-l-needs');
@@ -184,7 +182,7 @@ describe('REQ-178 — Plant-need block row layout: 2 columns', () => {
     }
   });
 
-  test('REQ-178 — row count matches LETTUCE_TISSUE_DW element count', () => {
+  test('row count matches LETTUCE_TISSUE_DW element count', () => {
     // Indirect: confirms the 2-col layout renders one row per element, not
     // a transposed 1-row-by-many-cols arrangement.
     const { window } = loadLettuceApp();
@@ -198,7 +196,7 @@ describe('REQ-178 — Plant-need block row layout: 2 columns', () => {
   });
 });
 
-// ─── REQ-179 — Row click opens cert + calculation modal with 3 pieces ──
+// ─── Row click opens cert + calculation modal with 3 pieces ──
 //
 // Three accepted content pieces: cert badge (in pq-modal-title), demand
 // equation symbolic (pq-modal-eq), plugged numbers (pq-modal-plugged).
@@ -209,8 +207,8 @@ describe('REQ-178 — Plant-need block row layout: 2 columns', () => {
 // still passes an `interpretation` field — pq-modal-interpolation renders
 // non-empty → these tests fail. Wave 2 coder strips the field.
 
-describe('REQ-179 — Plant-need row click opens cert + equation + plugged modal (3 pieces)', () => {
-  test('REQ-179 — every element row wires showPourquoi("lettuce-demand.<el>")', () => {
+describe('Plant-need row click opens cert + equation + plugged modal (3 pieces)', () => {
+  test('every element row wires showPourquoi("lettuce-demand.<el>")', () => {
     const { window } = loadLettuceApp();
     const rows = window.document.querySelectorAll('#nutr-l-needs .pq-row');
     assert.ok(rows.length > 0, 'expected at least one row in #nutr-l-needs');
@@ -224,7 +222,7 @@ describe('REQ-179 — Plant-need row click opens cert + equation + plugged modal
     }
   });
 
-  test('REQ-179 — opening a demand modal populates cert badge in pq-modal-title (piece 1/3)', () => {
+  test('opening a demand modal populates cert badge in pq-modal-title (piece 1/3)', () => {
     const { window } = loadLettuceApp();
     assert.equal(typeof window.showPourquoi, 'function', 'showPourquoi must be exposed');
     window.showPourquoi('lettuce-demand.N');
@@ -237,7 +235,7 @@ describe('REQ-179 — Plant-need row click opens cert + equation + plugged modal
     );
   });
 
-  test('REQ-179 — opening a demand modal populates the equation (piece 2/3)', () => {
+  test('opening a demand modal populates the equation (piece 2/3)', () => {
     const { window } = loadLettuceApp();
     window.showPourquoi('lettuce-demand.N');
     const equation = window.document.getElementById('pq-modal-eq');
@@ -249,7 +247,7 @@ describe('REQ-179 — Plant-need row click opens cert + equation + plugged modal
     );
   });
 
-  test('REQ-179 — opening a demand modal populates plugged-in numbers (piece 3/3)', () => {
+  test('opening a demand modal populates plugged-in numbers (piece 3/3)', () => {
     const { window } = loadLettuceApp();
     window.showPourquoi('lettuce-demand.N');
     const plugged = window.document.getElementById('pq-modal-plugged');
@@ -259,9 +257,9 @@ describe('REQ-179 — Plant-need row click opens cert + equation + plugged modal
     assert.match(text, /\d/, 'plugged-numbers should contain at least one digit');
   });
 
-  test('REQ-179 — opening a demand modal leaves the interpretation node empty (no 4th piece)', () => {
+  test('opening a demand modal leaves the interpretation node empty (no 4th piece)', () => {
     // The pourquoi-modal DOM has a 4th slot (pq-modal-interpolation), but
-    // REQ-179 says only 3 content pieces — cert, equation, plugged. The
+    // only 3 content pieces are allowed — cert, equation, plugged. The
     // interpretation slot must render empty when the page demand modals open
     // AND must NOT advertise a data-prose-source (which would mean prose IS
     // attached even if the empty fallback ran).
@@ -282,13 +280,13 @@ describe('REQ-179 — Plant-need row click opens cert + equation + plugged modal
     }
     assert.deepEqual(
       offenders, [],
-      `pq-modal-interpolation must be empty for every demand modal (REQ-179: 3 pieces only); offenders:\n  ${offenders.join('\n  ')}`,
+      `pq-modal-interpolation must be empty for every demand modal (3 pieces only); offenders:\n  ${offenders.join('\n  ')}`,
     );
   });
 
-  test('REQ-179 — registerPourquoi payload for lettuce-demand.* carries no `interpretation` key', () => {
+  test('registerPourquoi payload for lettuce-demand.* carries no `interpretation` key', () => {
     // Direct check on the registry: payloads land in window.currentPourquoi.
-    // REQ-179 rejects the 4th interpretation prose piece — that means the
+    // The 4th interpretation prose piece is rejected — that means the
     // registration call itself must drop the field. (Today logic.js line ~102
     // still passes `interpretation: 'Concentration tissulaire DW …'`.)
     const { window } = loadLettuceApp();
@@ -308,15 +306,15 @@ describe('REQ-179 — Plant-need row click opens cert + equation + plugged modal
   });
 });
 
-// ─── REQ-180 — Plant-need block reactive to demand-side header inputs ──
+// ─── Plant-need block reactive to demand-side header inputs ──
 //
 // Mutating transplantG | targetG | cycleDays | density → re-render with new
 // numbers (innerHTML changes). Mutating phLocked → demand block unchanged
-// (phLocked is supply-side per REQ-167; even if buildNutrimentLettuce re-runs,
-// the demand result is independent of phLocked → #nutr-l-needs innerHTML
-// must be byte-identical).
+// (phLocked is supply-side per supply-composition-soil-fert-frontload; even if
+// buildNutrimentLettuce re-runs, the demand result is independent of phLocked
+// → #nutr-l-needs innerHTML must be byte-identical).
 
-describe('REQ-180 — Plant-need block reactive to demand-side header inputs', () => {
+describe('Plant-need block reactive to demand-side header inputs', () => {
   // Helper: mutate an input, dispatch the appropriate event, return the
   // current #nutr-l-needs innerHTML. Restore state afterwards.
   function readNeedsAfterMutation(window, inputId, mutator, eventName) {
@@ -343,7 +341,7 @@ describe('REQ-180 — Plant-need block reactive to demand-side header inputs', (
   ];
 
   for (const { scalar, inputId, from, to, event } of DEMAND_INPUT_CASES) {
-    test(`REQ-180 — mutating ${scalar} (${inputId}) re-renders #nutr-l-needs`, () => {
+    test(`mutating ${scalar} (${inputId}) re-renders #nutr-l-needs`, () => {
       const { window } = loadLettuceApp();
       // Establish a known baseline before reading.
       const input = window.document.getElementById(inputId);
@@ -363,8 +361,8 @@ describe('REQ-180 — Plant-need block reactive to demand-side header inputs', (
     });
   }
 
-  test('REQ-180 — mutating phLocked does NOT change #nutr-l-needs innerHTML', () => {
-    // phLocked is supply-side per REQ-167. Even if buildNutrimentLettuce
+  test('mutating phLocked does NOT change #nutr-l-needs innerHTML', () => {
+    // phLocked is supply-side per supply-composition-soil-fert-frontload. Even if buildNutrimentLettuce
     // re-runs on toggle, the demand block's innerHTML must be byte-identical
     // because calculateLettuceNutritionDemand has no phLocked input.
     const { window } = loadLettuceApp();
@@ -386,7 +384,7 @@ describe('REQ-180 — Plant-need block reactive to demand-side header inputs', (
     checkbox.dispatchEvent(new window.Event('input', { bubbles: true }));
     assert.equal(
       before, after,
-      'phLocked toggle must not affect the demand block — REQ-180 + REQ-167 say phLocked is supply-side only',
+      'phLocked toggle must not affect the demand block — supply-composition-soil-fert-frontload says phLocked is supply-side only',
     );
   });
 });

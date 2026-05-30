@@ -98,7 +98,7 @@ elements (P, K, Ca, Mg) by × 100 (1 ha = 10 000 m²); ppm-reported elements
 (= 200, Berger 20 cm × 1.0 g/cm³ effective bulk density). Both crops
 populated from Berger Labs Report 39088 (April 2026), samples 596615
 (tomate) and 596617 (laitue). Mo absent — not measured on the Mehlich-3
-panel; routes via fertigation per REQ-061. Below-detection-limit values
+panel; routes via fertigation per `nutrition — replenishment-cascade-earliest-first`. Below-detection-limit values
 recorded as DL ceilings with cert 2 per P-04 (lettuce B; tomato N-NH4).
 
 **Cert:** 4 (Berger Labs accredited, single-sample-per-bed); conversion
@@ -127,7 +127,7 @@ architectural, not a defect in the bank-routing model:
   fertigation channel sizes against `demand − compost − sidedress`;
   soil-bank K + Mg sit outside that calculation by design. Operator-side
   headroom from bank K + Mg explains real-world tolerance to fertigation
-  output that reads under REQ-013's 0.9× floor — the model is honest
+  output that reads under `nutrition/tomato — under-fert-guard`'s 0.9× floor — the model is honest
   that it's sizing for the active channels only and that bank K + Mg are
   a real-but-unmodelled buffer.
 - **N has no Mehlich-3 measurement of a depleting reservoir.** Bank N
@@ -139,7 +139,7 @@ architectural, not a defect in the bank-routing model:
   banks are large in mg/m² terms (Fe 62 g/m², Mn 10 g/m²) but the plant-
   available fraction is throttled by soil pH 7.4 lockout — mass-flow
   capacity sits at fractions of a mg/m²/wk for most. Foliar carries the
-  active-delivery share per REQ-061 cascade (foliar bypasses root-zone
+  active-delivery share per `nutrition — replenishment-cascade-earliest-first` cascade (foliar bypasses root-zone
   lockout). Bank micros surface in the soil-bank gap-grid's runway
   column for context but contribute 0 to the gap chain.
 
@@ -189,7 +189,7 @@ not bare module-scope constants/functions, so internals can be reshaped
 (per-bed scaling, seasonal factor, depth-resolved bank) without breaking
 call sites. Same discipline as `nutrition/compost-contribution — public-api-namespace` /
 `nutrition/nursery/substrate-contribution — public-api-namespace` /
-`nutrition/tomato/foliar-strategy/model — public-api-namespace`; REQ-139 enforces
+`nutrition/tomato/foliar-strategy/model — public-api-namespace`; `spec — subproject-namespace-sole-source` enforces
 no-inline-reimplementation at verifier level.
 
 **Cert:** 5 (structural).
@@ -214,14 +214,14 @@ those elements climb back into measurable range).
 
 ---
 
-## REQ-145 — Pourquoi modal interpretation strings (this spec owns the bytes)
+## pourquoi-modal-strings-owned-here
 
 **Statement:** Soil-bank pourquoi modal prose (one per element row in
 Block 2) is **owned by this spec entry**. Code calls
-`renderSpec('REQ-145', '<key>', { el })`; MUST NOT inline prose at call
+`renderSpec('pourquoi-modal-strings-owned-here', '<key>', { el })`; MUST NOT inline prose at call
 site. Seven keys below, one per branch of per-element interpretation
 logic in `nutrition/tomato/shell/logic.js` `buildNutrimentTomato` ↔ soil
-block. REQ-144 forbids hand-written stable strings; bytes injected via
+block. `spec — operator-prose-is-deterministic-render` forbids hand-written stable strings; bytes injected via
 `window.SPEC_STRINGS`.
 
 Element-to-key dispatcher mapping (consumer-side, mirrored here so the
@@ -234,12 +234,12 @@ spec stands alone without grepping `logic.js`):
 | K  | `K-fert-routed`  | measured bank; active channel = fertigation K₂SO₄ |
 | Mg | `Mg-fert-routed` | measured bank; active channel = fertigation MgSO₄ |
 | N  | `N-not-mehlich`  | turnover-bound; runway null (`months-to-depletion-clamped-by-peak-demand`) |
-| Fe, Mn, Zn, B, Cu | `micros-foliar-routed` | measured bank, plant-available fraction throttled by pH 7.4; active channel = foliar (REQ-061 cascade; CHANNEL_ROLE in `nutrition/tomato/channel-role.js` routes Fe/Mn/Zn/Cu = `{foliar:1.0}` and B = `{foliar:0.5, passive:0.5}`) |
-| Mo | `default-not-mehlich` | not on Mehlich-3 panel; active channel = fertigation Na molybdate (REQ-061 anion carve-out) |
+| Fe, Mn, Zn, B, Cu | `micros-foliar-routed` | measured bank, plant-available fraction throttled by pH 7.4; active channel = foliar (`nutrition — replenishment-cascade-earliest-first` cascade; CHANNEL_ROLE in `nutrition/tomato/channel-role.js` routes Fe/Mn/Zn/Cu = `{foliar:1.0}` and B = `{foliar:0.5, passive:0.5}`) |
+| Mo | `default-not-mehlich` | not on Mehlich-3 panel; active channel = fertigation Na molybdate (`nutrition — replenishment-cascade-earliest-first` anion carve-out) |
 
 **Cert:** 5 — bytes are spec-declared; render is deterministic.
 
-**Renders:** (bytes owned by REQ-145; the team-visible text lives here, nowhere else)
+**Renders:** (bytes owned by pourquoi-modal-strings-owned-here; the team-visible text lives here, nowhere else)
 
 ```render Ca
 Sol Ca-saturé (racine de la crise pH 7,4) — réservoir essentiellement inépuisable à l'échelle hebdomadaire. La plante tire 100 % du Ca via le sol ; l'enjeu est la précipitation et le verrouillage, pas la disponibilité.
@@ -262,7 +262,7 @@ Banque N mesurée (NO₃ + NH₄) mais le réservoir est renouvelé en continu p
 ```
 
 ```render micros-foliar-routed
-${el} mesuré sur Mehlich-3 — banque importante en mg/m², mais la fraction biodisponible est limitée par le verrouillage pH 7,4 racinaire (cations Fe/Mn/Zn/Cu : courbe sulfate-métal ; B : adsorption sur oxydes Fe/Al + complexes Ca-borate). Apport hebdomadaire actif via le foliaire (cascade REQ-061 — contourne le verrouillage racinaire) ; la banque sert de réserve long-terme et alimente la trajectoire d'épuisement informationnelle, pas la contribution hebdo.
+${el} mesuré sur Mehlich-3 — banque importante en mg/m², mais la fraction biodisponible est limitée par le verrouillage pH 7,4 racinaire (cations Fe/Mn/Zn/Cu : courbe sulfate-métal ; B : adsorption sur oxydes Fe/Al + complexes Ca-borate). Apport hebdomadaire actif via le foliaire (cascade replenishment-cascade-earliest-first — contourne le verrouillage racinaire) ; la banque sert de réserve long-terme et alimente la trajectoire d'épuisement informationnelle, pas la contribution hebdo.
 ```
 
 ```render default-not-mehlich
@@ -273,10 +273,10 @@ ${el} n'est pas mesuré sur le test Mehlich-3 actuel. Apport via les canaux acti
 
 ## Inherited / dependent specs
 
-- **REQ-060** (`nutrition/spec.md`) — pourquoi interpretation strings must
+- **`nutrition — narrative-derived-from-live-data`** — pourquoi interpretation strings must
   be auto-derived or carry `// stable —`. `renderGrid` emits no narrative.
-  REQ-145 supersedes the `// stable —` escape hatch for the soil-bank modal.
-- **REQ-139** (`spec.md`) — call sites MUST go through
+  pourquoi-modal-strings-owned-here supersedes the `// stable —` escape hatch for the soil-bank modal.
+- **`spec — subproject-namespace-sole-source`** — call sites MUST go through
   `window.SoilContribution`, not redeclare constants/formulas inline.
-- **REQ-144** (`spec.md`) — operator-facing prose requires
-  `data-prose-source`. REQ-145 render emits `<span data-prose-source="REQ-145">…</span>`.
+- **`spec — operator-prose-is-deterministic-render`** — operator-facing prose requires
+  `data-prose-source`. pourquoi-modal-strings-owned-here render emits `<span data-prose-source="pourquoi-modal-strings-owned-here">…</span>`.

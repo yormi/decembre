@@ -1,7 +1,7 @@
 ---
 name: to-specs
 audience: plant-nutrition-specialist
-description: Specialist-side spec writing for model + algorithmic surfaces. Pair of files — `<dir>/spec.md` (atomic normative claims, WHAT must hold) + sibling `<dir>/derivation.md` (faithful blueprint — every formula, coefficient with uncertainty, algorithm step, I/O shape, worked example). Covers slug naming, atomic statement-only shape, forbidden content, REQ-NNN allocation, lazy migration, namespace-prefix cross-refs. Triggers: "write a spec", "add a spec", "spec this", "capture as a rule", "lock this in", "migrate REQ-NNN", model-layer derivation work.
+description: Specialist-side spec writing for model + algorithmic surfaces. Pair of files — `<dir>/spec.md` (atomic normative claims, WHAT must hold) + sibling `<dir>/derivation.md` (faithful blueprint — every formula, coefficient with uncertainty, algorithm step, I/O shape, worked example). Covers slug naming, atomic statement-only shape, forbidden content, lazy migration, namespace-prefix cross-refs. Triggers: "write a spec", "add a spec", "spec this", "capture as a rule", "lock this in", model-layer derivation work.
 ---
 
 Philosophy in `team/everyone/principles.md § spec-is-statement-only`. PO-side spec writing (cross-app, domain, PO surfaces) is the PO's — see `team/product-owner/skills/to-specs.md`.
@@ -20,7 +20,7 @@ PO-level REQs (`nutrition/spec.md`, `nutrition/tomato/spec.md`, `nutrition/lettu
 1. **Pick file.** Nearest `*/spec.md` inside the model/algorithmic subproject you own.
 2. **Pick slug.** Kebab-case, unique in file, describes claim not implementation (`solubore-routed-fertigation`, not `compute-fert-fn`).
 3. **Write `## <slug>` + one normative paragraph.** Atomic (two paragraphs = two entries). Statement-only — WHAT, not HOW, not WHY. Ruthless word density; every word load-bears. Plain English; no code identifiers unless load-bearing contract symbols.
-4. **Editing a legacy `REQ-NNN`? Rename to slug** and fix in-file references. No repo-wide sweep; untouched legacy entries stay until next edit.
+4. **Editing a legacy `REQ-NNN` heading? Rename to slug** and fix in-file references. No repo-wide sweep; untouched legacy entries stay until next edit.
 5. **Cross-references carry ancestor namespace:** `nutrition/tomato/foliar-strategy/model — sprays-spread-across-farm-working-days`, not bare. Slugs unique per file.
 6. **Formulas / source tables / per-element data → split** to sibling `derivation.md`. Rejected alternatives → `learnings/<slug>.md`. Spec ≤ 5-min read.
 7. **Superseding? Edit in place.** Git holds history. No `~~strikethrough~~`, no "still technically holds" branches.
@@ -38,9 +38,9 @@ Every model `derivation.md` covers:
 
 **Migration of existing `derivation.md` files:** lazy. When next touched, audit against the faithful-blueprint bar and upgrade.
 
-## REQ-NNN allocation
+## Spec ids
 
-See `team/lib/req-allocation.md`. Run with `<persona-name>` = `plant-nutrition-specialist`.
+Spec ids are per-file-unique slugs. There is NO central REQ-NNN allocation, ledger, or claim-req.sh anymore — to add a spec entry, pick a unique kebab-case slug within that file (check existing headings for collision) and write `## <slug>`.
 
 ## Forbidden in spec body
 

@@ -3,8 +3,8 @@
 // Coverage:
 //   INV-1   — Stage coverage closed: every stage in RECIPE_INPUTS.stageYield
 //             returns numeric, finite, non-negative kSulfate / mgSulfate /
-//             solubore. Return shape grew to 3 keys per REQ-155.
-//   REQ-098 — Mass-balance derivation matches the formula (per stage,
+//             solubore. Return shape grew to 3 keys per uptake-factor work.
+//   Mass-balance derivation matches the formula (per stage,
 //             ±5 g rounding tolerance for kSulfate and mgSulfate, ±2 g for
 //             solubore). B1-REV (2026-05-15): compost release IS subtracted
 //             from K, Mg, and B offtake (current-week supply, not bank).
@@ -12,18 +12,17 @@
 //             product chemistry). B2-REV (2026-05-15): plant demand is
 //             divided by PH_UPTAKE_FACTOR_AT_CURRENT_SOIL[el] BEFORE the
 //             subtractions — the bed→plant uptake-efficiency factor inflates
-//             the bed-side target (REQ-155).
-//   REQ-099 — Public API namespace window.FertigationRecipeTomato shape
+//             the bed-side target.
+//   Public API namespace window.FertigationRecipeTomato shape
 //             (FIRST_PRINCIPLES_T5 + computeStageRecipe).
-//   REQ-154 — wireFpFertigation pins FIRST_PRINCIPLES_T5_FERTIGATION and
+//   wireFpFertigation pins FIRST_PRINCIPLES_T5_FERTIGATION and
 //             FP_RECIPE_T5.fertigation to computeStageRecipe('T5') output
-//             at boot. Now covers all three keys (K2SO4, MgSO4-7H2O,
-//             Solubore) post REQ-155.
-//   REQ-155 — Per-element bed→plant uptake-efficiency factor
+//             at boot. Covers all three keys (K2SO4, MgSO4-7H2O, Solubore).
+//   Per-element bed→plant uptake-efficiency factor
 //             PH_UPTAKE_FACTOR_AT_CURRENT_SOIL = { K: 0.90, Mg: 0.85,
 //             B: 0.80 } applied to fertigation sizing. Function return shape
 //             grew to { kSulfate, mgSulfate, solubore }.
-//   REQ-151 — computeFertigationSupply(stage, opts, recipe) delivers
+//   computeFertigationSupply(stage, opts, recipe) delivers
 //             per-element supply (mg/m²/wk) from a canonical g-keyed recipe.
 //
 // jsdom boot mirrors scripts/check-recipes.mjs — load dist/index.html
@@ -47,7 +46,7 @@ const { window, ph1 } = await loadAppWindow();
 describe('INV-1 — Stage coverage is closed', () => {
   // For every stage in RECIPE_INPUTS.stageYield, computeStageRecipe(stage)
   // returns numeric kSulfate, mgSulfate, and solubore. No undefined, NaN,
-  // negatives. Solubore added to the surface per REQ-155.
+  // negatives. Solubore added to the surface.
   test('INV-1 — every stage returns finite, non-negative kSulfate / mgSulfate / solubore', () => {
     const stages = Object.keys(ph1.RECIPE_INPUTS.stageYield);
     assert.ok(stages.length > 0, 'RECIPE_INPUTS.stageYield must enumerate stages');
@@ -72,11 +71,11 @@ describe('INV-1 — Stage coverage is closed', () => {
   });
 });
 
-describe('REQ-098 — computeStageRecipe matches mass-balance formula (uptake-factor + compost + sidedress)', () => {
+describe('computeStageRecipe matches mass-balance formula (uptake-factor + compost + sidedress)', () => {
   // Recompute mass-balance from upstream constants and compare against
   // computeStageRecipe(stage). Formula per spec (B1-REV restored compost +
   // sidedress subtraction 2026-05-15; B2-REV added per-element uptake-factor
-  // inflation same day):
+  // inflation same day:
   //
   //   demand_to_bed[el]   = demand[el] / PH_UPTAKE_FACTOR_AT_CURRENT_SOIL[el]
   //
@@ -102,7 +101,7 @@ describe('REQ-098 — computeStageRecipe matches mass-balance formula (uptake-fa
   //   solubore_g_total     = round(b_needed / 1000 / PRODUCT_PCT.Solubore_B × total_area)
   //
   // Tolerance ±5 g for K/Mg, ±2 g for Solubore — matches the verifier's
-  // rounding margins (scripts/check-recipes.mjs REQ-098 block).
+  // rounding margins (scripts/check-recipes.mjs mass-balance block).
   const TOLERANCE_KMG_G = 5;
   const TOLERANCE_B_G = 2;
 
@@ -111,7 +110,7 @@ describe('REQ-098 — computeStageRecipe matches mass-balance formula (uptake-fa
   const compostReleasePerWeek = (window.CompostContribution
     && window.CompostContribution.releasePerWeek) || {};
 
-  test('REQ-098 — required upstream globals are exposed', () => {
+  test('required upstream globals are exposed', () => {
     assert.equal(typeof ph1.computeStageRecipe, 'function',
       'computeStageRecipe must be exposed');
     assert.equal(typeof ph1.RECIPE_INPUTS, 'object',
@@ -135,7 +134,7 @@ describe('REQ-098 — computeStageRecipe matches mass-balance formula (uptake-fa
     assert.equal(typeof ph1.TOMATO_BED_AREA, 'number',
       'TOMATO_BED_AREA must be exposed');
     assert.equal(typeof ph1.PH_UPTAKE_FACTOR_AT_CURRENT_SOIL, 'object',
-      'PH_UPTAKE_FACTOR_AT_CURRENT_SOIL must be exposed (REQ-155)');
+      'PH_UPTAKE_FACTOR_AT_CURRENT_SOIL must be exposed');
     assert.equal(typeof window.CompostContribution, 'object',
       'window.CompostContribution must be exposed');
     assert.equal(typeof window.CompostContribution.releasePerWeek, 'object',
@@ -146,7 +145,7 @@ describe('REQ-098 — computeStageRecipe matches mass-balance formula (uptake-fa
       'CompostContribution.releasePerWeek.Mg must be numeric');
   });
 
-  test('REQ-098 — kSulfate matches (demand/uptake − sidedress − compost) for every stage', () => {
+  test('kSulfate matches (demand/uptake − sidedress − compost) for every stage', () => {
     const stages = Object.keys(ph1.RECIPE_INPUTS.stageYield);
     const totalArea = ph1.TOMATO_NUMBER_BEDS * ph1.TOMATO_BED_AREA;
     const kCompostMg = (compostReleasePerWeek.K || 0) * 1000;
@@ -180,7 +179,7 @@ describe('REQ-098 — computeStageRecipe matches mass-balance formula (uptake-fa
       `kSulfate drift from mass-balance formula:\n  ${offenders.join('\n  ')}`);
   });
 
-  test('REQ-098 — mgSulfate matches (demand/uptake − compost) for every stage (sidedress carries no Mg)', () => {
+  test('mgSulfate matches (demand/uptake − compost) for every stage (sidedress carries no Mg)', () => {
     const stages = Object.keys(ph1.RECIPE_INPUTS.stageYield);
     const totalArea = ph1.TOMATO_NUMBER_BEDS * ph1.TOMATO_BED_AREA;
     const mgCompostMg = (compostReleasePerWeek.Mg || 0) * 1000;
@@ -190,7 +189,7 @@ describe('REQ-098 — computeStageRecipe matches mass-balance formula (uptake-fa
       const stageYield = ph1.RECIPE_INPUTS.stageYield[stage] || 0;
       const biomass = ph1.BIOMASS_DEMAND[stage] || {};
       // Sidedress carries no Mg by product chemistry (spec); compost is
-      // subtracted; demand divided by Mg uptake factor (REQ-155).
+      // subtracted; demand divided by Mg uptake factor.
       const mgOfftakeMg = (ph1.TOMATO_FRUIT_EXPORT.Mg.g * 1000 * stageYield)
         + (biomass.Mg || 0);
       const mgDemandToBedMg = mgOfftakeMg / uMg;
@@ -208,7 +207,7 @@ describe('REQ-098 — computeStageRecipe matches mass-balance formula (uptake-fa
       `mgSulfate drift from mass-balance formula:\n  ${offenders.join('\n  ')}`);
   });
 
-  test('REQ-098 — solubore matches (demand/uptake − compost) for every stage (sidedress carries no B)', () => {
+  test('solubore matches (demand/uptake − compost) for every stage (sidedress carries no B)', () => {
     const stages = Object.keys(ph1.RECIPE_INPUTS.stageYield);
     const totalArea = ph1.TOMATO_NUMBER_BEDS * ph1.TOMATO_BED_AREA;
     const bCompostMg = (compostReleasePerWeek.B || 0) * 1000;
@@ -238,20 +237,20 @@ describe('REQ-098 — computeStageRecipe matches mass-balance formula (uptake-fa
 
   // Per-stage numeric pins reported by the team-leader after B1-REV + B2-REV
   // (2026-05-15):
-  //   T5 K₂SO₄        = 5 568 g (±5)  — was 4 953 pre-REQ-155, +12 % uptake-factor lift
+  //   T5 K₂SO₄        = 5 568 g (±5)  — was 4 953 pre-uptake-factor, +12 % lift
   //   T5 MgSO₄·7H₂O   = 1 963 g (±5)  — was 1 378, +42 %
   //   T5 Solubore     = 11 g (±2)     — was hand-coded 9, +22 %
   // These are derived numbers — the formula tests above are the load-bearing
   // assertions; these pins guard against silent shifts that match the
   // formula but contradict the agreed live values.
-  test('REQ-098 — T5 kSulfate pins at 5568 g (±5 g)', () => {
+  test('T5 kSulfate pins at 5568 g (±5 g)', () => {
     const t5 = ph1.computeStageRecipe('T5') || {};
     assert.ok(typeof t5.kSulfate === 'number'
       && Math.abs(t5.kSulfate - 5568) <= TOLERANCE_KMG_G,
       `T5 kSulfate: got ${t5.kSulfate}, expected 5568 (±5)`);
   });
 
-  test('REQ-098 — T5 mgSulfate pins at 1963 g (±5 g)', () => {
+  test('T5 mgSulfate pins at 1963 g (±5 g)', () => {
     const t5 = ph1.computeStageRecipe('T5') || {};
     assert.ok(typeof t5.mgSulfate === 'number'
       && Math.abs(t5.mgSulfate - 1963) <= TOLERANCE_KMG_G,
@@ -261,7 +260,7 @@ describe('REQ-098 — computeStageRecipe matches mass-balance formula (uptake-fa
   // Early-stage Mg clamp: with the uptake factor inflating demand by 1/0.85
   // (~+18 %), Mg no longer clamps to 0 across all of T1-T3. Live values per
   // probe: T1=0, T2=0, T3=264. Pin only the stages that still clamp.
-  test('REQ-098 — T1 and T2 mgSulfate clamp at 0 (compost > demand_to_bed)', () => {
+  test('T1 and T2 mgSulfate clamp at 0 (compost > demand_to_bed)', () => {
     const offenders = [];
     for (const stage of ['T1', 'T2']) {
       const recipe = ph1.computeStageRecipe(stage) || {};
@@ -274,20 +273,20 @@ describe('REQ-098 — computeStageRecipe matches mass-balance formula (uptake-fa
   });
 });
 
-describe('REQ-099 — Public API namespace window.FertigationRecipeTomato', () => {
+describe('Public API namespace window.FertigationRecipeTomato', () => {
   const REQUIRED_KEYS = [
     'FIRST_PRINCIPLES_T5',
     'computeStageRecipe',
   ];
 
-  test('REQ-099 — window.FertigationRecipeTomato exists', () => {
+  test('window.FertigationRecipeTomato exists', () => {
     assert.ok(window.FertigationRecipeTomato,
       'window.FertigationRecipeTomato must be declared (model.js include order)');
     assert.equal(typeof window.FertigationRecipeTomato, 'object');
   });
 
   for (const key of REQUIRED_KEYS) {
-    test(`REQ-099 — namespace exposes ${key}`, () => {
+    test(`namespace exposes ${key}`, () => {
       const namespace = window.FertigationRecipeTomato;
       assert.notEqual(namespace[key], undefined,
         `window.FertigationRecipeTomato.${key} must be present`);
@@ -296,7 +295,7 @@ describe('REQ-099 — Public API namespace window.FertigationRecipeTomato', () =
     });
   }
 
-  test('REQ-099 — FIRST_PRINCIPLES_T5 is an object with K2SO4 / MgSO4-7H2O / Solubore', () => {
+  test('FIRST_PRINCIPLES_T5 is an object with K2SO4 / MgSO4-7H2O / Solubore', () => {
     const fp = window.FertigationRecipeTomato.FIRST_PRINCIPLES_T5;
     assert.equal(typeof fp, 'object');
     for (const productKey of ['K2SO4', 'MgSO4-7H2O', 'Solubore']) {
@@ -307,11 +306,11 @@ describe('REQ-099 — Public API namespace window.FertigationRecipeTomato', () =
     }
   });
 
-  test('REQ-099 — computeStageRecipe is a function', () => {
+  test('computeStageRecipe is a function', () => {
     assert.equal(typeof window.FertigationRecipeTomato.computeStageRecipe, 'function');
   });
 
-  test('REQ-099 — computeStageRecipe("T5") returns numeric kSulfate / mgSulfate / solubore', () => {
+  test('computeStageRecipe("T5") returns numeric kSulfate / mgSulfate / solubore', () => {
     const t5 = window.FertigationRecipeTomato.computeStageRecipe('T5');
     assert.equal(typeof t5, 'object');
     for (const key of ['kSulfate', 'mgSulfate', 'solubore']) {
@@ -323,14 +322,14 @@ describe('REQ-099 — Public API namespace window.FertigationRecipeTomato', () =
   });
 });
 
-describe('REQ-154 — FIRST_PRINCIPLES_T5_FERTIGATION pinned to computeStageRecipe(T5) at boot', () => {
+describe('FIRST_PRINCIPLES_T5_FERTIGATION pinned to computeStageRecipe(T5) at boot', () => {
   // wireFpFertigation IIFE in calc.js writes computeStageRecipe('T5').
   // {kSulfate, mgSulfate, solubore} into FIRST_PRINCIPLES_T5_FERTIGATION
   // ['K2SO4' | 'MgSO4-7H2O' | 'Solubore'] at script load. Then the same
   // boot pass propagates those values into FP_RECIPE_T5.fertigation. With
-  // REQ-155 the constant pins all three values (was two pre-REQ-155).
+  // the uptake-factor work the constant pins all three values (was two).
   // Exact equality — both sides come from the same function call at boot.
-  test('REQ-154 — FIRST_PRINCIPLES_T5_FERTIGATION.K2SO4 === computeStageRecipe(T5).kSulfate', () => {
+  test('FIRST_PRINCIPLES_T5_FERTIGATION.K2SO4 === computeStageRecipe(T5).kSulfate', () => {
     const t5 = ph1.computeStageRecipe('T5') || {};
     assert.equal(
       ph1.FIRST_PRINCIPLES_T5_FERTIGATION['K2SO4'],
@@ -339,7 +338,7 @@ describe('REQ-154 — FIRST_PRINCIPLES_T5_FERTIGATION pinned to computeStageReci
     );
   });
 
-  test('REQ-154 — FIRST_PRINCIPLES_T5_FERTIGATION["MgSO4-7H2O"] === computeStageRecipe(T5).mgSulfate', () => {
+  test('FIRST_PRINCIPLES_T5_FERTIGATION["MgSO4-7H2O"] === computeStageRecipe(T5).mgSulfate', () => {
     const t5 = ph1.computeStageRecipe('T5') || {};
     assert.equal(
       ph1.FIRST_PRINCIPLES_T5_FERTIGATION['MgSO4-7H2O'],
@@ -348,7 +347,7 @@ describe('REQ-154 — FIRST_PRINCIPLES_T5_FERTIGATION pinned to computeStageReci
     );
   });
 
-  test('REQ-154 — FIRST_PRINCIPLES_T5_FERTIGATION.Solubore === computeStageRecipe(T5).solubore', () => {
+  test('FIRST_PRINCIPLES_T5_FERTIGATION.Solubore === computeStageRecipe(T5).solubore', () => {
     const t5 = ph1.computeStageRecipe('T5') || {};
     assert.equal(
       ph1.FIRST_PRINCIPLES_T5_FERTIGATION['Solubore'],
@@ -357,7 +356,7 @@ describe('REQ-154 — FIRST_PRINCIPLES_T5_FERTIGATION pinned to computeStageReci
     );
   });
 
-  test('REQ-154 — FP_RECIPE_T5.fertigation propagates the same three values', () => {
+  test('FP_RECIPE_T5.fertigation propagates the same three values', () => {
     const t5 = ph1.computeStageRecipe('T5') || {};
     const fert = (ph1.FP_RECIPE_T5 || {}).fertigation || {};
     assert.equal(fert['K2SO4'], t5.kSulfate,
@@ -369,7 +368,7 @@ describe('REQ-154 — FIRST_PRINCIPLES_T5_FERTIGATION pinned to computeStageReci
   });
 });
 
-describe('REQ-155 — PH_UPTAKE_FACTOR_AT_CURRENT_SOIL: per-element bed→plant factor', () => {
+describe('PH_UPTAKE_FACTOR_AT_CURRENT_SOIL: per-element bed→plant factor', () => {
   // Constant `PH_UPTAKE_FACTOR_AT_CURRENT_SOIL` is declared in
   // nutrition/tomato/fertigation-recipe/data.js with B2-REV mid-band defaults
   // (cert 2 across the board). computeStageRecipe divides plant demand by
@@ -377,7 +376,7 @@ describe('REQ-155 — PH_UPTAKE_FACTOR_AT_CURRENT_SOIL: per-element bed→plant 
   // B branch — return shape grew to { kSulfate, mgSulfate, solubore }.
   const EXPECTED_DEFAULTS = { K: 0.90, Mg: 0.85, B: 0.80 };
 
-  test('REQ-155 — PH_UPTAKE_FACTOR_AT_CURRENT_SOIL exposed with K=0.90, Mg=0.85, B=0.80', () => {
+  test('PH_UPTAKE_FACTOR_AT_CURRENT_SOIL exposed with K=0.90, Mg=0.85, B=0.80', () => {
     const uf = ph1.PH_UPTAKE_FACTOR_AT_CURRENT_SOIL;
     assert.equal(typeof uf, 'object',
       'PH_UPTAKE_FACTOR_AT_CURRENT_SOIL must be declared in fertigation-recipe/data.js');
@@ -394,7 +393,7 @@ describe('REQ-155 — PH_UPTAKE_FACTOR_AT_CURRENT_SOIL: per-element bed→plant 
       `PH_UPTAKE_FACTOR_AT_CURRENT_SOIL shape/values:\n  ${offenders.join('\n  ')}`);
   });
 
-  test('REQ-155 — computeStageRecipe(T5) return value has all three keys (kSulfate, mgSulfate, solubore)', () => {
+  test('computeStageRecipe(T5) return value has all three keys (kSulfate, mgSulfate, solubore)', () => {
     const t5 = ph1.computeStageRecipe('T5') || {};
     for (const key of ['kSulfate', 'mgSulfate', 'solubore']) {
       assert.equal(typeof t5[key], 'number',
@@ -406,7 +405,7 @@ describe('REQ-155 — PH_UPTAKE_FACTOR_AT_CURRENT_SOIL: per-element bed→plant 
     }
   });
 
-  test('REQ-155 — T5 solubore pins at 11 g (±2 g)', () => {
+  test('T5 solubore pins at 11 g (±2 g)', () => {
     const t5 = ph1.computeStageRecipe('T5') || {};
     assert.ok(typeof t5.solubore === 'number'
       && Math.abs(t5.solubore - 11) <= 2,
@@ -414,7 +413,7 @@ describe('REQ-155 — PH_UPTAKE_FACTOR_AT_CURRENT_SOIL: per-element bed→plant 
   });
 });
 
-describe('REQ-151 — computeFertigationSupply(stage, opts, recipe)', () => {
+describe('computeFertigationSupply(stage, opts, recipe)', () => {
   // Spec contract:
   //   - flat 11-element map { N,P,K,Ca,Mg,Fe,Mn,Zn,Cu,B,Mo } in mg/m²/wk
   //   - K     = recipe.kSulfate_g   × PRODUCT_PCT.K2SO4_K    × 1000 / total_area
@@ -435,13 +434,13 @@ describe('REQ-151 — computeFertigationSupply(stage, opts, recipe)', () => {
     return namespace && namespace.computeFertigationSupply;
   }
 
-  test('REQ-151 — computeFertigationSupply is exposed on window.FertigationRecipeTomato', () => {
+  test('computeFertigationSupply is exposed on window.FertigationRecipeTomato', () => {
     const fn = getFn();
     assert.equal(typeof fn, 'function',
       'window.FertigationRecipeTomato.computeFertigationSupply must be a function');
   });
 
-  test('REQ-151 — explicit recipe: K = kSulfate_g × K2SO4_K × 1000 / area (±1 mg)', () => {
+  test('explicit recipe: K = kSulfate_g × K2SO4_K × 1000 / area (±1 mg)', () => {
     const fn = getFn();
     if (typeof fn !== 'function') {
       assert.fail('computeFertigationSupply not yet implemented');
@@ -454,7 +453,7 @@ describe('REQ-151 — computeFertigationSupply(stage, opts, recipe)', () => {
       `K supply: got ${supply.K}, expected ~${expectedK.toFixed(3)}`);
   });
 
-  test('REQ-151 — explicit recipe: Mg = mgSulfate_g × MgSO4_Mg × 1000 / area (±1 mg)', () => {
+  test('explicit recipe: Mg = mgSulfate_g × MgSO4_Mg × 1000 / area (±1 mg)', () => {
     const fn = getFn();
     if (typeof fn !== 'function') {
       assert.fail('computeFertigationSupply not yet implemented');
@@ -467,7 +466,7 @@ describe('REQ-151 — computeFertigationSupply(stage, opts, recipe)', () => {
       `Mg supply: got ${supply.Mg}, expected ~${expectedMg.toFixed(3)}`);
   });
 
-  test('REQ-151 — explicit recipe: B = solubore_g × Solubore_B × 1000 / area (±0.01 mg)', () => {
+  test('explicit recipe: B = solubore_g × Solubore_B × 1000 / area (±0.01 mg)', () => {
     const fn = getFn();
     if (typeof fn !== 'function') {
       assert.fail('computeFertigationSupply not yet implemented');
@@ -480,7 +479,7 @@ describe('REQ-151 — computeFertigationSupply(stage, opts, recipe)', () => {
       `B supply: got ${supply.B}, expected ~${expectedB.toFixed(4)}`);
   });
 
-  test('REQ-151 — non-fertigation elements (N,P,Ca,Fe,Mn,Zn,Cu,Mo) are numerically 0', () => {
+  test('non-fertigation elements (N,P,Ca,Fe,Mn,Zn,Cu,Mo) are numerically 0', () => {
     const fn = getFn();
     if (typeof fn !== 'function') {
       assert.fail('computeFertigationSupply not yet implemented');
@@ -492,7 +491,7 @@ describe('REQ-151 — computeFertigationSupply(stage, opts, recipe)', () => {
     }
   });
 
-  test('REQ-151 — return shape is the full 11-element map', () => {
+  test('return shape is the full 11-element map', () => {
     const fn = getFn();
     if (typeof fn !== 'function') {
       assert.fail('computeFertigationSupply not yet implemented');
@@ -507,7 +506,7 @@ describe('REQ-151 — computeFertigationSupply(stage, opts, recipe)', () => {
     }
   });
 
-  test('REQ-151 — missing recipe keys default to 0', () => {
+  test('missing recipe keys default to 0', () => {
     const fn = getFn();
     if (typeof fn !== 'function') {
       assert.fail('computeFertigationSupply not yet implemented');
@@ -522,7 +521,7 @@ describe('REQ-151 — computeFertigationSupply(stage, opts, recipe)', () => {
     assert.equal(supply.B,  0, 'B must default to 0 when solubore_g omitted');
   });
 
-  test('REQ-151 — opts defaults to {} (call signature accepts (stage, undefined, recipe))', () => {
+  test('opts defaults to {} (call signature accepts (stage, undefined, recipe))', () => {
     const fn = getFn();
     if (typeof fn !== 'function') {
       assert.fail('computeFertigationSupply not yet implemented');
@@ -536,7 +535,7 @@ describe('REQ-151 — computeFertigationSupply(stage, opts, recipe)', () => {
     }
   });
 
-  test('REQ-151 — default recipe arg reshapes from STORED_RECIPE.tomato.fertigation[stage]', () => {
+  test('default recipe arg reshapes from STORED_RECIPE.tomato.fertigation[stage]', () => {
     const fn = getFn();
     if (typeof fn !== 'function') {
       assert.fail('computeFertigationSupply not yet implemented');
@@ -570,7 +569,7 @@ describe('REQ-151 — computeFertigationSupply(stage, opts, recipe)', () => {
       `Default-arg reshape drift:\n  ${offenders.join('\n  ')}`);
   });
 
-  test('REQ-151 — stage is used only for default-recipe lookup; explicit recipe is stage-independent', () => {
+  test('stage is used only for default-recipe lookup; explicit recipe is stage-independent', () => {
     const fn = getFn();
     if (typeof fn !== 'function') {
       assert.fail('computeFertigationSupply not yet implemented');

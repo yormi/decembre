@@ -20,11 +20,11 @@ Cross-crop nutrition rules defer to `nutrition/spec.md`; routing to
 global `PRODUCT`, so global classifiers (`KSP_PAIRS`, `KSP_SAFE`,
 `TAG_INCOMPATIBILITIES`, `TAGS_INERT`) cover them without modification. A
 future product introducing a new ion (silicate, phosphite) fails
-REQ-029b/c at build.
+nutrition/chemistry — every-cation-anion-pair-classified / every-chemistry-tag-classified at build.
 
 ---
 
-## REQ-098 — Predicted solution CE under nursery cap
+## predicted-ce-under-nursery-cap
 
 **Statement:** `nurseryRecipeCE(NURSERY_RECIPE_DEFAULT, 1) ≤ NURSERY_CE_CAP_MS_CM`
 (= 3.0 mS/cm).
@@ -36,7 +36,7 @@ cap is operationally chosen, not measured against yield drop.
 
 ---
 
-## REQ-099 — Predicted tank pH inside nursery envelope
+## predicted-tank-ph-in-nursery-envelope
 
 **Statement:** `nurseryRecipeTankPh(NURSERY_RECIPE_DEFAULT)` ∈
 `NURSERY_TANK_PH_RANGE` (= [4.5, 6.5]).
@@ -63,7 +63,7 @@ back. CE pressure prevents pushing >100 % today.
 
 ---
 
-## REQ-101 — Default recipe P supply ≥ 50 % of nursery demand
+## default-recipe-p-supply-half-demand
 
 **Statement:** `nurseryRecipeSupply(NURSERY_RECIPE_DEFAULT, NURSERY_FERTIGATION_DEFAULTS.trayVolumeL).perTray_mg.P`
 ≥ `0.5 × demandPerTray_P_mg`. Inline fallback **315 mg P / tray / week** at
@@ -85,13 +85,13 @@ poisson 2-4-0.5 is P workhorse — 1.75 % P (label 4 % P₂O₅) is 4× Ocean's.
 - `ions:        {…}` non-empty              (mirrors nutrition/chemistry — product-declares-ions-and-chemistry-tags)
 - `chemistryTags: […]` non-empty            (mirrors nutrition/chemistry — product-declares-ions-and-chemistry-tags)
 
-**Rationale:** Global REQ-022 / 023 / 029a / 053-schema checks scan
+**Rationale:** Global nutrition/chemistry — every-product-ecocert-allowed / ec-factor-covers-every-product / product-declares-ions-and-chemistry-tags / predicted-tank-ph-within-envelope-schema checks scan
 `PRODUCT[*]`, not `NURSERY_PRODUCTS`. `products-schema-complete-organic-only` is the local mirror that
 closes the loophole. Cert 5 — pure schema check.
 
 ---
 
-## REQ-103 — `window.FertigationNursery` namespace exposed
+## fertigation-nursery-namespace
 
 **Statement:** `typeof window.FertigationNursery === 'object'` and holds at
 least: `NURSERY_PRODUCTS`, `NURSERY_FERTIGATION_DEFAULTS`,
@@ -100,7 +100,7 @@ least: `NURSERY_PRODUCTS`, `NURSERY_FERTIGATION_DEFAULTS`,
 
 **Rationale:** Salanova nursery admin page consumes this namespace;
 silent disappearance on rename/build mis-include would blank the
-fertigation card. Loud-failure by analogy to REQ-080-class checks. Cert 5.
+fertigation card. Loud-failure by analogy to nutrition/compost-contribution — public-api-namespace-class checks. Cert 5.
 
 ---
 
@@ -112,7 +112,7 @@ returns per-tray-per-week totals scaled linearly: for every element `el`,
 `supply(recipe, V, N).perTray_mg[el] === N × supply(recipe, V, 1).perTray_mg[el]`
 within ±0.1 %.
 
-**Rationale:** Per-bucket EC cap (REQ-098, 3.0 mS/cm) caps salt load per
+**Rationale:** Per-bucket EC cap (predicted-ce-under-nursery-cap, 3.0 mS/cm) caps salt load per
 event. Hitting 100 % demand on elements like K (~7 g/L K₂SO₄ needed in one
 shot — above EC budget) requires **frequency as a degree of freedom**, not
 just dose. Splitting the recipe across multiple weekly applications keeps
@@ -160,7 +160,7 @@ Literal "any source" semantics keeps these distinguishable.
 
 **Statement:** `nurseryRecipeCE(recipe, dilution)` is a function of recipe
 composition and dilution only. It does NOT take `applicationsPerWeek` as
-input. The cap (REQ-098) binds *per fertigation event*; weekly frequency
+input. The cap (predicted-ce-under-nursery-cap) binds *per fertigation event*; weekly frequency
 is decoupled from per-bucket salt concentration.
 
 **Rationale:** Salt damage is *per-application* — each watering deposits a
@@ -187,10 +187,10 @@ Fractional values look like solutions but can't be executed.
 
 Cross-crop rules already enforced upstream by verifier:
 
-- **REQ-022** — every product organicAllowed: true (CAN/CGSB-32.311)
+- **nutrition/chemistry — every-product-ecocert-allowed** — every product organicAllowed: true (CAN/CGSB-32.311)
 - **REQ-028** — cert annotation on every empirical constant
-- **REQ-029a/b/c** — ions + chemistryTags + classification table coverage
-- **REQ-053** — predicted tank pH inside compartment envelope (nursery row 4.5–6.5)
+- **nutrition/chemistry — product-declares-ions-and-chemistry-tags / every-cation-anion-pair-classified / every-chemistry-tag-classified** — ions + chemistryTags + classification table coverage
+- **nutrition/chemistry — predicted-tank-ph-within-envelope** — predicted tank pH inside compartment envelope (nursery row 4.5–6.5)
 
 A new ion or chemistry tag introduced in `NURSERY_PRODUCTS` is flagged by
-global REQ-029b / 029c before build passes.
+global nutrition/chemistry — every-cation-anion-pair-classified / every-chemistry-tag-classified before build passes.

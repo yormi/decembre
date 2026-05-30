@@ -202,7 +202,7 @@ object keyed by the same elements:
   perTray_mg: { N: 1463, P: 169, K: 228, … },     // flat numbers (existing)
   // OR perM2_mg for crop-area channels (compost, sidedress, foliar)
   details: {
-    N:  { cert: 3, cap: { kind: 'damage', reason: 'Ocean dose plafonnée par CE bidon (REQ-098) — augmenter pousserait au-delà du cap', uncappedMg: 4980 } },
+    N:  { cert: 3, cap: { kind: 'damage', reason: 'Ocean dose plafonnée par CE bidon (nutrition/nursery/fertigation — predicted-ce-under-nursery-cap) — augmenter pousserait au-delà du cap', uncappedMg: 4980 } },
     P:  { cert: 3, cap: null },                    // recipe covers full P share at this channel
     K:  { cert: 4, cap: { kind: 'other', reason: 'aucun produit haute-K dans la recette nursery — ajouter K₂SO₄', uncappedMg: 0 } },
     Ca: { cert: 4, cap: { kind: 'precipitation', reason: 'Ca×PO₄ précipite à pH ≥ 7 → Ca foliaire séparé du P', uncappedMg: 95 } },

@@ -23,11 +23,11 @@ The model answers two questions:
 
 Out of scope: `STORED_RECIPE.tomato.fertigation`, barrel-mixing/injection
 schedule, `LUXURY_FACTOR` cap on `supply.soil` (consumer-side concern on
-the soil channel), per-element cap/cert detail (built at caller per REQ-136).
+the soil channel), per-element cap/cert detail (built at caller per `nutrition — contribution-channel-details-payload`).
 
 Cross-channel: fertigation sits in the chain `compost → sidedress →
 fertigation → foliar`. This subproject owns fertigation-only sizing; the
-chain bounds live in `nutrition/tomato/spec.md` (REQ-013 / REQ-014).
+chain bounds live in `nutrition/tomato/spec.md` (`nutrition/tomato — under-fert-guard` / `nutrition/tomato — luxury-feeding-guard`).
 
 ---
 
@@ -58,7 +58,7 @@ All four masses in **grams of product per total tomato area per week**
 `naMolybdate` = sodium molybdate (Na₂MoO₄·2H₂O). K + Mg + Solubore are
 mass-balance-derived per `mass-balance-derivation` / `uptake-efficiency-factor`. Sodium molybdate is a flat
 0.5 g/wk floor across all stages T1-T5 (operator-weighing floor, not
-demand-driven) per the REQ-061 Mo carve-out 2026-05-16 — rationale in
+demand-driven) per the `nutrition — replenishment-cascade-earliest-first` Mo carve-out 2026-05-16 — rationale in
 `derivation.md` "Mo algorithmic detail".
 
 ---
@@ -97,7 +97,7 @@ Mo (sodium molybdate) is also in the return but **bypasses the mass-balance
 formula**: `naMolybdate` is a flat 0.5 g/wk floor pinned by the team's
 smallest reliable weighing increment, not derived from `naMolybdate_demand
 − compost − sidedress` (peak Mo demand ~0.07 mg/m²/wk lands below any
-realistic weighing precision). REQ-061 Mo carve-out 2026-05-16; rationale
+realistic weighing precision). `nutrition — replenishment-cascade-earliest-first` Mo carve-out 2026-05-16; rationale
 in `derivation.md` "Mo algorithmic detail". P and Ca resolve to zero
 fertigation under the soil-bank credit branch (P drawdown via Banque
 sol, Ca not fertigated), so they're not in the function's return.
@@ -120,7 +120,7 @@ mgSulfate_g_total     = round(mg_needed / 1000 / PRODUCT_PCT.MgSO4_Mg × total_a
 N stays with sidedress (organic-N concentrate,
 `nutrition/tomato/sidedress-recipe/model — mass-balance-sizes-product-to-n-gap`); micros stay
 with foliar (cuticle uptake bypasses soil lockout); B is the one micro
-on fertigation (single-channel, REQ-061) and is fixed at T5 by refined
+on fertigation (single-channel, `nutrition — replenishment-cascade-earliest-first`) and is fixed at T5 by refined
 target (see derivation).
 
 **Cert:** 3 (mass-balance well-defined; values inherit cert 3 from
@@ -139,7 +139,7 @@ At runtime, `window.FertigationRecipeTomato` exists and exposes:
 | `efficiency`                 | object   |
 | `computeStageRecipe`         | function |
 
-`efficiency` (per REQ-157) is per-element delivery fraction at current
+`efficiency` (per `nutrition — channel-efficiency-capability-map`) is per-element delivery fraction at current
 soil pH 7.4 chemistry (channel → bed axis). K/Mg follow the
 `soluble-cation` PH_RESPONSE curve; B follows `borate` (non-ionic, flat
 at 1.0). Orthogonal bed → plant uptake-inefficiency axis is
@@ -150,7 +150,7 @@ is asserted independently by `per-element-supply`. `FIRST_PRINCIPLES_T5` mirrors
 wired `FP_RECIPE_T5.fertigation` shape: `K2SO4`, `MgSO4-7H2O`, `Solubore`,
 `NaMolybdate`. All four are populated by `wireFpFertigation()` at boot
 from `computeStageRecipe('T5')` per `fp-target-mirrors-sizer`; `NaMolybdate` is the Mo
-carve-out per REQ-061 amendment 2026-05-16, flat-floor not mass-balance.
+carve-out per `nutrition — replenishment-cascade-earliest-first` amendment 2026-05-16, flat-floor not mass-balance.
 
 **Cert:** 5 (structural assertion).
 
@@ -165,7 +165,7 @@ construction across all four keys:
 - `K2SO4` ≡ `computeStageRecipe('T5').kSulfate` (mass-balance per `mass-balance-derivation`)
 - `MgSO4-7H2O` ≡ `computeStageRecipe('T5').mgSulfate` (mass-balance per `mass-balance-derivation`)
 - `Solubore` ≡ `computeStageRecipe('T5').solubore` (mass-balance per `mass-balance-derivation` / `uptake-efficiency-factor`)
-- `NaMolybdate` ≡ `computeStageRecipe('T5').naMolybdate` (flat 0.5 g/wk floor per REQ-061 Mo carve-out)
+- `NaMolybdate` ≡ `computeStageRecipe('T5').naMolybdate` (flat 0.5 g/wk floor per `nutrition — replenishment-cascade-earliest-first` Mo carve-out)
 
 The same four values propagate to `FP_RECIPE_T5.fertigation` in the same
 boot pass, so the FP target read by Block 7/8 drift gauges, the Banque
@@ -173,7 +173,7 @@ sol view, and the consumer-side cascade is a deterministic function of
 `computeStageRecipe` — not a hand-locked agronomist anchor on any product.
 
 **Rationale:** Closes the loop opened by `mass-balance-derivation` — without this pin
-the constants could drift from the function (REQ-098 verifier tests the
+the constants could drift from the function (`mass-balance-derivation` verifier tests the
 function, not the constants). Historical PA Taillon FP anchor (K 5 167 /
 Mg 1 379 / Solubore 9 from April 2026) preserved in `learnings.md` for
 audit; STORED was never on those values (Haifa-heritage since 2026-05-09).
@@ -257,17 +257,17 @@ Contract:
   of mg/m²/wk delivered. Elements outside the fertigation channel
   (everything except K, Mg, B) return `0` numerically. Flat shape
   matches `computeFoliarSupply` precedent; per-element cap and cert
-  details (REQ-136) built at caller, not inside the model function.
+  details (`nutrition — contribution-channel-details-payload`) built at caller, not inside the model function.
 
 **Rationale:** Promotes the inline `(g × element_pct × 1000) / area`
 delivery formula out of `calcNutrSupply` into the subproject namespace,
-extending the no-inline-reimplementation guarantee (REQ-139) to the
+extending the no-inline-reimplementation guarantee (`subproject-namespace-sole-source`) to the
 fertigation branch. Canonical g-keyed recipe is the SRP boundary: caller
 selects the source, model applies one rule. No mode flags, no shape
 detection at the model boundary.
 
 **Cert:** 4 — bright-line normative rule; auto-enforcement partial in
-the same shape as REQ-139 (registry catches deleted call sites,
+the same shape as `subproject-namespace-sole-source` (registry catches deleted call sites,
 blacklist catches new inline drift on the exact formula shape).
 
 ---
@@ -284,7 +284,7 @@ Fertigation consumes plant-needs, sidedress, and stored-recipe outputs:
 
 Specs that *consume* the fertigation output:
 
-- **REQ-013 / REQ-014** (`nutrition/tomato/spec.md`) — supply chain bounds.
+- **`nutrition/tomato — under-fert-guard` / `nutrition/tomato — luxury-feeding-guard`** (`nutrition/tomato/spec.md`) — supply chain bounds.
   Fertigation K, Mg, B are channels summed against demand. The supply
   sum is **active-channels only**: compost + sidedress + fertigation +
   foliar. The soil-bank K + Mg mass-flow delivery declared in
@@ -295,8 +295,8 @@ Specs that *consume* the fertigation output:
 - **`nutrition/chemistry — every-product-ecocert-allowed`** — every product is Ecocert-allowed.
   K₂SO₄, MgSO₄·7H₂O, and Solubor (disodium octaborate tetrahydrate) are
   all on the certified-input list (CAN/CGSB-32.311 sodium borates).
-- **REQ-002** (`nutrition/spec.md`) — no forbidden products.
-- **REQ-061** (`spec.md`) — foliar dose only when earlier channels
+- **`nutrition — ecocert-only-products`** (`nutrition/spec.md`) — no forbidden products.
+- **`nutrition — replenishment-cascade-earliest-first`** (`nutrition/spec.md`) — foliar dose only when earlier channels
   insufficient. Fertigation owns B as the single channel; foliar B = 0.
 
 ---

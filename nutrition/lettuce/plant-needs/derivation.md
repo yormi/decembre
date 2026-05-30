@@ -60,7 +60,7 @@ The 0.2 floor matches a stunted-but-alive transpiration minimum — root
 pressure + osmotic flow keep the soil-mass-flow channel from going dry.
 
 `phLocked` gates:
-- P / Mn / Zn → `min(mass_flow, 100 mg/m²/wk)` (REQ-020 inherited cap;
+- P / Mn / Zn → `min(mass_flow, 100 mg/m²/wk)` (nutrition — passive-supply-lockout-gate inherited cap;
   cert 3). Mechanism: at pH ≥ 7 in Ca-saturated soil, P precipitates as
   Ca-phosphate (variscite / hydroxyapatite) before reaching the root
   surface; Mn²⁺ oxidises to insoluble Mn³⁺/Mn⁴⁺ oxides; Zn²⁺ adsorbs

@@ -10,7 +10,7 @@ Today the strategy contains ONE recipe (the oligo recipe — Mn / Zn /
 Cu / Fe). A Ca recipe (CaCl₂·2H₂O + surfactant, Test 1 Path B
 2026-05-24) is the next recipe to be added; the model contract is
 shaped to accommodate N recipes per strategy without further reshape.
-Each recipe is REQ-029-clean independently of the others.
+Each recipe is `nutrition/chemistry — in-tank-ksp-precipitation-guard`-clean independently of the others.
 
 Framing (burn-cap-constrained, not mass-balance-derived), per-element
 delivered tables, surfactant ratios, Ca obstacle chain, refinement
@@ -29,12 +29,12 @@ The model answers two questions:
    per-recipe delivery model (`coverage-discount-on-delivery` / `gap-maximizing-recipe`).
 
 Out of scope: backpack dose (`STORED_RECIPE.tomato.foliaire`),
-supply-vs-demand check (REQ-013/014 in `nutrition/tomato/spec.md`), FP
+supply-vs-demand check (`nutrition/tomato — under-fert-guard` / `nutrition/tomato — luxury-feeding-guard`), FP
 dose growing with demand (foliar is burn-cap-pinned — see
 `derivation.md`).
 
 Cross-channel: foliar is the LAST channel (compost → sidedress →
-fertigation → foliar, REQ-061) and the only one bypassing root-zone
+fertigation → foliar, `nutrition — replenishment-cascade-earliest-first`) and the only one bypassing root-zone
 chemistry. Under current pH lockout it is the sole live channel for
 Mn / Zn / Fe / Cu.
 
@@ -146,12 +146,12 @@ separate coder-lane task (subproject rename `foliar-recipe/` →
 `foliar-strategy/` already in flight on this branch). Until the rename
 ships, the namespace name remains `FoliarRecipeTomato`.
 
-`efficiency` (REQ-157) is the channel-side contract for the Efficacité
-column (REQ-156): per-element foliar delivery fraction at current
+`efficiency` (`nutrition — channel-efficiency-capability-map`) is the channel-side contract for the Efficacité
+column (`nutrition — efficacite-column-capability`): per-element foliar delivery fraction at current
 no-surfactant regime and default spray-tank pH, uniform 0.27 across the
 four cation-micro oligos (Mn / Zn / Cu / Fe); B absent because
-single-channel by REQ-061 (fertigation owns B); Mo absent because
-retired from foliar 2026-05-16 (REQ-061 carve-out, fertigation owns Mo).
+single-channel by `nutrition — replenishment-cascade-earliest-first` (fertigation owns B); Mo absent because
+retired from foliar 2026-05-16 (`nutrition — replenishment-cascade-earliest-first` carve-out, fertigation owns Mo).
 
 `efficiencyFor(surfactant)` (`surfactant-aware-efficiency-map`) is the surfactant-aware variant of
 the same contract: returns the per-element map for the given lever
@@ -165,8 +165,8 @@ state. `efficiencyFor(false)` equals `efficiency` (back-compat).
 ## strategy-is-independent-recipes
 
 A foliar strategy for the tomato crop is a list of one or more **foliar
-recipes**. Each recipe is REQ-029-clean within its own tank (no
-in-tank ion precipitation among its product set); cross-recipe REQ-029
+recipes**. Each recipe is `nutrition/chemistry — in-tank-ksp-precipitation-guard`-clean within its own tank (no
+in-tank ion precipitation among its product set); cross-recipe `nutrition/chemistry — in-tank-ksp-precipitation-guard`
 is satisfied automatically because each recipe occupies its own tank
 on its own spray.
 
@@ -182,7 +182,7 @@ The model treats recipes independently:
   recipes (see `learnings.md` for the rejected joint-load alternative
   next time learnings are migrated).
 
-**Cert:** 4 (structural — separability follows from per-tank REQ-029
+**Cert:** 4 (structural — separability follows from per-tank `nutrition/chemistry — in-tank-ksp-precipitation-guard`
 and per-recipe leaf-tolerance physics; not measured but mechanically
 clean).
 
@@ -253,7 +253,7 @@ Rules:
   exceeds 5 today).
 
 When two recipes land on the same day, both run that day in separate
-tanks — recipes are independently REQ-029-clean (`strategy-is-independent-recipes`), and the
+tanks — recipes are independently `nutrition/chemistry — in-tank-ksp-precipitation-guard`-clean (`strategy-is-independent-recipes`), and the
 operator runs them as two separate sprays.
 
 **Cert:** 4 (structural — even-spread rule is deterministic; cap on
@@ -277,7 +277,7 @@ floor. Output:
 }
 ```
 
-(`NaMoO4_g` always 0 per REQ-061 Mo carve-out; key preserved for
+(`NaMoO4_g` always 0 per `nutrition — replenishment-cascade-earliest-first` Mo carve-out; key preserved for
 downstream consumer compatibility.)
 
 **Algorithm (per recipe):**
@@ -299,7 +299,7 @@ downstream consumer compatibility.)
    `predictedCE > nutrition/chemistry — foliar-ce-under-burn-cap cap × 0.95`: drop the highest-CE-contributor's
    dose first (Fe is the typical mass-dominant case under FeSO₄·7H₂O);
    re-round, recompute CE. Preserves pH-locked micros (Mn / Cu / B) that
-   have no alternative channel under REQ-061 cascade order. Bound at 4
+   have no alternative channel under `nutrition — replenishment-cascade-earliest-first` cascade order. Bound at 4
    iterations to guarantee termination.
 3. **`model-computed-spray-count` spray-count search.** Try `sprayCount = 1, 2, … ,
    weeklyLeafToleranceCap(recipe)`. Return the smallest `sprayCount`
@@ -387,7 +387,7 @@ per-element efficiency map at the given surfactant lever state.
 `efficiencyFor(true)` is strictly greater than `efficiencyFor(false)` for
 every routed element (the cuticle-uptake coverage axis: 0.30 → 0.80
 without changing the spray-pH multiplier). Channel capability shape per
-REQ-157 (only Mn / Zn / Cu / Fe routed today; B + Mo absent per REQ-061).
+`nutrition — channel-efficiency-capability-map` (only Mn / Zn / Cu / Fe routed today; B + Mo absent per `nutrition — replenishment-cascade-earliest-first`).
 The page-side Efficacité cell (REQ-163) reads this surface and updates
 when the operator toggles the lever.
 
@@ -408,11 +408,11 @@ Consumed by foliar:
 
 Consume foliar output or govern tank behavior:
 
-- **REQ-013 / REQ-014** (`nutrition/tomato/spec.md`) — supply chain bounds; foliar is one of four channels. Mn / Zn / Fe / Cu have no other channel while pH ≥ 7.
-- **REQ-018** (`nutrition/spec.md`) — no decorative products at current pH; coverage discount cuts headline to ~30 %, fires if a product drops below 5 % effective after coverage.
+- **`nutrition/tomato — under-fert-guard` / `nutrition/tomato — luxury-feeding-guard`** — supply chain bounds; foliar is one of four channels. Mn / Zn / Fe / Cu have no other channel while pH ≥ 7.
+- **`nutrition — no-decorative-products-at-current-ph`** — no decorative products at current pH; coverage discount cuts headline to ~30 %, fires if a product drops below 5 % effective after coverage.
 - **`nutrition/chemistry — every-product-ecocert-allowed`** — Ecocert-allowed only. MnSO₄ / ZnSO₄ / CuSO₄ / Solubore / Na molybdate / FeSO₄·7H₂O all on CAN/CGSB-32.310/311. CaCl₂·2H₂O reactivated 2026-05-24 for Test 1 Path B (food-grade vendor + product Ecocert-verified by operator); Ca recipe routes via `strategy-is-independent-recipes` when its `data.js` entry lands.
 - **`nutrition/chemistry — foliar-ce-under-burn-cap`** — foliar tank predicted CE under burn cap (10 mS/cm tomato); wired in `scripts/check-recipes.mjs`. Anchors the Ca recipe's per-tank dose ceiling and `weekly-leaf-tolerance-cap`'s weekly Ca leaf-tolerance cap.
-- **`nutrition/chemistry — in-tank-ksp-precipitation-guard`** — in-tank ion-precipitation clean. Each recipe in the strategy (`strategy-is-independent-recipes`) is REQ-029-clean independently within its own tank.
+- **`nutrition/chemistry — in-tank-ksp-precipitation-guard`** — in-tank ion-precipitation clean. Each recipe in the strategy (`strategy-is-independent-recipes`) is `nutrition/chemistry — in-tank-ksp-precipitation-guard`-clean independently within its own tank.
 - **`nutrition/chemistry — predicted-tank-ph-within-envelope` / `nutrition/chemistry — foliar-uptake-ph-curve`** — predicted tank pH + cuticle-pH multiplier. Tank pH ~5 (sulfate dominant), within `foliarPhResponse` peak 5.5-6.0.
-- **REQ-061** (`nutrition/spec.md`) — cascade order. Foliar carries residual gap; Mn / Zn / Fe / Cu have no other channel today (sulfates precipitate at root-zone pH 7.4), so foliar IS the earliest active channel for those — verifier accommodates.
-- **REQ-062** (`nutrition/spec.md`) — single fertigation tank per week (foliar-singleton half retired 2026-05-17). Foliar-frequency now governed by `model-computed-spray-count` (model-computed, bounded by `weekly-leaf-tolerance-cap` weekly leaf-tolerance cap) in this subproject; no cross-crop singleton constraint on foliar.
+- **`nutrition — replenishment-cascade-earliest-first`** — cascade order. Foliar carries residual gap; Mn / Zn / Fe / Cu have no other channel today (sulfates precipitate at root-zone pH 7.4), so foliar IS the earliest active channel for those — verifier accommodates.
+- **`nutrition — single-fertigation-tank-per-week`** — single fertigation tank per week (foliar-singleton half retired 2026-05-17). Foliar-frequency now governed by `model-computed-spray-count` (model-computed, bounded by `weekly-leaf-tolerance-cap` weekly leaf-tolerance cap) in this subproject; no cross-crop singleton constraint on foliar.

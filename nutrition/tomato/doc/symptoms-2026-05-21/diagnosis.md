@@ -28,9 +28,9 @@ Photos taken one week before tissue report; same cohort + bed. Diagnoses pair th
 
 - Pattern: bronze/purple necrotic speckling between veins across whole leaflet + neighbouring leaflets on the same compound leaf; veins stay green. **Textbook tomato Mn toxicity** (Marschner Ch. 9 — "brown spots scattered through the leaf, interveinal").
 - Tissue confirms: Mn **132 ppm vs ceiling 100** (+32 %, lab flagged élevé).
-- Delivery side fits: foliar Spray A delivers MnSO₄ 22 g / 15 L / wk, modelled foliar contribution **5.4 mg Mn / m² / wk** (§ 3) — alone larger than tomato Mn demand (~7.5 mg / m² / wk). Foliar bypasses pH 7.4 root lockout (REQ-194) so it lands at full availability regardless of soil chemistry.
+- Delivery side fits: foliar Spray A delivers MnSO₄ 22 g / 15 L / wk, modelled foliar contribution **5.4 mg Mn / m² / wk** (§ 3) — alone larger than tomato Mn demand (~7.5 mg / m² / wk). Foliar bypasses pH 7.4 root lockout (nutrition — foliar-uptake-ph-multiplier) so it lands at full availability regardless of soil chemistry.
 - Soil-side Mn lockout (SME Mn < 0.03 ppm) does NOT contradict — the toxicity is **foliar-deposited Mn accumulating in leaf tissue**, not root uptake.
-- **Action lever:** Mn foliar rate already at the upper edge for our spray pH (REQ-194 foliarPhResponse). First step is a STORED Spray A trim on MnSO₄ — gated on `/retire-recipe`. Confirm via next tissue panel; if Mn drops and speckling regresses on new growth, hypothesis closed.
+- **Action lever:** Mn foliar rate already at the upper edge for our spray pH (nutrition — foliar-uptake-ph-multiplier, foliarPhResponse). First step is a STORED Spray A trim on MnSO₄ — gated on `/retire-recipe`. Confirm via next tissue panel; if Mn drops and speckling regresses on new growth, hypothesis closed.
 
 ### `PXL_20260521_172934654.jpg` — lower-leaf marginal yellow chlorosis, tip browning
 **Lead: K deficiency starting. Cert 3.**
