@@ -5,7 +5,7 @@
 
 The previous shape had `sprayCount` (1-3) as an operator input
 on Block 5 (REQ-113, retired this PR). With the strategy/recipe
-hierarchy ([[0001-strategy-recipe-hierarchy]]) Ca runs at 2×/wk,
+hierarchy ([[strategy-recipe-hierarchy]]) Ca runs at 2×/wk,
 oligo at 1×/wk — frequencies diverge per-recipe. Two shapes
 considered.
 

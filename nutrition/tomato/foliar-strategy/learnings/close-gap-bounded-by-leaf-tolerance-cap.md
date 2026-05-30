@@ -3,7 +3,7 @@
 **Date:** 2026-05-24
 **Status:** accepted
 
-With frequency as model output ([[0002-frequency-as-model-output]]),
+With frequency as model output ([[frequency-as-model-output]]),
 "optimal" needed a definition. The grill considered four
 criteria.
 
@@ -52,5 +52,5 @@ default is the modelled optimum.
   reads (specialist's `model/spec.md`).
 - Bank (Block 8) reflects the bounded contribution, not the
   uncapped what-if.
-- Sibling [[0002-frequency-as-model-output]] for the day-spread
+- Sibling [[frequency-as-model-output]] for the day-spread
   rule once counts are picked.

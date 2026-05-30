@@ -1,10 +1,4 @@
-# Soil-contribution — learnings
-
-Rejected alternatives and historical decisions that no longer support a
-live REQ but must survive for organic-cert audit + future re-evaluation.
-Live REQ trace in `derivation.md`.
-
----
+# Reject subtracting bank K + Mg from the fertigation sizer (path 1); keep sizer scoped to active channels (path 2)
 
 ## Path 1 — Subtract bank K + Mg from the fertigation sizer (rejected 2026-05-17)
 

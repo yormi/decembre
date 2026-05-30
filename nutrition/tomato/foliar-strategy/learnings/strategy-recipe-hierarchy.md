@@ -38,6 +38,6 @@ across N subprojects.
   flagged for next coder pass.
 - STORED key `STORED_RECIPE.tomato.foliaire` unchanged (Guillaume's
   lane via `/retire-recipe`).
-- See sibling [[0002-frequency-as-model-output]] and
-  [[0003-close-gap-bounded-by-leaf-tolerance-cap]] for the
+- See sibling [[frequency-as-model-output]] and
+  [[close-gap-bounded-by-leaf-tolerance-cap]] for the
   model-shape decisions that flow from this.

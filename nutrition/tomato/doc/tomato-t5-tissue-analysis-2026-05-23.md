@@ -89,8 +89,8 @@ Target yield 1,5 kg / m² / sem.
 | Ca      | 2250   | 0     | 609       | 0      | 2250 (capped)  | ~2250 | ±0 %         | déficient      | ✓ REQ-081 transp-coupling |
 | Mg      | 855    | 360   | ~165      | 0      | 1190           | 1715  | +101 %       | mid-suff       | ✓      |
 | S       | ~600   | 2200  | ~150      | sulfates | low          | ~2400 | **+300 %**   | élevé          | ✓ sulfate chemistry |
-| Mn      | 7.5    | 5.8   | trace     | 5.4    | 0.45 (BD)      | 11.6  | +55 %        | élevé          | ✓ (or contamination) |
-| Cu      | 1.5    | 0.65  | trace     | 0.39   | 0.6            | 1.64  | +9 %         | élevé          | ✓ (or contamination) |
+| Mn      | 7.5    | 5.8   | trace     | 5.4    | 0.45 (BD)      | 11.6  | +55 %        | élevé          | ✓ real (wash-confirmed) |
+| Cu      | 1.5    | 0.65  | trace     | 0.39   | 0.6            | 1.64  | +9 %         | élevé          | ✓ real (wash-confirmed) |
 
 K and Ca capped at demand (supply > demand isn't physically pulled
 into plant tissue).
@@ -129,6 +129,18 @@ sulfate chemistry vs tomato demand ~600 mg / m² / wk (+300 %).
 The over-supply is built into the recipe, independent of leaf-wash
 status. Contamination hypothesis narrowed: still in play for Mn /
 Cu, not for S.
+
+**2026-05-30 — Mn / Cu contamination ruled out (cert 3).** Lab
+confirmed samples are washed before digestion (the prep-protocol
+confirmation Open Question #7 was pending). A wash strips loose
+surface MnSO₄ / CuSO₄ residue from the weekly foliar spray; still-
+élevé after washing → real tissue over-supply, not surface residue.
+Residual uncertainty keeping it cert 3 not 4: (a) foliar Mn / Cu
+that penetrated the cuticle reads as tissue but isn't metabolic, so
+magnitude is slightly over-read; (b) a plain water rinse needn't
+remove all dust — minor for Mn, and Fe (the classic dust trap)
+reads suff here, so no dust signal in this panel. Net: contamination
+escape-valve closed for all three élevé elements.
 
 ### 4.4 N supply gap matches tissue once feather-meal eff refit lands
 
@@ -342,7 +354,7 @@ STORED edits.
 | 1 | **Sidedress ramp toward FP** — Farine 1 341 → 1 773 g/planche/wk T5 | 4/5 | 2/5 (weigh more) | Ecocert ✓ | Modelled -26 % N gap shrinks to -9 %; matches post-refit FP |
 | 2 | Weekly foliar Ocean 15-1-1 spray (complementary to #1) | 3/5 | 1/5 | Ecocert ✓ | +5-8 % N delivery, additional tissue closure |
 | 3 | Maintain high-transpiration regime | 3/5 | low (ops) | n/a | Ca transp-coupling improves |
-| 4 | Drop foliar Mn / Zn / Mo toward FP (Mn 22→18, Zn 22→16, Mo 1→0.5) | 2/5 | 1/5 | ✓ | Stops over-supply if real (gated on prep-protocol) |
+| 4 | Drop foliar Mn / Zn / Mo toward FP (Mn 22→18, Zn 22→16, Mo 1→0.5) | 2/5 | 1/5 | ✓ | Stops real over-supply (ungated 2026-05-30 — wash confirms not contamination) |
 | 5 | K₂SO₄ modest bump for luxury K | 1/5 | 1/5 | ✓ | Trades K luxury for more S over-supply |
 | — | Foliar P push | would be 4/5 | high | no Ecocert-allowed source exists | P gap |
 | — | Non-Ca compost / pH drawdown for next cycle | 4/5 long-term | 4/5 | TBD | All locked elements over months |
@@ -379,9 +391,11 @@ compounds the S over-supply mathematically.
 
 ## 7. Open questions
 
-- **Mn / Cu élevé** — sample-prep contamination vs real foliar
+- ~~**Mn / Cu élevé** — sample-prep contamination vs real foliar
   over-supply. Pending Catherine's lab prep-protocol confirmation
-  before any foliar refit.
+  before any foliar refit.~~ **Resolved 2026-05-30** — lab washes
+  samples before digestion; contamination ruled out, both reads are
+  real foliar over-supply (cert 3, see § 4.3). Priority #4 ungated.
 - **Mineralization-efficiency factor refit** — `FarinePlumes.eff`
   moved 0.75 → 0.70 on 2026-05-23 (single-cohort refit to Sonneveld
   literature floor). Sub-floor refit (≤0.65) still gated on n ≥ 5
@@ -411,3 +425,5 @@ compounds the S over-supply mathematically.
     (`soilWeeklyAvailable`, `N_MINERALIZATION_BY_MONTH`)
 - Crisis context: `nutrition/doc/CLAUDE.md` §
   "Soil tests — current crisis"
+- Tissue-read methodology (wash clears residue not cuticle/dust):
+  `nutrition/learnings/tissue-wash-clears-residue-not-cuticle-or-dust.md`
