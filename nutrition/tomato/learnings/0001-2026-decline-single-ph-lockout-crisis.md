@@ -4,9 +4,14 @@
 abortion, botrytis in a dry house — all trace to the single
 pH-7.4 lockout (P −90%, N −26%, Ca below resistance band; cert 4
 tissue, see `nutrition/tomato/doc/tomato-t5-tissue-analysis-2026-05-23.md`).
-Full subgoal table: `nutrition/tomato/doc/tomato-yield-recovery-subgoals-2026-05-30.md`.
+Strategy frame: `nutrition/strategy/problem.md` + `nutrition/strategy/goal.md`.
 
 ## Decisions
+- **Botrytis is a secondary symptom, not a target.** It's
+  downstream of the P+Ca crisis (rot colonises weak/aborted
+  tissue + unhealed scars). The 2026-05-28 anti-botrytis pivot
+  (cutting fertigation K/Mg) was treating the symptom — flag for
+  the next `/retire-recipe`, the cation cuts may be mis-aimed.
 - **Flower abortion is NOT boron** — tissue B 57 ppm sufficient.
   Considered B (textbook abortion symptom); rejected on tissue
   evidence. It's the P/energy starvation. Don't buy borax.

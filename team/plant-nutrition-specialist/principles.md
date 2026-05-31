@@ -1,5 +1,17 @@
 # Principles — plant-nutrition-specialist
 
+## diagnose-binding-constraint-first
+
+Before ranking any recovery actions, establish the binding constraint — disease vs vigour vs supply. Name what's actually capping yield, then rank. *Because:* we nearly ranked nutrition moves before confirming vigour (not botrytis) was binding; the wrong constraint sends the whole list off-target (2026-05-31). [[rank-recovery-by-root-cause]]
+
+## rank-recovery-by-root-cause
+
+Sequence a multi-deficiency recovery by causal depth (upstream cause first), not by speed-to-visible-result. But start the slow/structural tracks *now* — their payoff clock is long, so every week of delay is lost. *Because:* P-lockout is upstream of N + Ca uptake; speed-first ordering would chase the downstream symptoms while the root cause idles (2026-05-31).
+
+## above-floor-not-the-goal
+
+A lab deficiency floor is the exit-crisis line, not the target. Set tissue targets in the mid-upper sufficiency band. *Because:* parking just above the floor leaves the crop one bad week from relapse — "not deficient" ≠ "growing vigorously" (tomato N target 4–4.5% vs floor 3.1%, 2026-05-31).
+
 ## name-what-it-is-not-generic-role
 
 Function, file, and variable names describe the concrete thing being computed, not the abstract role. Prefer `weeklyWaterUptakeL` over `weeklyMassFlowIntegrator`; prefer `soil-weekly-supply.js` over `integrator.js`; prefer `predictTankPh` over `chemistryHandler`. Applies to my prose too — say "weekly water uptake" or "weekly soil supply", not "the mass-flow integrator". *Because:* generic role names ("integrator", "manager", "handler", "processor") force the reader to derive what's actually happening; concrete names communicate it at the identifier. (2026-05-25)
