@@ -48,6 +48,29 @@ Deep research (sources: MSU, Agvise, Ohioline, Mosaic/OkState, Springer microniz
 - **Sonotube re-supply dropped from scope** — Guillaume: those beds excluded; focus on sonotube-free beds.
 - **Still the real gate:** measure CCE/free-lime first. High carbonate → S buys rhizosphere acidification + micronutrient availability, not durable bulk-pH drop (Agvise: pH-8 soil needing ~16 000 lb/acre got 10 000 → rebounded).
 
+## Citric feed-water lever closed; water test corroborates soil-only carbonate (2026-05-31)
+
+Source-water analysis on file (`nutrition/doc/analyse d'eau.pdf`,
+Berger 596618, "eau serre 9 avril 2026") resolves the citric /
+feed-water-acid question:
+
+- **Alcalinité 24.68 ppm CaCO₃** (norm 0–50; ≈0.49 meq/L) — low.
+  Threshold to bother acidifying irrigation water is ~100–120 ppm;
+  we're at 25. **No feed-water bicarbonate to knock down.**
+- **Source pH 6.26** — water is already mildly acidic. Acidifying
+  it further has no target. **CE 0.10** — clean.
+- Citric as a feed-water acidifier is therefore **not worth it**;
+  the rhizosphere-chelation use also fails (micros aren't the
+  deficiency — Mn already over-supply; soil re-buffers the dip in
+  minutes, duty cycle ~5–7 % of day at 5 irrigations). cert 4.
+
+**Corroboration:** mildly acidic water (pH 6.26) entering 5×/day
+while soil still reads 7.4 means a **large soil carbonate buffer**
+swallows it each pass → high pH is soil-carbonate-sourced, not
+feed-water. Strengthens the carbonate-sink thesis above. The water
+is NOT the lever; bulk-pH drawdown via sulphur stays the only
+durable correction.
+
 ## Cert
 
 Elemental sulphur — allowed (CAN/CGSB-32.311), named product + certificate still to be sourced/filed.

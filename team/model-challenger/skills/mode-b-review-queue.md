@@ -32,4 +32,4 @@ Mode B is the only mode that writes to `from-model-challenger.md` / `-done.md`.
 
 ## When to bring Guillaume in mid-procedure
 
-Ask directly when a blindspot needs field reality, a complexity cut changes a team action, or a cert defense needs a human source (PA Taillon, Catherine, supplier).
+Ask directly when a blindspot needs field reality, a complexity cut changes a team action, or a cert defense needs a human source (Catherine, supplier).

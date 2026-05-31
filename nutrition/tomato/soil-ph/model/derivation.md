@@ -59,11 +59,33 @@ not on speed.
 
 Faster oxidation changes the **peak, not the total**: the same acid
 delivered in a shorter burst → lower transient pH minimum + higher
-*instantaneous* O₂ demand (sharper H₂S risk on a wet bed). That is a
-**rate hazard, controlled by cadence + the guardrails (pH retest,
-aeration, EC) — not by the per-pass mass cap.** For a fast product,
-hold the mass ceiling but flatten the peak under it: split into
-smaller increments, retest pH at 2 wk (not 4), never dose waterlogged.
+*instantaneous* O₂ demand (sharper H₂S risk on a wet bed). 9 µm
+wettable (half-life ~1.5–3 d) vs micronized (~6–10 d) ≈ **30× the
+instantaneous acid flux** for the same 2.5 kg pass.
+
+**The peak hazard is regime-dependent — it switches on when carbonate
+runs out (cert 3):**
+
+- **Carbonate present (buffered):** acid–base neutralisation is near-
+  instant (seconds) — far faster than either oxidation timescale — so
+  free CaCO₃ in the microzone swallows the spike locally; bulk and
+  local pH barely move regardless of rate. *Fast product is safe at
+  the mass cap here* (this is the starting regime at pH 7.28).
+- **Carbonate exhausted (unbuffered):** only CEC + soil-solution
+  buffer remains (slower, finite). A 30× acid burst can outrun local
+  buffering + diffusion → a genuine **acid microzone**: transient pH
+  well below target at the particle surface while bulk pH still reads
+  fine. Near a live root tip (standing crop, surface band) = root-tip
+  burn; in a wet pocket the O₂ burst → H₂S. Real, localised, transient.
+  Worsened by fine particles + high particle density on the root mat.
+
+So the peak is a **rate hazard controlled by cadence + the guardrails
+(pH retest, aeration, EC) — not by the per-pass mass cap.** Protocol:
+hold the mass ceiling while carbonate buffers; **as carbonate thins,
+drop the per-pass increment** (fewer/smaller hot microzones), scratch
+in lightly (avoid a concentrated band on the root mat), keep aerobic,
+retest pH at 2 wk (not 4). The thin-buffer tail is exactly when the
+fast product's peak bites — tighten there.
 See `learnings/microthiol-kumulus-soil-use-agronomic-risks`.
 
 ### Passes to titrate carbonate, by tier

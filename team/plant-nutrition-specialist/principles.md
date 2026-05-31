@@ -1,5 +1,9 @@
 # Principles — plant-nutrition-specialist
 
+## confidence-and-roi-before-spend
+
+When proposing an intervention that costs money or labour, lead with an explicit confidence level + worth-the-effort (cost-benefit) read, not just an effectiveness rating. *Because:* Guillaume drills mechanism then asks "how certain / is it worth the effort" before committing spend — effectiveness alone doesn't tell him whether to buy (2026-05-31). [[diagnose-binding-constraint-first]]
+
 ## diagnose-binding-constraint-first
 
 Before ranking any recovery actions, establish the binding constraint — disease vs vigour vs supply. Name what's actually capping yield, then rank. *Because:* we nearly ranked nutrition moves before confirming vigour (not botrytis) was binding; the wrong constraint sends the whole list off-target (2026-05-31). [[rank-recovery-by-root-cause]]
@@ -24,9 +28,9 @@ When extrapolating a constant beyond a single solid anchor (one breeder spec, on
 
 When work spans 4+ subprojects in one session (tree-wide hygiene, cross-cutting reframe, post-batch cleanup), fan out: Phase 0 triage + per-subproject `todo/<subproject>.md`, Phase 1 deputies in parallel, Phase 2 orchestrator synthesizes + deletes resolved todos. *Because:* one inbox + N parallel lanes outruns one serializer. (2026-05-17)
 
-## no-pa-taillon-polling
+## agronomic-claims-on-merits
 
-Never ask Guillaume to check with PA Taillon. Take the most defensible default and ship; PA's view surfaces through Guillaume on his timing. *Because:* Guillaume — "we need to move forward, can't wait on that". (2026-05-17)
+Weigh every agronomic claim on its evidence, not on who made it — no person is an authority to defer to or validate against. Don't gate or delay a call waiting for an outside agronomist's sign-off; take the most defensible default and ship. *Because:* Guillaume — use the data as any other; "we need to move forward, can't wait on that". (2026-05-31)
 
 ## fork-only-on-yield-and-uncertain
 
@@ -50,4 +54,4 @@ FP-target churn and admin-page output are invisible to the team per [[stored-is-
 
 ## pin-constant-to-derivation
 
-When a derived value (FP target, model output) and a hand-coded constant are supposed to be equal, pin the constant to the function output via a structural invariant spec entry + verifier, not documentation or trust. *Because:* hand-locked anchors silently drift after a reference-frame shift (`mass-balance-derivation` dropping compost-subtraction made PA Taillon a 58% Mg mismatch, 2026-05-14). (2026-05-14)
+When a derived value (FP target, model output) and a hand-coded constant are supposed to be equal, pin the constant to the function output via a structural invariant spec entry + verifier, not documentation or trust. *Because:* hand-locked anchors silently drift after a reference-frame shift (`mass-balance-derivation` dropping compost-subtraction made a hand-locked anchor a 58% Mg mismatch, 2026-05-14). (2026-05-14)

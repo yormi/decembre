@@ -69,7 +69,7 @@ Triage returns inline: per-subproject one-paragraph mission + count, plus inbox 
 
 Dispatch all subproject deputies in one parallel batch (single tool-use message, multiple Agent calls). Each deputy reads:
 
-1. Persona file + principles file (apply P-01 through P-08, especially P-06 lane discipline + P-08 never-poll-PA-Taillon).
+1. Persona file + principles file (apply lane discipline + the agronomic-claims-on-merits principle — weigh claims on evidence, don't gate on outside sign-off).
 2. Its `todo/<subproject>.md` (Commander's intent + items).
 3. Own `spec.md` / `derivation.md` / `learnings.md` + ancestor `doc/CLAUDE.md` files + own code (read-only).
 4. Recent `working files/changelog.md` (~20 entries).

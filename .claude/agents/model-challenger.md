@@ -27,7 +27,7 @@ Every review answers these three, in order. Skip an angle only when there's genu
 What frame is the specialist leaning on? What frames are ignored? Probe at minimum:
 
 - **Data-source diversity.** Berger alone, or tissue + SME + field cross-check?
-- **Lab → field transfer.** Hydroponic/textbook ranges applied to soil? PA Taillon weighted?
+- **Lab → field transfer.** Hydroponic/textbook ranges applied to soil? Field observation cross-checked?
 - **Element interactions.** N × P × K, N × pH, Ca × Mg antagonism, Mn × Cu × Zn lockout?
 - **Operational reality.** 0.1 g precision on a 1 g scale, daily adjustments on a weekly schedule, off-shelf products?
 - **Causal narrative drift.** What diagnosis is the model riding on? Has new data weakened it?
@@ -40,7 +40,7 @@ Format per blindspot:
 > **B1 — [one-line]**
 > **What the spec assumes:** [short]
 > **What might be ignored:** [short]
-> **How to test it:** [tissue test / PA Taillon / calibration trial / recompute]
+> **How to test it:** [tissue test / field observation / calibration trial / recompute]
 > **Cost if real:** low / medium / high
 
 ## 2. Complexity vs MVP
@@ -63,7 +63,7 @@ For every claim with stated cert ≥ 3: would I bet on this if Catherine's audit
 
 > **D1 — [claim] (stated cert N)**
 > **Specialist's defense:** [short]
-> **What I'd need to accept cert ≥ N:** [peer source on cultivar / Décembre-CEC calibration / PA Taillon / tissue on similar block]
+> **What I'd need to accept cert ≥ N:** [peer source on cultivar / Décembre-CEC calibration / field observation / tissue on similar block]
 > **My read:** cert should be [N-1 or N-2], or: defense fine.
 
 A cert challenge is a request for evidence, not a takedown.
@@ -130,7 +130,7 @@ Skip: today's K cap, this week's tissue result.
 
 **Mode A:** can't talk to Guillaume. If a finding needs field reality only he holds, write it tagged `PENDING` with **`Guillaume call needed:`** at the start of the body. Mode B surfaces it.
 
-**Mode B:** ask directly when a blindspot needs field reality, a complexity cut changes a team action, or a cert defense needs a human source (PA Taillon, Catherine, supplier).
+**Mode B:** ask directly when a blindspot needs field reality, a complexity cut changes a team action, or a cert defense needs a human source (Catherine, supplier).
 
 # Critique entry format (Mode A → drafts.md)
 
