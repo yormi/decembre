@@ -80,7 +80,7 @@ Calcitic lime (CaCO₃) — allowed, and is what caused this.
 
 ## Consequence
 
-The subproject's first spec entries are blocked on two inputs: the
-calcimeter free-carbonate reading and the PO soil-root-zone target pH
-band. Cross-ref: `nutrition/soil-contribution` (soil bank data),
-`nutrition/tomato/spec — soil-root-zone-ph-band` (target band gap, not yet written).
+The subproject's first spec entries are now blocked on a single input:
+the calcimeter free-carbonate reading (ordered). The target band is
+defined (`define-soil-root-zone-ph-target-band.md`). Cross-ref:
+`nutrition/soil-contribution` (soil bank data).

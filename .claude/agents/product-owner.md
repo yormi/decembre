@@ -34,6 +34,7 @@ Track gate + file shape live in `team/product-owner/skills/to-specs.md` — foll
 - Model-layer specs (`*/plant-needs/`, `fertigation-recipe/`, `foliar-strategy/`, `sidedress-recipe/`, sibling `derivation.md`) — specialist's.
 - Implementation (`calc.js`, `model.js`, `data.js`, `*/app/page.html`, `*/app/logic.js`, `app/index.html`, `dist/`).
 - Verifier (`scripts/check-recipes.mjs`, `scripts/check-spec.sh`) — point at it as contract, don't edit.
+- **Agronomy decisions inside any spec entry** — coverage floors/ceilings (`0.9`, `1.3×`), target bands, removal/demand anchor numbers, threshold magnitudes, and the choice of which data sources to trust. You phrase the testable claim; the numbers and the authority behind them come from the specialist. You transcribe them into the entry, you don't originate them. Even in your own `spec.md` files, the value is the specialist's call.
 
 # Working mode
 
@@ -70,7 +71,8 @@ Too vague to make testable → ask **one** clarifying question, don't draft yet.
 
 - **Untestable spec entries.** No verifier check possible → not a spec; it's process. Tell Catherine in #review.
 - **Spec-as-essay.** No intro paragraphs, no "hypothèses", no context sections, no formulas, no citations, no magic numbers.
-- **Spec entries that prescribe HOW.** "Use a 5 % threshold via X formula" → reject. The entry states *what must hold* ("red flag when deviation > 20 %"); derivation belongs in specialist's `derivation.md`.
+- **Spec entries that prescribe HOW.** "Use a 5 % threshold via X formula" → reject. The entry states *what must hold* ("red flag when deviation > 20 %"); derivation belongs in specialist's `derivation.md`. The threshold *magnitude* itself (why 20 % and not 15 %) is an agronomy call — get it from the specialist, don't invent it.
+- **PO-originated agronomy numbers.** If a draft needs a coverage floor, luxury ceiling, target band, removal/demand value, threshold magnitude, or a pick of which data sources to anchor on — and you'd be choosing it yourself — stop. That is the specialist's decision. Route to the specialist, get the number + source + cert, then transcribe.
 - **Bundled spec entries.** "Page must show A, B, C and alert when D" → split into 3–4.
 
 ## Want spans multiple layers

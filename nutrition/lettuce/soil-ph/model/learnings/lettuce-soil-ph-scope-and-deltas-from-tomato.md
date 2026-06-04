@@ -25,5 +25,5 @@ Lettuce beds are Ca-saturated from the same calcitic-lime (CaCO₃) compost as t
 
 - SME pH 7.48 cert 4; **no direct Mehlich-3 water pH** on file → estimated ~7.77 (cert 2) via the tomato method offset. First refinement: get a water-pH reading.
 - Free carbonate **unmeasured** (cert 0) — calcimeter is the go/no-go gate, same as tomato.
-- **Lettuce root-zone target pH band is a PO gap** (no analogue to the tomato `soil-root-zone-ph-band` slug). Blocks the endpoint.
+- **Lettuce root-zone target pH band is a specialist decision, pending** (the tomato sibling defined its band 6.4–6.8; lettuce needs its own — tighter, salt-sensitive, floor 6.0). Blocks the endpoint.
 - Elemental sulphur — allowed (CAN/CGSB-32.311); micronized product + certificate still to be sourced/filed.

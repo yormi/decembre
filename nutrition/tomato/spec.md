@@ -35,28 +35,17 @@ admin page live in `nutrition/tomato/shell/spec.md` (page-shell orchestration
 - **`soil-ph/model/spec.md`** — whether/how much elemental sulphur
   corrects tomato-bed soil pH toward the root-zone target. Calcimeter
   free-carbonate reading is the feasibility gate; acid amendment
-  rejected. Greenfield — spec entries blocked on the soil-root-zone
-  target band + the carbonate measurement. No code yet.
+  rejected. Greenfield — spec entries blocked on the carbonate
+  measurement (ordered). No code yet.
 
-**Specialist note (2026-05-30):** `soil-root-zone-ph-band` does not yet
-exist and both crops' `soil-ph/model/` are blocked on it for the
-correction endpoint. Recommend the PO write the entry. Proposed tomato
-band, **Mehlich-3 water pH scale** (the soil-bed measure the correction
-anchors on per the soil-ph `pH scale` rule):
-
-- **Target band 6.4 – 6.8**, operational midpoint ~6.6.
-- **Hard floor 6.2** — below = over-corrected; Mn/Zn-availability climbs
-  into watch range on this calcareous mineral soil.
-- Basis: peak soil-P availability + restored Fe/Mn/Zn cation uptake sit
-  ~6.2–6.8; 6.8 ceiling = "good enough, stop dosing"; the 6.2 floor
-  keeps margin above toxicity. cert 3 (extension P/micro availability
-  curves for calcareous mineral soils; not Décembre-tissue-calibrated).
-- SME root-zone secondary equivalent ≈ 6.1–6.5 (~0.3 unit below
-  Mehlich-3 water; never mix the two scales in one calculation).
-
-The lettuce sibling (`nutrition/lettuce/spec.md`) needs the parallel
-entry — slightly tighter, salt-sensitive, floor 6.0; recommended there
-in a separate note.
+**Target band — specialist-owned, not a PO contract (resolved 2026-05-31):**
+the soil-correction endpoint is a model decision, defined in
+`soil-ph/model/` (Mehlich-3 water pH band 6.0–6.5, aim 6.3, floor 5.8;
+`soil-ph/model/learnings/define-soil-root-zone-ph-target-band.md`). The
+PO owns plant-facing contracts (tissue bands, recipe guards); the soil
+pH that frees them is the model's call. The lettuce sibling needs its
+own band defined (tighter, salt-sensitive, floor 6.0) — pending in
+`nutrition/lettuce/soil-ph/model/`.
 
 The specs below cover the *coupling* between plant-needs and the supply
 chain (`under-fert-guard`, `luxury-feeding-guard`) plus the

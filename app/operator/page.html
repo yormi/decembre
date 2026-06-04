@@ -1,7 +1,8 @@
   <!-- Top-level tool buttons (subtle text-only style).
        All buttons here are admin-only (URL hash #admin) since 2026-05-28.
        The ℹ icon is the back-nav primitive: click to return to the operational
-       pages (Fertigation / Foliaire / Irrigation) from any admin/tool view. -->
+       pages (Fertigation / Sol / Foliaire) from any admin/tool view.
+       Irrigation is admin-only and sits in the same toggle bar. -->
   <div style="text-align:center; margin-bottom:12px; display:flex; justify-content:center; gap:8px; flex-wrap:wrap;">
     <button id="page-info" onclick="setPage('fertigation')" title="Retour aux pages d'opération" style="display:none; background:none; border:none; padding:6px 10px; font-family:inherit; font-size:14px; font-weight:600; cursor:pointer; color:var(--text-muted); transition:color 0.2s;">
       ℹ
@@ -29,7 +30,7 @@
       🧪 Fertigation
     </button>
     <button class="page-btn" id="page-sol" onclick="setPage('sol')">
-      🌱 Sol
+      🌱 Fertilisation
     </button>
     <button class="page-btn" id="page-foliar" onclick="setPage('foliar')">
       🍃 Foliaire

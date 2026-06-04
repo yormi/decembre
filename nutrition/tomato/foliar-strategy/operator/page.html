@@ -30,13 +30,12 @@
           <span class="stage-label">Spray B</span>
         </button>
       </div>
-      <div id="spray-schedule-note" style="font-size:11px; color:var(--text-muted); margin-bottom:12px; text-align:center;">—</div>
-      <div class="warning-box" style="margin-top:0;"><strong>⚠  Mélanger Spray A et Spray B = réaction chimique qui bouche les buses</strong></div>
+      <div class="warning-box" style="margin-top:0;"><strong>⚠  JAMAIS mélanger Spray A et Spray B → réaction chimique bouche les buses</strong></div>
     </div>
 
     <!-- Calendrier card with this-week recommendation -->
     <div class="card">
-      <div class="card-title">Quand pulvériser</div>
+      <div class="card-title" id="foliar-frequency-title">Quand pulvériser</div>
       <div id="foliar-this-week" style="background:var(--accent-active-light); border:1.5px solid var(--accent-active-border); border-radius:var(--radius-sm); padding:14px 16px; margin-bottom:12px;">
         <div id="foliar-when" style="font-size:13px; color:var(--text); font-weight:600;">—</div>
       </div>
@@ -102,31 +101,6 @@
             ⚠️ Les résidus contaminent prochain mélange et bouche buse.
           </div>
         </li>
-        <li class="step-item">
-          <span class="step-number">6</span>
-          <div class="step-title">Écrire <strong>immédiatement</strong> sur Slack</div>
-          <div class="step-desc">
-            <ul style="margin:4px 0 0; padding-left:18px;">
-              <li>Poster sur <strong>#recherche-et-developpement</strong></li>
-              <li>Date, spray, culture</li>
-              <li>Pour analyse rapide</li>
-            </ul>
-          </div>
-        </li>
       </ol>
-    </div>
-
-    <div class="card">
-      <div class="card-title">Signes à surveiller</div>
-      <div style="font-size:13px; line-height:1.6;">
-        <ul style="color:var(--text-muted); list-style:none; margin:0 0 12px 0; padding:0;">
-          <li style="padding:2px 0;"><span style="color:var(--accent-tomato); font-weight:700; margin-right:8px;">✗</span>Brûlure foliaire (taches brunes)</li>
-          <li style="padding:2px 0;"><span style="color:var(--accent-tomato); font-weight:700; margin-right:8px;">✗</span>Toxicité bore (marges brunes, vieilles feuilles)</li>
-          <li style="padding:2px 0;"><span style="color:var(--accent-tomato); font-weight:700; margin-right:8px;">✗</span>Toxicité cuivre (taches noires, nécrose)</li>
-        </ul>
-        <div style="font-size:12px; color:var(--text-muted);">
-          → Reporter sur Slack <strong>#recherche-et-developpement</strong>
-        </div>
-      </div>
     </div>
   </div>

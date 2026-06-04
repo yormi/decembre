@@ -66,7 +66,7 @@ Lettuce salinity threshold ECe ~1.3 dS/m (cert 4, FAO); yield falls fast above i
 - Calcimeter / inorganic-carbon reading → replaces the cert-0 carbonate row; picks the dose-table row.
 - Direct Mehlich-3 water-pH reading → replaces the cert-2 estimated 7.77.
 - Buffer-pH (SMP) reading → calibrates the "no fizz" buffer-only estimate.
-- Lettuce root-zone target pH band (PO gap) → sets the endpoint.
+- Lettuce root-zone target pH band (specialist decision, pending) → sets the endpoint.
 - Incorporation depth/method → changes the soil mass titrated.
 
 ## pH scale

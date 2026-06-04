@@ -65,6 +65,7 @@ function setCrop(crop) {
 
     // Lettuce uses fixed 'normal' vigor — no slider needed for a 2-week cycle
     if (crop === 'lettuce') currentVigor = 'normal';
+    applyFertRecipeUI();
     recalc();
     buildFoliar();
   } else {
@@ -82,6 +83,24 @@ function setCropBtn(id, isActive, cropType) {
   } else {
     element.className = 'crop-btn';
   }
+}
+
+// Tomato fertigation recipe selector. Two recipes share the page: the per-stage
+// nutrient barrel and a fixed Ocean root-fix drench. Stage selector is only
+// meaningful for the nutrient recipe, so it hides under root-fix.
+function setFertRecipe(mode) {
+  currentFertRecipe = mode;
+  applyFertRecipeUI();
+  buildSteps();
+}
+
+function applyFertRecipeUI() {
+  const nutrientBtn = document.getElementById('fert-recipe-nutrient');
+  const rootfixBtn = document.getElementById('fert-recipe-rootfix');
+  const stageBlock = document.getElementById('fert-stage-block');
+  if (nutrientBtn) nutrientBtn.classList.toggle('active', currentFertRecipe === 'nutrient');
+  if (rootfixBtn) rootfixBtn.classList.toggle('active', currentFertRecipe === 'rootfix');
+  if (stageBlock) stageBlock.style.display = currentFertRecipe === 'rootfix' ? 'none' : 'block';
 }
 
 function setVigor(v) {
@@ -166,7 +185,10 @@ function setPage(page) {
 const PAGES = ['fertigation','sol','foliar','irrigation','week','diagnostic','nutriment','historique-nutriments','rendement'];
 const DEFAULT_PAGE = 'fertigation';
 const DEFAULT_CROP = 'tomato';
-const ADMIN_PAGES = ['week','diagnostic','nutriment','historique-nutriments','rendement'];
+// irrigation is admin-gated: its toggle button lives in the operational
+// page-toggle bar but only shows in admin mode (applyAdminMode hides it
+// otherwise; setPage/redirect guards below block non-admin access).
+const ADMIN_PAGES = ['irrigation','week','diagnostic','nutriment','historique-nutriments','rendement'];
 // Pages whose crop is part of the URL. foliar omitted (only tomato is valid;
 // the page auto-redirects lettuce/nursery to tomato). Crop comes from
 // `currentCrop`, except diagnostic which has its own page-local crop state
@@ -251,11 +273,23 @@ function applyAdminMode() {
   document.getElementById('page-historique-nutriments').style.display = admin ? 'inline-block' : 'none';
   const rendNavBtn = document.getElementById('page-rendement');
   if (rendNavBtn) rendNavBtn.style.display = admin ? 'inline-block' : 'none';
+  // Irrigation toggle lives in the operational page-toggle bar but is admin-only.
+  document.getElementById('page-irrigation').style.display = admin ? '' : 'none';
+  // Fertigation Laitue (field lettuce) crop is admin-only; tomato + nursery stay public.
+  const fertLettuceBtn = document.getElementById('fert-crop-lettuce');
+  if (fertLettuceBtn) fertLettuceBtn.style.display = admin ? '' : 'none';
+  // Nursery "Bien réglé quand" signs card is admin-only.
+  const nurserySignsCard = document.getElementById('nursery-signs-card');
+  if (nurserySignsCard) nurserySignsCard.style.display = admin ? '' : 'none';
   document.getElementById('admin-toggle').classList.toggle('is-admin', admin);
   // If the user dropped out of admin mode while on an admin page, send them
   // back to the default operational view.
   if (!admin && ADMIN_PAGES.includes(currentPage)) {
     setPage(DEFAULT_PAGE);
+  }
+  // Non-admin viewing lettuce fertigation → fall back to tomato.
+  if (!admin && currentPage === 'fertigation' && currentCrop === 'lettuce') {
+    setCrop('tomato');
   }
 }
 // Toggle admin via the footer dot. Built explicitly (not via syncHash) because
@@ -337,6 +371,7 @@ window.setPage = setPage;
 window.setCrop = setCrop;
 window.setCropBtn = setCropBtn;
 window.setVigor = setVigor;
+window.setFertRecipe = setFertRecipe;
 window.syncHash = syncHash;
 window.cropFor = cropFor;
 window.toggleAdmin = toggleAdmin;

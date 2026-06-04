@@ -31,5 +31,8 @@ const LETTUCE = { mgSulfate: 467, kSulfate: 2996, feSulfate: 7.5 };
 
 let currentCrop = 'tomato';
 let currentStage = 'T1';
+// Tomato fertigation recipe selector: 'nutrient' (per-stage STORED recipe) or
+// 'rootfix' (fixed Ocean drench). Stage selector only applies to 'nutrient'.
+let currentFertRecipe = 'nutrient';
 let currentPage = 'fertigation';
 let currentVigor = 'low';

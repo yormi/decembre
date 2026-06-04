@@ -12,10 +12,10 @@ with a live tissue finding.
 
 - Mn²⁺ soil availability rises steeply as pH falls — ~100× per 2 pH
   units, with the steep part right below 6.5 (cert 4).
-- The **intended** correction (7.28 → target band 6.4–6.8) already
-  raises Mn uptake — this is NOT an overshoot effect. The correction
-  *direction itself* pushes Mn up. Overshoot below ~5.5 then compounds
-  it into outright Mn/Zn/Al toxicity.
+- The **intended** correction (7.28 → target band 6.0–6.5, aim 6.3)
+  already raises Mn uptake — this is NOT an overshoot effect. The
+  correction *direction itself* pushes Mn up. Overshoot below ~5.5 then
+  compounds it into outright Mn/Zn/Al toxicity.
 - The 2026-05-30 T5 panel confirmed **real tissue Mn over-supply**
   (contamination ruled out, wash-confirmed), with a foliar Mn trim
   (22→18) already queued. So the crop is Mn-high *before* any
@@ -30,10 +30,15 @@ law is cert 4; the soil's Mn pool + buffering aren't measured).
 - Not a blocker — P-unlock + Fe gains likely outweigh a manageable Mn
   rise, and the standing-crop lever is slow so the climb is gradual.
 - **Monitor Mn on the next tissue panel** through any sulphur dosing;
-  pair the foliar-Mn trim with the soil-pH work so the two Mn sources
-  don't stack.
-- Reinforces the **hard pH floor 6.2** (derivation guardrails): below
-  it, Mn/Zn availability leaves the watch range for the toxicity range.
+  tissue Mn is the **stop-dose trigger**.
+- **Update (2026-05-31): the floor moved 6.2 → 5.8 and the band to
+  6.0–6.5.** Reasoning: tissue Mn is *partly our foliar Mn programme*,
+  a controllable input — **zero foliar Mn through the drawdown** and the
+  soil-Mn rise from a deeper pH has headroom. The two Mn sources must
+  NOT stack; cutting the foliar half is what earns the lower band. The
+  residual floor 5.8 is the pure-soil Mn/Zn/Al response, which dosing
+  can't undo. See `define-soil-root-zone-ph-target-band § The Mn lever
+  is partly ours`.
 - Refinement: a Mn soil-availability reading at the post-correction pH
   → raises the cert-2 magnitude estimate; would let us set an explicit
   Mn-tissue stop-dose trigger.

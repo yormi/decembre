@@ -11,6 +11,14 @@
 // défense botrytis. Source CaCl₂ vérifiée Ecocert (raison du retrait
 // 2026-05-06 résolue). Modèle Ca recipe (data.js + computeFoliarSupply)
 // reste gated/todo — STORED audit-trail ouvert avant pipeline de rendu.
+// 2026-06-03 : MnSO₄ 22 → 18 g (~60% demande, cap toxicité) ; FeSO₄·7H₂O
+// 80 → 90 g (~95% demande). Solubore foliaire RETIRÉ (7 g → 0) — bore
+// mono-canal sur fertigation (borate non-ionique, efficacité canal 1.00,
+// livraison systémique xylème) ; le bore foliaire était redondant +
+// immobile phloème. Fertigation porte le bore à 9 g (~107% demande).
+// 2026-06-04 : molybdène (NaMolybdate 1 g) retiré du foliaire → déplacé sur
+// fertigation 0,5 g (Mo non verrouillé à pH élevé — molybdate plus dispo quand
+// pH monte ; canal racinaire efficace, comme le bore).
 // Yucca surfactant not on order — A coverage operates at 30 %, B at 15 %.
 //
 // EDITS REQUIRE /retire-recipe SKILL FIRST. Path `STORED_RECIPE.tomato.foliaire`
@@ -18,12 +26,10 @@
 window.STORED_RECIPE.tomato.foliaire = {
   masterVol: 15, backpacks: 1, area: '383 m²',
   A: [
-    { name: 'MnSO₄ (31.5% Mn)', master: '22 g' },
+    { name: 'MnSO₄ (31.5% Mn)', master: '18 g', note: 'réduit 22→18 g 2026-06-03 — ~60% demande, cap toxicité sans yucca' },
     { name: 'ZnSO₄ (35.5% Zn)', master: '22 g' },
-    { name: 'Solubore (20.5% B)', master: '7 g' },
     { name: 'CuSO₄ (25% Cu)', master: '2 g', note: 'réduit 4→2 g 2026-05-05 — toxicité Cu observée (taches noires) sans yucca, local pooling concentre ~150-200 ppm Cu effective' },
-    { name: 'Molybdate de sodium (39.6% Mo)', master: '1 g' },
-    { name: 'FeSO₄·7H₂O (20% Fe)', master: '80 g' },
+    { name: 'FeSO₄·7H₂O (20% Fe)', master: '90 g', note: 'augmenté 80→90 g 2026-06-03 — ~95% demande (cuticule contourne lockout sol)' },
   ],
   B: [
     { name: 'CaCl₂·2H₂O', master: '100 g', note: 'Ecocert vérifié ; 2×/semaine ; sans surfactant — coverage cuticulaire ~0.15 ; bypass Ca racinaire pour défense botrytis' },

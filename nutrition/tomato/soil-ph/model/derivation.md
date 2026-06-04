@@ -16,6 +16,23 @@ How the model is built. Spec is in `spec.md`. This file: carbonate stoichiometry
 
 Total topsoil mass = 200 × 382.9 = **76 580 kg**.
 
+## Target band (the correction endpoint)
+
+Mehlich-3 water pH (the soil-bed scale this correction anchors on):
+
+| Bound | Value |
+|---|---|
+| Acceptable band | **6.0 – 6.5** |
+| Aim — stop dosing | **6.3** |
+| Hard floor — stop now | **5.8** (Mn/Zn/Al toxicity edge) |
+
+Specialist-owned model decision (not a PO contract). Bounds set by
+P-unlock vs Mn-tension; the band sits this low **conditioned on zeroing
+foliar Mn during the drawdown** (the controllable Mn source) with
+tissue Mn as the stop-dose gauge. Full rationale + rejected lower band:
+`learnings/define-soil-root-zone-ph-target-band.md`. The dose-stop
+guardrail below (§ pass cadence) enforces the 6.3 aim / 5.8 floor.
+
 ## Feasibility gate — free carbonate
 
 pH 7.28 is a >1-unit jump from the 6.09 pre-greenhouse baseline, driven by calcitic-lime (CaCO₃) ORGANIMIX compost. This is the textbook free-carbonate signature, but the carbonate pool is **unmeasured** — no calcimeter / HCl-effervescence reading on file.
@@ -108,7 +125,7 @@ Rate-limiter is microbial oxidation (S⁰ → H₂SO₄ via *Thiobacillus*). Par
 - **The "≤400 lb/acre/yr established-planting" annual cap is a throughput + anaerobic-H₂S safety default for unmonitored growers — NOT a pH-overshoot or toxicity ceiling, and pH-independent in origin** (cert 4). With direct EC + pH monitoring it does not bind; monthly splits totalling more than the annual figure are supported by published increment-and-retest guidance (cert 3 — principle sourced, no validated higher annual number).
 - **Replace the annual cap with measured guardrails** (cert 3):
   - EC: keep root-zone ECe ≤ 2.5 dS/m (tomato salinity threshold; ≈1.0–1.2 dS/m on 1:2 soil:water). Near it → skip/cut next dose.
-  - pH: retest every 4 weeks before dosing; stop at 6.5, hard floor 6.2.
+  - pH: retest every 4 weeks before dosing; stop at aim 6.3, hard floor 5.8 (§ Target band). Zero foliar Mn through the drawdown; tissue Mn is the stop-dose gauge.
   - Aeration: never dose a waterlogged bed (S⁰ → H₂S root burn).
 - **Dose:** start ~1.5–2.0 kg micronized S/bed/month, verify EC+pH at 4 weeks, then hold up to ~2.0–2.5 kg/month if clean. Do not open at the high end blind.
 
@@ -158,7 +175,7 @@ End-to-end estimate at 0.1% carbonate, crop standing, 2.5 kg S/bed/mo:
 | Stage | Mechanism | Time |
 |---|---|---|
 | 1 · titrate carbonate | pH flat until free lime consumed (~3.5 kg S/bed) | ~1.5 mo |
-| 2 · pH drawdown 7.28 → ~6.5 | **CEC 33.1 = high buffer → the slow, cert-2 step** (~10 kg S/bed, ≈ handoff 68 kg/block ÷ 7); P unlocks progressively | ~3–4 mo |
+| 2 · pH drawdown 7.28 → ~6.3 | **CEC 33.1 = high buffer → the slow, cert-2 step** (~12 kg S/bed for the deeper 6.3 aim; ~10 kg gets to 6.5); P unlocks progressively | ~3–4 mo |
 | 3 · P solubilise + uptake | vault → soil solution, SME P climbs; root uptake (overlaps stage 2, weeks lag) | overlaps |
 | 4 · new roots + tissue P | P-driven root flush ~6–8 wk; leaf 0.23% → >0.50% floor over leaf turnover | ~1–2 mo |
 
@@ -212,21 +229,45 @@ a **wetting/dispersion lag** (days, moisture-dependent) before fracture,
 so effective oxidation start is slightly later than loose powder. Keep
 the 4-week retest cadence — the lag is inside that window.
 
-**Cert status — UNKNOWN, must verify before use (cert 0).** Elemental
-sulphur and bentonite are both permitted under CAN/CGSB-32.311, but the
-specific *formulation* needs an OMRI / Ecocert listing confirmation —
-do not assume the branded product is approved. Tiger-Sul markets an
-organic line; confirm THIS bag's listing. Refinement: pull the product's
-OMRI/Ecocert certificate → raises cert to 4 (allowed) or forces a
-substitute.
+**Cert status — Ecocert certified, allowed (cert 4).** Elemental
+sulphur and bentonite are both permitted under CAN/CGSB-32.311, and the
+specific Tiger 90CR formulation is Ecocert-listed — cleared for use.
+
+## Field application log (tomato bed)
+
+First empirical titration data. Doses stated as **Tiger 90CR product**;
+elemental S = product × 0.90.
+
+| Date | Tiger product | ≈ elemental S | pH reading | Note |
+|---|---|---|---|---|
+| 2026-04-29 | 1.1 kg | ~1.0 kg | — | dose 1 (sub-cap) |
+| 2026-05-29 | 2.5 kg | ~2.25 kg | — | dose 2 (near 2.5 kg S cap) |
+| 2026-06-01 | — | — | **7.3 → 7.1** | Δ −0.2 vs pre-dose baseline |
+
+**Reads (cert 2 — single point, field-probe noise ±0.1–0.2):**
+
+- **Abort gate cleared.** pH moved within ~4.5–5 wk of dose 1 →
+  carbonate buffer is thin/titratable, NOT the >1% impractical regime.
+  Empirical pre-read of the pending calcimeter; mechanism confirmed on
+  this soil.
+- **The −0.2 reflects dose 1 only.** The 2026-06-01 reading is ~3 days
+  after dose 2 — inside the pastille wetting lag — so dose 2's effect is
+  still pending, not in this number.
+- **No shortcut.** ~1 kg S → ~0.2 units against full buffer. Consistent
+  with the months-long, multi-dose timeline. Do NOT linearly
+  extrapolate: as carbonate depletes, later S units move pH *more* per
+  kg (overshoot risk toward floor 5.8).
+- **Headroom confirmed.** Sub-cap dose 1 dropped pH gently, no overshoot
+  → green light to dose at the full 2.5 kg cap (dose 2 already does).
+- Confirm the slope at the next retest before trusting any rate.
 
 ## Refinement triggers
 
 - Calcimeter / inorganic-carbon reading → replaces the cert-0 carbonate row; picks the dose-table row.
 - Buffer-pH (SMP) reading → calibrates the "no fizz" buffer-only estimate.
-- PO root-zone target band (`nutrition/tomato/spec — soil-root-zone-ph-band`, not yet written) → sets the pH endpoint.
+- Target band → **defined** (6.0–6.5, aim 6.3, floor 5.8; `learnings/define-soil-root-zone-ph-target-band.md`). A Décembre Mn-vs-pH reading would refine the floor.
 - Incorporation depth/method (tilled 20 cm vs surface-banded) → changes the soil mass titrated.
-- Tiger 90CR OMRI/Ecocert certificate → resolves the cert-0 product status to allowed or forces a substitute.
+- Tiger 90CR cert → **resolved**: Ecocert certified, allowed (cert 4).
 
 ## pH scale
 

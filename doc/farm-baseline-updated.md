@@ -13,6 +13,7 @@
 - Climate control: temperature + humidity automated
 - Lighting: 220 µmol/m²/s supplemental for transplant nursery tables, 200 µmol/m²/s for lettuce beds, tomatoes sun-only
 - Irrigation: automated fertigation (single Dosatron at 2%) + manual supplementation
+- Drip tape: 0.37 gal/min per 100 ft (≈ 1.40 L/min per 30.5 m)
 - Growing medium: field soil in raised beds, compacted during construction
 - Soil amendment: 2 inches Savaria ORGANIMIX marin (shrimp compost) added fall 2025 on beds only (~520 m²)
 - Transplant medium: Berger OM2 (peat-based organic mix), mixed with 2 cups feather meal per bag

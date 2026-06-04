@@ -23,7 +23,12 @@
         <span class="param-label">Dosatron</span>
         <span class="param-value">2%</span>
       </div>
-      <div style="font-size:12px; color:var(--text-muted); line-height:1.5; margin-top:10px;">
+      <div class="card-title" style="margin-bottom:10px; margin-top:14px;">Recette</div>
+      <div class="stage-selector" style="grid-template-columns:1fr 1fr;">
+        <button class="stage-btn" id="fert-recipe-nutrient" onclick="setFertRecipe('nutrient')"><span class="stage-label">Nutriments</span></button>
+        <button class="stage-btn" id="fert-recipe-rootfix" onclick="setFertRecipe('rootfix')"><span class="stage-label">Correction racinaire</span></button>
+      </div>
+      <div id="fert-stage-block" style="font-size:12px; color:var(--text-muted); line-height:1.5; margin-top:14px;">
         <div class="card-title" style="margin-bottom:10px;">Stade de croissance</div>
         <div class="stage-selector">
           <button class="stage-btn" data-stage="T1"><span class="stage-label">T1</span><span class="stage-weeks">Sem 51–2</span></button>
@@ -61,13 +66,13 @@
 
     <!-- Monday Morning -->
     <div class="card">
-      <div class="card-title">🌅 Lundi matin — préparer la solution</div>
+      <div class="card-title" id="steps-card-title">🌅 Vendredi matin</div>
       <ol class="steps-list" id="steps-list"></ol>
     </div>
 
     <!-- Following Mornings -->
-    <div class="card">
-      <div class="card-title">☀️ Mardi à dimanche — vérification matinale</div>
+    <div class="card" style="display:none;">
+      <div class="card-title">☀️ Lundi à vendredi — vérification matinale</div>
       <div style="font-size:12px; color:var(--text-muted); margin-bottom:14px;">
         <strong style="color:var(--text);">Chaque matin, vérifier si le baril de stock est vide.</strong>
       </div>
@@ -143,30 +148,9 @@
             <div style="font-family:'DM Mono',monospace; font-size:12px; color:var(--text-muted); margin-top:2px;">g</div>
           </div>
         </div>
-        <div style="font-size:12px; color:var(--text-muted); line-height:1.5; margin-top:14px; padding-top:12px; border-top:1px solid var(--border);">
-          <strong style="color:var(--text);">Produits :</strong> Acadie Poisson Hydrolysé 2-4-0.5 (13 mL/L) · Acadie Algues liquides (2 mL/L) · FeSO₄·7H₂O 20% Fe (15 mg/L)
-        </div>
       </div>
 
-      <div class="card">
-        <div class="card-title">Instructions</div>
-        <ol class="steps-list" style="padding-left:28px;">
-          <li class="step-item"><span class="step-number">1</span><div class="step-title">Remplir le seau</div><div class="step-desc">Avec le volume d'eau indiqué.</div></li>
-          <li class="step-item"><span class="step-number">2</span><div class="step-title">Poisson hydrolysé</div><div class="step-desc">Ajouter et bien mélanger.</div></li>
-          <li class="step-item"><span class="step-number">3</span><div class="step-title">Algue</div><div class="step-desc">Ajouter et mélanger de nouveau.</div></li>
-          <li class="step-item"><span class="step-number">4</span><div class="step-title">Sulfate de fer (FeSO₄·7H₂O)</div><div class="step-desc">Peser sur balance de précision. Dissoudre dans le seau et bien mélanger jusqu'à dissolution complète (la solution prend une teinte vert pâle).<br><span style="color:var(--text-muted); font-size:11.5px;">Pourquoi : charge les plants en fer avant le repiquage. Le terreau de pouponnière est acide (pH ~5.5) — le fer reste disponible aux racines, contrairement aux planches de production qui sont saturées en calcium.</span></div></li>
-          <li class="step-item"><span class="step-number">5</span><div class="step-title">Mesurer la CE dans le seau (vérification)</div><div class="step-desc">Cible : <strong style="color:var(--text);">1.9 – 2.6 mS/cm</strong>. Si > 2.8 → diluer avec de l'eau. Si < 1.5 → vérifier la dose.<br><span style="color:var(--text-muted); font-size:11.5px;">Pourquoi : confirme que le mélange a la bonne concentration. Évite d'envoyer une solution trop concentrée sur les plants (risque de brûlure) ou trop diluée (sous-nutrition). À garder le temps de valider la recette à 13 mL/L sur quelques cycles.</span></div></li>
-          <li class="step-item"><span class="step-number">6</span><div class="step-title">Arroser par le dessus, doucement</div><div class="step-desc">Avec un pommeau à fines gouttes. Mouiller uniformément sans inonder. Éviter de laisser des gouttes sur les feuilles si possible.<br><span style="color:var(--text-muted); font-size:11.5px;">Pourquoi : un jet trop fort compacte le terreau (moins d'oxygène aux racines) et l'eau qui stagne sur la couronne favorise la fonte des semis (Pythium, Rhizoctonia).</span></div></li>
-          <li class="step-item"><span class="step-number">7</span><div class="step-title">Mesurer la CE dans le terreau (30-60 min après)</div><div class="step-desc">Avec la sonde Bluelab, enfoncer la pointe dans le terreau d'une cellule représentative. Mesurer 2-3 cellules par plateau, faire la moyenne. Cible : <strong style="color:var(--text);">1.5 – 2.5 mS/cm</strong>.<br><span style="color:var(--text-muted); font-size:11.5px;">Pourquoi : c'est ce que les racines vivent réellement. Si la CE dans le terreau monte cycle après cycle (accumulation de sels), il faut rincer avec un arrosage à l'eau pure ou réduire la dose.</span></div></li>
-          <li class="step-item"><span class="step-number">8</span><div class="step-title">Jeter le restant</div><div class="step-desc">Ne pas conserver — le poisson fermente en quelques heures et le sulfate de fer s'oxyde (la solution devient brunâtre, le fer précipite).</div></li>
-          <li class="step-item"><span class="step-number">9</span><div class="step-title">Signer le registre</div><div class="step-desc">Noter la date, le nombre de plateaux, la CE du seau et la CE du terreau. Utile pour ajuster la dose au fil des cycles.</div></li>
-        </ol>
-        <div style="font-size:12px; color:var(--text-muted); line-height:1.5; margin-top:14px; padding-top:12px; border-top:1px solid var(--border);">
-          <strong style="color:var(--text);">Fréquence :</strong> 1× par semaine avec cette solution. Les autres arrosages = eau du robinet seulement (rince les sels accumulés en surface).
-        </div>
-      </div>
-
-      <div class="card">
+      <div class="card" id="nursery-signs-card">
         <div class="card-title">✓ Bien réglé quand</div>
 
         <div style="font-size:11px; text-transform:uppercase; letter-spacing:1.5px; color:var(--text-muted); font-weight:600; margin-bottom:8px;">Semaine 1-2 — germination</div>

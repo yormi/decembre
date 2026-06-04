@@ -41,6 +41,11 @@ Lab's per-element déficience / faible flags:
 ⚠️ Lab interpretation thresholds are generic plant-tissue norms, not Salanova / tomato cultivar-specific — same caveat as SME spec ranges. LAIT #2 N value appears clipped on layout-extracted text; verify against the PDF before citing.
 ⚠️ Three samples but no in-PDF map to which bed / which cohort / which sampling date by cultivar; cross-reference Catherine's sampling log if downstream decisions hinge on which lettuce cohort is which.
 
+### `FAO-217-tissue-sufficiency-ranges.png`
+Appendix C of FAO Plant Production & Protection Paper 217 (Gianquinto, Muñoz, Pardossi, Ramazzotti & Savvas 2013) — optimal tissue macro (% DM) + micro (mg/kg DM) ranges for greenhouse crops, Mediterranean climate. Tomato + lettuce rows highlighted. **Second, independent source** of tissue sufficiency targets alongside the Agro-Enviro-Lab panel's own floor/ceiling norms.
+**Reach for:** cross-checking whether a lab "déficient"/"élevé" verdict holds against a second authority before acting on it; tomato + lettuce leaf N/P/K/Ca/Mg + Fe/Mn/Zn/Cu/B ranges.
+⚠️ FAO ranges are **wider and lower-floored** than Agro-Enviro-Lab's on several elements (P, Ca, Mn, Cu) — see the 2026-06-02 changelog for the element-by-element delta vs TOM #1. Sampled plant part for tomato = footnote "1)" not shown in the cropped legend; confirm leaf position before treating as same-basis as our lab's most-recent-fully-expanded-leaf sampling.
+
 ## Water (Berger Labs, April 2026)
 
 ### `analyse d'eau.pdf`
@@ -54,7 +59,7 @@ Savaria ORGANIMIX marin (formerly "Compost de crevette") datasheet, lot 3300. **
 **Reach for:** explaining Ca saturation (~2,788 kg Ca/ha added fall 2025 from 2 in. on ~520 m²), cert status (BNQ type A, OMRI-equivalent), warning team NEVER to reapply.
 
 ### `EZ-GRO Ocean 15-1-1.pdf`
-EZ-Gro Océan fish-protein hydrolysate — 15-1-1, 80 % amino acids, 65 % peptides. Application rates by crop.
+EZ-Gro Océan fish-protein hydrolysate — 15-1-1, 80 % amino acids, 65 % peptides. Application rates by crop. **Price: $325 CAD / 25 kg** (2026-05-31).
 **Reach for:** N-foliar/soil sourcing, comparison rates (1-2 kg/ha every 10-14 days), evaluating swap from Acadie Poisson Hydrolysé.
 
 ### `Acadie Fresh Seaweed Concentrate.pdf`

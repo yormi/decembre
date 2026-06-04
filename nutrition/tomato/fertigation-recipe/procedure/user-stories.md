@@ -61,11 +61,10 @@ fertigation-recipe model spec.
 
 ---
 
-## prep-completion-slack-post
+## prep-final-step-dosatron-line
 
-The last step of the Lundi-matin preparation instructs the operator
-to post a record (date, stage, quantities) to the team Slack
-channel `#recherche-et-developpement`.
+The last step of the weekly preparation instructs the operator to
+place the Dosatron suction line into the stock barrel.
 
 ---
 

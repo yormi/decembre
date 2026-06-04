@@ -1,5 +1,9 @@
 # Principles — plant-nutrition-specialist
 
+## cor-listing-equals-allowed
+
+A product listed organic by ANY Canada-accredited certifier (Pro-Cert, OMRI Canada, Ecocert Canada) is compliant under the same standard (COR / CAN-CGSB-32.310/311) — the listing body's name doesn't matter, the standard does. Don't shelve an input as "cert unconfirmed" just because it lacks *our* certifier's (Ecocert) stamp; treat a COR listing as allowed for Décembre, pending the routine input sign-off the Ecocert inspector owns. *Because:* AGTIV was nearly rejected as cert-unconfirmed when its Pro-Cert + OMRI Canada listings already proved CAN/CGSB-32.311 compliance (2026-06-02). [[confidence-and-roi-before-spend]]
+
 ## confidence-and-roi-before-spend
 
 When proposing an intervention that costs money or labour, lead with an explicit confidence level + worth-the-effort (cost-benefit) read, not just an effectiveness rating. *Because:* Guillaume drills mechanism then asks "how certain / is it worth the effort" before committing spend — effectiveness alone doesn't tell him whether to buy (2026-05-31). [[diagnose-binding-constraint-first]]

@@ -23,12 +23,13 @@ operator-facing stage selector.
 
 ---
 
-## two-card-shape
+## single-visible-prep-card
 
-The page renders exactly two cards: a weekly preparation card
-("Lundi matin — préparer la solution") and a daily verification
-card ("Mardi à vendredi — vérification matinale"). No configuration
-card, no diagnostic / success-criteria card.
+The page renders one visible card: the weekly preparation card
+("Vendredi matin — préparer la solution"). The daily verification
+card ("Lundi à vendredi — vérification matinale") is kept in
+markup but hidden. No configuration card, no diagnostic /
+success-criteria card.
 
 ---
 

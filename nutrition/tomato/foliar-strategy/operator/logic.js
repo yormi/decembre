@@ -128,16 +128,16 @@ function buildFoliar() {
       b.classList.toggle('active', b.dataset.spray === currentFoliarSpray));
   }
 
-  // Schedule note on the selector card.
-  const scheduleNoteParts = presentKinds.map(k =>
-    `Spray ${k} ${FOLIAR_RECIPE_DAYS_LABEL[k] || ''}`.trim());
-  const scheduleNote = document.getElementById('spray-schedule-note');
-  if (scheduleNote) scheduleNote.textContent = scheduleNoteParts.join(' · ');
+  // Card title shows the active spray's weekly frequency (A=1×, B=2×).
+  const freqTitle = document.getElementById('foliar-frequency-title');
+  if (freqTitle) freqTitle.textContent = currentFoliarSpray === 'B' ? '2x par semaine' : '1x par semaine';
 
   // Day label for the active spray, in the "Quand pulvériser" card.
   const activeDayLabel = FOLIAR_RECIPE_DAYS_LABEL[currentFoliarSpray] || '';
-  document.getElementById('foliar-when').textContent =
-    `${activeDayLabel ? activeDayLabel.charAt(0).toUpperCase() + activeDayLabel.slice(1) : ''} · entre ${fmtH(startH)} et ${fmtH(endH)}`;
+  const dayCap = activeDayLabel ? activeDayLabel.charAt(0).toUpperCase() + activeDayLabel.slice(1) : '';
+  document.getElementById('foliar-when').innerHTML =
+    `<div style="font-size:17px; font-weight:700; line-height:1.2;">${dayCap}</div>` +
+    `<div style="font-size:13px; color:var(--text-muted); margin-top:3px;">entre ${fmtH(startH)} et ${fmtH(endH)}</div>`;
 
   let sheetsHtml = '';
   presentKinds.forEach((kind) => {

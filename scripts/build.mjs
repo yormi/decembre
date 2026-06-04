@@ -24,7 +24,7 @@
 //   - The resolver is purely textual — no template variables, no logic.
 //     If you need a variable, do it in the partial itself.
 
-import { readFile, writeFile, copyFile, mkdir, readdir, cp } from 'node:fs/promises';
+import { readFile, writeFile, copyFile, mkdir, readdir, cp, stat } from 'node:fs/promises';
 import { watch } from 'node:fs';
 import { resolve, dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -210,4 +210,34 @@ if (process.argv.includes('--watch')) {
       console.warn(`[build] cannot watch ${dir}: ${e.message}`);
     }
   }
+
+  // Safety net: Node's native fs.watch({recursive}) silently goes deaf over
+  // long runs and editor atomic-saves (write-temp-then-rename drops the watched
+  // inode). Poll the watched tree's newest mtime every 2s and rebuild on any
+  // change fs.watch missed, so hot reload self-heals without a daemon restart.
+  let lastSeenMtime = 0;
+  const newestMtime = async () => {
+    let newest = 0;
+    const walk = async (dir) => {
+      let entries;
+      try { entries = await readdir(dir, { withFileTypes: true }); }
+      catch { return; }
+      for (const entry of entries) {
+        const full = join(dir, entry.name);
+        if (entry.isDirectory()) { await walk(full); continue; }
+        if (!WATCH_EXTS.some(ext => entry.name.endsWith(ext))) continue;
+        try { newest = Math.max(newest, (await stat(full)).mtimeMs); } catch {}
+      }
+    };
+    for (const dir of WATCH_DIRS) await walk(resolve(PROJECT_ROOT, dir));
+    return newest;
+  };
+  lastSeenMtime = await newestMtime();
+  setInterval(async () => {
+    const newest = await newestMtime();
+    if (newest > lastSeenMtime) {
+      lastSeenMtime = newest;
+      debouncedBuild();
+    }
+  }, 2000).unref();
 }

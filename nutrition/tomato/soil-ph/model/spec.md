@@ -9,7 +9,7 @@ The model answers exactly one question: **"What elemental-sulphur programme, if 
 It does NOT answer:
 - Soil nutrient banks / weekly supply — `nutrition/soil-contribution/spec.md`.
 - Fertigation tank/dripper pH bands — `nutrition/chemistry/spec.md`.
-- The root-zone target pH band itself — currently an unspecced PO gap (`nutrition/tomato/spec — soil-root-zone-ph-band`, not yet written); this model consumes the band as an input once defined.
+- The root-zone target pH band itself — **defined by this model** (specialist call, not a PO contract): Mehlich-3 water pH band 6.0–6.5, aim 6.3, hard floor 5.8 (conditioned on zeroing foliar Mn). Decision + rationale: `learnings/define-soil-root-zone-ph-target-band.md`.
 
 ---
 
@@ -20,11 +20,10 @@ Same scale as `nutrition/tomato/plant-needs/spec.md`.
 ---
 
 <!-- spec entries (slug headings) to be added — see to-specs skill -->
-<!-- Blocked on: the PO soil-root-zone pH band (nutrition/tomato/spec) + a calcimeter free-carbonate reading. First entries land once the carbonate gate is measured. -->
+<!-- Target band now defined (learnings/define-soil-root-zone-ph-target-band.md). Remaining gate: a calcimeter free-carbonate reading (ordered). First entries land once the carbonate row is measured + code lands to test against. -->
 
 ---
 
 ## Inherited specs
 
-- **`nutrition/tomato/spec — soil-root-zone-ph-band`** — soil-root-zone pH band. *Not yet written* (PO gap); this model is blocked on it for the target band.
 - **Soil bank Ca / pH data** (`nutrition/soil-contribution/data.js`) — Mehlich-3 Ca, SME pH, bulk-density / soil-mass basis (200 kg/m² at 20 cm).

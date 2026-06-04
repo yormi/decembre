@@ -177,10 +177,11 @@ function recalcNursery() {
   if (!element) return;
   const trays = parseInt(element.value) || 1;
   const water = trays * 1.25;
-  document.getElementById('out-water').textContent = water % 1 === 0 ? water : water.toFixed(1);
-  document.getElementById('out-fish').textContent = Math.round(water * 13);
-  document.getElementById('out-kelp').textContent = Math.round(water * 2);
+  const sig2 = (v) => Number(v.toPrecision(2));   // 2 significant figures
+  document.getElementById('out-water').textContent = sig2(water);
+  document.getElementById('out-fish').textContent = sig2(water * 13);
+  document.getElementById('out-kelp').textContent = sig2(water * 2);
   // FeSO₄·7H₂O dose: 15 mg/L → display in g (typical batch is 1-2 g)
   const feG = (water * 15) / 1000;
-  document.getElementById('out-fe').textContent = feG.toFixed(2);
+  document.getElementById('out-fe').textContent = sig2(feG);
 }

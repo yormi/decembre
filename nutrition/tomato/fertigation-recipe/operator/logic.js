@@ -50,9 +50,10 @@ function getNutrients() {
     // Fertigation page reads the locked STORED_RECIPE for the selected stage —
     // exactly what the team weighs. computeStageRecipe() is the FP target
     // generator (Block 7 drift gauge), not the operational source.
-    const s = STORED_RECIPE.tomato.fertigation[currentStage] || { mgSulfate: 0, kSulfate: 0 };
+    const s = STORED_RECIPE.tomato.fertigation[currentStage] || { mgSulfate: 0, kSulfate: 0, borax: 0, naMolybdate: 0 };
     const mK = getMultK(), mM = getMultMg();
-    return { mgSulfate: s.mgSulfate * mM, kSulfate: s.kSulfate * mK };
+    // Bore (Solubore) + Mo (NaMolybdate) are unscaled — no multiplier, mirroring drift.js.
+    return { mgSulfate: s.mgSulfate * mM, kSulfate: s.kSulfate * mK, borax: s.borax || 0, naMolybdate: s.naMolybdate || 0 };
   } else {
     const scale = totalArea / 100;
     return {
@@ -64,6 +65,8 @@ function getNutrients() {
 }
 
 function buildSteps() {
+  if (currentCrop === 'tomato' && currentFertRecipe === 'rootfix') { buildRootFixSteps(); return; }
+  document.getElementById('steps-card-title').textContent = '🌅 Vendredi matin';
   const stockVol = getStockVol();
   const ratio = getRatio();
   const n = getNutrients();
@@ -73,49 +76,59 @@ function buildSteps() {
   // physical action (operator fills buckets, not measures volumes).
   const buckets = Math.round((stockVol / 20) * 4) / 4;
   const bucketsString = Number.isInteger(buckets) ? String(buckets) : buckets.toString().replace('.', ',');
-  const bucketLabel = buckets === 1 ? '1 chaudière' : `${bucketsString} chaudières`;
-  const volumeBadge = `${bucketLabel} de 20 L`;
+  const bucketUnit = (buckets === 1 ? 'chaudière' : 'chaudières') + ' de 20 L';
 
   // K + Mg collapsed into a single weighing-table step (2026-05-28), matching
   // the foliar spray sheet pattern. Fe stays as its own step on lettuce —
   // operationally the "en dernier" timing makes it a separate action.
+  // Weighing tiles: big number + 'g' on its own line (uniform with the
+  // water tile). Operator weighs in g.
+  const formatNumber = v => Math.round(v).toLocaleString('fr-CA');
   const ingredients = [
-    { name: 'Sulfate de potassium 0-0-50', amount: fmt(n.kSulfate) },
-    { name: 'Sulfate de magnésium',        amount: fmt(n.mgSulfate) },
+    { name: 'Potassium', amount: formatNumber(n.kSulfate),  unit: 'g', emoji: '🍌' },
+    { name: 'Magnésium', amount: formatNumber(n.mgSulfate), unit: 'g', emoji: '🧊' },
   ];
+  // Bore + Molybdène rows tomato-only (undefined on lettuce).
+  if (currentCrop === 'tomato') {
+    ingredients.push({ name: 'Solubore', amount: formatNumber(n.borax), unit: 'g', emoji: '🔷' });
+    ingredients.push({ name: 'Molybdène', amount: formatNumber(n.naMolybdate), unit: 'g', emoji: '🔶' });
+  }
+  // Water fill as the first tile (💧, big bucket count + unit line).
+  ingredients.unshift({ name: 'Eau', amount: bucketsString, unit: bucketUnit, emoji: '💧' });
 
   const steps = [
-    { number: 1, title: 'Laver le matériel', desc: 'Rincer baril + tube/filtre d\'aspiration Dosatron + filtre aval.', why: 'Résidus = filtre obstrué & mauvaise fertilisation', acid: false },
-    { number: 2, title: 'Remplir la solution', desc: '', amount: volumeBadge, acid: false },
-    { number: 3, title: 'Ajouter les produits', desc: '', ingredients, acid: false },
+    { number: 1, title: 'Laver le matériel', desc: 'Rincer baril + filtre dosatron + filtre aval.', why: 'Résidus = filtre obstrué & mauvaise fertilisation', acid: false },
+    { number: 2, title: 'Mélanger', desc: '', ingredients, acid: false },
   ];
 
   if (currentCrop === 'tomato') {
     steps.push(
-      { number: 4, title: 'Brasser', desc: 'Mélanger jusqu\'à dissolution complète. Vérifier : aucun dépôt au fond.', acid: false },
-      { number: 5, title: 'Écrire <strong>immédiatement</strong> sur Slack', desc: '<ul style="margin:4px 0 0; padding-left:18px;"><li>Poster sur <strong>#recherche-et-developpement</strong></li><li>Date, quantités</li><li>Pour analyse rapide</li></ul>', acid: false },
+      { number: 3, title: 'Brasser', desc: 'Vérifier: Aucun dépôt au fond.', acid: false },
+      { number: 4, title: 'Mettre la ligne du dosatron dans le baril', desc: '', acid: false },
     );
   } else {
     steps.push(
-      { number: 4, title: 'Sulfate de fer (FeSO₄·7H₂O)', desc: 'Ajouter <strong>en dernier</strong>, juste avant de fermer le baril. La solution prend une teinte vert pâle. Si elle devient brun-orange en cours de semaine = oxydation (utiliser quand même mais l\'efficacité diminue).', why: 'Recharge en fer pour les cycles laitue qui s\'étirent au-delà de 3 semaines (la pouponnière charge les plants pour ~3 semaines de production). Fe²⁺ s\'oxyde rapidement à l\'air et au pH du sol — d\'où "en dernier" + baril fermé.', amount: fmt(n.feSulfate), acid: false },
-      { number: 5, title: 'Brasser', desc: 'Bien mélanger. Vérifier qu\'il n\'y a pas de dépôt au fond.', acid: false },
-      { number: 6, title: 'Écrire sur #recherche-et-developpement (Slack)', desc: 'Après la préparation, poster sur <strong>#recherche-et-developpement</strong> : date, quantités. Sert de registre pour la certification biologique (Ecocert) et de suivi d\'équipe.', acid: false },
+      { number: 3, title: 'Sulfate de fer (FeSO₄·7H₂O)', desc: 'Ajouter <strong>en dernier</strong>, juste avant de fermer le baril. La solution prend une teinte vert pâle. Si elle devient brun-orange en cours de semaine = oxydation (utiliser quand même mais l\'efficacité diminue).', why: 'Recharge en fer pour les cycles laitue qui s\'étirent au-delà de 3 semaines (la pouponnière charge les plants pour ~3 semaines de production). Fe²⁺ s\'oxyde rapidement à l\'air et au pH du sol — d\'où "en dernier" + baril fermé.', amount: fmt(n.feSulfate), acid: false },
+      { number: 4, title: 'Brasser', desc: 'Bien mélanger. Vérifier qu\'il n\'y a pas de dépôt au fond.', acid: false },
     );
   }
 
+  renderStepsList(steps);
+}
+
+// Shared step-list renderer. Scannable tiles — same shape as the Fertilisation/sol
+// recipe card (emoji / label / big mono dose), 2-col grid. No data-recipe-sheet /
+// data-recipe-product attrs to avoid inflating the foliar test's count.
+function renderStepsList(steps) {
   document.getElementById('steps-list').innerHTML = steps.map(s => {
     let ingredientsHTML = '';
     if (s.ingredients) {
-      // Visual match with the foliar spray recipe-sheet table — same row
-      // shape (product name flex-1, dose right-aligned, border-bottom).
-      // No data-recipe-sheet / data-recipe-product attrs to avoid inflating
-      // the foliar test's [data-recipe-sheet] count.
-      ingredientsHTML = '<div style="margin-top:10px;">' + s.ingredients.map(item =>
-        `<div style="display:flex; justify-content:space-between; align-items:center; padding:8px 0; border-bottom:1px solid var(--border);">
-          <div style="flex:1; min-width:0;">
-            <div style="font-weight:600; font-size:13px;">${item.name}</div>
-          </div>
-          <span class="step-amount" style="margin:0; flex-shrink:0;">${item.amount}</span>
+      ingredientsHTML = '<div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:10px;">' + s.ingredients.map(item =>
+        `<div style="background:var(--accent-active-light); border:1.5px solid var(--accent-active-border); border-radius:var(--radius-sm); padding:14px 10px; text-align:center;">
+          <div style="font-size:24px; margin-bottom:6px;">${item.emoji || '·'}</div>
+          <div style="font-size:10px; font-weight:600; text-transform:uppercase; letter-spacing:1.5px; color:var(--text-muted); margin-bottom:6px;">${item.name}</div>
+          <div style="font-family:'DM Mono',monospace; font-size:24px; font-weight:700; color:var(--text);">${item.amount}</div>
+          ${item.unit ? `<div style="font-family:'DM Mono',monospace; font-size:12px; color:var(--text-muted); margin-top:2px;">${item.unit}</div>` : ''}
         </div>`
       ).join('') + '</div>';
     }
@@ -124,8 +137,26 @@ function buildSteps() {
       <div class="step-title">${s.title}</div>
       ${s.desc ? `<div class="step-desc">${s.desc}</div>` : ''}
       ${s.why ? `<div style="font-size:11.5px; color:var(--text-muted); margin-top:5px; line-height:1.4;">⚠️ ${s.why}</div>` : ''}
-      ${s.amount && !s.ingredients ? `<span class="step-amount">${s.amount}</span>` : ''}
+      ${s.amount ? `<span class="step-amount">${s.amount}</span>` : ''}
       ${ingredientsHTML}
+      ${s.noteAfter ? `<div style="font-size:11.5px; color:var(--text-muted); margin-top:8px; line-height:1.4;">${s.noteAfter}</div>` : ''}
     </li>`;
   }).join('');
+}
+
+// Root-fix drench (tomato only): fixed 15 g Ocean in 4 L, injected at 2 % on
+// chapelle 1. No stage, no area/solar scaling — single fixed recipe.
+function buildRootFixSteps() {
+  document.getElementById('steps-card-title').textContent = 'Tout les matins avant 10am';
+  const ingredients = [
+    { name: 'Eau', amount: '4', unit: 'L', emoji: '💧' },
+    { name: 'Ocean', amount: '15', unit: 'g', emoji: '🦀' },
+  ];
+  renderStepsList([
+    { number: 1, title: 'Dissoudre dans un seau', ingredients, noteAfter: '⚠️ Résidu non dissous bouche les driptapes', acid: false },
+    { number: 2, title: 'Mettre la ligne du dosatron dans le seau', acid: false },
+    { number: 3, title: 'Partir valve <em>chapelle 1</em> — 10 min sur Orisha', acid: false },
+    { number: 4, title: 'Remettre la ligne du dosatron dans le baril de fertigation', acid: false },
+    { number: 5, title: 'Rincer le seau pour le lendemain', acid: false },
+  ]);
 }
