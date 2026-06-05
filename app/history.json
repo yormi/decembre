@@ -1,1 +1,11 @@
-[]
+[
+  {
+    "date": "2026-06-05",
+    "date_fr": "5 juin 2026",
+    "title": "Pages opérateur tomate — recette de correction racinaire + simplifications",
+    "changes": "- **Fertigation tomate** : nouveau choix de recette sous la ligne Dosatron — « Nutriments » (recette habituelle par stade) ou « Correction racinaire » (rinçage Ocean fixe : 15 g dans 4 L, valve chapelle 1, 10 min sur Orisha, tous les matins avant 10h).\n- Le sélecteur de stade de croissance ne s'affiche que pour la recette Nutriments.\n- **Foliaire** : carte « Signes à surveiller » retirée.\n- **Semis (pouponnière)** : page allégée — doses arrondies, carte « Bien réglé quand » réservée au mode admin.\n- **Fertilisation/sol** : la tuile Soufre disparaît quand la dose est nulle.",
+    "url": "https://main--decembre-staging.netlify.app",
+    "pr": 2,
+    "sha": "530346569075047ce246ad57f10318928e674f66"
+  }
+]
