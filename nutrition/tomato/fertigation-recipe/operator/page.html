@@ -1,0 +1,188 @@
+  <!-- ═══════════════ FERTIGATION PAGE ═══════════════ -->
+  <div id="page-fertigation-content">
+
+    <!-- Crop sub-toggle: Tomates / Laitue / Semis laitue -->
+    <div class="crop-toggle">
+      <button class="crop-btn active-tomato" id="fert-crop-tomato" onclick="setCrop('tomato')">
+        <span class="crop-icon">🍅</span> Tomates
+      </button>
+      <button class="crop-btn" id="fert-crop-lettuce" onclick="setCrop('lettuce')">
+        <span class="crop-icon">🥬</span> Laitue
+      </button>
+      <button class="crop-btn" id="fert-crop-nursery" onclick="setCrop('nursery')">
+        <span class="crop-icon">🌱</span> Semis laitue
+      </button>
+    </div>
+
+    <!-- Field-crop fertigation content (tomato + lettuce) -->
+    <div id="fert-field-content">
+    <!-- Fixed config — doesn't change weekly -->
+    <div class="card" id="stage-card">
+      <div class="card-title">Configuration</div>
+      <div class="param-row">
+        <span class="param-label">Dosatron</span>
+        <span class="param-value">2%</span>
+      </div>
+      <div class="card-title" style="margin-bottom:10px; margin-top:14px;">Recette</div>
+      <div class="stage-selector" style="grid-template-columns:1fr 1fr;">
+        <button class="stage-btn" id="fert-recipe-nutrient" onclick="setFertRecipe('nutrient')"><span class="stage-label">Nutriments</span></button>
+        <button class="stage-btn" id="fert-recipe-rootfix" onclick="setFertRecipe('rootfix')"><span class="stage-label">Correction racinaire</span></button>
+      </div>
+      <div id="fert-stage-block" style="font-size:12px; color:var(--text-muted); line-height:1.5; margin-top:14px;">
+        <div class="card-title" style="margin-bottom:10px;">Stade de croissance</div>
+        <div class="stage-selector">
+          <button class="stage-btn" data-stage="T1"><span class="stage-label">T1</span><span class="stage-weeks">Sem 51–2</span></button>
+          <button class="stage-btn" data-stage="T2"><span class="stage-label">T2</span><span class="stage-weeks">Sem 3–6</span></button>
+          <button class="stage-btn" data-stage="T3"><span class="stage-label">T3</span><span class="stage-weeks">Sem 7–9</span></button>
+          <button class="stage-btn" data-stage="T4"><span class="stage-label">T4</span><span class="stage-weeks">Sem 10–18</span></button>
+          <button class="stage-btn" data-stage="T5"><span class="stage-label">T5</span><span class="stage-weeks">Sem 19+</span></button>
+        </div>
+        <div id="stage-auto-label" style="font-size:12px; color:var(--text-muted); line-height:1.5;"></div>
+      </div>
+    </div>
+
+    <!-- Lettuce note -->
+    <div class="card" id="lettuce-note-card" style="display:none;">
+      <div class="card-title">Application</div>
+      <div style="font-size:13px; color:var(--text-muted); line-height:1.5;">
+        1 seule application par cycle (2 semaines en planche). Quantités pour <strong>toute la production</strong> (4.5 planches).<br><br>
+        <strong>Préparer 1× par semaine.</strong> Ne pas conserver plus de 7 jours.
+      </div>
+    </div>
+
+    <!-- Dosatron diagram kept as reference but hidden
+         SVG illustration of D25 series Dosatron with injection ratio reading point
+         Ratio fixed at 2% (read on silver ring)
+    -->
+
+    <!-- Water parameters (kept for reference):
+         Eau: pH 6.26 (Berger Labs Report 39086, April 2026)
+         Alcalinité: 24.68 ppm CaCO₃
+         pH cible irrigation: 5.8
+         EC: 0.10 mmhos/cm
+         Calcium: 4.8 ppm
+         Source: Municipal tap water, Quebec City
+    -->
+
+    <!-- Monday Morning -->
+    <div class="card">
+      <div class="card-title" id="steps-card-title">🌅 Vendredi matin</div>
+      <ol class="steps-list" id="steps-list"></ol>
+    </div>
+
+    <!-- Following Mornings -->
+    <div class="card" style="display:none;">
+      <div class="card-title">☀️ Lundi à vendredi — vérification matinale</div>
+      <div style="font-size:12px; color:var(--text-muted); margin-bottom:14px;">
+        <strong style="color:var(--text);">Chaque matin, vérifier si le baril de stock est vide.</strong>
+      </div>
+      <ol class="steps-list" style="padding-left:28px;">
+        <li class="step-item">
+          <span class="step-number">1</span>
+          <div class="step-title">Le baril est-il vide ?</div>
+          <div class="step-desc">
+            <ul style="margin:4px 0 0; padding-left:18px;">
+              <li>Regarder dans le baril de la solution stock</li>
+              <li>Si non vide → rien à faire, journée normale</li>
+            </ul>
+          </div>
+        </li>
+        <li class="step-item step-acid">
+          <span class="step-number">2</span>
+          <div class="step-title">Si vide : fermer valves Dosatron, ouvrir bypass</div>
+        </li>
+        <li class="step-item step-acid">
+          <span class="step-number">3</span>
+          <div class="step-title">Si vide : écrire <strong>immédiatement</strong> sur Slack</div>
+          <div class="step-desc">
+            <ul style="margin:4px 0 0; padding-left:18px;">
+              <li>Canal <strong>#recherche-et-developpement</strong></li>
+              <li>Format : <em>"Solution [tomate/laitue] vide - [Jour]"</em></li>
+              <li>Ex : <em>"Solution tomate vide - Mardi"</em></li>
+              <li>Pour ajuster rapidement</li>
+            </ul>
+          </div>
+        </li>
+      </ol>
+    </div>
+
+    </div><!-- end fert-field-content -->
+
+    <!-- Semis laitue (nursery) content, shown when crop=nursery -->
+    <div id="fert-nursery-content" style="display:none;">
+      <div class="card">
+        <div class="card-title">Nombre de plateaux</div>
+        <div style="display:flex; justify-content:center;">
+          <div style="width:140px;">
+            <input type="number" id="tray-count" value="75" min="1" max="200" oninput="recalcNursery()" style="width:100%; padding:12px 14px; border:1.5px solid var(--border); border-radius:var(--radius-sm); font-family:'DM Mono',monospace; font-size:18px; font-weight:600; background:var(--input-bg); color:var(--text); text-align:center; -webkit-appearance:none;">
+            <div style="font-size:11px; color:var(--text-muted); margin-top:3px; font-family:'DM Mono',monospace; text-align:center;">plateaux</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Recette de la semaine</div>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:8px;">
+          <div style="background:var(--accent-active-light); border:1.5px solid var(--accent-active-border); border-radius:var(--radius-sm); padding:14px 10px; text-align:center;">
+            <div style="font-size:20px; margin-bottom:6px;">💧</div>
+            <div style="font-size:10px; font-weight:600; text-transform:uppercase; letter-spacing:1.5px; color:var(--text-muted); margin-bottom:6px;">Eau</div>
+            <div style="font-family:'DM Mono',monospace; font-size:20px; font-weight:700; color:var(--text);" id="out-water">94</div>
+            <div style="font-family:'DM Mono',monospace; font-size:12px; color:var(--text-muted); margin-top:2px;">litres</div>
+          </div>
+          <div style="background:var(--accent-active-light); border:1.5px solid var(--accent-active-border); border-radius:var(--radius-sm); padding:14px 10px; text-align:center;">
+            <div style="font-size:20px; margin-bottom:6px;">🐟</div>
+            <div style="font-size:10px; font-weight:600; text-transform:uppercase; letter-spacing:1.5px; color:var(--text-muted); margin-bottom:6px;">Poisson</div>
+            <div style="font-family:'DM Mono',monospace; font-size:20px; font-weight:700; color:var(--text);" id="out-fish">1219</div>
+            <div style="font-family:'DM Mono',monospace; font-size:12px; color:var(--text-muted); margin-top:2px;">mL</div>
+          </div>
+          <div style="background:var(--accent-active-light); border:1.5px solid var(--accent-active-border); border-radius:var(--radius-sm); padding:14px 10px; text-align:center;">
+            <div style="font-size:20px; margin-bottom:6px;">🌿</div>
+            <div style="font-size:10px; font-weight:600; text-transform:uppercase; letter-spacing:1.5px; color:var(--text-muted); margin-bottom:6px;">Algue</div>
+            <div style="font-family:'DM Mono',monospace; font-size:20px; font-weight:700; color:var(--text);" id="out-kelp">188</div>
+            <div style="font-family:'DM Mono',monospace; font-size:12px; color:var(--text-muted); margin-top:2px;">mL</div>
+          </div>
+          <div style="background:var(--accent-active-light); border:1.5px solid var(--accent-active-border); border-radius:var(--radius-sm); padding:14px 10px; text-align:center;">
+            <div style="font-size:20px; margin-bottom:6px;">🩶</div>
+            <div style="font-size:10px; font-weight:600; text-transform:uppercase; letter-spacing:1.5px; color:var(--text-muted); margin-bottom:6px;">Sulfate de fer</div>
+            <div style="font-family:'DM Mono',monospace; font-size:20px; font-weight:700; color:var(--text);" id="out-fe">1.41</div>
+            <div style="font-family:'DM Mono',monospace; font-size:12px; color:var(--text-muted); margin-top:2px;">g</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card" id="nursery-signs-card">
+        <div class="card-title">✓ Bien réglé quand</div>
+
+        <div style="font-size:11px; text-transform:uppercase; letter-spacing:1.5px; color:var(--text-muted); font-weight:600; margin-bottom:8px;">Semaine 1-2 — germination</div>
+        <div style="font-size:12px; color:var(--text-muted); line-height:1.7; margin-bottom:14px;">
+          <div style="padding:4px 0;">🌱 <strong style="color:var(--text);">Cotylédons vert vif et fermes :</strong> azote suffisant. Si jaunissement → la fertigation hebdo a été oubliée ou les racines sont saturées.</div>
+          <div style="padding:4px 0;">📏 <strong style="color:var(--text);">Plants uniformes dans le plateau :</strong> arrosage régulier. Si grande variabilité de taille → arrosage inégal ou problème de germination.</div>
+          <div style="padding:4px 0;">🤍 <strong style="color:var(--text);">Racines blanches visibles au fond (~10 j) :</strong> aux trous de drainage. Si brunes ou molles → trop d'eau, oxygène manquant.</div>
+        </div>
+
+        <div style="font-size:11px; text-transform:uppercase; letter-spacing:1.5px; color:var(--text-muted); font-weight:600; margin-bottom:8px;">Semaine 3-4 — croissance</div>
+        <div style="font-size:12px; color:var(--text-muted); line-height:1.7; margin-bottom:14px;">
+          <div style="padding:4px 0;">🍃 <strong style="color:var(--text);">2-3 vraies feuilles compactes près de la couronne :</strong> bonne lumière + bonne nutrition. Si tiges étirées (étiolement) → manque de lumière ou trop d'eau.</div>
+          <div style="padding:4px 0;">🌿 <strong style="color:var(--text);">Vert franc et uniforme :</strong> couleur soutenue sur l'ensemble du plant. Si pâle ou marbré → fertigation à renforcer.</div>
+          <div style="padding:4px 0;">💪 <strong style="color:var(--text);">Tiges qui tiennent debout sans support :</strong> les plants commencent à se raidir. Si encore mous ou tombants → durcissement insuffisant.</div>
+        </div>
+
+        <div style="font-size:11px; text-transform:uppercase; letter-spacing:1.5px; color:var(--text-muted); font-weight:600; margin-bottom:8px;">Semaine 5 — prêts au repiquage</div>
+        <div style="font-size:12px; color:var(--text-muted); line-height:1.7; margin-bottom:14px;">
+          <div style="padding:4px 0;">📅 <strong style="color:var(--text);">3-4 vraies feuilles bien formées :</strong> rosette définie, pas juste des feuilles isolées. Trop tôt = plant trop petit pour le repiquage.</div>
+          <div style="padding:4px 0;">🪴 <strong style="color:var(--text);">Racines remplissent l'alvéole :</strong> motte qui se tient quand on sort le plant. Si racines tournent en cercle au fond → on a attendu trop longtemps, repiquer maintenant.</div>
+          <div style="padding:4px 0;">🍃 <strong style="color:var(--text);">Feuilles légèrement épaissies :</strong> texture moins tendre qu'en semaine 2. Signe que le plant est durci, prêt à supporter le choc du repiquage.</div>
+        </div>
+
+        <div style="font-size:11px; text-transform:uppercase; letter-spacing:1.5px; color:var(--text-muted); font-weight:600; margin-bottom:8px;">En continu</div>
+        <div style="font-size:12px; color:var(--text-muted); line-height:1.7;">
+          <div style="padding:4px 0;">💧 <strong style="color:var(--text);">Surface du terreau qui sèche entre les arrosages :</strong> on arrose par le dessus, donc le haut du terreau prend l'eau en premier et doit pouvoir respirer entre les sessions. Si toujours humide → réduire le volume ou la fréquence.</div>
+          <div style="padding:4px 0;">🌫️ <strong style="color:var(--text);">Cotylédons et feuilles secs au coucher du soleil :</strong> arroser tôt en journée pour que les feuilles aient le temps de sécher. Feuilles humides la nuit → risque de fonte des semis (Pythium, Rhizoctonia).</div>
+          <div style="padding:4px 0;">🟢 <strong style="color:var(--text);">Pas de mousse verte sur le terreau :</strong> indicateur précoce d'arrosage trop fréquent. Apparaît plus rapidement avec arrosage par le dessus.</div>
+          <div style="padding:4px 0;">⚡ <strong style="color:var(--text);">CE du seau stable d'un cycle à l'autre :</strong> ~1.9-2.6 mS/cm chaque semaine. Si dérive → réévaluer la dose ou vérifier le calibrage du Bluelab.</div>
+          <div style="padding:4px 0;">🌱 <strong style="color:var(--text);">CE du terreau stable ou descendant :</strong> ~1.5-2.5 mS/cm. Si monte cycle après cycle → sels qui s'accumulent (typique avec arrosage par le dessus). Faire un arrosage de rinçage à l'eau pure.</div>
+          <div style="padding:4px 0;">🪣 <strong style="color:var(--text);">Seau vide en fin de session :</strong> la quantité préparée correspond aux besoins. Si restes réguliers → l'écrire sur <strong style="color:var(--text);">#recherche-et-developpement</strong> (Slack).</div>
+        </div>
+      </div>
+    </div>
+  </div>

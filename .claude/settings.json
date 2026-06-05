@@ -1,0 +1,44 @@
+{
+  "hooks": {
+    "UserPromptSubmit": [
+      {
+        "matcher": ".*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "echo '[Recent project activity]'; tail -10 'working files/changelog.md' 2>/dev/null || echo '(no changelog yet)'"
+          }
+        ]
+      },
+      {
+        "matcher": ".*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "echo '[Team-leader mailbox]'; any=0; for f in team/team-leader/from-product-owner.md team/team-leader/from-plant-nutrition-specialist.md; do entries=$(awk '/^## Entries/{flag=1; next} flag' \"$f\" 2>/dev/null | sed '/^[[:space:]]*$/d'); if [ -n \"$entries\" ]; then echo \"--- $f ---\"; echo \"$entries\"; any=1; fi; done; [ $any -eq 0 ] && echo '(empty)'; true"
+          }
+        ]
+      },
+      {
+        "matcher": ".*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/home/guillaume/.claude/skills/shadow-watch/hook.sh"
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write|NotebookEdit|MultiEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/home/guillaume/Documents/Random_Projects/decembre/scripts/challenger-critique-hook.sh"
+          }
+        ]
+      }
+    ]
+  }
+}

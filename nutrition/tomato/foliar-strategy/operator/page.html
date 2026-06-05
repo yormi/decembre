@@ -1,0 +1,106 @@
+  <!-- ═══════════════ FOLIAR SPRAY PAGE ═══════════════ -->
+  <div id="page-foliar-content" style="display:none;">
+
+    <!-- Crop sub-toggle: Tomates only.
+         Lettuce foliar removed — Fe now goes into nursery fertigation (loads
+         seedlings before transplant; production beds are pH-locked-out so foliar
+         was the only Fe path, but pre-loading via nursery is 4-8× more efficient).
+         Lettuce button hidden; if currentCrop=lettuce when navigating to foliar,
+         setPage forces tomato. -->
+    <div class="crop-toggle">
+      <button class="crop-btn active-tomato" id="foliar-crop-tomato" onclick="setCrop('tomato')">
+        <span class="crop-icon">🍅</span> Tomates
+      </button>
+      <button class="crop-btn" id="foliar-crop-lettuce" onclick="setCrop('lettuce')" style="display:none;">
+        <span class="crop-icon">🥬</span> Laitue
+      </button>
+    </div>
+
+    <!-- Spray selector — restored 2026-05-28 after Spray B re-introduction
+         (CaCl₂·2H₂O 100 g / 15 L, 2×/sem, anti-botrytis). Picks which recipe
+         sheet is visible under Application > step 2 + drives the day label in
+         "Quand pulvériser". Default = day-of-week heuristic (Mon/Thu → B, else
+         A). Auto-hidden when STORED.foliaire has only one non-empty key. -->
+    <div class="card" id="spray-selector-card">
+      <div id="spray-btn-row" style="display:flex; gap:6px; margin-bottom:8px;">
+        <button onclick="setSpray('A')" class="stage-btn active" id="spray-btn-A" data-spray="A">
+          <span class="stage-label">Spray A</span>
+        </button>
+        <button onclick="setSpray('B')" class="stage-btn" id="spray-btn-B" data-spray="B">
+          <span class="stage-label">Spray B</span>
+        </button>
+      </div>
+      <div class="warning-box" style="margin-top:0;"><strong>⚠  JAMAIS mélanger Spray A et Spray B → réaction chimique bouche les buses</strong></div>
+    </div>
+
+    <!-- Calendrier card with this-week recommendation -->
+    <div class="card">
+      <div class="card-title" id="foliar-frequency-title">Quand pulvériser</div>
+      <div id="foliar-this-week" style="background:var(--accent-active-light); border:1.5px solid var(--accent-active-border); border-radius:var(--radius-sm); padding:14px 16px; margin-bottom:12px;">
+        <div id="foliar-when" style="font-size:13px; color:var(--text); font-weight:600;">—</div>
+      </div>
+      <div style="margin-top:10px;">
+        <button onclick="toggleMissedWindow()" id="missed-window-toggle" style="width:100%; background:none; border:none; padding:0; font-family:inherit; font-size:12.5px; color:var(--text-muted); cursor:pointer; display:flex; align-items:center; justify-content:space-between; text-align:left;">
+          <span>Si on rate la fenêtre du matin</span>
+          <span id="missed-window-chevron" style="font-size:10px; transition:transform 0.2s;">▼</span>
+        </button>
+        <div id="missed-window-content" style="display:none; font-size:12px; color:var(--text-muted); line-height:1.6; margin-top:10px;">
+          <ul style="margin:0 0 0 16px; padding:0;">
+            <li>Serre entre 12 et 25°C : OK</li>
+            <li>Au-dessus de 25°C : attendre fin PM</li>
+            <li>Laisser sécher 2-3h avant la nuit (prévenir Botrytis, oïdium)</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- Unified foliar application card since 2026-04-29.
+         Procedure: tomato (383 m²) — mix directly in 1 backpack (15 L). No master bucket.
+         Equipment: electric backpack sprayer with Makita battery — no manual pumping. Agitation is by shaking the tank.
+         Salt load is dilute (~3.7 g/L) — well under solubility limits, dissolves in cold tap water.
+         Pre-2026-04-29: tomato used 45 L master → 3 backpacks; reduced because spray drips at higher volumes without yucca surfactant.
+         Yucca not in program (decision 2026-05-05, not on order); foliar coverage operates at 30% (cert 4).
+         Spray B (CaCl₂) removed 2026-05-06 — single weekly foliar (oligos). -->
+    <div class="card" id="foliar-instructions">
+      <div class="card-title">Application</div>
+      <ol class="steps-list" style="padding-left:28px;">
+        <li class="step-item">
+          <span class="step-number">1</span>
+          <div class="step-title">Remplir le sac à dos d'eau</div>
+          <div style="font-size:11.5px; color:var(--text-muted); margin-top:5px; line-height:1.4;">
+            En laissant un peu d'espace pour les ingrédients.
+          </div>
+        </li>
+        <li class="step-item">
+          <span class="step-number">2</span>
+          <div class="step-title">Ajouter les produits un par un</div>
+          <div id="foliar-strategy" style="margin-top:10px;"></div>
+        </li>
+        <li class="step-item">
+          <span class="step-number">3</span>
+          <div class="step-title">Bien secouer</div>
+          <div style="font-size:11.5px; color:var(--text-muted); margin-top:5px; line-height:1.4;">
+            ⚠️ Les sels non-dissous risquent de boucher buse pendant le spray
+          </div>
+        </li>
+        <li class="step-item">
+          <span class="step-number">4</span>
+          <div class="step-title">Pulvériser</div>
+          <div class="step-desc">Couvrir dessus et dessous des feuilles. Brume fine, sans ruissellement.</div>
+          <div style="font-size:11.5px; color:var(--text-muted); margin-top:5px; line-height:1.4;">
+            🌿 le dessous des feuilles absorbe mieux que le dessus.
+          </div>
+          <div style="font-size:11.5px; color:var(--text-muted); margin-top:3px; line-height:1.4;">
+            🦠 Insister sur les tiges → résistance botrytis.
+          </div>
+        </li>
+        <li class="step-item">
+          <span class="step-number">5</span>
+          <div class="step-title">Rincer le sac à dos à l'eau claire</div>
+          <div style="font-size:11.5px; color:var(--text-muted); margin-top:5px; line-height:1.4;">
+            ⚠️ Les résidus contaminent prochain mélange et bouche buse.
+          </div>
+        </li>
+      </ol>
+    </div>
+  </div>

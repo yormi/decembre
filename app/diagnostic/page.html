@@ -1,0 +1,52 @@
+  <!-- ═══════════════ DIAGNOSTIC PAGE ═══════════════ -->
+  <!-- Visual symptom diagnosis tool. Independent state from the rest of the
+       app (diagCrop, diagLocation, diagSymptom) so toggling here doesn't
+       disrupt the user's fertigation/foliar context.
+       Source: working files/symptomes-carences.md — keep these in sync. -->
+  <div id="page-diagnostic-content" style="display:none;">
+
+    <!-- Crop sub-toggle: Tomate / Salanova only (no nursery — symptom guide treats lettuce + nursery together) -->
+    <div class="crop-toggle">
+      <button class="crop-btn active-tomato" id="diag-crop-tomato" onclick="setDiagCrop('tomato')">
+        <span class="crop-icon">🍅</span> Tomates
+      </button>
+      <button class="crop-btn" id="diag-crop-lettuce" onclick="setDiagCrop('lettuce')">
+        <span class="crop-icon">🥬</span> Salanova
+      </button>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Règle d'or avant de chercher</div>
+      <div class="diag-rule">
+        <div class="diag-rule-title">Le symptôme est-il en haut ou en bas du plant ?</div>
+        <div><strong>Haut</strong> (jeunes feuilles, cœur) = élément <strong>immobile</strong> (Fe, Mn, Zn, B, Cu, Ca). La plante ne peut pas le déplacer, donc la nouvelle croissance souffre.</div>
+        <div style="margin-top:6px;"><strong>Bas</strong> (vieilles feuilles, externes) = élément <strong>mobile</strong> (N, P, K, Mg, Mo). La plante prend dans les vieilles feuilles pour nourrir le haut.</div>
+        <div style="margin-top:8px; font-size:12px; color:var(--text-muted);">Cette règle élimine la moitié des possibilités d'un coup d'œil.</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">1. Où voyez-vous le symptôme ?</div>
+      <div id="diag-locations" class="diag-loc-grid"></div>
+    </div>
+
+    <div class="card" id="diag-symptom-card" style="display:none;">
+      <div class="card-title">2. Lequel décrit le mieux ce que vous voyez ?</div>
+      <div id="diag-symptoms" class="diag-symptom-list"></div>
+    </div>
+
+    <div class="card" id="diag-result-card" style="display:none;">
+      <div class="card-title">Diagnostic</div>
+      <div id="diag-result" class="diag-result"></div>
+      <button class="diag-reset" onclick="resetDiag()">↻ Recommencer le diagnostic</button>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Quand le diagnostic est ambigu</div>
+      <div style="font-size:12.5px; color:var(--text-muted); line-height:1.6;">
+        <div style="padding:3px 0;"><strong style="color:var(--text);">Plusieurs symptômes pour le même élément</strong> (ex: signes B sur fruits + tiges + apex) → certitude haute, agir.</div>
+        <div style="padding:3px 0;"><strong style="color:var(--text);">Symptômes contradictoires</strong> (haut + bas en même temps) → souvent un problème non nutritionnel : eau, racines, environnement.</div>
+        <div style="padding:3px 0;"><strong style="color:var(--text);">Si rien ne correspond exactement</strong> → photographier le plant et écrire sur <strong style="color:var(--text);">#recherche-et-developpement</strong> (Slack).</div>
+      </div>
+    </div>
+  </div>

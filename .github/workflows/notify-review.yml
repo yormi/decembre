@@ -1,0 +1,83 @@
+name: Notifier Catherine pour révision
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+
+permissions:
+  pull-requests: read
+
+jobs:
+  notify:
+    # Skip while PR is draft — Guillaume controls timing by flipping
+    # draft → ready (which fires `ready_for_review` and pings Catherine).
+    # Pushes to a draft PR no longer notify.
+    if: github.event.pull_request.draft == false
+    runs-on: ubuntu-latest
+    steps:
+      - name: Construire l'URL de l'aperçu Netlify
+        id: preview
+        run: |
+          echo "url=https://deploy-preview-${{ github.event.pull_request.number }}--decembre-staging.netlify.app" >> "$GITHUB_OUTPUT"
+
+      - name: Attendre que l'aperçu Netlify soit prêt
+        run: |
+          URL="${{ steps.preview.outputs.url }}"
+          for i in $(seq 1 60); do
+            CODE=$(curl -sL -o /dev/null -w '%{http_code}' "$URL" || echo "000")
+            if [ "$CODE" = "200" ]; then
+              echo "Aperçu prêt : $URL"
+              exit 0
+            fi
+            echo "Tentative $i — code $CODE — on attend 10s"
+            sleep 10
+          done
+          echo "::warning::Aperçu pas confirmé après 10 min, on envoie quand même"
+
+      - name: Préparer et envoyer le message à #review
+        env:
+          PR_TITLE: ${{ github.event.pull_request.title }}
+          PR_BODY: ${{ github.event.pull_request.body }}
+          PREVIEW_URL: ${{ steps.preview.outputs.url }}
+          ACTION: ${{ github.event.action }}
+          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK_REVIEW }}
+        run: |
+          set -euo pipefail
+
+          # Extract sections from PR body (everything between "## Ce qui change" and the next "## " heading)
+          CHANGES=$(printf '%s\n' "$PR_BODY" | awk '/^## Ce qui change/{flag=1; next} /^## /{flag=0} flag' | grep -vE '^<!--|^$' || true)
+          HOWTO=$(printf '%s\n' "$PR_BODY" | awk '/^## Comment vérifier/{flag=1; next} /^## /{flag=0} flag' | grep -vE '^<!--|^$' || true)
+
+          if [ -z "$CHANGES" ]; then CHANGES="(aucun résumé fourni)"; fi
+          if [ -z "$HOWTO" ]; then HOWTO="(aucune instruction de vérification fournie)"; fi
+
+          if [ "$ACTION" = "synchronize" ]; then
+            HEADER_TEXT="Modification mise à jour"
+            EMOJI=":arrows_counterclockwise:"
+          else
+            HEADER_TEXT="Nouvelle modification à réviser"
+            EMOJI=":seedling:"
+          fi
+
+          jq -n \
+            --arg header "$HEADER_TEXT" \
+            --arg emoji "$EMOJI" \
+            --arg title "$PR_TITLE" \
+            --arg changes "$CHANGES" \
+            --arg howto "$HOWTO" \
+            --arg preview "$PREVIEW_URL" \
+            '{
+              text: ($emoji + " " + $header + " — " + $title),
+              blocks: [
+                {type:"header",text:{type:"plain_text",text:($header + " — " + $title),emoji:true}},
+                {type:"section",text:{type:"mrkdwn",text:("*Ce qui change :*\n" + $changes)}},
+                {type:"section",text:{type:"mrkdwn",text:("*Comment vérifier :*\n" + $howto)}},
+                {type:"section",text:{type:"mrkdwn",text:("<" + $preview + "|:link: Ouvrir l aperçu>")}},
+                {type:"context",elements:[{type:"mrkdwn",text:"Réponds dans ce fil quand c est bon pour publier."}]}
+              ]
+            }' > payload.json
+
+          WEBHOOK=$(printf '%s' "$SLACK_WEBHOOK" | tr -d '\r\n[:space:]')
+          curl -fsS -X POST -H 'Content-Type: application/json' \
+            --data @payload.json \
+            "$WEBHOOK"

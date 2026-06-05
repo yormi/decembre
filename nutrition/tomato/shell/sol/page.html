@@ -1,0 +1,189 @@
+    <div id="sol-tomato-content">
+
+      <!-- pH reading (top). Drives the Tiger dose in the recipe card below.
+           Logic mirrors the two-phase ramp in
+           nutrition/strategy/protocol/sulphur-ph-drawdown.md
+           (grossière 1000 g / fine 500 g / arrêt / pause). Persisted. -->
+      <div class="card">
+        <div style="font-size:11px; color:var(--text-muted); text-transform:uppercase; letter-spacing:1.5px; font-weight:600; margin:14px 0 8px;">pH cette semaine</div>
+        <div id="sol-ph-week-buttons" style="display:flex; flex-wrap:wrap; gap:8px;"></div>
+
+        <div style="font-size:11px; color:var(--text-muted); text-transform:uppercase; letter-spacing:1.5px; font-weight:600; margin:18px 0 8px;">Changement de pH depuis la semaine dernière</div>
+        <div id="sol-ph-delta-buttons" style="display:flex; flex-wrap:wrap; gap:8px;"></div>
+      </div>
+
+      <!-- Recette — current-stage sidedress (STORED_RECIPE.tomato.sidedress)
+           + Tiger 90CR soufre (driven by the pH card above). Seedling-model
+           tiles: emoji / label / big number / unit. Doses in g, caption once.
+           Stage auto-derived from the ISO week. -->
+      <div class="card">
+        <div style="display:flex; align-items:baseline; justify-content:space-between; gap:12px; margin-bottom:6px;">
+          <div class="card-title" style="margin-bottom:0;">Recette</div>
+          <span id="sol-tomato-stage-chip" style="background:var(--accent-active-light); border:1.5px solid var(--accent-active-border); color:var(--text); font-size:12px; font-weight:600; padding:4px 10px; border-radius:4px; white-space:nowrap;">—</span>
+        </div>
+        <div style="font-size:11.5px; color:var(--text-muted); margin-bottom:12px;">par planche · chaque semaine</div>
+        <div id="sol-tomato-doses" style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">—</div>
+      </div>
+
+    </div><!-- end sol-tomato-content -->
+
+    <script>
+      (function renderSolTomato() {
+        var stageLabels = {
+          T1: 'début du cycle',
+          T2: 'installation',
+          T3: 'floraison précoce',
+          T4: 'fructification',
+          T5: 'pleine production',
+        };
+        var productLabels = {
+          actisol_g: 'Actisol 5-3-2',
+          farine_g:  'Farine de plumes',
+          alfalfa_g: 'Luzerne',
+          frass_g:   'Frass',
+        };
+        var productEmoji = {
+          actisol_g: '🌾',
+          farine_g:  '🪶',
+          alfalfa_g: '🌿',
+          frass_g:   '🪲',
+        };
+
+        var PH_OPTIONS = [
+          { value: '6.6-', label: '6,6 et −' },
+          { value: '6.7',  label: '6,7' },
+          { value: '6.8+', label: '6,8 et +' },
+        ];
+        var DELTA_OPTIONS = [
+          { value: '0.2-', label: '0,2 et moins' },
+          { value: '0.3',  label: '0,3' },
+          { value: '0.4+', label: '0,4 et plus' },
+        ];
+
+        // Pure: (pH band, weekly Δ-drop band) → Tiger 90CR grams/planche this week.
+        // Rules (Guillaume 2026-06-04):
+        //   base 1000 g.
+        //   réduire à 500 g dès que pH < 6,8 (band 6.7) OU chute > 0,2 (band 0.3).
+        //   arrêter (0) si pH ≤ 6,6 (band 6.6-) OU chute ≥ 0,4 (band 0.4+).
+        // Stop takes priority over reduce. grams 0 carries word + sub (why).
+        function recommendSulphurDose(ph, delta) {
+          if (!ph || !delta) return null;
+          var lowPh    = (ph === '6.6-');      // pH ≤ 6,6
+          var fastDrop = (delta === '0.4+');   // chute ≥ 0,4
+          if (lowPh || fastDrop) {
+            return { grams: 0, word: 'Arrêt', sub: fastDrop ? 'chute ≥ 0,4' : 'pH ≤ 6,6' };
+          }
+          var reducePh   = (ph === '6.7');     // pH < 6,8
+          var reduceDrop = (delta === '0.3');  // chute > 0,2
+          if (reducePh || reduceDrop) return { grams: 500 };
+          return { grams: 1000 };
+        }
+        // Expose the pure decision function for unit tests (window-namespace
+        // pattern, like FoliarRecipeTomato). Render glue stays below.
+        window.SulphurDoseTomato = { recommendSulphurDose: recommendSulphurDose };
+
+        var KEY_PH = 'sol-tomato-ph-week';
+        var KEY_DELTA = 'sol-tomato-ph-delta';
+        var state = { ph: null, delta: null };
+
+        function load() {
+          try {
+            state.ph = localStorage.getItem(KEY_PH);
+            state.delta = localStorage.getItem(KEY_DELTA);
+          } catch (e) { /* localStorage blocked — session-only */ }
+        }
+        function save() {
+          try {
+            if (state.ph) localStorage.setItem(KEY_PH, state.ph);
+            if (state.delta) localStorage.setItem(KEY_DELTA, state.delta);
+          } catch (e) { /* ignore */ }
+        }
+
+        function buttonHtml(opt, selected) {
+          var on = opt.value === selected;
+          return '<button type="button" data-value="' + opt.value + '" style="' +
+            'padding:8px 14px; font-family:inherit; font-size:14px; font-weight:600; cursor:pointer; border-radius:6px; ' +
+            'border:1.5px solid ' + (on ? 'var(--accent-active-border)' : 'var(--border)') + '; ' +
+            'background:' + (on ? 'var(--accent-active-light)' : 'transparent') + '; ' +
+            'color:var(--text);">' + opt.label + '</button>';
+        }
+        function renderButtons(container, options, selected, onPick) {
+          container.innerHTML = options.map(function (o) { return buttonHtml(o, selected); }).join('');
+          Array.prototype.forEach.call(container.querySelectorAll('button'), function (btn) {
+            btn.addEventListener('click', function () { onPick(btn.getAttribute('data-value')); });
+          });
+        }
+
+        // Seedling-model tile: emoji / label / big value / unit. `muted` dims it
+        // (used for Tiger when the protocol says don't dose this week).
+        function tile(emoji, label, value, unit, muted) {
+          var bg = muted ? 'transparent' : 'var(--accent-active-light)';
+          var border = muted ? 'var(--border)' : 'var(--accent-active-border)';
+          var valueColor = muted ? 'var(--text-muted)' : 'var(--text)';
+          return '<div style="background:' + bg + '; border:1.5px solid ' + border + '; border-radius:var(--radius-sm); padding:14px 10px; text-align:center;">' +
+            '<div style="font-size:24px; margin-bottom:6px;">' + emoji + '</div>' +
+            '<div style="font-size:10px; font-weight:600; text-transform:uppercase; letter-spacing:1.5px; color:var(--text-muted); margin-bottom:6px;">' + label + '</div>' +
+            '<div style="font-family:\'DM Mono\',monospace; font-size:24px; font-weight:700; color:' + valueColor + ';">' + value + '</div>' +
+            '<div style="font-family:\'DM Mono\',monospace; font-size:12px; color:var(--text-muted); margin-top:2px;">' + unit + '</div>' +
+          '</div>';
+        }
+
+        function renderRecipe() {
+          var chipElement  = document.getElementById('sol-tomato-stage-chip');
+          var dosesElement = document.getElementById('sol-tomato-doses');
+          if (!chipElement || !dosesElement) return;
+          if (typeof getWeekNumber !== 'function' || typeof getStageFromWeek !== 'function') return;
+          if (!window.STORED_RECIPE || !window.STORED_RECIPE.tomato || !window.STORED_RECIPE.tomato.sidedress) return;
+
+          var week  = getWeekNumber();
+          var stage = getStageFromWeek(week);
+          var label = stageLabels[stage] || '';
+          chipElement.innerHTML =
+            '<span style="font-size:14px;">' + stage + '</span>' +
+            (label ? ' · ' + label : '') +
+            ' <span style="color:var(--text-muted); font-weight:400;">· sem ' + week + '</span>';
+
+          var stageRecipe = window.STORED_RECIPE.tomato.sidedress[stage] || {};
+          var tiles = [];
+          Object.keys(stageRecipe).forEach(function (productKey) {
+            var grams = stageRecipe[productKey];
+            if (!(grams > 0)) return;
+            tiles.push(tile(
+              productEmoji[productKey] || '·',
+              productLabels[productKey] || productKey,
+              Math.round(grams).toLocaleString('fr-CA'), 'g', false
+            ));
+          });
+
+          // Tiger 90CR — soufre, driven by the pH card above.
+          var tiger = recommendSulphurDose(state.ph, state.delta);
+          if (!tiger) {
+            tiles.push(tile('🐯', 'Soufre — Tiger', '—', 'choisir le pH', true));
+          } else if (tiger.grams > 0) {
+            tiles.push(tile('🐯', 'Soufre — Tiger', Math.round(tiger.grams).toLocaleString('fr-CA'), 'g', false));
+          }
+          // dose 0 (Arrêt) → hide the Tiger tile entirely.
+
+          dosesElement.innerHTML = tiles.length ? tiles.join('') : '—';
+        }
+
+        function mount() {
+          var weekEl = document.getElementById('sol-ph-week-buttons');
+          var deltaEl = document.getElementById('sol-ph-delta-buttons');
+          if (!weekEl || !deltaEl) return;
+          load();
+          function refresh() {
+            renderButtons(weekEl, PH_OPTIONS, state.ph, function (v) { state.ph = v; save(); refresh(); });
+            renderButtons(deltaEl, DELTA_OPTIONS, state.delta, function (v) { state.delta = v; save(); refresh(); });
+            renderRecipe();
+          }
+          refresh();
+        }
+
+        if (document.readyState === 'loading') {
+          document.addEventListener('DOMContentLoaded', mount);
+        } else {
+          mount();
+        }
+      })();
+    </script>

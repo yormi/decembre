@@ -1,0 +1,134 @@
+name: Publier la mise à jour et notifier l'équipe
+
+on:
+  pull_request:
+    types: [closed]
+    branches: [main]
+
+permissions:
+  contents: write
+  pull-requests: read
+
+jobs:
+  publish:
+    if: github.event.pull_request.merged == true
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          token: ${{ secrets.GITHUB_TOKEN }}
+          fetch-depth: 0
+
+      - name: Récupérer l'URL du déploiement Netlify de production
+        id: deploy
+        env:
+          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+          NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
+          MERGE_SHA: ${{ github.event.pull_request.merge_commit_sha }}
+        run: |
+          set -euo pipefail
+          DEPLOY_URL=""
+          for i in $(seq 1 30); do
+            sleep 15
+            RESPONSE=$(curl -sf -H "Authorization: Bearer $NETLIFY_AUTH_TOKEN" \
+              "https://api.netlify.com/api/v1/sites/$NETLIFY_SITE_ID/deploys?per_page=20" || echo '[]')
+
+            DEPLOY_URL=$(echo "$RESPONSE" | jq -r --arg sha "$MERGE_SHA" '
+              [.[] | select(.context == "production" and .state == "ready")] as $prod |
+              ([$prod[] | select(.commit_ref == $sha)] | .[0].deploy_ssl_url) // ($prod[0].deploy_ssl_url // "")
+            ')
+
+            if [ -n "$DEPLOY_URL" ] && [ "$DEPLOY_URL" != "null" ]; then
+              echo "Déploiement trouvé : $DEPLOY_URL"
+              break
+            fi
+            echo "Tentative $i — déploiement pas encore prêt"
+            DEPLOY_URL=""
+          done
+
+          if [ -z "$DEPLOY_URL" ]; then
+            echo "::warning::URL de déploiement Netlify introuvable après 7 min, fallback utilisé"
+            DEPLOY_URL="https://decembre-staging.netlify.app"
+          fi
+
+          echo "url=$DEPLOY_URL" >> "$GITHUB_OUTPUT"
+
+      - name: Mettre à jour history.json
+        env:
+          PR_TITLE: ${{ github.event.pull_request.title }}
+          PR_BODY: ${{ github.event.pull_request.body }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          DEPLOY_URL: ${{ steps.deploy.outputs.url }}
+          MERGE_SHA: ${{ github.event.pull_request.merge_commit_sha }}
+        run: |
+          set -euo pipefail
+          MONTHS=("janvier" "février" "mars" "avril" "mai" "juin" "juillet" "août" "septembre" "octobre" "novembre" "décembre")
+          export TZ='America/Toronto'
+          DATE_ISO=$(date +'%Y-%m-%d')
+          DAY=$(date +'%-d')
+          MONTH_NUM=$(date +'%-m')
+          YEAR=$(date +'%Y')
+          DATE_FR="$DAY ${MONTHS[$((MONTH_NUM - 1))]} $YEAR"
+
+          CHANGES=$(printf '%s\n' "$PR_BODY" | awk '/^## Ce qui change/{flag=1; next} /^## /{flag=0} flag' | grep -vE '^<!--|^$' || true)
+          if [ -z "$CHANGES" ]; then CHANGES="(aucun résumé fourni)"; fi
+
+          if [ ! -f app/history.json ]; then
+            echo '[]' > app/history.json
+          fi
+
+          jq --arg date "$DATE_ISO" \
+             --arg date_fr "$DATE_FR" \
+             --arg title "$PR_TITLE" \
+             --arg changes "$CHANGES" \
+             --arg url "$DEPLOY_URL" \
+             --arg pr "$PR_NUMBER" \
+             --arg sha "$MERGE_SHA" \
+             '[ {date: $date, date_fr: $date_fr, title: $title, changes: $changes, url: $url, pr: ($pr | tonumber), sha: $sha} ] + .' \
+             app/history.json > app/history.tmp
+          mv app/history.tmp app/history.json
+
+      - name: Commit et push de history.json
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add app/history.json
+          if git diff --cached --quiet; then
+            echo "Aucun changement à app/history.json"
+          else
+            git commit -m "Mise à jour historique [skip ci]"
+            git push
+          fi
+
+      - name: Préparer et envoyer le message à l'équipe
+        env:
+          PR_TITLE: ${{ github.event.pull_request.title }}
+          PR_BODY: ${{ github.event.pull_request.body }}
+          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK_TEAM }}
+        run: |
+          set -euo pipefail
+          CHANGES=$(printf '%s\n' "$PR_BODY" | awk '/^## Ce qui change/{flag=1; next} /^## /{flag=0} flag' | grep -vE '^<!--|^$' || true)
+          if [ -z "$CHANGES" ]; then CHANGES="(aucun résumé fourni)"; fi
+
+          PROD_URL="https://yormi.github.io/decembre/"
+
+          jq -n \
+            --arg title "$PR_TITLE" \
+            --arg changes "$CHANGES" \
+            --arg prod "$PROD_URL" \
+            '{
+              text: (":white_check_mark: Mise à jour publiée — " + $title),
+              blocks: [
+                {type:"header",text:{type:"plain_text",text:"Mise à jour publiée",emoji:true}},
+                {type:"section",text:{type:"mrkdwn",text:("*" + $title + "*")}},
+                {type:"section",text:{type:"mrkdwn",text:("*Ce qui change :*\n" + $changes)}},
+                {type:"section",text:{type:"mrkdwn",text:("<" + $prod + "|:globe_with_meridians: Ouvrir l app à jour>")}}
+              ]
+            }' > payload.json
+
+          WEBHOOK=$(printf '%s' "$SLACK_WEBHOOK" | tr -d '\r\n[:space:]')
+          curl -fsS -X POST -H 'Content-Type: application/json' \
+            --data @payload.json \
+            "$WEBHOOK"

@@ -1,0 +1,42 @@
+    <div id="irr-field-content">
+
+    <!-- Tomato vigor selector -->
+    <div class="card" id="vigor-card">
+      <div class="card-title">Vigueur des plants</div>
+      <div style="display:flex; gap:6px; margin-bottom:6px;">
+        <button onclick="setVigor('low')" class="stage-btn active" data-vigor="low">
+          <span class="stage-label">Faible</span>
+          <span class="stage-weeks">< 8 mm</span>
+        </button>
+        <button onclick="setVigor('normal')" class="stage-btn" data-vigor="normal">
+          <span class="stage-label">Normal</span>
+          <span class="stage-weeks">9–11 mm</span>
+        </button>
+        <button onclick="setVigor('high')" class="stage-btn" data-vigor="high">
+          <span class="stage-label">Fort</span>
+          <span class="stage-weeks">> 12 mm</span>
+        </button>
+      </div>
+      <div style="font-size:11px; color:var(--text-muted); line-height:1.5; margin-top:6px;">
+        Mesurer diamètre de la tige 1 pied de la tête
+      </div>
+      <div id="vigor-note" style="font-size:12px; color:var(--text-muted); line-height:1.5; margin-top:8px;"></div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Tensiomètre — Cibles Orisha</div>
+      <div id="tensio-params"></div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">✓ Bien réglé quand</div>
+      <div id="tensio-success"></div>
+    </div>
+
+    <!-- Irrigation volume data kept for calculations but hidden from UI:
+         Formula: 2 mL/(J/cm²)/m² × solar radiation × area × days
+         Used by fertigation page to calculate stock volume (⅓ of weekly irrigation)
+         Solar radiation input is on the fertigation page
+    -->
+
+    </div><!-- end irr-field-content -->

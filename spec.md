@@ -1,0 +1,178 @@
+# Specs — Décembre operations app
+
+Cross-app PO-scope specs. Verified by `scripts/check-spec.sh` and
+`scripts/check-recipes.mjs`. Domain-specific specs live alongside their
+code under `nutrition/**/spec.md` and `yield-range/**/spec.md`.
+
+## Domain organization
+
+| File | Scope |
+|---|---|
+| `spec.md` (this file) | Cross-app: UI language, URL routing, ISO week numbering |
+| `nutrition/spec.md` | Cross-crop nutrition: mass-balance, channel cascade, pH-aware efficiency, lockout gates, crop-level channel-role coverage |
+| `nutrition/chemistry/spec.md` | Cross-crop chemistry: product catalog, pH-response, mixing compatibility (Ksp / tags / mix order / incompatible recipes / stock stability), tank-level CE + pH predictions |
+| `nutrition/tomato/spec.md` | Tomato nutrition: per-stage demand, fruit export, biomass, mass-balance coupling |
+| `nutrition/tomato/shell/spec.md` | Tomato Nutrition admin page chrome (header inputs, ceiling, recipe-mode toggle, drift block, single-source-of-truth read) |
+| `nutrition/tomato/plant-needs/builder/user-stories.md` | Plant-needs builder block on the admin page (Block 1) |
+| `nutrition/tomato/foliar-strategy/builder/user-stories.md` | Foliar builder block on the admin page (Block 5/6) |
+| `nutrition/tomato/fertigation-recipe/builder/user-stories.md` | Fertigation builder block on the admin page (supply vs demand + drift sub-block) |
+| `nutrition/tomato/sidedress-recipe/builder/user-stories.md` | Sidedress builder block on the admin page (supply vs demand + drift sub-block) |
+| `nutrition/tomato/fertigation-recipe/operator/user-stories.md` | Operator-facing tomato fertigation page UI |
+| `nutrition/tomato/fertigation-recipe/procedure/user-stories.md` | Procedural data layer behind the operator fertigation page (stage, steps, calc) |
+| `nutrition/lettuce/spec.md` | Salanova post-transplant nutrition (model/recipe) |
+| `nutrition/lettuce/app/user-stories.md` | Salanova admin subpage UI |
+| `nutrition/nursery/spec.md` | Semis laitue nutrition (seedling DW%, cell volume cap) |
+| `nutrition/nursery/app/user-stories.md` | Semis admin subpage UI |
+| `yield-range/spec.md` | Salanova nursery time-to-canopy-cap model |
+| `yield-range/app/user-stories.md` | Yield Range admin page UI |
+| `yield-range/doc/yield-range-calibration-2026-spring.md` | Empirical cohort observations anchoring the yield-range model |
+
+REQ-NNN ids are drawn from a single global pool — claim via
+`scripts/claim-req.sh <target-spec-path> <persona>` from the repo root.
+
+Domain/page specs do NOT restate these REQs — they apply by
+default unless a page opts out (with reason).
+
+---
+
+## ui-language-ce-not-ec
+
+All user-facing UI text uses **"CE"** (Conductivité Électrique), not "EC".
+Out of scope: HTML/CSS/JS identifiers, code comments, lab-report quotes.
+CE is feminine ("la CE"); no elision before consonant ("la CE", not "l'CE").
+
+---
+
+## url-hash-routing
+
+Every navigable page and every subpage selector that changes what the user is
+looking at MUST be encoded in the URL hash so hot-reload and bookmarks land on
+the same view. Hash format is hierarchical: `#[admin/]page[/crop]`. Contract:
+
+1. Pages listed in the `PAGES` const in `index.html`; every
+   `<div id="page-XXX-content">` must have its slug in `PAGES`.
+2. Subpages (currently: crop) listed per page in `CROP_PAGES`.
+3. Setters that mutate routed state (`setPage`, `setCrop`, `setDiagCrop`,
+   plus any future subpage setter) MUST call `syncHash()`.
+
+| Routed state | Source-of-truth | URL segment |
+|---|---|---|
+| Current page | `currentPage` | first non-`admin` segment |
+| Crop on fertigation/irrigation | `currentCrop` (global) | second segment |
+| Crop on diagnostic | `diagCrop` (page-local) | second segment |
+| Admin mode | `parseHash().admin` | leading `admin/` |
+
+---
+
+## ui-language-algue-not-kelp
+
+All user-facing UI text uses **"Algue"** / "Algues" instead of "Kelp".
+Out of scope: HTML/CSS/JS identifiers and code comments.
+
+---
+
+## ui-language-plain-french
+
+User-facing UI text must avoid English or specialist horticulture terms that an
+*ouvrier agricole québécois* wouldn't readily understand. Use plain French.
+Comments and source identifiers are exempt.
+
+| Forbidden | French replacement | Where it surfaces |
+|---|---|---|
+| `dryback` | `assèchement` (or `assèchement contrôlé` when emphasising intent) | Tensiometric vigor notes (low/normal/high) |
+
+Extend via the `JARGON_DENY` array in `scripts/check-spec.sh`.
+
+---
+
+## iso-week-numbering
+
+`getWeekNumber()` returns the ISO 8601 week number of the current local date
+using the **Thursday-pivot algorithm** (Mondays start the week; week 1 contains
+the year's first Thursday). A naive `jan4.getDay()`-based implementation
+silently shifts by one week when Jan 4 falls on a Sunday — this bug shipped
+once in 2026; the check exists to prevent quiet reintroduction.
+
+Contract:
+1. Take today's date.
+2. Normalize weekday so Mon=1..Sun=7 (`getDay() || 7`).
+3. Shift by `4 - dayNum` days to the Thursday of the current ISO week.
+4. Divide day-count from Jan 1 of that Thursday's year by 7 and round up.
+
+This shape handles year-rollover (e.g. Dec 29 2025 → ISO 2026-W01).
+
+---
+
+## subproject-namespace-sole-source
+
+Every subproject under `nutrition/` and `yield-range/` that exposes a public
+computation through a `window.<Namespace>` (the `model.js` convention) is the
+**sole source** of that computation. App-side renderers in `app/index.html`
+and any consumer under `nutrition/<crop>/app/` MUST invoke the namespaced
+function. Inlining the same arithmetic — copying the formula out of `calc.js`
+/ `model.js` into the consumer — is forbidden. When a consumer needs a
+function the subproject doesn't yet expose, ADD the function in the
+subproject; don't inline the arithmetic. Subprojects own both the sizer
+(recipe) and the renderer (supply) axes.
+
+---
+
+## operator-prose-is-deterministic-render
+
+Inside any DOM container carrying `data-prose-check="strict"`, every
+visible text node MUST have an ancestor element carrying a
+`data-prose-source` attribute whose value is one of:
+
+- `"derived:<funcName>"` — the string is emitted by a function
+  declared in source (`function funcName(`, `const funcName = (`,
+  etc.). The verifier confirms `<funcName>` is declared somewhere in
+  `app/`, `nutrition/`, or `yield-range/`.
+- `"<slug>"` — the string is a deterministic render of bytes owned by
+  the spec entry headed `## <slug>`. The bytes live in a `Renders:`
+  block inside that spec entry; `scripts/build.mjs` parses every
+  `render <key>` fenced block and injects them into `dist/index.html`
+  as `window.SPEC_STRINGS`. Runtime helper `renderSpec(slug, key,
+  interp)` resolves lookup + optional `${var}` substitution.
+- `"label"` — static UI scaffolding with no semantic claim (page
+  titles, section headers, column headers, button labels). Never used
+  for advice, interpretation, or warnings.
+
+Enforcement is opt-in: this rule applies only inside containers
+explicitly marked `data-prose-check="strict"`. New operator surfaces
+opt in from day one; existing containers migrate when materially
+touched. The verifier prints the count of opted-in containers so
+migration is visible.
+
+**`Renders:` block convention** (consumed by `scripts/build.mjs`):
+inside a spec entry headed by `## <slug>`, declare named render strings
+as fenced code blocks with the info string `render <key>`:
+
+````
+## <slug>
+
+**Renders:** (bytes owned by this entry)
+
+```render Ca
+Sol Ca-saturé — réservoir essentiellement inépuisable...
+```
+
+```render P
+Banque P "coffre" ; même au taux de drawdown actuel...
+```
+````
+
+The build groups blocks by nearest preceding `^## <slug>` header,
+emits `window.SPEC_STRINGS = { '<slug>': { 'key': '...' } }` via the
+`<!-- @spec-strings -->` marker, and fails on duplicate keys within or
+across entries.
+
+---
+
+## identifiers-unabbreviated
+
+Every function name, variable name, and object-property name in JS source
+under `app/`, `nutrition/`, `yield-range/`, plus identifier references in
+backticks inside `spec.md` files and `team/**` markdown, MUST be
+a full word — no abbreviations. The verifier maintains a denylist with a
+whitelist for domain terms (`cert`, `cap`, `pH`, unit suffixes `mg` / `kg` /
+`g` / `L` / `m²`, and `REQ-NNN` identifiers).

@@ -1,0 +1,94 @@
+    <div id="nutr-lettuce-content" style="display:none;">
+
+      <div class="card">
+        <div class="card-title">Cible & cycle Salanova</div>
+        <div class="input-row">
+          <div class="input-group">
+            <label>Poids transplant</label>
+            <input type="number" id="nutr-l-transplant" value="30" min="10" max="200" step="5" inputmode="decimal">
+            <div class="input-unit">g / tête</div>
+          </div>
+          <div class="input-group">
+            <label>Cible récolte</label>
+            <input type="number" id="nutr-l-target" value="100" min="50" max="400" step="10" inputmode="decimal">
+            <div class="input-unit">g / tête</div>
+          </div>
+        </div>
+        <div class="input-row" style="margin-top:8px;">
+          <div class="input-group">
+            <label>Durée cycle</label>
+            <input type="number" id="nutr-l-days" value="14" min="7" max="42" step="1" inputmode="numeric">
+            <div class="input-unit">jours</div>
+          </div>
+          <div class="input-group">
+            <label>Densité</label>
+            <input type="number" id="nutr-l-density" value="43" min="15" max="60" step="1" inputmode="numeric">
+            <div class="input-unit">plants / m²</div>
+          </div>
+        </div>
+        <label class="multi-row" style="margin-top:10px;">
+          <input type="checkbox" id="nutr-l-phlocked" style="width:auto; margin-right:8px;" checked>
+          <span>pH ≥ 7 (lockout racinaire P/Mn/Zn/Fe)</span>
+        </label>
+        <div id="nutr-l-context" style="margin-top:12px; padding:8px 10px; background:var(--input-bg); border:1px solid var(--border); border-radius:var(--radius-sm); font-size:11.5px; color:var(--text-muted); line-height:1.55;"></div>
+      </div>
+
+      <!-- Block 1: weekly demand from mass gain × DM × tissue conc. -->
+      <div class="card">
+        <div class="card-title">1. Besoins hebdomadaires (gain de masse)</div>
+        <div id="nutr-l-needs"></div>
+      </div>
+
+      <!-- Block 2: Compost résiduel (Savaria ORGANIMIX automne 2025) — same
+           amendment was applied on lettuce beds; mass-balance treats compost
+           mineralization as the first replenishment channel (replaces former
+           passive-soil block, removed 2026-05-08). -->
+      <div class="card">
+        <div class="card-title">2. Compost (résiduel Savaria 2025)</div>
+        <div id="nutr-l-compost"></div>
+      </div>
+
+      <!-- Block 3: feather-meal front-load (slow-release N) — moved before
+           fertigation 2026-05-08 to mirror the granulaire-then-fertigation
+           order on the tomato side. -->
+      <div class="card">
+        <div class="card-title">3. Front-load — farine de plumes</div>
+        <div id="nutr-l-frontload-block"></div>
+      </div>
+
+      <!-- Block 4: current LETTUCE fertigation (K + Mg + Fe) -->
+      <div class="card">
+        <div class="card-title">4. Fertigation actuelle</div>
+        <div id="nutr-l-fert"></div>
+      </div>
+
+      <!-- Block 5: residual gap + which lever closes which gap -->
+      <div class="card">
+        <div class="card-title">5. Ce qui manque — leviers</div>
+        <div id="nutr-l-missing"></div>
+      </div>
+
+      <!-- Recette proposée — admin-only model + manual safety overrides.
+           Mirrors tomato `nutr-proposed`. Pinned to current LETTUCE recipe
+           + LETTUCE_FRONTLOAD_DEFAULTS as the proposed target with rationale
+           per channel. -->
+      <div class="card" style="border:1.5px dashed var(--border);">
+        <div class="card-title" style="color:var(--text-muted);">Recette proposée — modèle + ajustements opérationnels</div>
+        <div id="nutr-l-proposed"></div>
+      </div>
+
+      <div class="card">
+        <div class="card-title" style="color:var(--text-muted);">Hypothèses du calcul (Salanova)</div>
+        <div style="font-size:11.5px; color:var(--text-muted); line-height:1.6;">
+          <div style="padding:2px 0;">• <strong>Cadre mass-balance</strong> : la fertigation remplace ce que la croissance retire du système. Trois canaux de réapprovisionnement (compost résiduel, front-load farine, fertigation) doivent matcher le besoin hebdo. Le sol passif (SME × transpiration) tire sur la banque ; il n'est pas un canal de réapprovisionnement et a été retiré 2026-05-08 pour s'aligner sur la chaîne tomate.</div>
+          <div style="padding:2px 0;">• <strong>Demande</strong> = gain de masse fraîche (cible − transplant) × densité × <strong>5% matière sèche</strong> × concentration tissulaire. Pas de stades — laitue = phase de croissance continue.</div>
+          <div style="padding:2px 0;">• <strong>Concentrations tissulaires DW</strong> (cert 4 macros, cert 3 micros) : N 4,5% · P 0,5% · K 7% · Ca 1,5% · Mg 0,4% · Fe 200 ppm · Mn 50 · Zn 40 · B 30 · Cu 8 · Mo 0,5</div>
+          <div style="padding:2px 0;">• <strong>Compost résiduel</strong> (<code>window.CompostContribution.releasePerWeek</code>) : minéralisation hebdo de l'amendement Savaria ORGANIMIX automne 2025, ~25,4 kg/m². Décline avec le temps (~18-24 mois). Cert 2-3.</div>
+          <div style="padding:2px 0;">• <strong>Front-load</strong> farine de plumes : 13% N × 75% minéralisation, distribué sur ~4 semaines de relâche. À 50 g/m² → ~1 220 mg N/m²/sem effectif (cert 3).</div>
+          <div style="padding:2px 0;">• <strong>Fertigation actuelle</strong> (<code>LETTUCE</code>) : K₂SO₄ 2 996 g + MgSO₄·7H₂O 467 g + FeSO₄·7H₂O 7,5 g par 100 m²/sem. Fe × 0,15 si pH ≥ 7 (cuticule racinaire alcaline).</div>
+          <div style="padding:2px 0;">• <strong>Surface</strong> Salanova : 4,5 × 30,4 m² = 136,8 m². Recette LETTUCE per 100 m²/sem.</div>
+          <div style="padding:2px 0;">• <strong>Pas de foliaire actuel</strong> — programme retiré 2026-04. Mn/Zn/B sans canal de livraison à pH 7,4 (gap réelement, à revisiter quand pH baisse).</div>
+        </div>
+      </div>
+
+    </div><!-- end nutr-lettuce-content -->

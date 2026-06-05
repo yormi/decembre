@@ -1,0 +1,622 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ferme Décembre — Système d'opération</title>
+<link rel="icon" href="favicon.ico" sizes="any">
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+<!-- @include lib/global.css -->
+<!-- @include app/operator/page.css -->
+<!-- @include nutrition/lib/styles.css -->
+<!-- @include nutrition/tomato/lib/styles.css -->
+<!-- @include nutrition/tomato/shell/sol/page.css -->
+<!-- @include nutrition/tomato/fertigation-recipe/operator/page.css -->
+<!-- @include app/week/page.css -->
+<!-- @include app/diagnostic/page.css -->
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <div class="header-label">Ferme Décembre</div>
+    <h1>Système d'opération</h1>
+  </div>
+
+  <!-- @include app/operator/page.html -->
+
+  <!-- Bed info (kept for reference):
+       Tomato: 7 planches × 54.7 m² = 382.9 m²
+       Lettuce: 4.5 planches × 30.4 m² = 136.8 m²
+       Soil: Sable loameux (84% sand, 10% silt, 6% clay, Agri-Quanta SOL-26419)
+       CEC: 28-33 meq/100g (high due to compost organic matter)
+  -->
+
+  <!-- @include app/week/page.html -->
+
+  <!-- ═══════════════ IRRIGATION PAGE ═══════════════ -->
+  <div id="page-irrigation-content" style="display:none;">
+
+    <!-- Crop sub-toggle: Tomates / Laitue / Semis laitue -->
+    <div class="crop-toggle">
+      <button class="crop-btn active-tomato" id="irr-crop-tomato" onclick="setCrop('tomato')">
+        <span class="crop-icon">🍅</span> Tomates
+      </button>
+      <button class="crop-btn" id="irr-crop-lettuce" onclick="setCrop('lettuce')">
+        <span class="crop-icon">🥬</span> Laitue
+      </button>
+      <button class="crop-btn" id="irr-crop-nursery" onclick="setCrop('nursery')">
+        <span class="crop-icon">🌱</span> Semis laitue
+      </button>
+    </div>
+
+    <!-- Field-crop irrigation content (tomato + lettuce) -->
+    <!-- @include nutrition/tomato/shell/irrigation/page.html -->
+
+    <!-- Semis laitue irrigation content -->
+    <!-- @include nutrition/lettuce/app/irrigation/page.html -->
+  </div><!-- end page-irrigation-content -->
+
+  <!-- ═══════════════ SOL PAGE (team-facing) ═══════════════ -->
+  <!-- Soil-feeding operations: soufre (pH program) + side-dressing schedule.
+       Tomato-only for now (lettuce side-dress TBD). Static reference page —
+       no calculations, no inputs. The team consults this for what to apply
+       this week and on what schedule.
+       Plan A+ rationale (granular only — drench removed 2026-05-02):
+       biofilm risk in fertigation lines means we don't put liquid organic N
+       through the Dosatron. Granular side-dress (Actisol + farine de plumes)
+       carries the soil N program. Drench may come back later — see git
+       history for the previous card markup. See working files/feeding-
+       framework.md for the full strategic context. -->
+  <div id="page-sol-content" style="display:none;">
+
+    <!-- Crop sub-toggle: Tomates only. Salanova sol page removed 2026-05-28
+         (no STORED.lettuce.sidedress; soufre / bore / Ecocert cards retired).
+         Single button preserved for visual parity with the foliar page;
+         setPage forces tomato if currentCrop != tomato when navigating here. -->
+    <div class="crop-toggle">
+      <button class="crop-btn active-tomato" id="sol-crop-tomato" onclick="setCrop('tomato')">
+        <span class="crop-icon">🍅</span> Tomates
+      </button>
+    </div>
+
+    <!-- @include nutrition/tomato/shell/sol/page.html -->
+
+  </div><!-- end page-sol-content -->
+
+  <!-- @include nutrition/tomato/fertigation-recipe/operator/page.html -->
+
+  <!-- @include nutrition/tomato/foliar-strategy/operator/page.html -->
+
+  <!-- @include app/diagnostic/page.html -->
+
+  <!-- ═══════════════ NUTRIMENT PAGE (admin) ═══════════════ -->
+  <!-- Mass-balance bilan for tomato production: demand (driven by yield target)
+       vs. effective supply (fertigation + foliar + soil reserve, discounted for
+       coverage and pH lockout). Flags gaps and prioritizes corrections. -->
+  <div id="page-nutriment-content" style="display:none;">
+
+    <!-- Crop sub-toggle: Tomate / Salanova. Tomate uses the stage-driven
+         (T1-T5) Bilan; Salanova uses a continuous post-transplant model
+         (mass gain × DM × tissue conc.) since lettuce has no flowering/fruit
+         transitions to stage on. -->
+    <div class="crop-toggle">
+      <button class="crop-btn active-tomato" id="nutr-crop-tomato" onclick="setNutrCrop('tomato')">
+        <span class="crop-icon">🍅</span> Tomates
+      </button>
+      <button class="crop-btn" id="nutr-crop-lettuce" onclick="setNutrCrop('lettuce')">
+        <span class="crop-icon">🥬</span> Salanova
+      </button>
+      <button class="crop-btn" id="nutr-crop-nursery" onclick="setNutrCrop('nursery')">
+        <span class="crop-icon">🌱</span> Semis laitue
+      </button>
+    </div>
+
+    <!-- ═════════ TOMATO BILAN (existing) ═════════ -->
+    <!-- @include nutrition/tomato/shell/page.html -->
+
+    <!-- ═════════ SALANOVA POST-TRANSPLANT NUTRITION ═════════ -->
+    <!-- @include nutrition/lettuce/app/page.html -->
+
+    <!-- ═════════ SEMIS LAITUE — NURSERY (50-cell trays) ═════════ -->
+    <!-- @include nutrition/nursery/app/page.html -->
+
+  </div>
+
+  <!-- @include app/historique-nutriments/page.html -->
+
+  <!-- ═══════════════ RENDEMENT SEMIS PAGE (admin) ═══════════════ -->
+  <!-- Time-to-canopy-cap predictor for Salanova nursery. Defined in
+       yield-range/app/page.html; wired via setPage('rendement') →
+       buildYieldRange() in yield-range/app/logic.js. -->
+  <!-- @include yield-range/app/page.html -->
+
+  <div class="footer">
+    <span id="last-update"></span>Ferme Décembre · Système d'opération 2026 · <a href="historique.html" style="color:inherit;text-decoration:underline;">Historique</a>
+    <button id="admin-toggle" class="admin-toggle" onclick="toggleAdmin()" title="Mode admin" aria-label="Basculer le mode admin">admin</button>
+  </div>
+</div>
+
+<!-- @spec-strings -->
+<script>
+<!-- @include lib/spec-strings.js -->
+</script>
+<script>
+// ─────────────────────────────────────────────────────────────────────────
+// Décembre — Système d'opération · main script chain
+//
+// Authoring source = @include directives only. Every function definition,
+// constant, and state binding lives in a subproject partial under
+// app/operator/, nutrition/, yield-range/, or lib/. Build pipeline
+// (scripts/build.mjs) inlines partials into dist/index.html in the order
+// below; classic-script function hoisting + textual ordering preserves the
+// pre-carve runtime behavior.
+//
+// Order is dependency-driven:
+//   1. State bindings (currentCrop / area constants / LETTUCE recipe)
+//   2. Independent libs (sun, spec-strings already in scope from preceding
+//      <script>, week/logic.js)
+//   3. Page-recalc helpers (recalc, getSolarRad, autoStage, recalcNursery)
+//   4. Per-page operator renderers (irrigation, fertigation, foliar)
+//   5. Diagnostic logic
+//   6. Model layer — plant-needs, PRODUCT_PCT, STORED_RECIPE, FP_RECIPE_T5,
+//      RECIPE_INPUTS, ACCEPTED_DEFICITS / EXCESSES, fertigation-recipe (calc
+//      mutates FP_RECIPE_T5 at boot), sidedress-recipe, foliar-strategy,
+//      nursery + compost + soil-contribution subprojects, soil integrator
+//   7. Chemistry library (PRODUCT / PH_RESPONSE / Ksp / predicted-CE)
+//      + tomato CHANNEL_ROLE
+//   8. Plant-needs calc/model + yield-range
+//   9. Bilan supply orchestrator + Block 7 drift renderer
+//   10. UI helpers (pourquoi modal, format, render-gap-grid)
+//   11. Per-crop nutriment builders (tomato → lettuce → yield-range → nursery)
+//   12. Cross-crop nutriment dispatcher + listener wiring + footer init
+//   13. Operator chrome (routing, hash, init) — MUST be last, reads every
+//       setter/handler defined above
+
+// ── 1. State (TDZ-mandatory FIRST) ────────────────────────────────────────
+<!-- @include app/operator/state.js -->
+
+// ── 2. Independent libs ───────────────────────────────────────────────────
+// Sun-time helpers (getSunTimes / addHours / getCurrentTimeString / SUN_TABLE)
+// live in lib/sun.js — Quebec City mid-month sunrise/sunset table + interp +
+// formatting. Consumers: buildTensio below, app/week/logic.js,
+// nutrition/tomato/foliar-strategy/app/logic.js.
+<!-- @include lib/sun.js -->
+
+<!-- @include app/week/logic.js -->
+
+// ── 3. Page-recalc helpers + per-crop accessors ───────────────────────────
+<!-- @include app/operator/recalc.js -->
+
+// ── 4. Per-page operator renderers ────────────────────────────────────────
+// Tensiometer config + buildTensio renderer live in
+// nutrition/tomato/app/irrigation/logic.js — DOM targets (#tensio-params /
+// #tensio-success / #vigor-note) are declared in the tomato irrigation
+// page partial. Reads `currentCrop` / `currentVigor` plus
+// lib/sun.js helpers (getSunTimes / addHours / getCurrentTimeString).
+<!-- @include nutrition/tomato/shell/irrigation/logic.js -->
+
+// Fertigation page renderer (getStockVol, getNutrients, buildSteps) lives in
+// the fertigation-recipe subproject. Reads STORED_RECIPE.tomato.fertigation
+// + shared helpers (getSolarRad, getTotalArea, getMult*, currentCrop,
+// currentStage, LETTUCE).
+<!-- @include nutrition/tomato/fertigation-recipe/operator/logic.js -->
+
+// Foliar page renderer (buildFoliar, toggleMissedWindow) lives in
+// nutrition/tomato/foliar-strategy/app/logic.js. Recipe data lives in
+// STORED_RECIPE.tomato.foliaire (window-global, defined in that subproject's
+// stored.js). Single weekly spray since 2026-05-06.
+<!-- @include nutrition/tomato/foliar-strategy/operator/logic.js -->
+
+// ── 5. Diagnostic page logic ──────────────────────────────────────────────
+<!-- @include app/diagnostic/logic.js -->
+
+// ── 6. Model layer (data / calc / model partials) ─────────────────────────
+//
+// SINGLE-SOURCE-OF-TRUTH RULE (bilan-reads-source-of-truth-recipes): Bilan supply numbers MUST be read
+// from the same constants that drive the team-facing pages.
+//   - Fertigation: STORED_RECIPE.tomato.fertigation[stage] × getMultK() × getMultMg()
+//   - Foliaire:    STORED_RECIPE.tomato.foliaire.A (label strings) (B removed 2026-05-06)
+//   - Sol (engrais sol tomate, Plan A+): STORED_RECIPE.tomato.sidedress[stage]
+//   - Sol (soufre):  not consumed by the Bilan — pH is a checkbox input
+//                    (nutr-phlocked), not a nutrient flux.
+// No duplicated dose tables. If you're typing a number here that exists on
+// another page, you're violating the rule — re-read instead.
+
+<!-- @include nutrition/data.js -->
+
+<!-- @include nutrition/tomato/plant-needs/model/data.js -->
+
+// PRODUCT_PCT lives in nutrition/lib/product-pct.js — cross-crop element %
+// by mass (consumed by tomato fertigation/foliar/sidedress recipes, lettuce
+// app/plant-needs, and the verifier). Loaded before
+// nutrition/tomato/sidedress-recipe/data.js below (reads PRODUCT_PCT keys).
+<!-- @include nutrition/lib/product-pct.js -->
+
+// ─── STORED_RECIPE — single source of truth for recettes appliquées ─────
+//
+// SOURCE OF TRUTH (bilan-reads-source-of-truth-recipes). Unified hand-stored recipe object — what the
+// team actually weighs out each week, across all three channels: fertigation
+// (PA Taillon barrel), sidedress (granular au sol), foliaire (oligos spray
+// hebdomadaire). The Bilan, team-facing operational pages, audit-trail
+// snapshot, and verifiers all read from this constant.
+//
+// Channel values + design rationale live in their subproject app/stored.js
+// files (included below). The path `STORED_RECIPE.tomato.<channel>` is
+// preserved byte-identical — /retire-recipe greps for these identifiers.
+//
+// EDITS REQUIRE /retire-recipe SKILL FIRST.
+// Any change to STORED_RECIPE.tomato.{fertigation, sidedress, foliaire}
+// triggers an audit-trail capture into RECIPE_HISTORY before the live values
+// are replaced. The skill walks the workflow:
+//   1. capture current state via captureCurrentSnapshot()
+//   2. append a RECIPE_HISTORY entry with the OLD values
+//   3. edit the live constant
+//   4. run scripts/check-spec.sh
+//   5. log in working files/changelog.md
+// Plant-need / model inputs (RECIPE_INPUTS, TOMATO_FRUIT_EXPORT,
+// BIOMASS_DEMAND, lettuce-side constants) are NOT triggers — edit them freely.
+//
+// LETTUCE: slot intentionally absent. Add when locked.
+window.STORED_RECIPE = { tomato: {} };
+<!-- @include nutrition/tomato/fertigation-recipe/procedure/stored.js -->
+<!-- @include nutrition/tomato/sidedress-recipe/procedure/stored.js -->
+<!-- @include nutrition/tomato/foliar-strategy/procedure/stored.js -->
+
+// FP recipe (T5 only — refined 2026-05-08 to mass-balance pure, no soil credit).
+// Single source of truth for the Phase 1 comparison (Block 6) and the bank-
+// trajectory view on the Banque sol page. Recette proposée (renderProposedRecipe)
+// is the team-facing rendering of these same numbers.
+//
+// PHILOSOPHY (2026-05-08): FP no longer takes credit from SME mass-flow for the
+// elements that fertigation/foliar can deliver (K, Mg, N, Fe, Mn, Zn, B, Cu, Mo).
+// Soil contribution is kept ONLY for Ca (saturated, can't add more) and P (no
+// viable channel — banque scavenging is the accepted strategy). Rationale:
+// SME is uncertain (mass-flow factor cert 2-3, transpiration cert 3, lockout
+// chemistry cert 3-4); using it as supply credit silently under-doses fertigation
+// when SME is wrong. Mass-balance — replenish offtake regardless of bank — is
+// the safer organic-soil strategy.
+//
+// Fertigation: K + Mg + Solubore (B). K and Mg values populated at boot
+// from computeStageRecipe('T5') via wireFpFertigation() (fp-target-mirrors-sizer — mirror
+// the mass-balance derivation by construction). Solubore hand-coded —
+// single-channel B at T5 (replenishment-cascade-earliest-first), non-ionic so 100% efficient at any
+// pH (no-decorative-products-at-current-ph OK), 9 × 0.205 / 382.9 × 1000 = 4.82 mg/m²/sem = 107% T5
+// demand. Foliaire B = 0. Ecocert validated 2026-05-08.
+// Sidedress: farine alone — Actisol dropped (Ca-aware, soil saturated).
+//   FarinePlumes 1 655 g/planche/sem (cert 3): wired live from
+//   computeStageSidedress(T5). N offtake 4 050 − compost 1 100 = 2 950 mg/m²/sem.
+//   2 950 / (0.13 × 0.75) ÷ 1000 × 54.7 m² = 1 655 g.
+// Foliar: burn-safe doses without yucca (delivers 60-100% of demand per element).
+//   Mn 18 g = ~60% demand (cap by toxicity pooling without surfactant).
+//   Zn 16 g = ~100% demand.
+//   Cu 2 g = ~25% demand (capped by Cu toxicity observed without yucca).
+//   Solubore 0 — fertigation owns B (single-channel design).
+//   Mo 0.5 g = ~100% demand (wide tolerance).
+//   Fe 90 g FeSO₄·7H₂O = ~95% demand (cuticle uptake bypasses soil lockout).
+const FP_RECIPE_T5 = {
+  // .fertigation: placeholders — overwritten at script load by
+  // wireFpFertigation() in nutrition/tomato/fertigation-recipe/calc.js
+  // (single source of truth = FIRST_PRINCIPLES_T5_FERTIGATION in
+  // nutrition/tomato/fertigation-recipe/data.js). Spec: mass-balance-derivation / public-api-namespace.
+  fertigation: {
+    'K2SO4':          0,      // populated at boot from computeStageRecipe('T5').kSulfate (fp-target-mirrors-sizer)
+    'MgSO4-7H2O':     0,      // populated at boot from computeStageRecipe('T5').mgSulfate (fp-target-mirrors-sizer)
+    'Solubore':       9,      // boric acid non-ionic, 100% efficiency at pH 7,4 — sole B channel
+  },
+  sidedress: {
+    'Actisol-5-3-2': 0,      // dropped — Ca-saturated soil
+    'FarinePlumes':  1300,   // placeholder — wired live from computeStageSidedress at script load
+  },
+  foliar: {
+    'MnSO4':       18,        // burn-safe cap, ~60% demand
+    'ZnSO4':       16,        // burn-safe cap, ~100% demand
+    'CuSO4':        2,        // burn-safe cap, ~25% demand
+    'Solubore':     0,        // fertigation owns B (single-channel)
+    'NaMolybdate':  0.5,      // wide tolerance
+    'FeSO4-7H2O':  90,        // ~95% demand
+  },
+};
+
+<!-- @include nutrition/tomato/sidedress-recipe/model/data.js -->
+
+// ═══════════════ SALANOVA — POST-TRANSPLANT NUTRITION MODEL ═══════════════
+// Carved out 2026-05-16 into nutrition/lettuce/plant-needs/.
+// Public API at runtime:
+//   window.PlantNeedsLettuce — LETTUCE_DM_FRACTION, LETTUCE_TISSUE_DW,
+//                              LETTUCE_FRONTLOAD_DEFAULTS, SME_LETTUCE_PPM,
+//                              calculateLettuceNutritionDemand,
+//                              calculateLettuceNutritionSupply (pure;
+//                              caller passes a dependency bag).
+// Spec: nutrition/lettuce/plant-needs/spec.md → public-api-namespace..canopy-factor-bounded, INV-1.
+<!-- @include nutrition/lettuce/plant-needs/data.js -->
+<!-- @include nutrition/lettuce/plant-needs/calc.js -->
+<!-- @include nutrition/lettuce/plant-needs/model.js -->
+
+// ═══════════════ SEMIS LAITUE — NURSERY NUTRITION MODEL ═══════════════
+// 50-cell trays in Berger OM2 + feather meal substrate. Seed → target weight
+// over the cycle (default 35 d / 5 wk). Demand = mass × DM × tissue conc.,
+// expressed per-plant and per-tray (operational unit).
+//
+// Refactored 2026-05-09 into 3 subprojects under nutrition/nursery/.
+// Public APIs at runtime:
+//   window.PlantNeedsNursery            — demand model (calculateNurseryDemand)
+//   window.SubstrateContributionNursery — OM2 + feather meal release
+//   window.FertigationNursery           — Ocean + Acadie + kelp recipe + EC/pH
+
+<!-- @include nutrition/nursery/plant-needs/data.js -->
+<!-- @include nutrition/nursery/plant-needs/calc.js -->
+<!-- @include nutrition/nursery/plant-needs/model.js -->
+<!-- @include nutrition/nursery/substrate-contribution/data.js -->
+<!-- @include nutrition/nursery/substrate-contribution/calc.js -->
+<!-- @include nutrition/nursery/substrate-contribution/model.js -->
+<!-- @include nutrition/nursery/fertigation/data.js -->
+<!-- @include nutrition/nursery/fertigation/calc.js -->
+<!-- @include nutrition/nursery/fertigation/model.js -->
+
+<!-- @include nutrition/compost-contribution/data.js -->
+<!-- @include nutrition/compost-contribution/calc.js -->
+<!-- @include nutrition/compost-contribution/model.js -->
+
+<!-- @include nutrition/soil-contribution/data.js -->
+<!-- @include nutrition/soil-contribution/calc.js -->
+<!-- @include nutrition/soil-contribution/render.js -->
+<!-- @include nutrition/soil-contribution/model.js -->
+
+// Soil-contribution integrator-side mass-flow helpers — SME_TOMATO_PPM,
+// weeklyMassFlowL, transpirationFactor, nMineralizationFactor,
+// soilWeeklyAvailable. Reads getSolarRad from app/operator/recalc.js.
+<!-- @include nutrition/soil-contribution/integrator.js -->
+
+<!-- @include nutrition/render.js -->
+
+// ─── RECIPE_INPUTS — first-principles inputs for fertigation recipe sizing ──
+//
+// Recipe values returned by computeStageRecipe(stage) are DERIVED from these
+// inputs. Change an input here → recipes recompute on the next call. No
+// magic numbers. Cert per field. Refine when better data lands (tissue tests
+// for uptake fractions; per-stage SME for soil concentration).
+const RECIPE_INPUTS = {
+  // Expected fruit yield per stage (kg/m²/wk). T1-T2 vegetative, T3 first fruit
+  // set, T4 ramping, T5 peak target maintained through end of cycle. Cert 3.
+  // T5 sized for peak demand; over-supplies slightly during wind-down weeks
+  // (sem ~25-28), absorbed by soil bank — accepted tradeoff vs gap-fill.
+  stageYield: { T1: 0, T2: 0, T3: 0.3, T4: 1.0, T5: 1.5 },
+
+  // ── COMPOST RELEASE — sourced from compost-contribution subproject ──
+  //
+  // MASS-BALANCE FRAMING (2026-05-07): plant offtake (fruit + biomass) drains
+  // the soil bank. Replenishment must match offtake at equilibrium. Inputs
+  // to the bank = sidedress + fertigation + foliar + ongoing compost
+  // mineralization. Mass-flow from soil solution (SME × irrigation) is NOT
+  // counted here — it delivers nutrients to the plant by DRAWING on the bank,
+  // not by adding to it.
+  //
+  // Per-element values, label, mineralization fractions, and seasonal factor
+  // live in `nutrition/compost-contribution/data.js`. Spec: release-values-within-mass-balance-band, public-api-namespace.
+  // Consumers read via `window.CompostContribution.releasePerWeek` (see
+  // `computeStageRecipe`, `computeStageSidedress`, `buildNutriment`,
+  // `buildNutrimentLettuce`).
+};
+
+// ─── ACCEPTED_DEFICITS — supply < 0.9 × demand entries with rationale ────────
+//
+// under-fert-guard default fail threshold is supply ≥ 0.9 × demand per (stage, element).
+// Below threshold WITH an entry here = accepted (model gap with documented why).
+// Below threshold WITHOUT an entry = real failure → fix the model or the recipe.
+//
+// All current entries are for P at every tomato stage T1-T5: the element is
+// pH-locked at soil pH ≥ 7 and there is no remediation path that survives
+// organic + chemistry constraints (see per-entry reason). The acceptance rests
+// on Taillon's field call (cert 4) that Mehlich-3 P reserves of 558-678 kg/ha
+// are scavengeable by tomato roots via exudate-driven solubilization, even
+// though SME pour-through reads 0.8-1.1 ppm (below spec). Revisit if tissue
+// petiole P consistently < 2 500 ppm DW or visible deficiency symptoms appear.
+const ACCEPTED_DEFICITS = [
+  {
+    stage: 'T1', element: 'P',
+    reason: 'P pH-locked at soil pH ≥ 7. No fertigation P (precipitates as Ca-phosphate at pH 7.4). No foliar P (cuticle barrier 5-15% + Cu-protein precipitation risk). Soil bank reserves 558-678 kg/ha (Mehlich-3) cover plant scavenging via root exudates per Taillon (cert 4). T1 demand is biomass-only (no fruit), small absolute mg/m²/wk.',
+  },
+  {
+    stage: 'T2', element: 'P',
+    reason: 'See T1 P entry. T2 demand still biomass-only, small absolute. Soil bank scavenging adequate.',
+  },
+  {
+    stage: 'T3', element: 'P',
+    reason: 'See T1 P entry. First fruit set raises demand; bank scavenging still covers per Taillon.',
+  },
+  {
+    stage: 'T4', element: 'P',
+    reason: 'See T1 P entry. Soil bank scavenging covers; SME-spec ranges over-predict deficiency in calcareous soil with abundant Mehlich-3 reserves.',
+  },
+  {
+    stage: 'T5', element: 'P',
+    reason: 'See T1 P entry.',
+  },
+];
+
+// ─── ACCEPTED_EXCESSES — supply > 1.3 × demand entries with rationale ───────
+//
+// luxury-feeding-guard default fail threshold is supply ≤ 1.3 × demand per (stage, element).
+// Above threshold WITH an entry AND a UI warning = accepted (can't undo past
+// inputs; bank loads up at vegetative stages and draws down through fruit-fill
+// — net stable over annual cycle).
+//
+// All current entries trace back to the Savaria ORGANIMIX marin compost
+// applied fall 2025 (~25.4 kg/m² × ~0.5% N × ~0.5% Mg). The mineralization
+// release is steady through the cycle but plant demand is low at T1-T2
+// (vegetative establishment, no fruit) and ramps up through T3-T5. Net result:
+// over-supply early, drawn down later, bank ~stable annually. NOT a recipe
+// error — it's the residual signature of a one-time amendment we cannot undo.
+// UI warning surfaced on Nutrition page Block 5 (Leviers) per luxury-feeding-guard.
+const ACCEPTED_EXCESSES = [
+  {
+    stage: 'T1', element: 'N',
+    reason: 'Compost release (Savaria ORGANIMIX, fall 2025 application) > vegetative N demand at T1. Cannot undo past compost. Bank loads up; draws down through T3-T5. Net stable over cycle. UI warning surfaced on Nutrition page Block 5 (Leviers).',
+  },
+  {
+    stage: 'T1', element: 'Mg',
+    reason: 'Same as T1 N. Compost Mg release at low-demand stage.',
+  },
+  {
+    stage: 'T2', element: 'N',
+    reason: 'Same as T1 N. Vegetative phase compost over-supply.',
+  },
+  {
+    stage: 'T2', element: 'Mg',
+    reason: 'Same as T1 N.',
+  },
+  {
+    stage: 'T3', element: 'N',
+    reason: 'Compost residual still > demand at flowering ramp. Same rationale.',
+  },
+  {
+    stage: 'T3', element: 'Mg',
+    reason: 'Compost Mg release saturates at flowering when demand is moderate but compost still active.',
+  },
+  {
+    stage: 'T4', element: 'Mg',
+    reason: 'mass-balance-derivation amended 2026-05-12 to drop compost subtraction from fertigation sizing — fertigation replenishes full Mg offtake while compost continues releasing Mg in parallel. Total Mg supply / demand at T4 = 1.67 (above 1.3 luxury cap). Mg toxicity risk low; antagonism with K manageable at current Mg:K ratio. Audit-trail acceptance pending PA Taillon ack.',
+  },
+  {
+    stage: 'T5', element: 'Mg',
+    reason: 'Same as T4.Mg — mass-balance-derivation no-compost-subtraction policy puts T5 Mg supply / demand = 1.52. Audit-trail acceptance pending PA Taillon ack.',
+  },
+];
+
+// ─── Fertigation-recipe subproject (computeStageRecipe + FP T5) ──
+// Math model: data → calc → model. Mirrors plant-needs / sidedress-recipe.
+// Owns: computeStageRecipe(stage), the T5 FP target wired into
+// FP_RECIPE_T5.fertigation (fp-target-mirrors-sizer — mirrors computeStageRecipe('T5')
+// by construction). Spec: nutrition/tomato/fertigation-recipe/spec.md
+// (mass-balance-derivation mass-balance, public-api-namespace namespace, fp-target-mirrors-sizer invariant). Includes
+// must come AFTER RECIPE_INPUTS, sidedress-recipe/data.js (provides
+// SIDEDRESS_AREA_PER_PLANCHE / SIDEDRESS_MINIMUM_EFFICIENCY), and the FP_RECIPE_T5
+// declaration above (the wireFpFertigation IIFE overwrites .fertigation).
+<!-- @include nutrition/tomato/fertigation-recipe/model/data.js -->
+<!-- @include nutrition/tomato/fertigation-recipe/model/recipe.js -->
+<!-- @include nutrition/tomato/fertigation-recipe/model/contribution.js -->
+<!-- @include nutrition/tomato/fertigation-recipe/procedure/steps.js -->
+<!-- @include nutrition/tomato/sidedress-recipe/model/recipe.js -->
+<!-- @include nutrition/tomato/sidedress-recipe/model/contribution.js -->
+<!-- @include nutrition/tomato/sidedress-recipe/procedure/steps.js -->
+
+// ─── Foliar-recipe subproject (cuticle delivery under coverage discount) ───
+// Math model: data → calc → model. Mirrors plant-needs / sidedress-recipe /
+// fertigation-recipe. Owns: FOLIAR_COVERAGE_DEFAULT (0.30 — no yucca regime),
+// FOLIAR_COVERAGE_WITH_YUCCA (0.80 — exposed for future toggle),
+// computeFoliarSupply(stage) returning per-element delivered mg/m²/wk.
+// Foliar is BURN-CAP-CONSTRAINED, not mass-balance-derived: dose is pinned by
+// foliar-ce-under-burn-cap cuticle burn cap + local-pool toxicity headroom, model computes
+// delivery under coverage. Spec: nutrition/tomato/foliar-strategy/spec.md
+// (coverage-discount-on-delivery coverage discount applied, public-api-namespace namespace; foliar-ce-under-burn-cap inherited
+// from nutrition/spec.md for burn cap — not duplicated here). Includes must
+// come AFTER STORED_RECIPE (parses .tomato.foliaire.A label strings),
+// PRODUCT_PCT (reads MnSO4_Mn / FeSO4_Fe / etc.), and TOMATO_NUMBER_BEDS /
+// TOMATO_BED_AREA (area derivation).
+<!-- @include nutrition/tomato/foliar-strategy/model/data.js -->
+<!-- @include nutrition/tomato/foliar-strategy/model/recipe.js -->
+<!-- @include nutrition/tomato/foliar-strategy/model/contribution.js -->
+<!-- @include nutrition/tomato/foliar-strategy/procedure/steps.js -->
+
+<!-- @include app/historique-nutriments/history.js -->
+
+// ── 7. Chemistry library + tomato channel-role ───────────────────────────
+// Pulled up from nutrition/tomato/lib/recipe-math.js 2026-05-23 (Phase 2):
+//   products.js        — PRODUCT catalog (pure data).
+//   ph-response.js     — PH_RESPONSE curves + foliarPhResponse + effectiveEfficiency.
+//   compatibility.js   — KSP_PAIRS / KSP_SAFE / TAG_INCOMPATIBILITIES / TAGS_INERT
+//                        + MIX_ORDER + INCOMPATIBLE_RECIPES
+//                        + validatePhase1ModelCoverage IIFE (load-time sanity).
+//   predicted.js       — predictedCE + predictedTankPh.
+// Then tomato-specific channel-role.js — CHANNEL_ROLE element routing.
+// Order matters: ph-response / compatibility / predicted all read PRODUCT.
+<!-- @include nutrition/chemistry/model/products.js -->
+<!-- @include nutrition/chemistry/model/ph-response.js -->
+<!-- @include nutrition/chemistry/model/compatibility.js -->
+<!-- @include nutrition/chemistry/model/predicted.js -->
+<!-- @include nutrition/tomato/channel-role.js -->
+
+// ── 8. Plant-needs calc/model + yield-range ───────────────────────────────
+<!-- @include nutrition/tomato/plant-needs/model/demand.js -->
+
+// ─── Yield Range (Salanova nursery time-to-canopy-cap model) ────────────────
+<!-- @include yield-range/data.js -->
+<!-- @include yield-range/calc.js -->
+<!-- @include yield-range/model.js -->
+
+// ── 9. Bilan supply orchestrator + Block 7 drift renderer ─────────────────
+// nutrStage + nutrRecipeMode page-local state + LUXURY_FACTOR demand cap +
+// calculateNutritionSupply (FP gap chain, channel-by-channel ledger) +
+// statusFor. Consumes the pure per-channel contribution functions loaded
+// in section 7 (computeFertigationContribution, computeSidedressContribution,
+// computeFoliarContribution, deriveFoliarRecipeFromGap). Consumers:
+// nutrition/tomato/shell/logic.js → buildNutrimentTomato.
+<!-- @include nutrition/tomato/shell/contribution-orchestrator.js -->
+
+// renderPhase1Comparison — stored-vs-FP drift table renderer for the Bilan's
+// Block 7 admin panel. Reads nutrStage + STORED_RECIPE + FP_RECIPE_T5 +
+// computeStageRecipe. Consumer: nutrition/tomato/shell/logic.js.
+<!-- @include nutrition/tomato/fertigation-recipe/operator/drift.js -->
+
+// ── 10. UI helpers (modal, format, gap-grid) ──────────────────────────────
+// "Pourquoi cette dose" modal + expander + cell/cap modal helpers live in
+// nutrition/lib/pourquoi.js. Shared by the Bilan tables across crops + the
+// soil-contribution render + inline onclick attributes in partial pages.
+<!-- @include nutrition/lib/pourquoi.js -->
+
+// formatValue + formatMg live in nutrition/lib/format.js — consumed by
+// renderGapGrid below, nutrition/tomato/shell/logic.js, and
+// nutrition/soil-contribution/render.js.
+<!-- @include nutrition/lib/format.js -->
+
+// renderGapGrid lives in nutrition/lib/render-gap-grid.js — contribution-block-gap-grid 6-col
+// gap-chain layout consumed by every per-channel contribution block across
+// tomato + lettuce + nursery + soil-contribution.
+<!-- @include nutrition/lib/render-gap-grid.js -->
+
+// ── 11. Per-crop nutriment builders ───────────────────────────────────────
+<!-- @include nutrition/tomato/shell/logic.js -->
+<!-- @include nutrition/tomato/sidedress-recipe/builder/app/logic.js -->
+<!-- @include nutrition/tomato/fertigation-recipe/builder/app/logic.js -->
+
+<!-- @include nutrition/lettuce/app/logic.js -->
+
+<!-- @include yield-range/app/logic.js -->
+
+<!-- @include nutrition/nursery/app/logic.js -->
+
+<!-- @include app/historique-nutriments/logic.js -->
+
+// ── 12. Cross-crop dispatcher + listener wiring + footer + snapshot helper ─
+// nutrCrop state + buildNutriment dispatcher + setNutrCrop handler +
+// captureCurrentSnapshot (browser-console helper for /retire-recipe) +
+// listener wiring on Bilan inputs + footer history.json fetch.
+<!-- @include app/operator/nutriment.js -->
+
+// ── 13. Operator chrome — top-nav routing, page-toggle, hash sync, admin, init ─
+// MUST be last. Reads every setter/handler defined above (setNutrCrop,
+// setNutrRecipeMode, setDiagCrop, buildNutriment, buildWeek, buildFoliar,
+// buildHistoriqueNutriments, buildYieldRange, renderDiag, etc.).
+<!-- @include app/operator/logic.js -->
+</script>
+
+<!-- "Pourquoi cette dose" modal — opened by clicking a row in Bilan tables.
+     Single instance at body level. Helpers (registerPourquoi/showPourquoi/
+     closePourquoi) are defined in the main script earlier so buildNutriment
+     can register entries during initial page setup. -->
+<div id="pq-modal" class="pq-modal" role="dialog" aria-modal="true" aria-labelledby="pq-modal-title">
+  <div class="pq-modal-backdrop" onclick="closePourquoi()"></div>
+  <div class="pq-modal-content">
+    <button class="pq-modal-close" onclick="closePourquoi()" aria-label="Fermer">×</button>
+    <div id="pq-modal-title" class="pq-modal-title"></div>
+    <div id="pq-modal-eq" class="pq-modal-eq"></div>
+    <div id="pq-modal-plugged" class="pq-modal-plugged"></div>
+    <div id="pq-modal-interpolation" class="pq-modal-interpolation"></div>
+  </div>
+</div>
+</body>
+</html>

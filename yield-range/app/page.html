@@ -1,0 +1,81 @@
+  <!-- ═══════════════ RENDEMENT SEMIS PAGE (admin) ═══════════════ -->
+  <!-- Salanova nursery time-to-canopy-cap. Spec: yield-range/app/user-stories.md
+       (two inputs · capacité plafond display · chart with axis labels +
+       reference line + marker). Math contract: yield-range/spec.md
+       (canopy-cap-is-ceiling to trajectory-output-shape). -->
+  <div id="page-rendement-content" class="page-content" style="display:none;">
+
+    <div class="card">
+      <div class="card-title">🥬 Rendement semis</div>
+      <div style="font-size:12.5px; color:var(--text-muted); line-height:1.5;">
+        Capacité plafond et trajectoire de croissance Salanova en pouponnière.
+      </div>
+    </div>
+
+    <!-- exactly two inputs (plateau toggle + DEL slider). -->
+    <div class="card">
+      <div class="card-title">Conditions</div>
+
+      <!-- Plateau toggle (18 / 24 / 32 / 50) — default 50. Mirrors the
+           stage-selector pattern from nutrition/tomato/app/page.html. -->
+      <div style="font-size:12px; color:var(--text-muted); margin-bottom:8px;">Plateau</div>
+      <div class="stage-selector" id="yr-plateau-selector" style="margin-bottom:14px;">
+        <button class="stage-btn" data-yr-plateau="18"><span class="stage-label">18</span><span class="stage-weeks">cellules</span></button>
+        <button class="stage-btn" data-yr-plateau="24"><span class="stage-label">24</span><span class="stage-weeks">cellules</span></button>
+        <button class="stage-btn" data-yr-plateau="32"><span class="stage-label">32</span><span class="stage-weeks">cellules</span></button>
+        <button class="stage-btn active" data-yr-plateau="50"><span class="stage-label">50</span><span class="stage-weeks">cellules</span></button>
+      </div>
+
+      <!-- LED hours slider — 0 to 18 h, default 16 h. -->
+      <div style="font-size:12px; color:var(--text-muted); margin-bottom:6px; display:flex; justify-content:space-between; align-items:baseline;">
+        <span>Heures DEL <span style="font-size:11px;">(200 µmol/m²/s)</span></span>
+        <span id="yr-led-hours-label" style="font-family:'DM Mono',monospace; color:var(--text); font-weight:600;">16 h</span>
+      </div>
+      <input type="range" id="yr-led-hours" min="0" max="18" step="1" value="16" style="width:100%;">
+    </div>
+
+    <!-- capacité plafond as a labeled numeric display, separate from the
+         chart's reference line.
+         daysToTransplantPotential surfaced inline next to the cap so the
+         operator reads "how much" + "how long" in one glance without
+         hopping over to the chart marker. -->
+    <div class="card">
+      <div style="display:flex; align-items:baseline; justify-content:space-between; gap:12px;">
+        <div style="font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:1.5px; color:var(--text-muted);">Capacité plafond</div>
+        <div style="font-size:22px; font-weight:700; color:var(--text); line-height:1.1; font-family:'DM Mono',monospace;"><span id="yr-canopy-cap">—</span> g/plant <span id="yr-days-to-potential" style="font-size:13px; font-weight:600; color:var(--text-muted); margin-left:6px;"></span></div>
+      </div>
+    </div>
+
+    <!-- clickable DLI display — opens a modal with the f_light
+         response curve so the operator can read why the trajectory bends
+         the way it does at edge DLI values. -->
+    <div class="card" id="yr-dli-display" onclick="openDliModal()" style="cursor:pointer;">
+      <div style="display:flex; align-items:baseline; justify-content:space-between; gap:12px;">
+        <div style="font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:1.5px; color:var(--text-muted);">DLI banc <span style="color:var(--text-muted); font-size:11px; text-transform:none; letter-spacing:0; margin-left:4px;">ⓘ</span></div>
+        <div style="font-size:22px; font-weight:700; color:var(--text); line-height:1.1; font-family:'DM Mono',monospace;"><span id="yr-dli-value">—</span> mol/m²/j</div>
+      </div>
+    </div>
+
+    <!-- chart of head-weight trajectory vs days from germination,
+         with axis labels, horizontal reference line at canopyCapG, vertical
+         marker at daysToTransplantPotential, and empty-state annotation when null. -->
+    <div class="card">
+      <div class="card-title">Trajectoire de croissance</div>
+      <div id="yr-chart-container" style="width:100%; overflow:hidden;"></div>
+    </div>
+
+    <!-- f_light response modal — auto-rendered from
+         window.YieldRange.F_LIGHT_BREAKPOINTS in renderYrDliModal()
+         (narrative-derived-from-live-data: no hardcoded duplicate of
+         breakpoint values). Reuses
+         the .pq-modal class set defined globally for the Pourquoi modal. -->
+    <div id="yr-dli-modal" class="pq-modal" role="dialog" aria-modal="true" aria-labelledby="yr-dli-modal-title">
+      <div class="pq-modal-backdrop" onclick="closeDliModal()"></div>
+      <div class="pq-modal-content">
+        <button class="pq-modal-close" onclick="closeDliModal()" aria-label="Fermer">×</button>
+        <div id="yr-dli-modal-title" class="pq-modal-title">Réponse à la lumière (f_light)</div>
+        <div id="yr-dli-modal-body"></div>
+      </div>
+    </div>
+
+  </div><!-- end page-rendement-content -->

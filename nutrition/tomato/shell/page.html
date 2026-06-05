@@ -1,0 +1,130 @@
+    <div id="nutr-tomato-content">
+
+    <div class="card">
+      <div class="card-title">Cible & contexte</div>
+      <div class="input-row">
+        <div class="input-group">
+          <label>Cible récolte</label>
+          <input type="number" id="nutr-target" value="1.5" min="0" max="3" step="0.1" inputmode="decimal">
+          <div class="input-unit">kg / m² / sem</div>
+        </div>
+      </div>
+
+      <!-- Light-limited yield ceiling — light-ceiling-from-operator-j-per-g: ceiling = weekly_J_cm² ÷
+           (solarPerGram × 1000). solarPerGram input embedded inline below
+           the headline so the ceiling + its driver read as a single unit. -->
+      <div id="nutr-light-ceiling" style="padding:12px 14px; background:var(--input-bg); border:1px solid var(--border); border-radius:var(--radius-sm); margin-bottom:12px; line-height:1.4;">
+        <div style="font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:1.5px; color:var(--text-muted); margin-bottom:4px;">Plafond lumière</div>
+        <div id="nutr-light-ceiling-headline" style="font-size:22px; font-weight:700; color:var(--text); line-height:1.1;">— kg / m² / sem</div>
+        <div style="font-size:11.5px; color:var(--text-muted); margin-top:6px;">
+          à
+          <input type="number" id="nutr-solar-per-gram" value="7" min="3" max="15" step="0.5" inputmode="decimal" style="width:54px; padding:2px 6px; margin:0 4px; font-family:inherit; font-size:12px; text-align:center;">
+          J / g de fruit
+        </div>
+        <!-- light-ceiling-from-operator-j-per-g: ⚠ message — rendered ONLY when target > ceiling.
+             Paired with the orange-bg color flip on the parent card.
+             logic.js sets innerHTML + display per overTarget. -->
+        <div id="nutr-light-ceiling-warning" style="display:none; margin-top:8px; font-size:12px; line-height:1.4; color:#8a3e1e; font-weight:600;"></div>
+      </div>
+
+      <div style="font-size:12px; color:var(--text-muted); margin-bottom:10px;">Stade tomate (fixe les doses fertigation)</div>
+      <div class="stage-selector" id="nutr-stage-selector">
+        <button class="stage-btn" data-nstage="T1"><span class="stage-label">T1</span><span class="stage-weeks">démar.</span></button>
+        <button class="stage-btn" data-nstage="T2"><span class="stage-label">T2</span><span class="stage-weeks">crois.</span></button>
+        <button class="stage-btn" data-nstage="T3"><span class="stage-label">T3</span><span class="stage-weeks">flor.</span></button>
+        <button class="stage-btn" data-nstage="T4"><span class="stage-label">T4</span><span class="stage-weeks">prod.</span></button>
+        <button class="stage-btn active" data-nstage="T5"><span class="stage-label">T5</span><span class="stage-weeks">pleine</span></button>
+      </div>
+      <label class="multi-row" style="margin-top:8px;">
+        <input type="checkbox" id="nutr-phlocked" style="width:auto; margin-right:8px;" checked>
+        <span>pH ≥ 7 (lockout racinaire P/Mn/Zn/Fe)</span>
+      </label>
+
+      <!-- Recipe-source toggle — fp-recipe-mode-locks-t5 + recipe-mode-toggle-fp-left-default-right: "First principles" on
+           the LEFT (default; English term-of-art, not translated); "Stockée"
+           on the right. FP only defined for T5; clicking FP snaps the stage
+           to T5. Lets admin see "if we shipped FP this week, what would the
+           gap look like?". -->
+      <div style="margin-top:10px; padding-top:10px; border-top:1px solid var(--border);">
+        <div style="font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:1.5px; color:var(--text-muted); margin-bottom:6px;">Source des recettes (blocs 1-5)</div>
+        <div style="display:flex; gap:6px;">
+          <button type="button" id="nutr-recipe-fp" onclick="setNutrRecipeMode('fp')" style="flex:1; padding:8px 10px; font-family:inherit; font-size:12px; font-weight:600; cursor:pointer; border:1px solid var(--border); border-radius:var(--radius-sm); background:var(--text); color:var(--bg);">First principles <span style="font-size:10px; opacity:0.7;">(T5)</span></button>
+          <button type="button" id="nutr-recipe-stored" onclick="setNutrRecipeMode('stored')" style="flex:1; padding:8px 10px; font-family:inherit; font-size:12px; font-weight:600; cursor:pointer; border:1px solid var(--border); border-radius:var(--radius-sm); background:var(--input-bg); color:var(--text-muted);">Stockée</button>
+        </div>
+        <div id="nutr-recipe-mode-note" style="font-size:11px; color:var(--text-muted); margin-top:6px; line-height:1.4;"></div>
+      </div>
+    </div>
+
+    <!-- Mass-balance flow (2026-05-11): the eight blocks below match the order
+         offtake → soil bank → replenishment channels → residual → comparison.
+         Block 2 (Sol — banque résiduelle) was inserted before compost to
+         surface the Mehlich-3 reservoir + depletion runway; only Ca and P
+         participate in the gap chain (saturated reservoirs that can carry
+         the plant's weekly need outright). Other elements render as
+         disabled rows on Block 2 and pass through unchanged. -->
+
+    <!-- Block 1: Plant offtake — fruit export + biomass build-out -->
+    <div class="card">
+      <div class="card-title">1. Besoin du plant (sortie hebdo)</div>
+      <div id="nutr-needs"></div>
+    </div>
+
+    <!-- Block 2: Soil bank residual — Mehlich-3 reservoir (Berger Labs April
+         2026). Only Ca and P contribute to the gap chain (banks large enough
+         to carry the plant's weekly need for years/decades); other elements
+         render as disabled rows for context. Months-to-depletion column shows
+         the runway under "soil bank is sole supply" hypothesis. -->
+    <div class="card">
+      <div class="card-title">2. Sol — banque résiduelle (Mehlich-3)</div>
+      <div id="nutr-soil"></div>
+    </div>
+
+    <!-- Block 3: Compost residual — ongoing mineralization from fall 2025
+         Savaria ORGANIMIX application. Declining over time; revise when
+         compost ages out (~18-24 months post-application). -->
+    <div class="card">
+      <div class="card-title">3. Compost (résiduel Savaria 2025)</div>
+      <div id="nutr-compost"></div>
+    </div>
+
+    <!-- Block 4: Sidedress — granular Actisol + farine de plumes per stage -->
+    <div class="card">
+      <div class="card-title">4. Engrais sol granulaire (Actisol + farine)</div>
+      <div id="nutr-sidedress"></div>
+    </div>
+
+    <!-- Block 5: Fertigation — K₂SO₄ + MgSO₄ active replenishment -->
+    <div class="card">
+      <div class="card-title">5. Fertigation (K₂SO₄ + MgSO₄)</div>
+      <div id="nutr-fert"></div>
+    </div>
+
+    <!-- Block 6: Foliar spray — micros (Mn/Zn/Cu/B/Mo/Fe) bypass root lockout.
+         Surfactant checkbox is the only operator lever; frequency is a model
+         output per foliar-strategy/spec.md § frequency-is-model-output. -->
+    <div class="card">
+      <div class="card-title">6. Foliaire (micros)</div>
+      <div class="input-row" style="margin-bottom:10px;">
+        <label class="multi-row" style="align-self:center; margin:0;">
+          <input type="checkbox" id="nutr-foliar-surfactant" style="width:auto; margin-right:8px;">
+          <span>Surfactant (yucca)</span>
+        </label>
+      </div>
+      <div id="nutr-foliar"></div>
+    </div>
+
+    <!-- Block 7: Final residual gap + auto-derived per-element levers -->
+    <div class="card">
+      <div class="card-title">7. Leviers (actions par élément)</div>
+      <div id="nutr-missing"></div>
+    </div>
+
+    <!-- Block 8 (admin) — drift detection: stored recipe vs first-principles
+         target side-by-side (stored-vs-computed-drift-block). Does NOT replace any team-facing
+         recipe. -->
+    <div class="card" style="border:1.5px dashed var(--border);">
+      <div class="card-title" style="color:var(--text-muted);">8. Recette stockée vs calculée (drift)</div>
+      <div id="nutr-phase1"></div>
+    </div>
+
+    </div><!-- end nutr-tomato-content -->
