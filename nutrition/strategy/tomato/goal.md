@@ -13,10 +13,12 @@ monitoring, open questions):
 | 3 | Ca to resistance + structural band | botrytis · thin growth (stem) | tissue Ca | 3.46% | 4.5–5.5% | tissue | weeks–months | `sg3-calcium.md` |
 
 Rank 1→2→3 by cause; **all start now** — #1 slowest (parallel
-clock). SG3 (Ca) is uptake-limited → rides on SG1 (P/pH → root
-recovery), feed-side won't help. SG2 (N) is likely both
-supply-tight *and* uptake-impaired → a feed-side ramp helps but
-under-delivers until roots recover; a fresh SME closes the gap.
+clock). SG2 (N) and SG3 (Ca) are both **uptake-limited** → they
+ride on SG1 (P/pH → root recovery); feed-side won't help. The
+only N lever that delivers is **root-bypass** (Ocean amino-N on
+the AAT/LHT channel; `sg2-nitrogen.md`), not a feed-side ramp.
+N reclassification trail:
+`../tomato/learnings/0003-n-reclassified-supply-tight-to-uptake-only.md`.
 
 ## Interim root-uptake levers (during the pH wait)
 Bridges while sulphur slowly corrects bulk pH — raise tissue
@@ -25,6 +27,26 @@ Now placed in the subgoal files: **Ocean root drench → SG2**
 (`sg2-nitrogen.md`), **AMF → SG1** (`sg1-free-p.md`). Ranked
 stack + cert gate + sources:
 `../tomato/learnings/0002-interim-root-uptake-levers-during-ph-wait.md`.
+
+## Salt-budget rule (cross-cutting — ties SG1 + SG2)
+
+CE is one shared budget across three taps. The sulphur fix
+(SG1) generates sulfate intrinsically (S → sulfuric acid →
+sulfate byproduct), so the pH cure and the salt problem are the
+same lever. June SME: CE 3.96 (over the ~3.0 rail), sulfate 1787.
+
+- **Tap A — sulphur dose: never throttle.** pH 6.9, target 6.3;
+  backing off delays the root fix (the binding constraint).
+- **Tap B — added K/Mg sulfate: off** (already 0 all stages).
+- **Tap C — leaching irrigation: up** (dilutes/leaches sulfate).
+- **Protect the CE rail via B + C, never A.**
+- **Sacrifice granular N before sulphur.** Ocean leads because
+  it's ~CE-free (amino-N, not nitrate salt); granular feather
+  meal spends CE for no uptake gain (N is uptake-limited, not
+  supply-short — see SG2).
+
+Operating gauge: direct-pen CE before/after each drench. Flat CE
+as tissue/sap N climbs = bypass working; rising CE = back off.
 
 ## Non-nutrition levers (flag, not owned)
 - Botrytis: biofungicide (*Bacillus subtilis* / *Gliocladium

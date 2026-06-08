@@ -1,0 +1,31 @@
+  <!-- ═══════════════ RACINES (AMF) PAGE ═══════════════ -->
+  <!-- Operator page for the AGTIV REACH P mycorrhizal drench campaign.
+       Fully data-driven from AMF_DRENCH (nutrition/tomato/amf-drench/data.js);
+       buildAmf() in this subproject's operator/logic.js fills every slot. -->
+  <div id="page-amf-content" style="display:none;">
+
+    <!-- Crop sub-toggle: Tomates only (AMF drench is a tomato root protocol).
+         Single button for visual parity with the foliar / sol pages; setPage
+         forces tomato if currentCrop != tomato when navigating here. -->
+    <div class="crop-toggle">
+      <button class="crop-btn active-tomato" id="amf-crop-tomato" onclick="setCrop('tomato')">
+        <span class="crop-icon">🍅</span> Tomates
+      </button>
+    </div>
+
+    <!-- 5 passages — next pass highlighted + full calendar (merged) -->
+    <div class="card">
+      <div class="card-title">5 passages</div>
+      <div id="amf-calendar"></div>
+    </div>
+
+    <!-- Application — recipe rendered as tiles inside step 1 (merged) -->
+    <div class="card">
+      <div class="card-title">Application</div>
+      <ol class="steps-list" id="amf-steps" style="padding-left:28px;"></ol>
+    </div>
+
+    <!-- Critical don'ts -->
+    <div class="card" id="amf-warnings"></div>
+
+  </div><!-- end page-amf-content -->

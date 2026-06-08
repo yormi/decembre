@@ -91,7 +91,11 @@
 
   <!-- @include nutrition/tomato/foliar-strategy/operator/page.html -->
 
+  <!-- @include nutrition/tomato/amf-drench/operator/page.html -->
+
   <!-- @include app/diagnostic/page.html -->
+
+  <!-- @include app/diagnostic/practice-page.html -->
 
   <!-- ═══════════════ NUTRIMENT PAGE (admin) ═══════════════ -->
   <!-- Mass-balance bilan for tomato production: demand (driven by yield target)
@@ -211,8 +215,16 @@
 // stored.js). Single weekly spray since 2026-05-06.
 <!-- @include nutrition/tomato/foliar-strategy/operator/logic.js -->
 
+// Racines (AMF) page renderer (buildAmf). Protocol data + pure schedule
+// expander live in nutrition/tomato/amf-drench/data.js (AMF_DRENCH,
+// computeAmfPasses); both included before this so buildAmf can read them.
+<!-- @include nutrition/tomato/amf-drench/data.js -->
+<!-- @include nutrition/tomato/amf-drench/operator/logic.js -->
+
 // ── 5. Diagnostic page logic ──────────────────────────────────────────────
 <!-- @include app/diagnostic/logic.js -->
+<!-- @include app/diagnostic/practice-data.js -->
+<!-- @include app/diagnostic/practice-logic.js -->
 
 // ── 6. Model layer (data / calc / model partials) ─────────────────────────
 //

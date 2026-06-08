@@ -23,6 +23,13 @@ A single turn that touches multiple subprojects writes one entry per subproject.
 
 ## Entries
 
+## 2026-06-05 — nutrition/tomato/fertigation-recipe + scripts/check-recipes.mjs (code-only, no spec change)
+
+**Change type:** STORED data change (via /retire-recipe) + downstream test/render fix needed (no spec.md edit, no REQ)
+**REQs affected:** none.
+**Summary:** `STORED_RECIPE.tomato.fertigation` K₂SO₄ + MgSO₄ cut to 0 all stages (soil surplus — both pools confirm; corrective for over-ceiling CE). This breaks the `stored-vs-computed-drift-block` check: the Block 8 drift gauge renders FP ÷ Stored, and Stored K/Mg are now 0 → divide-by-zero on those rows. Two code-lane items: (1) repoint the verifier fixture (`scripts/check-recipes.mjs` ~line 1756) to a still-nonzero stored row so it tests render *direction* without assuming nonzero K; (2) decide + implement how Block 8 renders a zero-stored row (hide / "n/a" / guard the division) in the drift gauge render path. Admin-only gauge, invisible to the team, low impact, but currently red. STORED change + RECIPE_HISTORY snapshot + changelog already done by specialist; I did NOT edit the verifier or render (reverted a probe edit to keep footprint clean).
+**Suggested waves:** coder (+ test-writer to re-green `stored-vs-computed-drift-block`)
+
 ## 2026-06-03 — nutrition/tomato/fertigation-recipe (code-only, no spec change)
 
 **Change type:** code refactor (no spec.md edit, no REQ)

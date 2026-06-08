@@ -13,11 +13,8 @@
 //   21g, CuSO₄ 12g, Na molybdate 3g, Fe-EDDHA 33g. Reduced 45 L → 15 L on
 //   2026-04-29 (without yucca, larger volumes drip/run off). Doses divided by 3
 //   to hold concentration constant: 22/22/7/4/1 g + Fe.
+//   (CuSO₄ retired 2026-06-05 — STORED foliaire no longer carries Cu.)
 //
-//   Cu (CuSO₄ 25% Cu) 4 g/15 L = 67 ppm: conservative — Cu's safety window is
-//     narrow. ⚠ Weekly Spray doubles Cu vs original bi-weekly. Annual Cu
-//     ~1.3 kg/ha just from tomato (under 4 kg organic cap, but watch).
-//     If burn signs (black spots), drop CuSO₄ from every other Spray.
 //   Mo (Na₂MoO₄ 39.6% Mo) 1 g/15 L = 26 ppm: standard. Tolerance is wide.
 //   Fe (FeSO₄·7H₂O 20% Fe — active source 2026-05-05 onwards):
 //     Iron DL (Agro-K polysaccharide-Fe complex) was considered as a

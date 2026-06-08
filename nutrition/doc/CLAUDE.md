@@ -17,6 +17,11 @@ Report 39087. Saturated Media Extract = root-zone PLANT-AVAILABLE for tomato 1 +
 **Reach for:** what roots actually see, foliar-only Mn/Zn justification, baseline for future retests every 4-6 weeks.
 **Caveat:** SME spec ranges are soilless/hydroponic. P "lockout" overstated; Mn/Zn lockouts real.
 
+### `SME - 2026-06-04 tomates.pdf`
+Report 39463, tomato soil sampled 2026-06-01. First SME retest since April. SME pH **6.90** (down from April 6.99/7.09 and the ~7.4 root-zone — sulphur drawdown progressing), P still **0.9 ppm** (locked, unchanged), CE **3.96** + Sulfate **1786.8** (salt creep from the S program), Ca 487 / K 302 / Mg 158 (abundant — uptake-limited), B 0.27 + Mo 0.02 (mid/adequate), Fe/Mn/Zn low (high-pH lockout, foliar-delivered), Al 0.07 low.
+**Reach for:** sulphur-drawdown pH progress vs the April SME baseline; EC/sulfate salinity watch as S dosing continues; corroboration of hold-B-at-10g + Mo-to-fertigation calls; P-still-locked confirmation (judge P recovery on tissue, not SME).
+**Caveat:** SME spec ranges are soilless/hydroponic — Ca/Mg/K/CE "high" flags partly reflect calcareous soil, not actionable surplus. pH trend + P + CE are the real reads.
+
 ## Soil tests — pre-greenhouse (Agriquanta, July 2024)
 
 ### `Analyse de sol avant installation serre.pdf`
@@ -40,6 +45,7 @@ Lab's per-element déficience / faible flags:
 **Reach for:** what roots-to-leaves actually delivered post-crisis (foliar Mn/Zn working? Ca-saturation still leaving plants Ca-déficient?); cross-checking the pH 7.4 lockout hypothesis against leaf uptake; calibrating downstream model anchors (luxury K, Ca/Mg ratios, foliar dose sufficiency).
 ⚠️ Lab interpretation thresholds are generic plant-tissue norms, not Salanova / tomato cultivar-specific — same caveat as SME spec ranges. LAIT #2 N value appears clipped on layout-extracted text; verify against the PDF before citing.
 ⚠️ Three samples but no in-PDF map to which bed / which cohort / which sampling date by cultivar; cross-reference Catherine's sampling log if downstream decisions hinge on which lettuce cohort is which.
+**Lettuce reads (LAIT #1/#2) interpreted for the salanova yield diagnostic:** `nutrition/lettuce/doc/diagnostic-2026-06-06/diagnosis.md` (Ca/Mg/K low, Na very high → salinity/cation antagonism; N sufficient).
 
 ### `FAO-217-tissue-sufficiency-ranges.png`
 Appendix C of FAO Plant Production & Protection Paper 217 (Gianquinto, Muñoz, Pardossi, Ramazzotti & Savvas 2013) — optimal tissue macro (% DM) + micro (mg/kg DM) ranges for greenhouse crops, Mediterranean climate. Tomato + lettuce rows highlighted. **Second, independent source** of tissue sufficiency targets alongside the Agro-Enviro-Lab panel's own floor/ceiling norms.

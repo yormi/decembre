@@ -1,0 +1,9 @@
+# Field photos kept in-repo for local reference but NOT version-controlled
+# (89 photos, ~400 MB). The durable artifact is diagnosis.md.
+*.jpg
+*.MP.jpg
+
+# Temporary visual review pages + workflow scripts (throwaway)
+cluster-review-mn-cu.html
+*.html
+*.js

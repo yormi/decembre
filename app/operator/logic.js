@@ -21,6 +21,8 @@ function setCrop(crop) {
   setCropBtn('irr-crop-nursery', crop === 'nursery', 'nursery');
   // Sol page: 1 button (tomato-only since 2026-05-28 — Salanova sol removed).
   setCropBtn('sol-crop-tomato', crop === 'tomato', 'tomato');
+  // Racines (AMF) page: 1 button (tomato-only root protocol).
+  setCropBtn('amf-crop-tomato', crop === 'tomato', 'tomato');
 
   const isField = crop === 'tomato' || crop === 'lettuce';
 
@@ -124,6 +126,10 @@ function setPage(page) {
   if (page === 'sol' && currentCrop !== 'tomato') {
     setCrop('tomato');
   }
+  // Racines (AMF) is tomato-only — fall back to tomato like foliar / sol.
+  if (page === 'amf' && currentCrop !== 'tomato') {
+    setCrop('tomato');
+  }
   // Subtle text-only Semaine + Diagnostic buttons: darken color when active
   const weekBtn = document.getElementById('page-week');
   weekBtn.style.color = page === 'week' ? 'var(--text)' : 'var(--text-muted)';
@@ -135,12 +141,15 @@ function setPage(page) {
   document.getElementById('page-fertigation').className = page === 'fertigation' ? 'page-btn active' : 'page-btn';
   document.getElementById('page-sol').className = page === 'sol' ? 'page-btn active' : 'page-btn';
   document.getElementById('page-foliar').className = page === 'foliar' ? 'page-btn active' : 'page-btn';
+  document.getElementById('page-amf').className = page === 'amf' ? 'page-btn active' : 'page-btn';
   document.getElementById('page-week-content').style.display = page === 'week' ? 'block' : 'none';
   document.getElementById('page-irrigation-content').style.display = page === 'irrigation' ? 'block' : 'none';
   document.getElementById('page-fertigation-content').style.display = page === 'fertigation' ? 'block' : 'none';
   document.getElementById('page-sol-content').style.display = page === 'sol' ? 'block' : 'none';
   document.getElementById('page-foliar-content').style.display = page === 'foliar' ? 'block' : 'none';
+  document.getElementById('page-amf-content').style.display = page === 'amf' ? 'block' : 'none';
   document.getElementById('page-diagnostic-content').style.display = page === 'diagnostic' ? 'block' : 'none';
+  document.getElementById('page-diagnostic-practice-content').style.display = page === 'diagnostic-practice' ? 'block' : 'none';
   document.getElementById('page-nutriment-content').style.display = page === 'nutriment' ? 'block' : 'none';
   document.getElementById('page-historique-nutriments-content').style.display = page === 'historique-nutriments' ? 'block' : 'none';
   document.getElementById('page-rendement-content').style.display = page === 'rendement' ? 'block' : 'none';
@@ -159,12 +168,14 @@ function setPage(page) {
   // Hide the main 3-page toggle on tool/admin pages. The ℹ icon (admin-only,
   // top-left of the header) is the back-nav primitive that returns to the
   // operational pages from any admin/tool view.
-  document.getElementById('page-toggle').style.display = (page === 'week' || page === 'diagnostic' || page === 'nutriment' || page === 'historique-nutriments' || page === 'rendement') ? 'none' : 'flex';
+  document.getElementById('page-toggle').style.display = (page === 'week' || page === 'diagnostic' || page === 'diagnostic-practice' || page === 'nutriment' || page === 'historique-nutriments' || page === 'rendement') ? 'none' : 'flex';
   if (page === 'foliar') buildFoliar();
+  if (page === 'amf') buildAmf();
   if (page === 'week') buildWeek();
   if (page === 'nutriment') buildNutriment();
   if (page === 'historique-nutriments') buildHistoriqueNutriments();
   if (page === 'rendement') buildYieldRange();
+  if (page === 'diagnostic-practice') buildDiagnosticPractice();
   if (page === 'diagnostic') {
     // Apply the diagnostic crop's accent color when entering the page,
     // since it's independent of currentCrop.
@@ -182,13 +193,13 @@ function setPage(page) {
 // Default page (fertigation) + default crop (tomato) collapse to `/` (no hash).
 // Why: lets hot-reload / bookmarks land on the same page+crop, and keeps
 // `admin` orthogonal to navigation rather than buried in a comma list.
-const PAGES = ['fertigation','sol','foliar','irrigation','week','diagnostic','nutriment','historique-nutriments','rendement'];
+const PAGES = ['fertigation','sol','foliar','amf','irrigation','week','diagnostic','diagnostic-practice','nutriment','historique-nutriments','rendement'];
 const DEFAULT_PAGE = 'fertigation';
 const DEFAULT_CROP = 'tomato';
 // irrigation is admin-gated: its toggle button lives in the operational
 // page-toggle bar but only shows in admin mode (applyAdminMode hides it
 // otherwise; setPage/redirect guards below block non-admin access).
-const ADMIN_PAGES = ['irrigation','week','diagnostic','nutriment','historique-nutriments','rendement'];
+const ADMIN_PAGES = ['irrigation','week','diagnostic','diagnostic-practice','nutriment','historique-nutriments','rendement'];
 // Pages whose crop is part of the URL. foliar omitted (only tomato is valid;
 // the page auto-redirects lettuce/nursery to tomato). Crop comes from
 // `currentCrop`, except diagnostic which has its own page-local crop state

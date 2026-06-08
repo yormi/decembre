@@ -48,9 +48,10 @@ root recovers; the other two subgoals ride on it.
 - Cert: **product Ecocert/OMRI check required before use.**
 - Guardrail: do NOT pair with a heavy soluble-P drench —
   raising tissue P represses the AMF P pathway.
-- Status: candidates researched (2026-05-31); none bought yet —
-  comparing both pre-purchase. **Drench/transplant protocol +
-  buy-decision: `protocol/amf-inoculation.md`.**
+- Status: **AGTIV REACH P bought (2026-06-06)** — mid-crop
+  hand-drench bridge on the current crop, reserve pail for next
+  transplant. Gated on Ecocert inspector input sign-off before
+  soil. **Operator protocol: `protocol/amf-inoculation.md`.**
 
 #### Candidates (Canada-sourceable, endo/AMF for tomato)
 
@@ -59,13 +60,10 @@ root recovers; the other two subgoals ride on it.
 | **DYNOMYCO Granular** | *Glomus intraradices* (= *Rhizophagus irregularis*) + *G. mosseae* | 900+ propagules/g | **OMRI + Ecocert listed** (cert 3 — confirm it's the Canada/COR listing, not US-only, with our certifier) | dynomyco.com/en-ca, ships in Canada, ~5 g/plant at transplant |
 | **AGTIV REACH (Premier Tech)** | *Rhizophagus irregularis* PTB297 | 8 000 spores/g | **Pro-Cert Canada + OMRI Canada listed** (COR / CAN-CGSB-32.311; cert 4) — same standard Ecocert enforces; submit listing to our Ecocert inspector for routine input sign-off before use | ptagtiv.com; **made in Rivière-du-Loup, QC** (local) |
 
-- **Recommend DYNOMYCO** for the optional mid-crop root-zone
-  drench (cert already strong, ships now). Two AMF species =
-  broader colonisation odds on the established mat.
-- **AGTIV** is the better *next-transplant* play AND the
-  cost-winner at block scale (one pail ≫ our 2500 plants); its
-  organic listing is confirmed (Pro-Cert + OMRI Canada, COR) —
-  just route it to our Ecocert inspector for input sign-off.
+- **Chose AGTIV REACH P** (bought 2026-06-06): local QC,
+  8000 spores/g, COR-listed (Pro-Cert + OMRI Canada), one pail
+  covers the mid-crop bridge AND the next transplant. DYNOMYCO
+  shelved (per-plant retail, ~12× costlier at block scale).
 - Both are *Rhizophagus*-based endomycorrhizae (correct for
   tomato); neither is ecto (wrong host type). Verify the bag's
   current listing with our certifier regardless — a brand-level

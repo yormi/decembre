@@ -25,7 +25,7 @@
 //     If you need a variable, do it in the partial itself.
 
 import { readFile, writeFile, copyFile, mkdir, readdir, cp, stat } from 'node:fs/promises';
-import { watch } from 'node:fs';
+import { watch, statSync } from 'node:fs';
 import { resolve, dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -49,6 +49,15 @@ const STATIC_ASSETS = [
 const STATIC_ASSET_DIRS = [
   ['app/diagnostic/images', 'diagnostic/images'],
 ];
+// Diagnosis-practice field photos (~400 MB, gitignored at source). Copied
+// image-only into dist/ so the practice gallery loads them via
+// <img src="diagnostic/practice-images/...">. Source stays gitignored — the
+// photos never enter the repo; only the small diagnosis-data.json (and its
+// generated app/diagnostic/practice-data.js) are committed. If the source dir
+// is absent (fresh clone without the photos), the copy is skipped silently and
+// the gallery renders with broken-image placeholders.
+const PRACTICE_PHOTO_SOURCE = 'nutrition/tomato/doc/symptoms-2026-06-03';
+const PRACTICE_PHOTO_DEST   = 'diagnostic/practice-images';
 // Match a whole-line @include directive: leading hspace + marker + trailing
 // hspace + optional newline. Consuming the newline avoids a stray blank line
 // after the partial content (which itself ends with its own newline).
@@ -176,6 +185,23 @@ async function build() {
   await Promise.all(STATIC_ASSET_DIRS.map(([from, to]) =>
     cp(resolve(PROJECT_ROOT, from), resolve(DIST_DIR, to), { recursive: true })
   ));
+  // Image-only copy of the gitignored practice photos. Filter keeps directories
+  // (so recursion descends) and .jpg / .MP.jpg files; skips the doc dir's .md /
+  // .json / .html / .js. Source-absent → skip without failing the build.
+  const practiceSource = resolve(PROJECT_ROOT, PRACTICE_PHOTO_SOURCE);
+  try {
+    await stat(practiceSource);
+    await cp(practiceSource, resolve(DIST_DIR, PRACTICE_PHOTO_DEST), {
+      recursive: true,
+      filter: (src) => {
+        if (statSync(src).isDirectory()) return true;
+        return /\.jpg$/i.test(src);
+      },
+    });
+  } catch (e) {
+    if (e.code !== 'ENOENT') throw e;
+    console.warn(`[build] practice photos not found at ${PRACTICE_PHOTO_SOURCE} — gallery images skipped`);
+  }
   const ms = Date.now() - t0;
   const ts = new Date().toLocaleTimeString('fr-CA', { hour12: false });
   console.log(`[build] ${ts} → dist/index.html (+${STATIC_ASSETS.length} assets, ${ms}ms, ${out.length.toLocaleString()} chars, SPEC_STRINGS: ${reqCount} REQ × ${keyCount} keys)`);

@@ -49,6 +49,76 @@
 // It also serves as the team-visible audit trail for organic certification.
 const RECIPE_HISTORY = [
   {
+    retired: '2026-06-05',
+    recipe: 'STORED_RECIPE.tomato.foliaire.A',
+    summary: 'CuSO₄ retiré du foliaire (2 g → 0) — feed nutritif redondant',
+    reason: 'Le cuivre foliaire était appliqué comme apport nutritif, pas comme fongicide. Le tissu lit un Cu élevé (résidu de pulvérisation probable — le Cu se lie à la cuticule et résiste au lavage labo) et le Cu sol est normal : aucune carence à nourrir. Le cuivre a la fenêtre suffisance→toxicité la plus étroite des micros et charge le sol de façon permanente (suivi par la certification organique CAN/CGSB-32.311), donc un feed sans carence a un ROI négatif. La demande en Cu est minuscule et le sol (Cu normal) couvre l\'absorption racinaire de base — arrêter le supplément ne crée pas de carence à court terme ; toute carence éventuelle apparaîtrait lentement sur la nouvelle croissance (semaines d\'avance) et se corrigerait par une petite dose ponctuelle, pas un feed permanent. Décision Guillaume sur lecture spécialiste (tissu Cu élevé + Cu sol normal).',
+    replacedBy: 'STORED_RECIPE.tomato.foliaire.A sans ligne CuSO₄ — Mn + Zn + Fe seuls (spray B CaCl₂ inchangé). Surveiller la nouvelle croissance ; ré-évaluer au prochain test tissulaire.',
+    fullSnapshot: {
+      fertigation: {
+        T1: { mgSulfate: 0, kSulfate: 0, borax: 10, naMolybdate: 0.5 },
+        T2: { mgSulfate: 0, kSulfate: 0, borax: 10, naMolybdate: 0.5 },
+        T3: { mgSulfate: 0, kSulfate: 0, borax: 10, naMolybdate: 0.5 },
+        T4: { mgSulfate: 0, kSulfate: 0, borax: 10, naMolybdate: 0.5 },
+        T5: { mgSulfate: 0, kSulfate: 0, borax: 10, naMolybdate: 0.5 },
+      },
+      sidedress: {
+        T1: { actisol_g: 57,  farine_g:   84 },
+        T2: { actisol_g: 180, farine_g:  267 },
+        T3: { actisol_g: 467, farine_g:  695 },
+        T4: { actisol_g: 755, farine_g: 1125 },
+        T5: { actisol_g: 0,   farine_g: 2000 },
+      },
+      foliaire: {
+        masterVol: 15, backpacks: 1, area: '383 m²',
+        A: [
+          { name: 'MnSO₄ (31.5% Mn)', master: '18 g', note: 'réduit 22→18 g 2026-06-03 — ~60% demande, cap toxicité sans yucca' },
+          { name: 'ZnSO₄ (35.5% Zn)', master: '22 g' },
+          { name: 'CuSO₄ (25% Cu)', master: '2 g', note: 'réduit 4→2 g 2026-05-05 — toxicité Cu observée (taches noires) sans yucca, local pooling concentre ~150-200 ppm Cu effective' },
+          { name: 'FeSO₄·7H₂O (20% Fe)', master: '90 g', note: 'augmenté 80→90 g 2026-06-03 — ~95% demande (cuticule contourne lockout sol)' },
+        ],
+        B: [
+          { name: 'CaCl₂·2H₂O', master: '100 g', note: 'Ecocert vérifié ; 2×/semaine ; sans surfactant — coverage cuticulaire ~0.15 ; bypass Ca racinaire pour défense botrytis' },
+        ],
+      },
+    },
+  },
+  {
+    retired: '2026-06-05',
+    recipe: 'STORED_RECIPE.tomato.fertigation',
+    summary: 'K₂SO₄ + MgSO₄ coupés à 0 tous stades (canal fertigation porte B + Mo seuls)',
+    reason: 'Surplus confirmé sur les deux pools. SME 2026-06-04 (solution sol, pool immédiatement disponible) : K 301,7 ppm (≥ plafond 300), Mg 158,4 ppm (~1,6× plafond 100), CE 3,96 mmhos/cm (au-dessus du plafond 3,5). Mehlich-3 2026-04-10 (réserve échangeable) : K 7,3 % de saturation de la CEC (cible 3-5 %), Mg 18,3 % (cible 10-15 %), CEC 33 meq/100g — banque pluri-saisonnière. Aucun risque d\'approvisionnement : la plante a déjà plus de K/Mg qu\'elle n\'en absorbe. La coupe est CORRECTIVE — K₂SO₄ et MgSO₄ chargent la CE (cations + sulfate ; le sulfate solution est déjà à 1787 ppm) qui dépasse le plafond et bride l\'absorption d\'eau/nutriments. Complémentaire à la campagne soufre (Tiger ajoute du sulfate en s\'oxydant → couper les sels sulfatés fait de la place). Décline lentement (mois, pas semaines) : la CEC recharge la solution + l\'acidification déplace des cations en solution. Reprise d\'une dose d\'entretien seulement quand un SME ultérieur montre K/Mg revenus en milieu de gamme ET CE < 3,5. Décision Guillaume sur lecture spécialiste des deux analyses de sol.',
+    replacedBy: 'STORED_RECIPE.tomato.fertigation.{T1..T5} = { mgSulfate: 0, kSulfate: 0, borax: 10, naMolybdate: 0.5 } — canal fertigation = bore (Solubore 10 g) + molybdène (0,5 g) seuls.',
+    fullSnapshot: {
+      fertigation: {
+        T1: { mgSulfate: 276,  kSulfate: 410,  borax: 10, naMolybdate: 0.5 },
+        T2: { mgSulfate: 873,  kSulfate: 1297, borax: 10, naMolybdate: 0.5 },
+        T3: { mgSulfate: 723,  kSulfate: 1689, borax: 10, naMolybdate: 0.5 },
+        T4: { mgSulfate: 1171, kSulfate: 2929, borax: 10, naMolybdate: 0.5 },
+        T5: { mgSulfate: 1000, kSulfate: 5500, borax: 10, naMolybdate: 0.5 },
+      },
+      sidedress: {
+        T1: { actisol_g: 57,  farine_g:   84 },
+        T2: { actisol_g: 180, farine_g:  267 },
+        T3: { actisol_g: 467, farine_g:  695 },
+        T4: { actisol_g: 755, farine_g: 1125 },
+        T5: { actisol_g: 0,   farine_g: 2000 },
+      },
+      foliaire: {
+        masterVol: 15, backpacks: 1, area: '383 m²',
+        A: [
+          { name: 'MnSO₄ (31.5% Mn)', master: '18 g', note: 'réduit 22→18 g 2026-06-03 — ~60% demande, cap toxicité sans yucca' },
+          { name: 'ZnSO₄ (35.5% Zn)', master: '22 g' },
+          { name: 'CuSO₄ (25% Cu)', master: '2 g', note: 'réduit 4→2 g 2026-05-05 — toxicité Cu observée (taches noires) sans yucca, local pooling concentre ~150-200 ppm Cu effective' },
+          { name: 'FeSO₄·7H₂O (20% Fe)', master: '90 g', note: 'augmenté 80→90 g 2026-06-03 — ~95% demande (cuticule contourne lockout sol)' },
+        ],
+        B: [
+          { name: 'CaCl₂·2H₂O', master: '100 g', note: 'Ecocert vérifié ; 2×/semaine ; sans surfactant — coverage cuticulaire ~0.15 ; bypass Ca racinaire pour défense botrytis' },
+        ],
+      },
+    },
+  },
+  {
     retired: '2026-06-04',
     recipe: 'STORED_RECIPE.tomato.{fertigation, foliaire}',
     summary: 'Molybdène déplacé foliaire → fertigation (NaMolybdate 1 g foliaire → 0,5 g fertigation tous stades)',
