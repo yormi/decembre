@@ -1,5 +1,14 @@
 [
   {
+    "date": "2026-06-10",
+    "date_fr": "10 juin 2026",
+    "title": "Tomates : recette de fertigation et foliaire allégées + page racine",
+    "changes": "- **Fertigation des tomates** : on arrête le potassium et le magnésium (le sol en a déjà assez). Les deux tuiles disparaissent de la fiche de pesée — il reste le Solubore et le molybdène.\n- **Foliaire des tomates** : on retire le cuivre du mélange A. Il reste le manganèse, le zinc et le fer. Le mélange B (calcium) ne change pas.\n- **Nouvelle page « Racine »** : le protocole d'arrosage AGTIV REACH P (5 passages) directement dans l'app pour l'opérateur.",
+    "url": "https://main--decembre-staging.netlify.app",
+    "pr": 3,
+    "sha": "1440baf63aeb02e1305382eeb8aff7b74e70fe51"
+  },
+  {
     "date": "2026-06-05",
     "date_fr": "5 juin 2026",
     "title": "Pages opérateur tomate — recette de correction racinaire + simplifications",
