@@ -84,15 +84,21 @@ function buildSteps() {
   // Weighing tiles: big number + 'g' on its own line (uniform with the
   // water tile). Operator weighs in g.
   const formatNumber = v => Math.round(v).toLocaleString('fr-CA');
-  const ingredients = [
-    { name: 'Potassium', amount: formatNumber(n.kSulfate),  unit: 'g', emoji: '🍌' },
-    { name: 'Magnésium', amount: formatNumber(n.mgSulfate), unit: 'g', emoji: '🧊' },
+  // Hide any nutrient tile that weighs out to exactly 0 g (rounds to 0) — e.g.
+  // K₂SO₄ + MgSO₄ since the 2026-06-05 cut. Filter on the raw gram value, not
+  // the formatted string. Eau (volume) is added after the filter, never hidden.
+  const nutrientTiles = [
+    { name: 'Potassium', value: n.kSulfate,  emoji: '🍌' },
+    { name: 'Magnésium', value: n.mgSulfate, emoji: '🧊' },
   ];
   // Bore + Molybdène rows tomato-only (undefined on lettuce).
   if (currentCrop === 'tomato') {
-    ingredients.push({ name: 'Solubore', amount: formatNumber(n.borax), unit: 'g', emoji: '🔷' });
-    ingredients.push({ name: 'Molybdène', amount: formatNumber(n.naMolybdate), unit: 'g', emoji: '🔶' });
+    nutrientTiles.push({ name: 'Solubore', value: n.borax, emoji: '🔷' });
+    nutrientTiles.push({ name: 'Molybdène', value: n.naMolybdate, emoji: '🔶' });
   }
+  const ingredients = nutrientTiles
+    .filter(t => Math.round(t.value) !== 0)
+    .map(t => ({ name: t.name, amount: formatNumber(t.value), unit: 'g', emoji: t.emoji }));
   // Water fill as the first tile (💧, big bucket count + unit line).
   ingredients.unshift({ name: 'Eau', amount: bucketsString, unit: bucketUnit, emoji: '💧' });
 

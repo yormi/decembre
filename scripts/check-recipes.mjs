@@ -1743,8 +1743,12 @@ if (!PRODUCT) {
 // "Recette stockée vs calculée (drift)", the rendered ratio is
 // `FP_RECIPE_T5 ÷ STORED_RECIPE.tomato.fertigation.T5`. 100 % = parity;
 // > 100 % = stored under-supplies vs FP; < 100 % = stored over-supplies.
-// Stubs one element so FP/Stored = 1.5 and asserts the rendered K row text
-// contains "150"; defensive guard rejects the inverted "67" rendering.
+// Stubs one element so FP/Stored = 1.5 and asserts the rendered Solubore (B)
+// row text contains "150"; defensive guard rejects the inverted "67"
+// rendering. Fixture pinned to a still-nonzero stored row: K₂SO₄ / MgSO₄ were
+// cut to 0 (2026-06-05 /retire-recipe), so a K-keyed fixture would divide by a
+// zero stored value — B (borax → Solubore) stays at 10 g, exercising the same
+// FP/Stored direction without a zero denominator.
 //
 // Spec: nutrition/tomato/shell/spec.md → stored-vs-computed-drift-block.
 
@@ -1754,29 +1758,29 @@ if (!STORED_RECIPE || !FP_RECIPE_T5 || typeof window.buildNutriment !== 'functio
   fail('stored-vs-computed-drift-block — STORED_RECIPE / FP_RECIPE_T5 / buildNutriment exposed', 'one or more globals missing');
 } else {
   const storedFert = STORED_RECIPE?.tomato?.fertigation?.T5;
-  const storedK = storedFert ? storedFert.kSulfate : 0;
+  const storedB = storedFert ? storedFert.borax : 0;
   const fpFert = window.FP_RECIPE_T5?.fertigation || FP_RECIPE_T5.fertigation;
-  const originalFP = fpFert ? fpFert.K2SO4 : null;
-  if (!storedK || originalFP == null) {
-    fail('stored-vs-computed-drift-block — fixture preconditions', `storedK=${storedK} originalFP=${originalFP}`);
+  const originalFP = fpFert ? fpFert.Solubore : null;
+  if (!storedB || originalFP == null) {
+    fail('stored-vs-computed-drift-block — fixture preconditions', `storedB=${storedB} originalFP=${originalFP}`);
   } else {
     let offenders = [];
     try {
-      // Stub FP/Stored = 1.5 for K2SO4, force FP mode + T5, trigger render.
-      fpFert.K2SO4 = storedK * 1.5;
+      // Stub FP/Stored = 1.5 for Solubore (B), force FP mode + T5, trigger render.
+      fpFert.Solubore = storedB * 1.5;
       if (typeof window.setNutrRecipeMode === 'function') window.setNutrRecipeMode('fp');
       if (typeof window.setNutrStage === 'function') window.setNutrStage('T5');
       window.buildNutriment();
       const phase1Element = window.document.getElementById('nutr-phase1');
       const phase1Text = phase1Element ? phase1Element.textContent : '';
       if (!/\b150\b/.test(phase1Text)) {
-        offenders.push(`Block 8 K2SO4 row missing "150" (FP/Stored=1.5 expected) — text: ${phase1Text.slice(0, 200)}…`);
+        offenders.push(`Block 8 Solubore row missing "150" (FP/Stored=1.5 expected) — text: ${phase1Text.slice(0, 200)}…`);
       }
       if (/\b67\b/.test(phase1Text) && !/\b150\b/.test(phase1Text)) {
         offenders.push('Block 8 renders the inverted ratio (Stored/FP) — direction must be FP/Stored');
       }
     } finally {
-      fpFert.K2SO4 = originalFP;
+      fpFert.Solubore = originalFP;
     }
     if (offenders.length === 0) {
       pass('Block 8 drift ratio direction = FP / Stored (stored-vs-computed-drift-block)');

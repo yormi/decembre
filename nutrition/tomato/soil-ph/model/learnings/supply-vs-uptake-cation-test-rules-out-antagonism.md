@@ -56,11 +56,14 @@ KNO₃ are prohibited. So K₂SO₄ + MgSO₄ are the correct *form*; the
 lever is total *quantity* (salinity), not form — and that trim is
 already spent per the cross-ref file.
 
-## Caveat
+## Caveat — resolved 2026-06-04
 
-SME is 10 Apr; tissue 22 May — a 6-week gap. "Abundant solution"
-predates the leaf by six weeks; a fresh SME upgrades this from
-cert 3 → 4.
+SME was 10 Apr; tissue 22 May — a 6-week gap. The fresh SME
+(2026-06-04, sampled 1 Jun) **landed and confirmed it**: solution
+nitrate 174.7 ppm (near top of band 35–180), K 301.7, Ca 487.1 —
+all abundant while tissue stays low. Cert 3 → **4**. N is now
+firmly uptake-limited (was hedged "both"); supply-tight is
+refuted.
 
 ## Cross-ref
 
@@ -121,5 +124,5 @@ drawdown (S) regrowing root surface. See
   with good tissue. OPEN: is there a deep white root system too, or
   is rooting mostly the surface mat? If mostly shallow, pH
   correction must reach depth, not just the top. (cert 2)
-- A **fresh SME** is ordered → upgrades the solution-vs-leaf read
-  from cert 3 → 4 when it lands.
+- A fresh SME **landed (2026-06-04)** → upgraded the
+  solution-vs-leaf read cert 3 → 4 (see resolved Caveat above).

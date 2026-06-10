@@ -19,6 +19,10 @@
 // 2026-06-04 : molybdène (NaMolybdate 1 g) retiré du foliaire → déplacé sur
 // fertigation 0,5 g (Mo non verrouillé à pH élevé — molybdate plus dispo quand
 // pH monte ; canal racinaire efficace, comme le bore).
+// 2026-06-05 : CuSO₄ (2 g) RETIRÉ — feed nutritif, pas fongicide ; tissu Cu élevé
+// (résidu probable) + Cu sol normal = aucune carence à nourrir. Fenêtre
+// suffisance→toxicité la plus étroite des micros + charge sol permanente
+// (cert-tracked) → ROI négatif. Sol (Cu normal) couvre l'absorption racinaire de base.
 // Yucca surfactant not on order — A coverage operates at 30 %, B at 15 %.
 //
 // EDITS REQUIRE /retire-recipe SKILL FIRST. Path `STORED_RECIPE.tomato.foliaire`
@@ -28,7 +32,6 @@ window.STORED_RECIPE.tomato.foliaire = {
   A: [
     { name: 'MnSO₄ (31.5% Mn)', master: '18 g', note: 'réduit 22→18 g 2026-06-03 — ~60% demande, cap toxicité sans yucca' },
     { name: 'ZnSO₄ (35.5% Zn)', master: '22 g' },
-    { name: 'CuSO₄ (25% Cu)', master: '2 g', note: 'réduit 4→2 g 2026-05-05 — toxicité Cu observée (taches noires) sans yucca, local pooling concentre ~150-200 ppm Cu effective' },
     { name: 'FeSO₄·7H₂O (20% Fe)', master: '90 g', note: 'augmenté 80→90 g 2026-06-03 — ~95% demande (cuticule contourne lockout sol)' },
   ],
   B: [

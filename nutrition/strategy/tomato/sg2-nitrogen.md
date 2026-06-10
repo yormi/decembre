@@ -11,10 +11,11 @@ clock, starts now.
 
 ## Why
 
-Thin new growth. N is **both** supply-tight *and*
-uptake-impaired — a feed-side ramp helps but under-delivers
-until roots recover (P/pH, SG1). A fresh SME closes the
-supply-vs-uptake gap.
+Thin new growth. N is **uptake-limited, not supply-short** —
+supply is abundant, the gap is at the root. Same uptake story as
+K/Ca. → A feed-side ramp won't help; the fix is **root-bypass**
+(Ocean amino-N) + root recovery (P/pH, SG1). Reclassification
+trail: `../tomato/learnings/0003-n-reclassified-supply-tight-to-uptake-only.md`.
 
 ## Two N channels — CE binds only one of them
 
@@ -29,10 +30,11 @@ Not all N rides the same impaired pathway:
 | Bound by the impaired nitrate pump? | yes | **no** |
 
 - **Nitrate pool** is capped by root uptake rate (roots impaired
-  by P/pH — SG1). Past the cap it accumulates as solution salt →
-  direct-pen CE toward the ~3.0 guardrail (now 2.6, headroom ≈
-  0.4 mS/cm). So the **granular ramp** is CE-capped, not sized to
-  the tissue deficit.
+  by P/pH — SG1). It is already abundant (June SME nitrate 174.7,
+  near top of band) and CE has passed the rail (3.96 vs ~3.0). So
+  granular N is now **CE-negative** — it adds salt to a pool the
+  root can't pull. Don't ramp it; see the salt-budget rule in
+  `goal.md`.
 - **Ocean amino-N rides a parallel channel** that skips the
   nitrate pump *and* the reduction step; the intact-uptake
   fraction never becomes solution salt. So CE does **not** cap
@@ -85,6 +87,12 @@ What still bounds Ocean (so we don't over-credit it):
 - Cert: allowed, on hand + in use.
 - **Operator protocol** (dose, stock-solution, cadence, gauge for
   the 4-can/48-L-per-side setup): `protocol/ocean-root-drench.md`.
+- **Do NOT scale Ocean for tissue N** — amino-N is a ~10–20%
+  channel by biology and bulk delivery is clog-/CE-capped far below
+  the dose that would matter. Hold at the signal dose; tissue N
+  rides root recovery (SG1). Full ceiling model + the
+  rejected-scaling arithmetic:
+  `../tomato/learnings/0003-ocean-amino-n-ceiling-not-a-bulk-n-source.md`.
 
 ### Baseline — feather-meal sidedress (CE-gentle N floor)
 - Lever: FarinePlumes granular. Role = slow-release N drip over
@@ -104,6 +112,8 @@ What still bounds Ocean (so we don't over-credit it):
   back off the drench rate.
 
 ## Open questions
-- Fresh SME to split N supply-tight vs uptake-impaired (ordered).
+- ~~Fresh SME to split N supply-tight vs uptake-impaired~~ —
+  **resolved** by the 2026-06-04 SME: uptake-limited
+  (`../tomato/learnings/0003-n-reclassified-supply-tight-to-uptake-only.md`).
 - Empirical CE-bump per Ocean drench (sets the safe per-drench
   volume) — resolves on first titration, no lab needed.

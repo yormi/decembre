@@ -23,10 +23,15 @@
 // EDITS REQUIRE /retire-recipe SKILL FIRST. Path `STORED_RECIPE.tomato.fertigation`
 // preserved verbatim; the skill greps for this identifier.
 window.STORED_RECIPE.tomato.fertigation = {
-  // K + Mg + B (Solubore 10 g, clé `borax`) + Mo (NaMolybdate 0,5 g). Area 382,6 m² (7 planches).
-  T1: { mgSulfate: 276,  kSulfate: 410,  borax: 10, naMolybdate: 0.5 },
-  T2: { mgSulfate: 873,  kSulfate: 1297, borax: 10, naMolybdate: 0.5 },
-  T3: { mgSulfate: 723,  kSulfate: 1689, borax: 10, naMolybdate: 0.5 },
-  T4: { mgSulfate: 1171, kSulfate: 2929, borax: 10, naMolybdate: 0.5 },
-  T5: { mgSulfate: 1000, kSulfate: 5500, borax: 10, naMolybdate: 0.5 },
+  // B (Solubore 10 g, clé `borax`) + Mo (NaMolybdate 0,5 g) seuls. Area 382,6 m² (7 planches).
+  // K₂SO₄ + MgSO₄ coupés à 0 le 2026-06-05 (/retire-recipe) : surplus confirmé sur les
+  // deux pools — SME 2026-06-04 solution K 301,7 (≥300) / Mg 158,4 (~1,6× plafond) / CE 3,96
+  // (>3,5) ; Mehlich-3 2026-04-10 K 7,3 % / Mg 18,3 % saturation CEC, banque pluri-saisonnière.
+  // Coupe corrective (réduit la CE > plafond) ; reprise d'entretien gated sur SME K/Mg milieu
+  // de gamme ET CE < 3,5.
+  T1: { mgSulfate: 0, kSulfate: 0, borax: 10, naMolybdate: 0.5 },
+  T2: { mgSulfate: 0, kSulfate: 0, borax: 10, naMolybdate: 0.5 },
+  T3: { mgSulfate: 0, kSulfate: 0, borax: 10, naMolybdate: 0.5 },
+  T4: { mgSulfate: 0, kSulfate: 0, borax: 10, naMolybdate: 0.5 },
+  T5: { mgSulfate: 0, kSulfate: 0, borax: 10, naMolybdate: 0.5 },
 };
