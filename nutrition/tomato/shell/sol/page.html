@@ -8,7 +8,7 @@
         <div style="font-size:11px; color:var(--text-muted); text-transform:uppercase; letter-spacing:1.5px; font-weight:600; margin:14px 0 8px;">pH cette semaine</div>
         <div id="sol-ph-week-buttons" style="display:flex; flex-wrap:wrap; gap:8px;"></div>
 
-        <div style="font-size:11px; color:var(--text-muted); text-transform:uppercase; letter-spacing:1.5px; font-weight:600; margin:18px 0 8px;">Changement de pH depuis la semaine dernière</div>
+        <div style="font-size:11px; color:var(--text-muted); text-transform:uppercase; letter-spacing:1.5px; font-weight:600; margin:18px 0 8px;">Réduction de pH depuis la semaine dernière</div>
         <div id="sol-ph-delta-buttons" style="display:flex; flex-wrap:wrap; gap:8px;"></div>
       </div>
 
@@ -24,6 +24,10 @@
         <div style="font-size:11.5px; color:var(--text-muted); margin-bottom:12px;">par planche · chaque semaine</div>
         <div id="sol-tomato-doses" style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">—</div>
       </div>
+
+      <!-- AMF root-drench card — shown only during a week with a drench pass
+           (tomato only); filled + gated by buildAmf (amf-drench/operator/logic.js). -->
+      <div class="card" id="amf-week-card" style="display:none;"></div>
 
     </div><!-- end sol-tomato-content -->
 
