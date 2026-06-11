@@ -1,5 +1,14 @@
 [
   {
+    "date": "2026-06-11",
+    "date_fr": "11 juin 2026",
+    "title": "Racines : bloc drench AMF dans la page Fertilisation",
+    "changes": "- Nouveau bloc « Coup de pouce aux racines cette semaine » sur la page Fertilisation (Tomates), affiché seulement les semaines où une passe de drench AMF est prévue (8, 18, 28 juin, 8, 18 juillet).\n- Protocole racines mis à jour : 3 c. à soupe (avant 3 c. à thé), arrosoir de 12 L (avant seau de 20 L), 2 arrosoirs par planche. Nouvelles premières étapes : diluer dans 2 tasses d'eau → verser dans l'arrosoir et remplir.\n- L'onglet « 🍄 Racines » est retiré — tout son contenu vit maintenant dans la page Fertilisation, au bon moment.\n🤖 Generated with [Claude Code](https://claude.com/claude-code)",
+    "url": "https://main--decembre-staging.netlify.app",
+    "pr": 4,
+    "sha": "bfcd5897f3e9cdd7325f90d04a360876fad409a1"
+  },
+  {
     "date": "2026-06-10",
     "date_fr": "10 juin 2026",
     "title": "Tomates : recette de fertigation et foliaire allégées + page racine",
