@@ -91,8 +91,6 @@
 
   <!-- @include nutrition/tomato/foliar-strategy/operator/page.html -->
 
-  <!-- @include nutrition/tomato/amf-drench/operator/page.html -->
-
   <!-- @include app/diagnostic/page.html -->
 
   <!-- @include app/diagnostic/practice-page.html -->
@@ -215,7 +213,8 @@
 // stored.js). Single weekly spray since 2026-05-06.
 <!-- @include nutrition/tomato/foliar-strategy/operator/logic.js -->
 
-// Racines (AMF) page renderer (buildAmf). Protocol data + pure schedule
+// Racines (AMF) week-card renderer (buildAmf) — renders into the Fertilisation
+// (sol) page's #amf-week-card during a drench-pass week. Protocol data + pure schedule
 // expander live in nutrition/tomato/amf-drench/data.js (AMF_DRENCH,
 // computeAmfPasses); both included before this so buildAmf can read them.
 <!-- @include nutrition/tomato/amf-drench/data.js -->
