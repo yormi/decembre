@@ -54,7 +54,7 @@ jobs:
             --arg changes "$CHANGES" \
             --arg preview "$PREVIEW_URL" \
             '{
-              username: "Assistant de Guillaume",
+              username: "Nouvelle version de l'app Décembre",
               icon_emoji: ":robot_face:",
               text: $header,
               blocks: [
