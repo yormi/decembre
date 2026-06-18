@@ -1,0 +1,4 @@
+# Photos kept in-repo for local reference but NOT version-controlled.
+# Durable artifact is diagnosis (data + viewer in nutrition/strategy/lettuce/).
+*.jpg
+*.HEIC
