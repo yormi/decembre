@@ -49,19 +49,23 @@ jobs:
           if [ -z "$CHANGES" ]; then CHANGES="(aucun résumé fourni)"; fi
 
           HEADER_TEXT="Nouvelle version de l'app Décembre"
+          LINK_TEXT="Ouvrir l'aperçu"
+          FOOTER_TEXT="Réponds dans ce fil quand c'est bon pour publier."
 
           jq -n \
             --arg header "$HEADER_TEXT" \
             --arg changes "$CHANGES" \
             --arg preview "$PREVIEW_URL" \
+            --arg linktext "$LINK_TEXT" \
+            --arg footer "$FOOTER_TEXT" \
             '{
               username: $header,
               icon_emoji: ":robot_face:",
               text: $header,
               blocks: [
                 {type:"section",text:{type:"mrkdwn",text:$changes}},
-                {type:"section",text:{type:"mrkdwn",text:("<" + $preview + "|:link: Ouvrir l aperçu>")}},
-                {type:"context",elements:[{type:"mrkdwn",text:"Réponds dans ce fil quand c est bon pour publier."}]}
+                {type:"section",text:{type:"mrkdwn",text:("<" + $preview + "|:link: " + $linktext + ">")}},
+                {type:"context",elements:[{type:"mrkdwn",text:$footer}]}
               ]
             }' > payload.json
 
