@@ -36,44 +36,30 @@ jobs:
 
       - name: Préparer et envoyer le message à #review
         env:
-          PR_TITLE: ${{ github.event.pull_request.title }}
           PR_BODY: ${{ github.event.pull_request.body }}
           PREVIEW_URL: ${{ steps.preview.outputs.url }}
-          ACTION: ${{ github.event.action }}
           SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK_REVIEW }}
         run: |
           set -euo pipefail
 
-          # Extract sections from PR body (everything between "## Ce qui change" and the next "## " heading)
+          # Extract the "## Ce qui change" bullets (up to the next "## " heading)
           CHANGES=$(printf '%s\n' "$PR_BODY" | awk '/^## Ce qui change/{flag=1; next} /^## /{flag=0} flag' | grep -vE '^<!--|^$' || true)
-          HOWTO=$(printf '%s\n' "$PR_BODY" | awk '/^## Comment vérifier/{flag=1; next} /^## /{flag=0} flag' | grep -vE '^<!--|^$' || true)
 
           if [ -z "$CHANGES" ]; then CHANGES="(aucun résumé fourni)"; fi
-          if [ -z "$HOWTO" ]; then HOWTO="(aucune instruction de vérification fournie)"; fi
 
-          if [ "$ACTION" = "synchronize" ]; then
-            HEADER_TEXT="Modification mise à jour"
-            EMOJI=":arrows_counterclockwise:"
-          else
-            HEADER_TEXT="Nouvelle modification à réviser"
-            EMOJI=":seedling:"
-          fi
+          HEADER_TEXT="Nouvelle version de l'app Décembre"
 
           jq -n \
             --arg header "$HEADER_TEXT" \
-            --arg emoji "$EMOJI" \
-            --arg title "$PR_TITLE" \
             --arg changes "$CHANGES" \
-            --arg howto "$HOWTO" \
             --arg preview "$PREVIEW_URL" \
             '{
               username: "Assistant de Guillaume",
               icon_emoji: ":robot_face:",
-              text: ($emoji + " " + $header + " — " + $title),
+              text: $header,
               blocks: [
-                {type:"header",text:{type:"plain_text",text:($header + " — " + $title),emoji:true}},
-                {type:"section",text:{type:"mrkdwn",text:("*Ce qui change :*\n" + $changes)}},
-                {type:"section",text:{type:"mrkdwn",text:("*Comment vérifier :*\n" + $howto)}},
+                {type:"header",text:{type:"plain_text",text:$header,emoji:true}},
+                {type:"section",text:{type:"mrkdwn",text:$changes}},
                 {type:"section",text:{type:"mrkdwn",text:("<" + $preview + "|:link: Ouvrir l aperçu>")}},
                 {type:"context",elements:[{type:"mrkdwn",text:"Réponds dans ce fil quand c est bon pour publier."}]}
               ]
