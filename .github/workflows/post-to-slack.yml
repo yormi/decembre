@@ -1,0 +1,84 @@
+name: Publier un message Slack (manuel)
+
+# Déclenché à la main (workflow_dispatch). Construit le message via
+# scripts/build-review-message.mjs et le poste dans le canal choisi.
+#   channel=review -> #review (aperçu Netlify de la PR)
+#   channel=rnd    -> #recherche-et-developpement (app en production)
+
+on:
+  workflow_dispatch:
+    inputs:
+      pr:
+        description: 'Numéro de la PR (source des puces « Ce qui change »)'
+        required: true
+        type: string
+      channel:
+        description: 'Canal de destination'
+        required: true
+        type: choice
+        options:
+          - review
+          - rnd
+
+permissions:
+  contents: read
+  pull-requests: read
+
+jobs:
+  post:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Résoudre URL + webhook selon le canal
+        id: target
+        env:
+          CHANNEL: ${{ inputs.channel }}
+          PR: ${{ inputs.pr }}
+        run: |
+          set -euo pipefail
+          if [ "$CHANNEL" = "rnd" ]; then
+            echo "url=https://yormi.github.io/decembre/" >> "$GITHUB_OUTPUT"
+            echo "wait=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "url=https://deploy-preview-${PR}--decembre-staging.netlify.app" >> "$GITHUB_OUTPUT"
+            echo "wait=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Attendre que l'aperçu Netlify soit prêt
+        if: steps.target.outputs.wait == 'true'
+        env:
+          URL: ${{ steps.target.outputs.url }}
+        run: |
+          for i in $(seq 1 60); do
+            CODE=$(curl -sL -o /dev/null -w '%{http_code}' "$URL" || echo "000")
+            if [ "$CODE" = "200" ]; then echo "Aperçu prêt : $URL"; exit 0; fi
+            echo "Tentative $i — code $CODE — on attend 10s"
+            sleep 10
+          done
+          echo "::warning::Aperçu pas confirmé après 10 min, on envoie quand même"
+
+      - name: Construire et envoyer le message
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR: ${{ inputs.pr }}
+          CHANNEL: ${{ inputs.channel }}
+          URL: ${{ steps.target.outputs.url }}
+          SLACK_WEBHOOK_REVIEW: ${{ secrets.SLACK_WEBHOOK_REVIEW }}
+          SLACK_WEBHOOK_TEAM: ${{ secrets.SLACK_WEBHOOK_TEAM }}
+        run: |
+          set -euo pipefail
+          PR_BODY=$(gh pr view "$PR" --json body -q .body)
+          if [ "$CHANNEL" = "rnd" ]; then
+            WEBHOOK="$SLACK_WEBHOOK_TEAM"
+          else
+            WEBHOOK="$SLACK_WEBHOOK_REVIEW"
+          fi
+
+          export PR_BODY URL CHANNEL
+          node scripts/build-review-message.mjs > payload.json
+
+          WEBHOOK=$(printf '%s' "$WEBHOOK" | tr -d '\r\n[:space:]')
+          curl -fsS -X POST -H 'Content-Type: application/json' \
+            --data @payload.json \
+            "$WEBHOOK"
