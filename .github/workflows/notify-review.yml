@@ -42,8 +42,9 @@ jobs:
         run: |
           set -euo pipefail
 
-          # Extract the "## Ce qui change" bullets (up to the next "## " heading)
-          CHANGES=$(printf '%s\n' "$PR_BODY" | awk '/^## Ce qui change/{flag=1; next} /^## /{flag=0} flag' | grep -vE '^<!--|^$' || true)
+          # Extract the "## Ce qui change" bullets (up to the next "## " heading);
+          # convert markdown "- " to a real bullet glyph for Slack.
+          CHANGES=$(printf '%s\n' "$PR_BODY" | awk '/^## Ce qui change/{flag=1; next} /^## /{flag=0} flag' | grep -vE '^<!--|^$' | sed 's/^- /• /' || true)
 
           if [ -z "$CHANGES" ]; then CHANGES="(aucun résumé fourni)"; fi
 
@@ -58,7 +59,6 @@ jobs:
               icon_emoji: ":robot_face:",
               text: $header,
               blocks: [
-                {type:"header",text:{type:"plain_text",text:$header,emoji:true}},
                 {type:"section",text:{type:"mrkdwn",text:$changes}},
                 {type:"section",text:{type:"mrkdwn",text:("<" + $preview + "|:link: Ouvrir l aperçu>")}},
                 {type:"context",elements:[{type:"mrkdwn",text:"Réponds dans ce fil quand c est bon pour publier."}]}
