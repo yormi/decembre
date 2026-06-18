@@ -12,4 +12,4 @@ Provenance for the lettuce climate/soil setpoint bands in `../domain.md` — kep
 
 - The bed `Soil EC (Bluelab Pulse)` band (1.5, 1.2–2.0) was **carried over from saturated-paste norms**, not measured on the Pulse. The Pulse's direct-soil scale differs.
 
-- **Action:** take paired Pulse + lab readings on the beds, then reset the band to the real Pulse scale. Treat the current band as a placeholder until then.
+- **Action:** take paired Pulse + lab readings on the beds, then reset the band to the real Pulse scale. Treat the current band as a placeholder until then. **Caveat (2026-06-13):** no *constant* offset exists while soil moisture floats — the in-soil Pulse tracks moisture, not salt. Pair only at a fixed moisture (container capacity). See `pulse-in-soil-tracks-moisture-not-salt.md`.

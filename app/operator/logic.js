@@ -55,12 +55,16 @@ function setCrop(crop) {
 
 
   if (isField) {
-    // Field-crop-only cards visibility (only present in field-content)
+    // Field-crop-only cards visibility (only present in field-content).
+    // Tomato: full config (Dosatron + recette + stade). Lettuce: Dosatron-only
+    // config card. Both show the weekly "Vendredi matin" prep steps.
     const stageCard = document.getElementById('stage-card');
-    const lettuceNoteCard = document.getElementById('lettuce-note-card');
+    const lettuceFertConfig = document.getElementById('lettuce-fert-config');
+    const stepsCard = document.getElementById('fert-steps-card');
     const vigorCard = document.getElementById('vigor-card');
     if (stageCard) stageCard.style.display = crop === 'tomato' ? 'block' : 'none';
-    if (lettuceNoteCard) lettuceNoteCard.style.display = crop === 'lettuce' ? 'block' : 'none';
+    if (lettuceFertConfig) lettuceFertConfig.style.display = crop === 'lettuce' ? 'block' : 'none';
+    if (stepsCard) stepsCard.style.display = (crop === 'tomato' || crop === 'lettuce') ? 'block' : 'none';
     if (vigorCard) vigorCard.style.display = crop === 'tomato' ? 'block' : 'none';
 
     // Lettuce uses fixed 'normal' vigor — no slider needed for a 2-week cycle
@@ -278,9 +282,6 @@ function applyAdminMode() {
   if (rendNavBtn) rendNavBtn.style.display = admin ? 'inline-block' : 'none';
   // Irrigation toggle lives in the operational page-toggle bar but is admin-only.
   document.getElementById('page-irrigation').style.display = admin ? '' : 'none';
-  // Fertigation Laitue (field lettuce) crop is admin-only; tomato + nursery stay public.
-  const fertLettuceBtn = document.getElementById('fert-crop-lettuce');
-  if (fertLettuceBtn) fertLettuceBtn.style.display = admin ? '' : 'none';
   // Nursery "Bien réglé quand" signs card is admin-only.
   const nurserySignsCard = document.getElementById('nursery-signs-card');
   if (nurserySignsCard) nurserySignsCard.style.display = admin ? '' : 'none';

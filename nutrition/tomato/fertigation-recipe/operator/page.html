@@ -41,12 +41,11 @@
       </div>
     </div>
 
-    <!-- Lettuce note -->
-    <div class="card" id="lettuce-note-card" style="display:none;">
-      <div class="card-title">Application</div>
-      <div style="font-size:13px; color:var(--text-muted); line-height:1.5;">
-        1 seule application par cycle (2 semaines en planche). Quantités pour <strong>toute la production</strong> (4.5 planches).<br><br>
-        <strong>Préparer 1× par semaine.</strong> Ne pas conserver plus de 7 jours.
+    <!-- Lettuce config — Dosatron only (no recipe, no stage, no steps) -->
+    <div class="card" id="lettuce-fert-config" style="display:none;">
+      <div class="param-row">
+        <span class="param-label">Dosatron</span>
+        <span class="param-value">2%</span>
       </div>
     </div>
 
@@ -64,8 +63,8 @@
          Source: Municipal tap water, Quebec City
     -->
 
-    <!-- Monday Morning -->
-    <div class="card">
+    <!-- Monday Morning (tomato only — lettuce shows Dosatron config alone) -->
+    <div class="card" id="fert-steps-card">
       <div class="card-title" id="steps-card-title">🌅 Vendredi matin</div>
       <ol class="steps-list" id="steps-list"></ol>
     </div>

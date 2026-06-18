@@ -67,6 +67,8 @@ jobs:
             --arg howto "$HOWTO" \
             --arg preview "$PREVIEW_URL" \
             '{
+              username: "Assistant de Guillaume",
+              icon_emoji: ":robot_face:",
               text: ($emoji + " " + $header + " — " + $title),
               blocks: [
                 {type:"header",text:{type:"plain_text",text:($header + " — " + $title),emoji:true}},

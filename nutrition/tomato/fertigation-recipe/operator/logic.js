@@ -9,10 +9,6 @@
 //
 // Functions: getStockVol(), getNutrients(), buildSteps().
 
-// Local g formatter for the step-list amount column (kg threshold at 1000 g,
-// 1 decimal between 1-10 g, integer above 10 g). Sole consumer of this shape.
-function fmt(g) { if (g >= 1000) return (g / 1000).toFixed(2) + ' kg'; if (g < 10 && g > 0) return g.toFixed(1) + ' g'; return Math.round(g) + ' g'; }
-
 // Stock barrel is sized to cover DAYS_PER_FILL days of Dosatron pull at
 // the configured dilution ratio (2 %). Bumped 2026-05-28 from implicit
 // ~2.33-day sizing (weeklyL/3) to explicit 5-day fills — operator mixes
@@ -45,27 +41,36 @@ function getStockVol() {
 // function getAcidG() { return 3.75 * getStockVol(); }
 
 function getNutrients() {
-  const totalArea = getTotalArea();
-  if (currentCrop === 'tomato') {
-    // Fertigation page reads the locked STORED_RECIPE for the selected stage —
-    // exactly what the team weighs. computeStageRecipe() is the FP target
-    // generator (Block 7 drift gauge), not the operational source.
-    const s = STORED_RECIPE.tomato.fertigation[currentStage] || { mgSulfate: 0, kSulfate: 0, borax: 0, naMolybdate: 0 };
-    const mK = getMultK(), mM = getMultMg();
-    // Bore (Solubore) + Mo (NaMolybdate) are unscaled — no multiplier, mirroring drift.js.
-    return { mgSulfate: s.mgSulfate * mM, kSulfate: s.kSulfate * mK, borax: s.borax || 0, naMolybdate: s.naMolybdate || 0 };
-  } else {
-    const scale = totalArea / 100;
-    return {
-      mgSulfate: LETTUCE.mgSulfate * scale,
-      kSulfate: LETTUCE.kSulfate * scale,
-      feSulfate: LETTUCE.feSulfate * scale,
-    };
-  }
+  // Tomato fertigation page reads the locked STORED_RECIPE for the selected
+  // stage — exactly what the team weighs. computeStageRecipe() is the FP target
+  // generator (Block 7 drift gauge), not the operational source.
+  const s = STORED_RECIPE.tomato.fertigation[currentStage] || { mgSulfate: 0, kSulfate: 0, borax: 0, naMolybdate: 0 };
+  const mK = getMultK(), mM = getMultMg();
+  // Bore (Solubore) + Mo (NaMolybdate) are unscaled — no multiplier, mirroring drift.js.
+  return { mgSulfate: s.mgSulfate * mM, kSulfate: s.kSulfate * mK, borax: s.borax || 0, naMolybdate: s.naMolybdate || 0 };
+}
+
+// Lettuce weekly prep — fixed hand-set recipe (LETTUCE_FERTIGATION_RECIPE),
+// no stage/solar math. Same 4-step shape as tomato: wash → weigh+mix → stir →
+// dosatron line.
+function buildLettuceSteps() {
+  document.getElementById('steps-card-title').textContent = '🌅 Vendredi matin';
+  const recipe = LETTUCE_FERTIGATION_RECIPE;
+  const ingredients = [
+    { name: 'Eau', amount: String(recipe.stockL), unit: 'litres', emoji: '💧' },
+    ...recipe.products.map(p => ({ name: p.name, amount: p.grams.toLocaleString('fr-CA'), unit: 'g', emoji: p.emoji })),
+  ];
+  renderStepsList([
+    { number: 1, title: 'Laver le matériel', desc: 'Rincer baril + filtre dosatron + filtre aval.', why: 'Résidus = filtre obstrué & mauvaise fertilisation', acid: false },
+    { number: 2, title: 'Mélanger', desc: '', ingredients, acid: false },
+    { number: 3, title: 'Brasser', desc: 'Vérifier: Aucun dépôt au fond.', acid: false },
+    { number: 4, title: 'Mettre la ligne du dosatron dans le baril', desc: '', acid: false },
+  ]);
 }
 
 function buildSteps() {
-  if (currentCrop === 'tomato' && currentFertRecipe === 'rootfix') { buildRootFixSteps(); return; }
+  if (currentCrop === 'lettuce') { buildLettuceSteps(); return; }
+  if (currentFertRecipe === 'rootfix') { buildRootFixSteps(); return; }
   document.getElementById('steps-card-title').textContent = '🌅 Vendredi matin';
   const stockVol = getStockVol();
   const ratio = getRatio();
@@ -78,11 +83,9 @@ function buildSteps() {
   const bucketsString = Number.isInteger(buckets) ? String(buckets) : buckets.toString().replace('.', ',');
   const bucketUnit = (buckets === 1 ? 'chaudière' : 'chaudières') + ' de 20 L';
 
-  // K + Mg collapsed into a single weighing-table step (2026-05-28), matching
-  // the foliar spray sheet pattern. Fe stays as its own step on lettuce —
-  // operationally the "en dernier" timing makes it a separate action.
-  // Weighing tiles: big number + 'g' on its own line (uniform with the
-  // water tile). Operator weighs in g.
+  // K + Mg + Bore + Molybdène collapsed into a single weighing-table step
+  // (2026-05-28), matching the foliar spray sheet pattern. Weighing tiles: big
+  // number + 'g' on its own line (uniform with the water tile).
   const formatNumber = v => Math.round(v).toLocaleString('fr-CA');
   // Hide any nutrient tile that weighs out to exactly 0 g (rounds to 0) — e.g.
   // K₂SO₄ + MgSO₄ since the 2026-06-05 cut. Filter on the raw gram value, not
@@ -90,12 +93,9 @@ function buildSteps() {
   const nutrientTiles = [
     { name: 'Potassium', value: n.kSulfate,  emoji: '🍌' },
     { name: 'Magnésium', value: n.mgSulfate, emoji: '🧊' },
+    { name: 'Solubore', value: n.borax, emoji: '🔷' },
+    { name: 'Molybdène', value: n.naMolybdate, emoji: '🔶' },
   ];
-  // Bore + Molybdène rows tomato-only (undefined on lettuce).
-  if (currentCrop === 'tomato') {
-    nutrientTiles.push({ name: 'Solubore', value: n.borax, emoji: '🔷' });
-    nutrientTiles.push({ name: 'Molybdène', value: n.naMolybdate, emoji: '🔶' });
-  }
   const ingredients = nutrientTiles
     .filter(t => Math.round(t.value) !== 0)
     .map(t => ({ name: t.name, amount: formatNumber(t.value), unit: 'g', emoji: t.emoji }));
@@ -107,17 +107,10 @@ function buildSteps() {
     { number: 2, title: 'Mélanger', desc: '', ingredients, acid: false },
   ];
 
-  if (currentCrop === 'tomato') {
-    steps.push(
-      { number: 3, title: 'Brasser', desc: 'Vérifier: Aucun dépôt au fond.', acid: false },
-      { number: 4, title: 'Mettre la ligne du dosatron dans le baril', desc: '', acid: false },
-    );
-  } else {
-    steps.push(
-      { number: 3, title: 'Sulfate de fer (FeSO₄·7H₂O)', desc: 'Ajouter <strong>en dernier</strong>, juste avant de fermer le baril. La solution prend une teinte vert pâle. Si elle devient brun-orange en cours de semaine = oxydation (utiliser quand même mais l\'efficacité diminue).', why: 'Recharge en fer pour les cycles laitue qui s\'étirent au-delà de 3 semaines (la pouponnière charge les plants pour ~3 semaines de production). Fe²⁺ s\'oxyde rapidement à l\'air et au pH du sol — d\'où "en dernier" + baril fermé.', amount: fmt(n.feSulfate), acid: false },
-      { number: 4, title: 'Brasser', desc: 'Bien mélanger. Vérifier qu\'il n\'y a pas de dépôt au fond.', acid: false },
-    );
-  }
+  steps.push(
+    { number: 3, title: 'Brasser', desc: 'Vérifier: Aucun dépôt au fond.', acid: false },
+    { number: 4, title: 'Mettre la ligne du dosatron dans le baril', desc: '', acid: false },
+  );
 
   renderStepsList(steps);
 }

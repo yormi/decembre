@@ -31,21 +31,20 @@ function buildAmf() {
   }
   container.style.display = 'block';
 
-  // Recipe tiles (emoji / label / big mono dose / unit) — same shape as the
-  // fertigation page's ingredient tiles; embedded in the step flagged tiles.
-  const tileColumns = data.mix.length === 1 ? '1fr' : '1fr 1fr';
-  const tilesHtml =
-    `<div style="display:grid; grid-template-columns:${tileColumns}; gap:10px; margin-top:10px;">` +
-    data.mix.map((item) =>
+  // Recipe tiles (emoji / label / big mono amount / unit) — same shape as the
+  // fertigation page's ingredient tiles; rendered inside the step carrying them.
+  const renderTiles = (tiles) =>
+    `<div style="display:grid; grid-template-columns:repeat(${tiles.length}, 1fr); gap:10px; margin-top:10px;">` +
+    tiles.map((item) =>
       `<div style="background:var(--accent-active-light); border:1.5px solid var(--accent-active-border); border-radius:var(--radius-sm); padding:14px 10px; text-align:center;">
         <div style="font-size:24px; margin-bottom:6px;">${item.emoji}</div>
         <div style="font-size:10px; font-weight:600; text-transform:uppercase; letter-spacing:1.5px; color:var(--text-muted); margin-bottom:6px;">${item.name}</div>
-        <div style="font-family:'DM Mono',monospace; font-size:24px; font-weight:700; color:var(--text);">${item.amount}</div>
-        <div style="font-family:'DM Mono',monospace; font-size:12px; color:var(--text-muted); margin-top:2px;">${item.unit}</div>
+        ${item.amount ? `<div style="font-family:'DM Mono',monospace; font-size:24px; font-weight:700; color:var(--text);">${item.amount}</div>` : ''}
+        ${item.unit ? `<div style="font-family:'DM Mono',monospace; font-size:12px; color:var(--text-muted); margin-top:2px;">${item.unit}</div>` : ''}
       </div>`
     ).join('') + '</div>';
 
-  // Application steps — recipe tiles render inside the step flagged `tiles`.
+  // Application steps — a step's tiles render inside it when present.
   let stepsHtml = '';
   data.steps.forEach((step, index) => {
     const note = step.note
@@ -55,7 +54,7 @@ function buildAmf() {
       <span class="step-number">${index + 1}</span>
       <div class="step-title">${step.title}</div>
       ${note}
-      ${step.tiles ? tilesHtml : ''}
+      ${step.tiles ? renderTiles(step.tiles) : ''}
     </li>`;
   });
 

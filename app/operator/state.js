@@ -29,6 +29,26 @@ const LETTUCE_NUMBER_BEDS = 4.5;
 //     don't worry about ~10-20% loss to oxidation by end of week.
 const LETTUCE = { mgSulfate: 467, kSulfate: 2996, feSulfate: 7.5 };
 
+// LETTUCE production fertigation — operator weighing recipe shown on the
+// Fertigation > Laitue view. Fixed weekly grams for the whole Salanova block,
+// dissolved in a ~24 L stock barrel, injected at 2 % (Dosatron). Hand-set
+// 2026-06-17 ("same weekly grams as before, less water"). Order = weighing
+// order. NOTE: these totals are independent of the per-100 m² `LETTUCE`
+// constant above (which feeds the Nutrition bilan) — not yet reconciled.
+const LETTUCE_FERTIGATION_RECIPE = {
+  stockL: 24,
+  ratioPct: 2,
+  products: [
+    { name: 'Potassium', grams: 200, emoji: '🍌' },   // Sulfate de potassium 0-0-50
+    { name: 'Magnésium', grams: 50,  emoji: '🧊' },    // Sulfate de magnésium 7H₂O
+    { name: 'Fer',       grams: 15,  emoji: '🩶' },    // Sulfate de fer 20 %
+    { name: 'Manganèse', grams: 5,   emoji: '🟤' },    // Sulfate de manganèse 32 %
+    { name: 'Zinc',      grams: 2.7, emoji: '🔩' },    // Sulfate de zinc 35 %
+    { name: 'Bore',      grams: 6,   emoji: '🔷' },    // Borax 15 %
+    { name: 'Cuivre',    grams: 1,   emoji: '🟠' },    // Sulfate de cuivre 25 %
+  ],
+};
+
 let currentCrop = 'tomato';
 let currentStage = 'T1';
 // Tomato fertigation recipe selector: 'nutrient' (per-stage STORED recipe) or
