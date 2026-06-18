@@ -15,6 +15,9 @@ jobs:
     if: github.event.pull_request.draft == false
     runs-on: ubuntu-latest
     steps:
+      - name: Récupérer le dépôt (pour scripts/build-review-message.mjs)
+        uses: actions/checkout@v4
+
       - name: Construire l'URL de l'aperçu Netlify
         id: preview
         run: |
@@ -42,32 +45,8 @@ jobs:
         run: |
           set -euo pipefail
 
-          # Extract the "## Ce qui change" bullets (up to the next "## " heading);
-          # convert markdown "- " to a real bullet glyph for Slack.
-          CHANGES=$(printf '%s\n' "$PR_BODY" | awk '/^## Ce qui change/{flag=1; next} /^## /{flag=0} flag' | grep -vE '^<!--|^$' | sed 's/^- /• /' || true)
-
-          if [ -z "$CHANGES" ]; then CHANGES="(aucun résumé fourni)"; fi
-
-          HEADER_TEXT="Nouvelle version de l'app Décembre"
-          LINK_TEXT="Ouvrir l'aperçu"
-          FOOTER_TEXT="Réponds dans ce fil quand c'est bon pour publier."
-
-          jq -n \
-            --arg header "$HEADER_TEXT" \
-            --arg changes "$CHANGES" \
-            --arg preview "$PREVIEW_URL" \
-            --arg linktext "$LINK_TEXT" \
-            --arg footer "$FOOTER_TEXT" \
-            '{
-              username: $header,
-              icon_emoji: ":robot_face:",
-              text: $header,
-              blocks: [
-                {type:"section",text:{type:"mrkdwn",text:$changes}},
-                {type:"section",text:{type:"mrkdwn",text:("<" + $preview + "|:link: " + $linktext + ">")}},
-                {type:"context",elements:[{type:"mrkdwn",text:$footer}]}
-              ]
-            }' > payload.json
+          # Message format lives in scripts/build-review-message.mjs (tested).
+          node scripts/build-review-message.mjs > payload.json
 
           WEBHOOK=$(printf '%s' "$SLACK_WEBHOOK" | tr -d '\r\n[:space:]')
           curl -fsS -X POST -H 'Content-Type: application/json' \
