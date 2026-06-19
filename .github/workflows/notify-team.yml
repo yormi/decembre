@@ -102,5 +102,17 @@ jobs:
             git push
           fi
 
-      # Le message Slack à l'équipe est maintenant manuel — voir
-      # .github/workflows/post-to-slack.yml (channel=rnd).
+      - name: Annoncer sur #recherche-et-developpement
+        env:
+          PR_BODY: ${{ github.event.pull_request.body }}
+          URL: https://yormi.github.io/decembre/
+          CHANNEL: rnd
+          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK_TEAM }}
+        run: |
+          set -euo pipefail
+          # Same tested format source as #review, preset RND (lien prod, sans footer).
+          node scripts/build-review-message.mjs > payload.json
+          WEBHOOK=$(printf '%s' "$SLACK_WEBHOOK" | tr -d '\r\n[:space:]')
+          curl -fsS -X POST -H 'Content-Type: application/json' \
+            --data @payload.json \
+            "$WEBHOOK"

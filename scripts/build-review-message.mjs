@@ -1,5 +1,5 @@
-// Builds the Slack payload for the #review / #recherche-et-developpement posts
-// (sent by .github/workflows/post-to-slack.yml, dispatched manually).
+// Builds the Slack payload for the #review (notify-review.yml, on PR ready)
+// and #recherche-et-developpement (notify-team.yml, on merge) auto-posts.
 //
 // Format is owned here, in one tested place — NOT inline in the workflow YAML.
 // Node handles apostrophes/Unicode natively, so the French strings

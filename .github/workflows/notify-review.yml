@@ -1,0 +1,50 @@
+name: Notifier Catherine pour révision
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+
+permissions:
+  contents: read
+  pull-requests: read
+
+jobs:
+  notify:
+    # Skip while PR is draft — Guillaume controls timing by flipping
+    # draft → ready (which fires `ready_for_review` and pings Catherine).
+    if: github.event.pull_request.draft == false
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Construire l'URL de l'aperçu Netlify
+        id: preview
+        run: |
+          echo "url=https://deploy-preview-${{ github.event.pull_request.number }}--decembre-staging.netlify.app" >> "$GITHUB_OUTPUT"
+
+      - name: Attendre que l'aperçu Netlify soit prêt
+        env:
+          URL: ${{ steps.preview.outputs.url }}
+        run: |
+          for i in $(seq 1 60); do
+            CODE=$(curl -sL -o /dev/null -w '%{http_code}' "$URL" || echo "000")
+            if [ "$CODE" = "200" ]; then echo "Aperçu prêt : $URL"; exit 0; fi
+            echo "Tentative $i — code $CODE — on attend 10s"
+            sleep 10
+          done
+          echo "::warning::Aperçu pas confirmé après 10 min, on envoie quand même"
+
+      - name: Construire et envoyer le message à #review
+        env:
+          PR_BODY: ${{ github.event.pull_request.body }}
+          URL: ${{ steps.preview.outputs.url }}
+          CHANNEL: review
+          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK_REVIEW }}
+        run: |
+          set -euo pipefail
+          # Format lives in scripts/build-review-message.mjs (tested).
+          node scripts/build-review-message.mjs > payload.json
+          WEBHOOK=$(printf '%s' "$SLACK_WEBHOOK" | tr -d '\r\n[:space:]')
+          curl -fsS -X POST -H 'Content-Type: application/json' \
+            --data @payload.json \
+            "$WEBHOOK"
