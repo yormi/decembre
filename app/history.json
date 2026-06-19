@@ -1,5 +1,14 @@
 [
   {
+    "date": "2026-06-18",
+    "date_fr": "18 juin 2026",
+    "title": "Page Fertigation Laitue + boost de racines Tomate",
+    "changes": "- Ajout de la page _Fertigation > Laitue_\n- Modification des instructions pour le boost de racines dans _Fertilisation > Tomate_",
+    "url": "https://main--decembre-staging.netlify.app",
+    "pr": 5,
+    "sha": "1cef8b74706e19f8d904384a572af0cec12a5bd1"
+  },
+  {
     "date": "2026-06-11",
     "date_fr": "11 juin 2026",
     "title": "Racines : bloc drench AMF dans la page Fertilisation",
