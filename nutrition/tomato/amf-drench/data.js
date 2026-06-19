@@ -1,7 +1,7 @@
 // AMF inoculation drench — operator protocol data.
 //
 // Source of truth for the AMF week-card on the Fertilisation (sol) page (#amf-week-card).
-// Distilled from nutrition/strategy/protocol/amf-inoculation.md (AGTIV REACH P,
+// Distilled from nutrition/tomato/strategy/protocol/amf-inoculation.md (AGTIV REACH P,
 // SG1 interim P-uptake bridge). Render is deterministic from this object —
 // no prose lives in the page markup.
 //
@@ -11,29 +11,33 @@
 const AMF_DRENCH = {
   product: 'AGTIV REACH P',
   schedule: { start: '2026-06-08', intervalDays: 10, passes: 5 },
-  // Practical mix the team executes, rendered as tiles inside the dilution
-  // step (mirrors the fertigation page).
-  mix: [
-    { name: 'AGTIV REACH P', amount: '3', unit: 'c. à soupe', emoji: '🍄' },
-  ],
+  // Steps render in order; a step's `tiles` array (emoji / label / big mono
+  // amount / unit) renders inside it, same shape as the fertigation page.
+  // One shared barrel for the whole block (7 beds), 2 arrosoirs per bed.
   steps: [
-    { title: "Diluer 3 c. à soupe dans 2 tasses d'eau", tiles: true },
     {
-      title: "Verser dans l'arrosoir de 12 L et remplir d'eau",
-      note: 'La tourbe ne se dissout pas. Brasser fort et garder en agitation pour une application uniforme.',
+      title: 'Remplir un baril',
+      tiles: [
+        { name: 'Eau', amount: '170', unit: 'L', emoji: '💧' },
+        { name: 'AGTIV REACH P', amount: '14', unit: 'c. à soupe', emoji: '🍄' },
+      ],
     },
     {
-      title: 'Verser 2 arrosoirs par planche',
-      note: 'Un arrosoir à gauche, un arrosoir à droite des plants.',
+      title: 'Bien mélanger le baril avant chaque arrosoir',
+      note: 'Sinon le produit se dépose au fond du baril.',
     },
     {
-      title: 'Gratter légèrement la surface',
-      note: 'Entraîne la poudre vers les racines et déclenche une nouvelle pousse.',
+      title: 'Arroser de chaque côté des plants',
+      tiles: [
+        { name: 'Arrosoir', amount: '1', unit: '', emoji: '🪣' },
+        { name: 'Plants', amount: '', unit: '', emoji: '🌱' },
+        { name: 'Arrosoir', amount: '1', unit: '', emoji: '🪣' },
+      ],
     },
-    { title: 'Irriguer 5 min', note: 'Pour faire pénétrer.' },
+    { title: 'Répéter les étapes 2-3 pour chaque planche' },
   ],
   warnings: [
-    'Pas de goutte-à-goutte — la poudre bouche les émetteurs. Arrosage à la main seulement.',
+    'Le produit bouche les goutte-à-gouttes. Arrosage à la main seulement.',
     "Pas de fongicide près de l'application — tue l'inoculant.",
   ],
 };

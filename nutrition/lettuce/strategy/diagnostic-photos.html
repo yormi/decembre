@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Diagnostic photos — laitue salanova (2026-06-06)</title>
+<style>
+  :root {
+    --bg: #f6f5f1; --card: #fff; --text: #2a2722; --muted: #7a756c;
+    --border: #e3ded4; --shadow: 0 1px 3px rgba(0,0,0,.06);
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    line-height: 1.5;
+  }
+  .sidebar {
+    position: fixed; top: 0; left: 0; bottom: 0; width: 268px;
+    background: var(--card); border-right: 1.5px solid var(--border);
+    padding: 20px 18px; overflow-y: auto;
+  }
+  .sidebar h1 { font-size: 18px; margin: 0 0 2px; line-height: 1.25; }
+  .sidebar .sub { color: var(--muted); font-size: 12px; margin: 0; }
+  .side-sec { margin-top: 18px; }
+  .side-sec:first-child { margin-top: 0; }
+  .side-sec h2 {
+    font-size: 10.5px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: .8px; color: var(--muted); margin: 0 0 7px;
+  }
+  .main { margin-left: 268px; padding: 22px 22px 64px; }
+  .chips { display: flex; flex-direction: column; gap: 6px; }
+  .chips button {
+    display: inline-flex; align-items: center; gap: 7px; width: 100%;
+    border: 1.5px solid var(--border); background: var(--card);
+    border-radius: 8px; padding: 7px 10px; font: inherit; font-size: 12.5px;
+    color: var(--text); cursor: pointer; transition: all .15s; text-align: left;
+  }
+  .chips button:hover { border-color: var(--muted); }
+  .chips button.selected { border-color: var(--text); background: #efece4; font-weight: 700; }
+  .chips button .dot { width: 10px; height: 10px; border-radius: 50%; flex: none; }
+  .chips button .n { color: var(--muted); font-size: 11px; margin-left: auto; }
+  .grid {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(430px, 1fr));
+    gap: 22px;
+  }
+  @media (max-width: 720px) {
+    .sidebar { position: static; width: auto; bottom: auto;
+      border-right: 0; border-bottom: 1.5px solid var(--border); }
+    .main { margin-left: 0; }
+    .chips { flex-direction: row; flex-wrap: wrap; }
+    .chips button { width: auto; }
+    .chips button .n { margin-left: 4px; }
+  }
+  .card {
+    position: relative;
+    background: var(--card); border: 1.5px solid var(--border);
+    border-radius: 12px; overflow: hidden; box-shadow: var(--shadow);
+    display: flex; flex-direction: column;
+  }
+  .photo-id {
+    position: absolute; top: 8px; left: 8px; z-index: 1;
+    background: rgba(20,18,15,.72); color: #fff; font-size: 13px; font-weight: 700;
+    padding: 3px 9px; border-radius: 999px; letter-spacing: .3px;
+  }
+  .card img {
+    width: 100%; aspect-ratio: 4/3; object-fit: cover;
+    background: #ece8df; display: block;
+  }
+  .card .body { padding: 13px 15px 16px; }
+  .row { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+  .stars { font-size: 15px; letter-spacing: 1px; }
+  .stars .on { color: #e0a52b; } .stars .off { color: #d8d2c6; }
+  .sev {
+    font-size: 10.5px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: .5px; padding: 2px 8px; border-radius: 999px;
+  }
+  .sev-aucune  { background:#e2f0e4; color:#2e6b38; }
+  .sev-legere  { background:#eef0d8; color:#5f6b1e; }
+  .sev-moderee { background:#fdeecf; color:#8a5a1e; }
+  .sev-severe  { background:#fbe2d6; color:#9c3a1c; }
+  .part { font-size: 12px; color: var(--muted); margin: 6px 0 2px; }
+  .legende { font-size: 13px; margin: 4px 0 12px; }
+  .dx { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 9px; }
+  .dx li { border-left: 4px solid var(--muted); padding: 7px 0 7px 11px; }
+  .dx-head { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; }
+  .dx-cause { font-size: 13.5px; font-weight: 700; }
+  .dx-conf { font-size: 11.5px; color: var(--muted); font-weight: 700; white-space: nowrap; }
+  .dx-cues { margin: 5px 0 0 16px; padding: 0; font-size: 12.5px; color: #514c44; }
+  .dx-cues li { border: 0; padding: 1px 0; margin: 0; }
+  .empty { color: var(--muted); padding: 40px 0; text-align: center; }
+  footer { margin-top: 40px; font-size: 12px; color: var(--muted); }
+  footer code { background: #ece8df; padding: 1px 5px; border-radius: 4px; }
+  .stars-lbl { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: .5px; margin-left: 4px; }
+  .card img { cursor: zoom-in; }
+  .lightbox {
+    position: fixed; inset: 0; background: rgba(20,18,15,.9); z-index: 50;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 12px; padding: 24px; cursor: zoom-out;
+  }
+  .lightbox[hidden] { display: none; }
+  .lightbox img { max-width: 94vw; max-height: 84vh; border-radius: 8px; box-shadow: 0 6px 30px rgba(0,0,0,.5); }
+  .lightbox-cap { color: #f2efe8; font-size: 13.5px; max-width: 760px; text-align: center; line-height: 1.4; }
+  .lightbox-hint { color: #b6afa2; font-size: 11.5px; }
+</style>
+</head>
+<body>
+<aside class="sidebar">
+  <div class="side-sec" id="sec-batches"><h2>Lot de photos</h2>
+    <div class="chips" id="batches"></div></div>
+  <div class="side-sec"><h2>Problème</h2>
+    <div class="chips" id="legend"></div></div>
+  <div class="side-sec"><h2>Sévérité</h2>
+    <div class="chips" id="sevfilter"></div></div>
+</aside>
+<main class="main">
+  <div class="grid" id="grid"></div>
+  <footer>
+    Photos hors version (réf. locale) : <code id="foot-base"></code>.
+    Données générées par le workflow <code>lettuce-photo-diagnosis</code>.
+  </footer>
+</main>
+
+<div class="lightbox" id="lightbox" hidden>
+  <img id="lightbox-img" src="" alt="">
+  <div class="lightbox-cap" id="lightbox-cap"></div>
+  <div class="lightbox-hint">Cliquez n'importe où ou appuyez sur Échap pour fermer.</div>
+</div>
+
+<script src="./diagnostic-data-2026-06-06.js"></script>
+<script src="./diagnostic-data-2026-06-12.js"></script>
+<script>
+  // Catégorie → [label FR, emoji, couleur d'accent (bordure + pastille)]
+  const CATS = {
+    'stress-salin':     ['Stress salin (sodium)',            '🧂', '#3f7fb5'],
+    'carence':          ['Carence nutritionnelle (Ca/Mg/K)', '🟡', '#c79a2e'],
+    'stress-thermique': ['Stress thermique / montaison',     '🌡️', '#d2622f'],
+    'desordre-physio':  ['Désordre physiologique (tip-burn)','🔵', '#2f96c4'],
+    'maladie-fongique': ['Maladie fongique / moisissure',    '🔴', '#c4552f'],
+    'ravageur':         ['Ravageur',                         '🐛', '#8a5cc4'],
+    'qualite-plant':    ['Plant sur-âgé / transplant raté',  '🟤', '#9a7430'],
+    'sain':             ['Sain',                             '🟢', '#3e9c5c'],
+    'inutilisable':     ['Inutilisable',                     '⚪', '#888'],
+  };
+  const SEV = { aucune:'sev-aucune', legere:'sev-legere', moderee:'sev-moderee', severe:'sev-severe' };
+  const SEV_LABEL = { aucune:'aucune', legere:'légère', moderee:'modérée', severe:'sévère' };
+  const SEV_DOT = { severe:'#9c3a1c', moderee:'#8a5a1e', legere:'#5f6b1e', aucune:'#2e6b38' };
+  const SEV_ORDER = ['severe', 'moderee', 'legere', 'aucune']; // worst first, for triage
+
+  // Newest batch first.
+  const BATCHES = (window.LETTUCE_DIAGNOSIS_BATCHES || []).slice().sort((a, b) => (a.id < b.id ? 1 : -1));
+  let activeBatch = BATCHES[0] || null;
+  let activeCat = null;
+  let activeSev = null;
+
+  function stars(n) {
+    let s = '';
+    for (let i = 1; i <= 5; i++) s += `<span class="${i <= (n||0) ? 'on' : 'off'}">★</span>`;
+    return s;
+  }
+  function escapeHtml(t) {
+    return String(t).replace(/[&<>]/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;' }[c]));
+  }
+  function dxBlock(dx) {
+    const meta = CATS[dx.categorie] || ['', '', '#888'];
+    const cues = (dx.symptomes || []).map(s => `<li>${escapeHtml(s)}</li>`).join('');
+    return `<li style="border-left-color:${meta[2]}">
+      <div class="dx-head">
+        <span class="dx-cause">${meta[1]} ${escapeHtml(dx.diagnostic)}</span>
+        <span class="dx-conf" title="Confiance dans ce diagnostic">${dx.confiance}/5</span>
+      </div>
+      <ul class="dx-cues">${cues}</ul>
+    </li>`;
+  }
+  function card(c, imageBase) {
+    const sev = SEV[c.severite] || '';
+    const cap = `#${c._id} · ${c.legende || c.partie || ''}`;
+    return `<div class="card">
+      <span class="photo-id">#${c._id}</span>
+      <img src="${imageBase}${c.file}" loading="lazy" alt="${escapeHtml(c.partie || '')}" data-cap="${escapeHtml(cap)}">
+      <div class="body">
+        <div class="row">
+          <span class="stars" title="Confiance globale dans la lecture de cette photo">${stars(c.confiance)}<span class="stars-lbl">lecture</span></span>
+          <span class="sev ${sev}" title="Gravité des problèmes visibles sur cette photo">${SEV_LABEL[c.severite] || c.severite || ''}</span>
+        </div>
+        <div class="part">${escapeHtml(c.partie || '')}</div>
+        <div class="legende">${escapeHtml(c.legende || '')}</div>
+        <ul class="dx">${(c.diagnostics || []).map(dxBlock).join('')}</ul>
+      </div>
+    </div>`;
+  }
+  function render() {
+    const grid = document.getElementById('grid');
+    if (!activeBatch) { grid.innerHTML = '<div class="empty">Aucune donnée chargée.</div>'; return; }
+    const photos = activeBatch.photos || [];
+    photos.forEach((c, i) => { c._id = i + 1; }); // stable 1-based id within batch, filter-independent
+    const cards = photos.filter(c =>
+      (!activeCat || (c.diagnostics || []).some(d => d.categorie === activeCat)) &&
+      (!activeSev || c.severite === activeSev)
+    );
+    grid.innerHTML = cards.length
+      ? cards.map(c => card(c, activeBatch.imageBase)).join('')
+      : '<div class="empty">Aucune photo pour ce filtre.</div>';
+    const foot = document.getElementById('foot-base');
+    if (foot) foot.textContent = activeBatch.imageBase;
+  }
+  function renderLegend() {
+    const photos = activeBatch ? (activeBatch.photos || []) : [];
+    const counts = {};
+    photos.forEach(c => (c.diagnostics || []).forEach(d => { counts[d.categorie] = (counts[d.categorie]||0)+1; }));
+    const el = document.getElementById('legend');
+    const btns = [`<button data-cat="" class="${activeCat ? '' : 'selected'}">Tout <span class="n">(${photos.length})</span></button>`];
+    Object.keys(CATS).filter(k => counts[k]).forEach(k => {
+      const m = CATS[k];
+      btns.push(`<button data-cat="${k}" class="${activeCat === k ? 'selected' : ''}"><span class="dot" style="background:${m[2]}"></span>${m[0]} <span class="n">(${counts[k]})</span></button>`);
+    });
+    el.innerHTML = btns.join('');
+    el.querySelectorAll('button').forEach(b => b.addEventListener('click', () => {
+      activeCat = b.dataset.cat || null;
+      el.querySelectorAll('button').forEach(x => x.classList.toggle('selected', x === b));
+      render();
+    }));
+  }
+  function renderSevFilter() {
+    const photos = activeBatch ? (activeBatch.photos || []) : [];
+    const counts = {};
+    photos.forEach(c => { counts[c.severite] = (counts[c.severite] || 0) + 1; });
+    const el = document.getElementById('sevfilter');
+    const btns = [`<button data-sev="" class="${activeSev ? '' : 'selected'}">Toutes <span class="n">(${photos.length})</span></button>`];
+    SEV_ORDER.filter(k => counts[k]).forEach(k => {
+      btns.push(`<button data-sev="${k}" class="${activeSev === k ? 'selected' : ''}"><span class="dot" style="background:${SEV_DOT[k]}"></span>${SEV_LABEL[k]} <span class="n">(${counts[k]})</span></button>`);
+    });
+    el.innerHTML = btns.join('');
+    el.querySelectorAll('button').forEach(b => b.addEventListener('click', () => {
+      activeSev = b.dataset.sev || null;
+      el.querySelectorAll('button').forEach(x => x.classList.toggle('selected', x === b));
+      render();
+    }));
+  }
+  function renderBatches() {
+    const el = document.getElementById('batches');
+    if (BATCHES.length <= 1) { document.getElementById('sec-batches').style.display = 'none'; return; }
+    el.innerHTML = BATCHES.map(bt =>
+      `<button data-batch="${bt.id}" class="${bt === activeBatch ? 'selected' : ''}">${escapeHtml(bt.label || bt.id)} <span class="n">(${(bt.photos||[]).length})</span></button>`
+    ).join('');
+    el.querySelectorAll('button').forEach(b => b.addEventListener('click', () => {
+      activeBatch = BATCHES.find(x => x.id === b.dataset.batch) || activeBatch;
+      activeCat = null;
+      activeSev = null;
+      el.querySelectorAll('button').forEach(x => x.classList.toggle('selected', x === b));
+      renderLegend();
+      renderSevFilter();
+      render();
+    }));
+  }
+  // Click-to-expand lightbox.
+  const lb = document.getElementById('lightbox');
+  const lbImg = document.getElementById('lightbox-img');
+  const lbCap = document.getElementById('lightbox-cap');
+  function closeLightbox() { lb.hidden = true; lbImg.src = ''; }
+  document.getElementById('grid').addEventListener('click', e => {
+    const img = e.target.closest('img');
+    if (!img) return;
+    lbImg.src = img.src;
+    lbCap.textContent = img.dataset.cap || '';
+    lb.hidden = false;
+  });
+  lb.addEventListener('click', closeLightbox);
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') closeLightbox(); });
+
+  renderBatches();
+  renderLegend();
+  renderSevFilter();
+  render();
+</script>
+</body>
+</html>

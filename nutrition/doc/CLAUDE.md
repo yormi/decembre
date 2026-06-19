@@ -37,6 +37,9 @@ Same SOL-26419 in graphical form (richesse bars: very low → very high).
 ### `tissus - 2026-05-22.pdf`
 Lab IDs TI-0025330 / 0025331 / 0025332. Sampling 14 mai 26, report 22 mai 26. Three samples — LAIT #1 + LAIT #2 (Laitue, feuilles), TOM #1 (Tomate, feuilles); digestion acide + ICP. First post-crisis tissue read for both crops.
 
+- **LAIT #1** — laitues transplantées depuis 3 semaines en sol
+- **LAIT #2** — laitues en multicellules depuis 5 semaines
+
 Lab's per-element déficience / faible flags:
 - **LAIT #1** — déficient Ca / Mg / S; faible Cu / Zn; indices flagged Cu / Mg / S.
 - **LAIT #2** — déficient K / Ca; faible S; indices flagged N / K / Cu.
@@ -46,6 +49,7 @@ Lab's per-element déficience / faible flags:
 ⚠️ Lab interpretation thresholds are generic plant-tissue norms, not Salanova / tomato cultivar-specific — same caveat as SME spec ranges. LAIT #2 N value appears clipped on layout-extracted text; verify against the PDF before citing.
 ⚠️ Three samples but no in-PDF map to which bed / which cohort / which sampling date by cultivar; cross-reference Catherine's sampling log if downstream decisions hinge on which lettuce cohort is which.
 **Lettuce reads (LAIT #1/#2) interpreted for the salanova yield diagnostic:** `nutrition/lettuce/doc/diagnostic-2026-06-06/diagnosis.md` (Ca/Mg/K low, Na very high → salinity/cation antagonism; N sufficient).
+
 
 ### `FAO-217-tissue-sufficiency-ranges.png`
 Appendix C of FAO Plant Production & Protection Paper 217 (Gianquinto, Muñoz, Pardossi, Ramazzotti & Savvas 2013) — optimal tissue macro (% DM) + micro (mg/kg DM) ranges for greenhouse crops, Mediterranean climate. Tomato + lettuce rows highlighted. **Second, independent source** of tissue sufficiency targets alongside the Agro-Enviro-Lab panel's own floor/ceiling norms.

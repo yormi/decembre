@@ -8,7 +8,7 @@
 
 - radiation → leaf temp → leaf self-generates leaf-VPD → transpiration   (air-VPD does NOT gate it)
 
-- air-VPD non-limiting → transpiration ← min(stomatal aperture, water supply)   (limiter relocates from atmosphere to plant)
+- air-VPD non-limiting during the day → transpiration ← min(stomatal aperture, water supply)
 
 - water supply ← root + xylem capacity
 
@@ -24,20 +24,94 @@
 - HAF → ↑ convection → second cooling path when transpiration is supply-limited
 
 
-### Calcium & tipburn
+### Calcium
 
-- Ca delivery ← transpiration stream (xylem only; no phloem redistribution)
+Field vs greenhouse (why field tolerates DLI 60):
 
-- inner leaves transpire little → low Ca import → tipburn
+- field wins both supply halves: **wind** → distribution (coupling ≈ 1) **+** **rain leaching** → keeps Ψ_osmotic high and f_Ca open
 
-- tipburn risk ↑ with growth rate (fast leaf expansion outruns Ca delivery)
+- greenhouse loses both; HAF restores distribution only — uptake needs a root-zone fix (leach Na, cut Na load, displace with Ca), not climate
 
-- NOT set by root-zone Ca supply — more root does not fix tipburn
+
+#### Inner-heart tipburn
+
+- Ca delivered to leaf through transpiration (xylem) only. No phloem redistribution
+
+- tipburn ⇐ tip Ca demand > Ca arriving at that tip
+
+- demand and supply run on opposite clocks — the inner tip forms mostly **at night**
+
+- tip Ca demand ← leaf-expansion rate ← saturating(DLI)   (expansion saturates ~20–25 mol/m²/d; above that, extra DLI adds no demand — field DLI 60 ≈ greenhouse DLI 25 in demand terms, which is why the field doesn't tipburn at high light)
+
+- night supply: Ca must arrive while the tip forms; daytime delivery does NOT bank for it — Ca is phloem-immobile, it stays in the cells that already existed by day
+
+- inner-heart night Ca supply ← inner-leaf night transpiration ← night heart HD
+
+- Coupling between house HD and heart HD moves from 0.2 to 0.8 with HAF (folded into c)
+
+- transpiration-independent Ca floor ← root pressure / guttation (delivers at zero transpiration) **+** foliar Ca on the heart (bypasses xylem; limited by how well spray wets the enclosed heart)
+
+- NOT set by root-zone Ca supply — more root Ca does not fix inner tipburn
+
+`DLI_critical  ≈  DLI₀  +  c · HD_house_night  +  Ca_foliar`
+`≈  11  +  2.5 · 4  +  0  ≈  21`
+
+| Symbol | Meaning | Value |
+|---|---|---|
+| DLI₀ | Ca floor at zero transpiration (root pressure / guttation) | ~11 mol/m²/d |
+| c | night transpiration → Ca slope on **house** night HD; absorbs coupling, so HAF raises it| ~2–3 (mol/m²/d)/(g/m³) |
+| Ca_foliar | floor lift from foliar Ca; heart-wetting limited | 0–2 mol/m²/d |
+
+
+#### Outer-margin burn (root-supply failure)
+
+- Outer leaves are high-transpiration → NOT distribution-limited → an outer-margin burn means root uptake/supply failed, not night delivery
+
+- Outer margin = furthest xylem terminus + highest cumulative transpiration → first tissue to fail when root supply falls short
+
+Outer burn fires if EITHER pathway crosses:
+
+##### Water-potential (salt + tension)
+
+- Ψ_soil = Ψ_matric (negative tensiometer reading) + Ψ_osmotic (salt)
+
+- Ψ_osmotic ≈ −36 × CE_porewater   [kPa per mS/cm]
+
+- margin scorch ⇐ Ψ_soil more negative than ~−100 to −200 kPa under transpirational load   (roots can't pull water against the combined pull → margins desiccate)
+
+Reference (Ψ_soil at 10 kPa tension; osmotic is the moving term):
+
+| CE_porewater (mS/cm) | Ψ_osmotic (kPa) | Ψ_soil @ 10 kPa (kPa) | Status |
+|---|---|---|---|
+| 1.0 | −36 | −46 | safe |
+| 1.5 | −54 | −64 | safe |
+| 2.0 | −72 | −82 | nearing |
+| 2.5 | −90 | −100 | scorch onset |
+| 3.0 | −108 | −118 | scorch |
+| 4.0 | −144 | −154 | scorch |
+
+##### Cation antagonism (uptake competition)
+
+- A full Ca pool still starves the plant if its share is crowded out
+
+- Ca²⁺ root uptake ← competed by Na⁺, K⁺, Mg²⁺, NH₄⁺   (Na⁺, NH₄⁺ most antagonistic)
+
+- f_Ca = Ca²⁺ / (Ca²⁺ + Na⁺ + K⁺ + Mg²⁺ + NH₄⁺) (Use SME numbers)
+
+- margin necrosis ⇐ f_Ca below 0.10 to 0.15 
 
 
 ### Bolting
 
-- bolting ← accumulated thermal time ; NOT water stress
+- Bolting ← accumulated thermal time **+** long photoperiod (days >~14–16 h promote bolting; Quebec summer ~15–16 h, can't be vented away)
+
+- **Stress accelerates** (salt, heat, water, transplant shock) — it raises GA, effectively *lowering* the thermal-time threshold
+
+- Drought alone won't bolt, but stress shortens the clock
+
+- **GA (gibberellic acid)** = the proximate bolt hormone. Heat + stress raise GA → internodes elongate → bolt
+
+- Lettuce is a *heat*-bolter. Cold does **not** induce bolting, it suppresses it → growing the plug cold (barn) is safe and protective, never a bolt risk
 
 - A degree in the hot range drives bolting more than a degree in the cool range
 
@@ -54,7 +128,9 @@
 | soft ceiling | T_max | ~30 °C | above → heat damage (distinct failure); stop adding bolt-weight |
 | thermal-time threshold | — | 750–1250 °C·d | accumulated weight to bolt; per-cultivar across leaf/butterhead types |
 
-- time-to-bolt held at constant temperature (≈1000 °C·d; constant temp)
+
+
+Time-to-bolt held at constant temperature (≈1000 °C·d; constant temp)
 
 | Held temp | weight °C·d/day | Days to ~1000 °C·d |
 |---|---|---|
@@ -65,11 +141,9 @@
 
 ### Canopy closure
 
-- leaf area expands → neighbour leaves meet → **canopy closes**
+- canopy closure timing ← Spacing + DLI   (NOT root volume, NOT temperature)
 
-- canopy closure timing ← plant pitch (spacing) + DLI   (NOT root volume, NOT temperature)
-
-- before closure: incident light → bare media/soil → uncaptured   (yield ← intercepted light)
+- before closure: yield ← intercepted light
 
 - after closure: added leaf area → shades lower leaves → lower leaves drop below light-compensation point → senesce (source→sink flip)
 
@@ -106,14 +180,14 @@ stage-independent
 
 #### Seedlings
 
-plug, ~4 wk propagation. pH + EC by pour-through
+plug, ~4 wk propagation.
 
 | Factor | Target | Band | Edge |
 |---|---|---|---|
 | DLI | 10–12 mol/m²/d | 8–14 | >14 → stress / stretch-control |
 | Media water tension | 5–10 kPa | 3–15 | brief dry-back drives rooting; never saturate |
-| Soil pH (pour-through) | 6.0–6.5 | 5.8–6.8 | <5.5 → Mn/Al; >7 → Fe/Mn/P lockout |
-| Soil EC (pour-through) | 1.0–1.2 mS/cm | 0.8–1.5 | young roots salt-sensitive; >1.5 → hold feed |
+| Soil pH (root-zone) | 6.0–6.5 | 5.5–6.5 | <5.5 → Mn/Al; >7 → Fe/Mn/P lockout |
+| Soil EC (root-zone) | 1.0–1.2 mS/cm | 1.0–1.5 | young roots salt-sensitive; >1.5 → hold feed |
 | Air temp — day | 18–20 °C | 16–22 | establishment warmth |
 | Air temp — night | 14–16 °C | 12–17 | warmer than beds → faster establishment |
 | Root-zone temp | 20–22 °C | 18–24 | warmth drives rooting; <15 → AMF inactive |
@@ -142,7 +216,7 @@ plug, ~4 wk propagation. pH + EC by pour-through
 
 ## Boundaries
 
-- Target bands live here; the soil-pH adjustment model + salinity dynamics → `soil-ph/`.
+- The soil-pH adjustment model + salinity dynamics → `soil-ph/`.
 
 - Nutrient supply / demand → `plant-needs/`.
 
@@ -152,3 +226,6 @@ plug, ~4 wk propagation. pH + EC by pour-through
 **Xylem** — water-conducting tissue; one-way flow root→leaf with the transpiration stream; the only path that carries calcium.
 
 **Phloem** — sugar-conducting tissue; bidirectional; does not redistribute calcium to inner leaves.
+
+
+**Crown** — the compressed stem base where all leaves attach and roots emerge; the growing point sits just above it; the site of crown/base rot in a closed humid canopy. _Avoid_: collar.

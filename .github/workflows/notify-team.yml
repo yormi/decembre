@@ -102,32 +102,16 @@ jobs:
             git push
           fi
 
-      - name: Préparer et envoyer le message à l'équipe
+      - name: Annoncer sur #recherche-et-developpement
         env:
-          PR_TITLE: ${{ github.event.pull_request.title }}
           PR_BODY: ${{ github.event.pull_request.body }}
+          URL: https://yormi.github.io/decembre/
+          CHANNEL: rnd
           SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK_TEAM }}
         run: |
           set -euo pipefail
-          CHANGES=$(printf '%s\n' "$PR_BODY" | awk '/^## Ce qui change/{flag=1; next} /^## /{flag=0} flag' | grep -vE '^<!--|^$' || true)
-          if [ -z "$CHANGES" ]; then CHANGES="(aucun résumé fourni)"; fi
-
-          PROD_URL="https://yormi.github.io/decembre/"
-
-          jq -n \
-            --arg title "$PR_TITLE" \
-            --arg changes "$CHANGES" \
-            --arg prod "$PROD_URL" \
-            '{
-              text: (":white_check_mark: Mise à jour publiée — " + $title),
-              blocks: [
-                {type:"header",text:{type:"plain_text",text:"Mise à jour publiée",emoji:true}},
-                {type:"section",text:{type:"mrkdwn",text:("*" + $title + "*")}},
-                {type:"section",text:{type:"mrkdwn",text:("*Ce qui change :*\n" + $changes)}},
-                {type:"section",text:{type:"mrkdwn",text:("<" + $prod + "|:globe_with_meridians: Ouvrir l app à jour>")}}
-              ]
-            }' > payload.json
-
+          # Same tested format source as #review, preset RND (lien prod, sans footer).
+          node scripts/build-review-message.mjs > payload.json
           WEBHOOK=$(printf '%s' "$SLACK_WEBHOOK" | tr -d '\r\n[:space:]')
           curl -fsS -X POST -H 'Content-Type: application/json' \
             --data @payload.json \

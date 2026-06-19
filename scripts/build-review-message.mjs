@@ -1,0 +1,65 @@
+// Builds the Slack payload for the #review (notify-review.yml, on PR ready)
+// and #recherche-et-developpement (notify-team.yml, on merge) auto-posts.
+//
+// Format is owned here, in one tested place — NOT inline in the workflow YAML.
+// Node handles apostrophes/Unicode natively, so the French strings
+// ("l'app", "l'aperçu", "c'est") can't break shell/jq quoting the way the
+// old inline `jq -n '{...}'` did.
+//
+// Input: the PR body's "## Ce qui change" bullets + the Netlify preview URL.
+// Output: the Slack incoming-webhook payload object.
+
+const BOT_NAME = "Nouvelle version de l'app Décembre";
+const ICON_EMOJI = ':robot_face:';
+const EMPTY_CHANGES = '(aucun résumé fourni)';
+
+// Per-channel wording. #review wants a "reply in thread" footer; the
+// #recherche-et-developpement broadcast wants the link but no footer.
+export const REVIEW = {
+  linkText: "Ouvrir l'aperçu",
+  footer: "Réponds dans ce fil quand c'est bon pour publier.",
+};
+export const RND = {
+  linkText: "Ouvrir l'app",
+  footer: '',
+};
+
+// Pull the lines under "## Ce qui change" (up to the next "## " heading),
+// drop HTML comments + blank lines, and render markdown "- " as a real
+// bullet glyph for Slack.
+export function extractChanges(prBody) {
+  const lines = (prBody || '').split('\n');
+  const start = lines.findIndex((line) => /^## Ce qui change/.test(line));
+  if (start === -1) return '';
+  const bullets = [];
+  for (const line of lines.slice(start + 1)) {
+    if (/^## /.test(line)) break;
+    if (/^<!--/.test(line) || line.trim() === '') continue;
+    bullets.push(line.replace(/^- /, '• '));
+  }
+  return bullets.join('\n');
+}
+
+export function buildReviewMessage({ prBody, url, linkText, footer }) {
+  const changes = extractChanges(prBody) || EMPTY_CHANGES;
+  const blocks = [
+    { type: 'section', text: { type: 'mrkdwn', text: changes } },
+    { type: 'section', text: { type: 'mrkdwn', text: `<${url}|:link: ${linkText}>` } },
+  ];
+  // Footer is optional — #recherche-et-developpement omits it.
+  if (footer) blocks.push({ type: 'context', elements: [{ type: 'mrkdwn', text: footer }] });
+  return { username: BOT_NAME, icon_emoji: ICON_EMOJI, text: BOT_NAME, blocks };
+}
+
+// CLI edge: read inputs from env, print the payload as JSON to stdout.
+// CHANNEL selects per-channel wording (default "review").
+if (import.meta.url === `file://${process.argv[1]}`) {
+  const channel = process.env.CHANNEL === 'rnd' ? RND : REVIEW;
+  const payload = buildReviewMessage({
+    prBody: process.env.PR_BODY,
+    url: process.env.URL,
+    linkText: channel.linkText,
+    footer: channel.footer,
+  });
+  process.stdout.write(JSON.stringify(payload));
+}

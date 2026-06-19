@@ -15,7 +15,7 @@ const W_INIT_GERMINATED_G = 0.015;
 const LED_PPFD = 200;
 
 const DLI_SUN_OUTDOOR_QC_ANNUAL = 30;
-const GH_LIGHT_TRANSMISSION_DOUBLE_POLY = 0.55;
+const GH_LIGHT_TRANSMISSION_DOUBLE_POLY = 0.65;
 const DLI_SUN_GH_ANNUAL_AVG_QC = DLI_SUN_OUTDOOR_QC_ANNUAL * GH_LIGHT_TRANSMISSION_DOUBLE_POLY;
 
 // nursery-canopy-cap-by-plateau: nursery canopy mass-loading geometry.

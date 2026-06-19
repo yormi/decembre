@@ -74,17 +74,17 @@ DLI_SUN_OUTDOOR_QC_ANNUAL × GH_LIGHT_TRANSMISSION_DOUBLE_POLY
 double-poly-transmission-decomposed owns the sun-side decomposition. Why two constants instead of
 one post-transmission baked-in value? The film transmission updates
 independently of the outdoor-DLI baseline — when poly is replaced or
-ages (0.55 fresh → 0.45 aged), the operator-side adjustment touches
+ages (0.65 fresh → 0.45 aged), the operator-side adjustment touches
 one constant, not a recomputed composite.
 
 Constant choices:
 - `DLI_SUN_OUTDOOR_QC_ANNUAL = 30 mol/m²/d` — Quebec annual-average
   outdoor PAR DLI; cert 2 from public climate-data summaries. Refit
   when a site-specific pyranometer dataset lands.
-- `GH_LIGHT_TRANSMISSION_DOUBLE_POLY = 0.55` — PAR transmission for a
-  typical 6-mil inflated double-poly film; cert 3 (published range
-  0.50-0.65 fresh; aged drops to ~0.45). Update when film is replaced
-  or aged.
+- `GH_LIGHT_TRANSMISSION_DOUBLE_POLY = 0.65` — PAR transmission for a
+  newer/clean 6-mil inflated double-poly film; cert 3 (published range
+  0.50-0.65 fresh; aged drops to ~0.45). Top of the fresh band; drop
+  toward 0.55-0.45 as film ages/fouls. Update when film is replaced.
 - `LED_PPFD = 200 µmol/m²/s` — installed bench LED capacity; cert 4
   (datasheet-anchored).
 
@@ -212,7 +212,7 @@ Live triggers across REQs:
 | n ≥ 5 cohorts at non-50-cell trays | `CANOPY_CAP_BY_PLATEAU` (canopy-cap-is-ceiling / nursery-canopy-cap-by-plateau) | per `doc/yield-range-calibration-2026-spring.md` § "How to add new observations" |
 | First 18-cell cohort under best non-light conditions | `CANOPY_CAP_BY_PLATEAU[18]` — geometric likely underpredicts (`h × ρ` rises at wider spacing); refit upward toward observed asymptote (plausible band 75-95 g vs predicted 69 g) | first 18-cell cohort weigh-in at d ≥ 28; smaller +5-10 % expected at 24-cell |
 | Site-specific pyranometer dataset | `DLI_SUN_OUTDOOR_QC_ANNUAL` (double-poly-transmission-decomposed) | when measurement equipment lands |
-| Poly film replacement or aging | `GH_LIGHT_TRANSMISSION_DOUBLE_POLY` (double-poly-transmission-decomposed) | at film swap; 0.55 fresh → 0.45 aged |
+| Poly film replacement or aging | `GH_LIGHT_TRANSMISSION_DOUBLE_POLY` (double-poly-transmission-decomposed) | at film swap; 0.65 fresh → 0.45 aged |
 | Per-plant PAR at d=18/21/24 | `NURSERY_SPACING_PACKED` shape (packed-canopy-spacing) | when measurement equipment lands or photo-coverage analysis runs |
 | Rijk Zwaan breeder density curves | `FOLIAGE_HEIGHT_M` / `FOLIAGE_DENSITY_KG_PER_M3` independent anchors (nursery-canopy-cap-by-plateau) — currently back-derived from the 50-cell anchor | when curves load |
 

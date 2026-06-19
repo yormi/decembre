@@ -243,3 +243,35 @@ Scope: new "Target band" subsection (6.0–6.5 / aim 6.3 / floor 5.8); dose-stop
 
 ### Verdict
 Land after addressing D1 (cert evidence — highest stakes) and the B1/B2 noise-vs-signal ambiguity; fold C1's triplication and fix the learning's stale 6.2/6.4–6.8 Practical note. The band-definition and guardrail wiring themselves are sound.
+
+## 2026-06-13 — review of yield-range/derivation.md (HEAD working-tree diff)
+
+Scope: `GH_LIGHT_TRANSMISSION_DOUBLE_POLY` 0.55 → 0.65 in the `dli-annual-sun-plus-led ↔ double-poly-transmission-decomposed` section + the consolidated refinement-triggers row. Cert held at 3. `data.js:18` already carries 0.65 (live). No sibling `spec.md` slug text changed (spec states the formula, not the value).
+
+### Blindspots
+**B1 — The constant bump wasn't propagated into the section's own worked example; the d44 headline timing now contradicts the live value** · `PENDING`
+- **What the spec assumes:** the `logistic-growth-no-decay` integrator-output block (lines ~122-135) is a faithful trace of the live constants — `DLI_bench = sun(16.5) + LED(11.5) = 28.02`, `f_light ≈ 0.70 for d ≤ 14`, `daysToTransplantPotential = d44` at 50-cell / 16 LED-h.
+- **What might be ignored:** `sun(16.5)` = 30 × **0.55**. With 0.65 the sun term is 19.5, bench = 19.5 + 11.52 = **31.0**, not 28.02. Every number downstream of it (the 28.02 bench, the per-plant-DLI reads driving `f_light ≈ 0.70`, the d44 ready-day) is now stale — derived from the constant this diff just retired. d44 is the surface's headline timing number; a PO or operator citing it is citing a 0.55-world result against a 0.65-world model.
+- **How to test it:** recompute the integrator at 0.65 and refresh the worked example (specialist lane — flag, don't fix); confirm whether d44 actually moves (early-nursery per-plant DLI is already in the ≥22 saturation floor, so the shift may be 0-2 d, but the printed 28.02/16.5 are wrong regardless).
+- **Cost if real:** medium — internal inconsistency in the one block operators read for "when is it ready"; erodes trust in the trace even if the day-number barely moves.
+
+**B2 — Top-of-band transmission stacked on a best-case model = compounded optimism; the value choice rests on unverified film condition** · `PENDING`
+- **What the spec assumes:** Décembre's poly justifies the top of the published fresh band ("newer/clean 6-mil film", 0.65).
+- **What might be ignored:** the model is already explicitly "best non-light conditions" (every stress factor pinned at 1.0). Picking the optimistic extreme of the transmission range on top of that double-counts optimism. Published fresh range is 0.50-0.65; aged/fouled drops to ~0.45. If the actual film is mid-life or dusty (typical small-greenhouse reality), true transmission is 0.50-0.55 and the model over-states sun DLI by 18-30%. Nothing in the diff cites the film's actual age/install date.
+- **How to test it:** `Guillaume call needed:` what's the real age/condition of the double-poly right now — freshly installed/clean (0.65 defensible) or mid-life (drop to 0.55)? A one-time PAR-meter reading under-film vs open-sky settles it directly.
+- **Cost if real:** medium — over-stated bench DLI inflates the best-case timing/yield surface; matters most at lower LED-hours where sun is the larger DLI term.
+
+### Complexity
+No new constant, stage, or branch — a single value moved. Nothing to cut.
+
+### Cert defense
+**D1 — `GH_LIGHT_TRANSMISSION_DOUBLE_POLY = 0.65`, cert held at 3** · `PENDING`
+- **Specialist's defense:** 0.65 is within the published fresh-film range (0.50-0.65), so the cert-3 published-range basis is unchanged from 0.55.
+- **What I'd need to accept cert ≥ 3:** the published-range grounding does carry to 0.65 — it's the band's top edge, still cited, not extrapolated. So cert 3 holds on *literature* grounds. What it does NOT establish is that 0.65 (vs 0.55) is the right pick for *this* film — that's a field-condition call, not a literature-cert call.
+- **My read:** cert 3 fine. But the cert is doing different work than before: at 0.55 it was "typical film, mid-band"; at 0.65 it's "best-case film, top edge". The number is now a field-reality bet (see B2), not just a literature read — the cert label hides that shift. Recommend a one-line note that 0.65 presumes fresh/clean film and steps down with age, which the prose half-says ("drop toward 0.55-0.45 as film ages") but the trigger table still frames as a swap-time event, not a continuous derate.
+
+### Verdict
+Land after refreshing the stale worked example (B1 — concrete defect, highest priority) and confirming film condition justifies top-of-band (B2/D1 — Guillaume call). The constant choice itself is defensible if the film is genuinely fresh; the trace just hasn't caught up to the new value.
+
+## 2026-06-13 — re-trigger, yield-range/derivation.md (no-op)
+Hook re-fired on the same `GH_LIGHT_TRANSMISSION_DOUBLE_POLY` 0.55 → 0.65 diff already reviewed above (lines 247-274: B1 stale d44 worked example · B2 top-of-band optimism / film-condition · D1 cert-3 holds on literature but now a field-reality bet). Ran the three-angle pass independently; landed on the same findings (plus the annual-average-sun × peak-fresh-transmission time-axis framing, already covered by B2's optimism point). No new claim moved → no-op pass, no duplicate entry. · `PENDING`

@@ -19,7 +19,7 @@
 
 - LED PPFD → photon flux at canopy   (drives; constant while fixtures on)
 
-- outdoor sun → ×0.55 film → greenhouse sun PPFD   (limited by double-poly transmission)
+- outdoor sun → ×0.65 film → greenhouse sun PPFD   (limited by double-poly transmission)
 
 - bed DLI ← greenhouse sun DLI **+** LED DLI   (two additive sources)
 
