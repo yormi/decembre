@@ -41,11 +41,22 @@ fi
 # Stop any orphan build watcher from a previous session.
 pkill -f 'scripts/build\.mjs --watch' 2>/dev/null || true
 
-# Start the build watcher in the background; tear it down when this script exits.
+# Both children run under this script (NOT exec'd) so it can supervise them.
 echo "Starting build watcher..."
 ( cd "${PROJECT_ROOT}" && exec node scripts/build.mjs --watch ) &
 BUILD_PID=$!
-trap 'kill "${BUILD_PID}" 2>/dev/null || true' EXIT
 
 echo "Starting live-server on http://localhost:${PORT} ..."
-exec npx --yes live-server "${PROJECT_ROOT}/dist" --port="${PORT}" --no-browser --quiet
+( exec npx --yes live-server "${PROJECT_ROOT}/dist" --port="${PORT}" --no-browser --quiet ) &
+SERVE_PID=$!
+
+# Kill the survivor whenever this script exits.
+trap 'kill "${BUILD_PID}" "${SERVE_PID}" 2>/dev/null || true' EXIT
+
+# Block until EITHER child dies, then exit non-zero. Under systemd's
+# Restart=always (see dev-server-daemon.sh) that exit relaunches the whole
+# unit — so a dead build watcher self-heals instead of silently leaving
+# dist/ stale while live-server keeps serving the old build.
+wait -n || true
+echo "A dev-server child exited — tearing down so systemd restarts the unit."
+exit 1
