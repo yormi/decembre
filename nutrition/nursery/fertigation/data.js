@@ -127,6 +127,29 @@
       cert: 4,                                   // datasheet-anchored
     },
 
+    'IronSulfate': {
+      // Sulfate de fer (FeSO₄·7H₂O), 20 % Fe. Bench practice: the team adds
+      // ~1.4 g per 94 L bucket (≈ 0.015 g/L) for seedling iron. Works in the
+      // nursery (acidic peat, tank pH ~5.8 keeps Fe²⁺ soluble) where the field
+      // soil pH 7.48 would precipitate it. Folded into the model 2026-06-20 to
+      // match the as-poured feed.
+      mode: 'concentration',                     // simple micro salt, concentration-dosed
+      ch: 'nursery',
+      base: { Fe: 0.20 },                        // 20 % Fe (FeSO₄·7H₂O); cert 3 — product label
+      phClass: { Fe: 'sulfate-metal' },          // cert 3
+      ions: {
+        'Fe2+': 0.20,                            // cert 3
+        'SO4-2': 0.345,                          // SO₄ fraction of FeSO₄·7H₂O (96/278); cert 3
+      },
+      chemistryTags: ['sulfate'],                // cert 4 (same classifier path as kelp sulfate)
+      organicAllowed: true,                      // CAN/CGSB-32.311 — iron sulfate listed; cert 4
+      ecFactor: 1.2,                             // mS/cm per g/L; cert 2 (divalent-sulfate analogy; reconcile w/ global PRODUCT FeSO₄)
+      solubilityCap_g_per_L: 250,                // cert 4
+      phContribution: -0.10,                     // mildly acidifying (Fe²⁺ hydrolysis); cert 2
+      maximumStableHours: 24,                        // cert 3
+      cert: 3,
+    },
+
   };
 
   // ─── Operational defaults ─────────────────────────────────────────────
@@ -139,40 +162,53 @@
     applicationsPerWeek: 1,                      // cert 4 — observed
   };
 
-  // ─── Default recipe at 90 g target / 35-day cycle ─────────────────────
+  // ─── Default recipe at 20 g target / 35-day cycle ─────────────────────
   //
-  // Sized to maximize N + P coverage within predicted-ce-under-nursery-cap
-  // (CE ≤ 3.0) and predicted-tank-ph-in-nursery-envelope (tank pH 4.5–6.5).
-  // Math walked in derivation.md. Doses are concentration
-  // in the watering bucket (mL/L for liquids, g/L for the powder).
+  // Re-derived 2026-06-20 for the salt-control phase (target 20 g, 1 feed/wk).
+  // Old recipe (Ocean 7 / Acadie 6 / kelp 2, CE 2.6) was sized to a 90 g plug
+  // and sat just under a 3.0 cap that assumed substrate 1.5–2.5 — a band the
+  // domain (root-zone 1.0–1.2, hold > 1.5) and the field (leachate 5+, Na
+  // 3166, tip-burn) both reject. Lowering the plug target to 20 g halves N
+  // demand, which lets the feed drop into the salt-safe band.
+  // Math walked in derivation.md. Doses are concentration in the watering
+  // bucket (mL/L for liquids, g/L for the powder).
   //
   // Numbers per product (per tray, per week, in mg of element):
-  //   Ocean 7.0 g/L     × 1.25 L × 0.15 N           ×1000 = 1313 mg N
-  //   AcadiePoisson 6 mL/L (≈ 6 g/L) × 1.25 × 0.02  ×1000 =  150 mg N
-  //   AcadieKelp 2 mL/L (≈ 2 g/L)    × 1.25 × 0.0   ×1000 =    0 mg N (negligible)
+  //   Ocean 2.0 g/L     × 1.25 L × 0.15 N          ×1000 = 375 mg N
+  //   AcadiePoisson 1.5 g/L × 1.25 × 0.02          ×1000 =  37 mg N
+  //   IronSulfate 0.015 g/L × 1.25 × 0.20 Fe       ×1000 = 3.75 mg Fe (~3 ppm in feed)
   //   ────────────────────────────────────────────────────
-  //   Total                                              ≈ 1463 mg N/tray
+  //   Total                                              ≈ 412 mg N/tray (≥ 350 floor at 20 g)
   //
-  // Predicted CE: 0.1 + 0.20×7 + 0.15×6 + 0.10×2 = 2.6 mS/cm  → predicted-ce-under-nursery-cap ✓
-  // Predicted pH: 7.0 + (-0.15)×7 + (-0.10)×6 + (-0.05)×2 = 5.25 → predicted-tank-ph-in-nursery-envelope ✓
+  // Predicted CE: 0.1 + 0.20×2 + 0.15×1.5 + 0.10×1 + 1.2×0.015 = 0.85 mS/cm → predicted-ce-under-nursery-cap ✓
+  // Predicted pH: 6.26 + (-0.15)×2 + (-0.10)×1.5 + (0.02)×1 + (-0.10)×0.015 = 5.83 → predicted-tank-ph-in-nursery-envelope ✓
+  // (CE is the bucket feed; the cell concentrates ~1.5× as it dries between
+  //  weekly feeds → cell peak ~1.2, held by per-feed leaching. See salt-flush
+  //  protocol + derivation.md.)
   //
   // Note: per-product dose units below are kept in **g/L** (label-native for
   // Ocean, and we take mL/L ≈ g/L for liquids at density ~1; documented
   // assumption). Conversion to mL/L for team-facing UI is a presentation
   // concern — sister-subproject (recipe app card) handles it.
   const NURSERY_RECIPE_DEFAULT = {
-    Ocean_15_1_1: 7.0,                           // g/L (≈ label hydroponics 2 g/L × 3.5; Ecocert allowed; cert 3)
-    AcadiePoisson: 6.0,                          // g/L (≈ 6 mL/L; cert 4 — 5–13 range trialed at farm)
-    AcadieKelp:    2.0,                          // g/L (≈ 2 mL/L; current production rate; cert 4)
+    Ocean_15_1_1: 2.0,                           // g/L (clears N floor at 20 g target; Ecocert allowed; cert 3)
+    AcadiePoisson: 1.5,                          // g/L (≈ 1.5 mL/L; P workhorse, clears P floor; cert 3)
+    AcadieKelp:    1.0,                          // g/L (≈ 1 mL/L; K + micro baseline; cert 3)
+    IronSulfate:   0.015,                        // g/L (≈ 1.4 g / 94 L bench; ~3 ppm Fe; cert 3)
   };
 
   // ─── Caps + envelopes ─────────────────────────────────────────────────
   //
-  // predicted-ce-under-nursery-cap — solution CE at fertigation ≤ 3.0 mS/cm. Cert 3.
-  // Rationale: substrate EC post-watering target 1.5–2.5 mS/cm (cert 4) +
-  // some carry-up; staying ≤ 3.0 in the bucket protects week-1 trays
-  // (smallest roots, most osmotic-stress-sensitive). Hard cap at 3.0.
-  const NURSERY_CE_CAP_MS_CM = 3.0;
+  // predicted-ce-under-nursery-cap — bucket feed CE ≤ 1.0 mS/cm. Cert 2.
+  // Rationale: domain seedling root-zone band is target 1.0–1.2, hold feed
+  // > 1.5 (young roots salt-sensitive; nutrition/lettuce/domain.md). The cell
+  // concentrates ~1.5× above the bucket feed as it dries between weekly feeds
+  // (cert 2 — dry-down estimate), so a 1.0 bucket cap keeps the cell peak near
+  // the 1.5 hold line, targeting ~1.2. Per-feed leaching (salt-flush protocol)
+  // resets weekly accumulation; pour-through EC is the cell ground truth.
+  // Lowered 3.0 → 1.0 on 2026-06-20 (was sized to a now-rejected 1.5–2.5
+  // substrate band). Hard cap at 1.0.
+  const NURSERY_CE_CAP_MS_CM = 1.0;
 
   // predicted-tank-ph-in-nursery-envelope — tank pH band derived from predicted-tank-ph-within-envelope nursery row.
   // [4.5, 6.5] matches peat substrate pH range. cert 4.

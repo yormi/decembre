@@ -10,6 +10,32 @@ cross-crop rules in `nutrition/spec.md`. Cross-crop URL hash routing
 
 ---
 
+## recette-card-layout
+
+An operator recipe card renders above the model blocks — the as-poured
+batch for one mixing bucket plus run instructions.
+
+1. **Batch tiles** — 2-column tile grid (same idiom as the Fertigation
+   operator card): a water tile (`NURSERY_BUCKET_VOLUME_L` L) first,
+   then one tile per product in `NURSERY_RECIPE_DEFAULT` key order. Each
+   product tile shows emoji / operator name / amount / unit. Amount =
+   `recipe[product] × NURSERY_BUCKET_VOLUME_L`, rounded to 0.1. Powders
+   in `g`, liquids in `mL` (per-product display metadata; mL ≈ g at
+   density ~1). No amount is hardcoded — all derive from the recipe ×
+   bucket volume.
+
+2. **Run instructions** — applications/week (from
+   `NURSERY_FERTIGATION_DEFAULTS.applicationsPerWeek`), target ~20 g
+   plug, flush 30–50 % each feed (water to runoff), pour-through check
+   (rinse if CE > 1,5). Predicted feed CE + cap + tank pH from the calc
+   functions.
+
+`NURSERY_BUCKET_VOLUME_L` is a named app-layer constant (94 L bucket the
+team mixes). Doses stay in the model as g/L; this card is the only place
+that scales to the bucket batch.
+
+---
+
 ## block-1-besoins-layout
 
 Block 1 renders a 3-column table — one row per demand element,

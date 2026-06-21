@@ -14,8 +14,11 @@ Every edit to `STORED_RECIPE.tomato.{fertigation, sidedress, foliaire}` must cap
 | fertigation | `nutrition/tomato/fertigation-recipe/procedure/stored.js` | `app/historique-nutriments/history.js` |
 | sidedress | `nutrition/tomato/sidedress-recipe/procedure/stored.js` | (same) |
 | foliaire | `nutrition/tomato/foliar-strategy/procedure/stored.js` | (same) |
+| nursery (semis feed) | `nutrition/nursery/fertigation/procedure/stored.js` | (same) |
 
-Each `stored.js` assigns `window.STORED_RECIPE.tomato.<channel> = {...}`. `RECIPE_HISTORY` is the array in `history.js` at `const RECIPE_HISTORY = [`.
+Tomato `stored.js` assigns `window.STORED_RECIPE.tomato.<channel> = {...}`; nursery assigns `window.STORED_RECIPE.nursery.fertigation = {...}` (flat `{product: dose}`, per-litre — mirror `NURSERY_RECIPE_DEFAULT`). `RECIPE_HISTORY` is the array in `history.js` at `const RECIPE_HISTORY = [`.
+
+Nursery snapshot shape: `fullSnapshot: { nursery: { Ocean_15_1_1, AcadiePoisson, AcadieKelp, IronSulfate } }` — flat, no stages. Capture ONLY the nursery channel (don't paste tomato channels into a nursery-trigger entry; the render diffs per-channel).
 
 **Out of scope:** `RECIPE_INPUTS`, `TOMATO_FRUIT_EXPORT`, `BIOMASS_DEMAND`, lettuce-side constants. Edits to those shift the FP-target output of `computeStageRecipe(stage)` (Block 7 drift gauge) but do NOT change `STORED_RECIPE.tomato.fertigation` outside this skill — hand-stored audit-trail channel (current values are Haifa-heritage; PA Taillon recommendation is the FP target, not STORED).
 

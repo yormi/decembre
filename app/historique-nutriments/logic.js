@@ -41,6 +41,8 @@ const ELEMENT_LABELS = {
   znSulfate: 'Zinc', mnSulfate: 'Manganèse', cuSulfate: 'Cuivre',
   borax: 'Bore', naMolybdate: 'Molybdène',
   actisol_g: 'Actisol', farine_g: 'Farine de plumes',
+  Ocean_15_1_1: 'Océan 15-1-1', AcadiePoisson: 'Poisson',
+  AcadieKelp: 'Algue', IronSulfate: 'Sulfate de fer',
 };
 function elementLabel(key) {
   return ELEMENT_LABELS[key] || key;
@@ -50,6 +52,7 @@ const CHANNEL_META = {
   fertigation: { icon: '💧', label: 'Fertigation' },
   sidedress:   { icon: '🌱', label: 'Sol' },
   foliaire:    { icon: '🍃', label: 'Foliaire' },
+  nursery:     { icon: '🌿', label: 'Semis' },
 };
 
 // ── before→after chips ──────────────────────────────────────────────
@@ -110,6 +113,19 @@ function diffFoliaire(before, after) {
   return chips ? `<div style="margin:6px 0 2px;">${chips}</div>` : '';
 }
 
+// Diff a flat product→dose recipe ({product: dose}) — the nursery feed shape.
+// Per-litre concentrations; powders g/L, liquids mL/L. Only changed products
+// get a chip.
+function diffFlatChannel(before, after) {
+  before = before || {}; after = after || {};
+  const keys = [...new Set([...Object.keys(before), ...Object.keys(after)])];
+  const chips = keys
+    .filter((k) => Number(before[k] || 0) !== Number(after[k] || 0))
+    .map((k) => chip(elementLabel(k), before[k], after[k], '/L'))
+    .join('');
+  return chips ? `<div style="margin:6px 0 2px;">${chips}</div>` : '';
+}
+
 // Split a reason string on its (1)/(2)/(3) channel markers into a preamble +
 // per-channel why text. Falls back to {preamble: wholeReason} when unmarked.
 function splitReasonByChannel(reason) {
@@ -160,6 +176,8 @@ function renderWhatWhy(entry, afterSnapshot) {
     diffStageChannel(before.sidedress, after.sidedress, 'g'), byChannel.sidedress);
   cards += channelCard('foliaire',
     diffFoliaire(before.foliaire, after.foliaire), byChannel.foliaire);
+  cards += channelCard('nursery',
+    diffFlatChannel(before.nursery, after.nursery), byChannel.nursery);
 
   let h = '';
   if (preamble) {
@@ -190,7 +208,15 @@ function buildHistoriqueNutriments() {
   const container = document.getElementById('historique-nutriments-list');
   if (!container) return;
   const entries = [...RECIPE_HISTORY].sort((a, b) => b.retired.localeCompare(a.retired));
-  const liveStored = (window.STORED_RECIPE && window.STORED_RECIPE.tomato) || {};
+  // Live recipe per channel: tomato channels (fertigation/sidedress/foliaire)
+  // plus the flat nursery feed. Used as the "after" for the newest entry of
+  // each channel.
+  const SR = window.STORED_RECIPE || {};
+  const liveStored = Object.assign(
+    {},
+    SR.tomato || {},
+    (SR.nursery && SR.nursery.fertigation) ? { nursery: SR.nursery.fertigation } : {}
+  );
   const dateStyle = `font-family:'DM Mono',monospace; font-size:12px; color:var(--text); white-space:nowrap;`;
   const cellPad = `padding:10px 12px; border-bottom:1px solid var(--border); vertical-align:top;`;
   let html = `<table style="width:100%; border-collapse:collapse;">
@@ -206,11 +232,18 @@ function buildHistoriqueNutriments() {
     const summaryText = stripJargon(entry.summary || entry.recipe);
     let detailBody;
     if (entry.fullSnapshot) {
-      // "after" = the recipe that replaced this one: the next-newer entry's
-      // snapshot, or live STORED for the most recent entry.
-      const afterSnapshot = (i === 0)
-        ? liveStored
-        : (entries[i - 1].fullSnapshot || {});
+      // "after" = the recipe that replaced this one, PER CHANNEL: the nearest
+      // newer entry that carries the same channel, else live STORED. Per-channel
+      // (not whole-entry) so interleaved crops keep separate lineages.
+      const afterSnapshot = {};
+      for (const ch of Object.keys(entry.fullSnapshot)) {
+        let found;
+        for (let j = i - 1; j >= 0; j--) {
+          const snap = entries[j].fullSnapshot;
+          if (snap && snap[ch]) { found = snap[ch]; break; }
+        }
+        afterSnapshot[ch] = (found !== undefined) ? found : liveStored[ch];
+      }
       detailBody = renderWhatWhy(entry, afterSnapshot);
     } else {
       detailBody = renderLegacy(entry);

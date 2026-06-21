@@ -23,6 +23,10 @@
 // (résidu probable) + Cu sol normal = aucune carence à nourrir. Fenêtre
 // suffisance→toxicité la plus étroite des micros + charge sol permanente
 // (cert-tracked) → ROI négatif. Sol (Cu normal) couvre l'absorption racinaire de base.
+// 2026-06-20 : acide citrique 65 g ajouté au spray A (≈ 1:1 molaire avec le fer)
+// — le citrate garde le fer oxydé sous forme de citrate ferrique soluble dans le
+// film séché au lieu d'un oxyde noir soudé à la cuticule (taches noires sur fruit
+// à laver). pH cuve cible 4,5-5,5, CE 4-6 mS/cm. Ecocert (fermentation).
 // Yucca surfactant not on order — A coverage operates at 30 %, B at 15 %.
 //
 // EDITS REQUIRE /retire-recipe SKILL FIRST. Path `STORED_RECIPE.tomato.foliaire`
@@ -33,6 +37,7 @@ window.STORED_RECIPE.tomato.foliaire = {
     { name: 'MnSO₄ (31.5% Mn)', master: '18 g', note: 'réduit 22→18 g 2026-06-03 — ~60% demande, cap toxicité sans yucca' },
     { name: 'ZnSO₄ (35.5% Zn)', master: '22 g' },
     { name: 'FeSO₄·7H₂O (20% Fe)', master: '90 g', note: 'augmenté 80→90 g 2026-06-03 — ~95% demande (cuticule contourne lockout sol)' },
+    { name: 'Acide citrique', master: '65 g', note: 'ajouté 2026-06-20 — chélation 1:1 du fer (0,32 mol) contre les taches noires d\'oxyde ferrique sur fruit ; pH cuve cible 4,5-5,5, CE 4-6 mS/cm ; Ecocert (fermentation, CAN/CGSB-32.311)' },
   ],
   B: [
     { name: 'CaCl₂·2H₂O', master: '100 g', note: 'Ecocert vérifié ; 2×/semaine ; sans surfactant — coverage cuticulaire ~0.15 ; bypass Ca racinaire pour défense botrytis' },

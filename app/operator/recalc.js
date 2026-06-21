@@ -129,59 +129,27 @@ function autoStage() {
 }
 
 // Nursery (semis laitue) — per-tray watering recipe.
-// Fish dose: 13 mL/L (April 26, 2026 — bumped from 10 mL/L to push tray-finishing
-// strategy). Reasoning: 10 mL/L delivers ~200 ppm N pulse but effective continuous
-// N is much lower due to leaching → undersized for finished lettuce in trays.
-// Target N production range is 150-200 ppm continuous; 13 mL/L moves us closer
-// without crossing into salt-burn risk zone.
-//
-// EC MEASUREMENT STRATEGY (using Bluelab pen):
-//   - Solution EC (in bucket): target 1.9-2.6 mS/cm. Verification step to catch
-//     mixing errors. Keep this check while validating the 13 mL/L recipe over
-//     a few cycles, then can be dropped once consistent.
-//   - Substrate EC (in cell, 30-60 min after watering): target 1.5-2.5 mS/cm.
-//     This is what plants actually experience. Should be slightly lower than
-//     solution EC due to plant uptake and dilution in substrate.
-//   - With top-watering (current practice), salts accumulate at cell BOTTOM
-//     over time. Substrate EC trending up cycle-after-cycle = needs flush.
-//   - Probe insertion: into wet (not saturated) substrate, push firmly,
-//     wait 30-60s for stable reading. Average 2-3 cells per tray.
-//
-// Kelp stays at 2 mL/L — biostimulant, not primary nutrient source.
-// Water: 1.25 L/tray = ~25 mL/cell for 50-cell trays.
-//
-// FeSO₄·7H₂O 15 mg/L = ~3 ppm Fe in fertigation solution (added 2026-04-29):
-// Source: Alpha Chemicals (Amazon B007ODUI76), 20% Fe by mass. Organic-allowed
-// per CAN/CGSB-32.311 (ferrous sulphate is on the permitted iron sources list).
-//   Reason for adding here vs production foliar:
-//   - Nursery substrate is acidic (peat-based, pH ~5.5-6.0) — Fe²⁺ stays
-//     bioavailable to roots. Production beds at pH 7.4 lock out Fe immediately.
-//   - Root uptake at acidic pH is 60-80% efficient vs ~10-15% for foliar
-//     cuticle absorption. Same gram of Fe delivers 4-8× more usable Fe via
-//     nursery fertigation than via production foliar spray.
-//   - Loads seedlings with tissue Fe before transplant — plants enter
-//     production with reserves, coast through 2-week lettuce cycle even with
-//     locked-out beds.
-//   - Eliminates lettuce production foliar spray entirely (no PHI, no residue
-//     wash, no Cu cumulative concern, less labor).
-//   Target: 3 ppm Fe in solution (standard hydroponic Fe range).
-//   FeSO₄·7H₂O at 20% Fe → 3 / 0.20 = 15 mg product per L water.
-//   For 75 trays × 1.25 L = 93.75 L → 1406 mg = 1.41 g of FeSO₄·7H₂O.
-//   Stability: dissolved FeSO₄ oxidizes Fe²⁺ → Fe³⁺ over hours and precipitates
-//   if pH drifts above ~5.5. Mix and apply same day; the team's water has low
-//   alkalinity (Berger 39086, 25 ppm CaCO₃) and the FeSO₄ self-acidifies the
-//   bucket to pH ~5, so no separate acid step needed.
-//   EC contribution at 15 mg/L is negligible (~0.015 mS/cm) — EC targets unchanged.
+// Salt-control recipe (adopted 2026-06-20): target plug ~20 g, 1 feed/week.
+// Doses read from the model `window.FertigationNursery.NURSERY_RECIPE_DEFAULT`
+// (g/L; for liquids mL/L ≈ g/L) × water litres — no hardcoded recipe numbers, so
+// this operator card and the model can't drift apart. The old salty recipe
+// (fish 13 mL/L, no Ocean) was retired here when the bench switched over.
+// Derivation: nutrition/nursery/fertigation/. Leaching + pour-through flush:
+// nutrition/nursery/protocol/salt-flush.md.
+//   Ocean 15-1-1 (powder, g) — N. Acadie poisson (liquid, mL) — P.
+//   Acadie kelp (liquid, mL) — K + micros. Sulfate de fer 20 % (powder, g) — Fe,
+//   stays available in the acidic peat (cell pH ~5.8) where field pH 7.48 would
+//   precipitate it. Water 1.25 L/tray. Feed CE ~0.85 mS/cm, tank pH ~5.8.
 function recalcNursery() {
   const element = document.getElementById('tray-count');
   if (!element) return;
   const trays = parseInt(element.value) || 1;
-  const water = trays * 1.25;
-  const sig2 = (v) => Number(v.toPrecision(2));   // 2 significant figures
+  const water = trays * 1.25;                                       // L (1.25 L/tray)
+  const sig2 = (v) => Number(v.toPrecision(2));                     // 2 significant figures
+  const recipe = (window.FertigationNursery && window.FertigationNursery.NURSERY_RECIPE_DEFAULT) || {};
   document.getElementById('out-water').textContent = sig2(water);
-  document.getElementById('out-fish').textContent = sig2(water * 13);
-  document.getElementById('out-kelp').textContent = sig2(water * 2);
-  // FeSO₄·7H₂O dose: 15 mg/L → display in g (typical batch is 1-2 g)
-  const feG = (water * 15) / 1000;
-  document.getElementById('out-fe').textContent = sig2(feG);
+  document.getElementById('out-ocean').textContent = sig2(water * (recipe.Ocean_15_1_1 || 0));  // g
+  document.getElementById('out-fish').textContent  = sig2(water * (recipe.AcadiePoisson || 0)); // mL
+  document.getElementById('out-kelp').textContent  = sig2(water * (recipe.AcadieKelp   || 0));  // mL
+  document.getElementById('out-fe').textContent    = sig2(water * (recipe.IronSulfate  || 0));  // g
 }
