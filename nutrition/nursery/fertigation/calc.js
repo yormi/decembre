@@ -14,9 +14,10 @@
 //     Mirrors index.html `predictedCE` shape; uses LOCAL ecFactor values
 //     (calibrated from Décembre solution-EC measurements; see data.js).
 //
-//   nurseryRecipeTankPh(recipe, waterPh = 7.0)
+//   nurseryRecipeTankPh(recipe, waterPh = 6.26)
 //     return predicted tank pH = waterPh + Σ phContribution × gPerL.
 //     Same linear sum as global `predictedTankPh`. Clamped to [2.0, 12.0].
+//     Default waterPh = Décembre source water 6.26 (Berger 2026-04-10).
 
 (function () {
   'use strict';
@@ -215,7 +216,10 @@
   // phContribution calibration applies. Clamp to plausible range so a
   // miswritten recipe can't return pH = -3.
   function nurseryRecipeTankPh(recipe, waterPh) {
-    if (typeof waterPh !== 'number' || !isFinite(waterPh)) waterPh = 7.0;
+    // Default = Décembre source water pH 6.26 (Berger analysis 2026-04-10,
+    // EC 0.10), not a generic 7.0. The leaner salt-control recipe adds little
+    // acid, so the real source pH is what keeps the tank in [4.5, 6.5].
+    if (typeof waterPh !== 'number' || !isFinite(waterPh)) waterPh = 6.26;
     const PRODUCTS = getProducts();
     let pH = waterPh;
     if (recipe && typeof recipe === 'object') {

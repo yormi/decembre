@@ -56,28 +56,46 @@ Role: K + micro baseline. 25 mg K/tray at 2 mL/L (doesn't move macro needle)
 + trace B/Mo coverage for seedling stage. Per-micro cert 1 — needs fresh
 manufacturer datasheet to upgrade.
 
-## 2. Demand calculation (90 g / 35 d / 50 cells)
+### Sulfate de fer (FeSO₄·7H₂O, 20 % Fe)
 
-Per `index.html` `calcLettuceNurseryDemand(90, 35, 50)`:
+Bench practice folded into the model 2026-06-20: team adds ~1.4 g / 94 L
+(≈ 0.015 g/L) for seedling iron. Kelp alone under-sources Fe (trace), so this
+is the real Fe channel.
+
+| Field | Value | Math | Cert |
+|---|---|---|---|
+| Fe (elemental) | 0.20 | label "20 % Fe" | 3 |
+| SO₄ fraction | 0.345 | 96 / 278 (FeSO₄·7H₂O) | 3 |
+| ecFactor | 1.2 | divalent-sulfate analogy; reconcile w/ global PRODUCT FeSO₄ | 2 |
+| Fe delivered | 3.75 mg/tray | 0.015 × 1.25 × 0.20 × 1000 (~3 ppm feed) | 3 |
+
+Available here (unlike the field): tank pH ~5.8 + acidic peat keep Fe²⁺
+soluble; field soil pH 7.48 precipitates the same salt. EC add negligible
+(~0.018 mS/cm at this dose). Organic-allowed (CAN/CGSB-32.311).
+
+## 2. Demand calculation (20 g / 35 d / 50 cells)
+
+Target lowered 90 → 20 g (2026-06-20, salt-control phase — see plant-needs
+derivation). Per `calculateNurseryDemand(20, 35, 50)`:
 
 ```
-DW per plant per week = 90 × LETTUCE_NURSERY_DM_FRACTION × (7 / 35)
-                      = 90 × 0.07 × 0.2 = 1.26 g / plant / week
+DW per plant per week = 20 × LETTUCE_NURSERY_DM_FRACTION × (7 / 35)
+                      = 20 × 0.07 × 0.2 = 0.28 g / plant / week
 ```
 
 × tissue % × 1000 → mg/plant/week; × 50 cells → mg/tray/week:
 
-| Element | Tissue % | mg/plant/wk | mg/tray/wk |
-|---|---|---|---|
-| N  | 5.0 %  | 63   | 3 150 |
-| P  | 0.5 %  | 6.3  | 315   |
-| K  | 6.0 %  | 75.6 | 3 780 |
-| Ca | 2.0 %  | 25.2 | 1 260 |
-| Mg | 0.4 %  | 5.04 | 252   |
+| Element | Tissue % | mg/plant/wk | mg/tray/wk | 50 % floor |
+|---|---|---|---|---|
+| N  | 5.0 %  | 14   | 700 | 350 |
+| P  | 0.5 %  | 1.4  | 70  | 35  |
+| K  | 6.0 %  | 16.8 | 840 | — |
+| Ca | 2.0 %  | 5.6  | 280 | — |
+| Mg | 0.4 %  | 1.12 | 56  | — |
 
-`n-supply-half-demand-floor` inline-fallback target is **2 800 mg N / tray / week**, deliberately
-conservative vs calculated 3 150 during 90 g calibration phase. Cert 3
-across the board.
+Halving the plug target halves every demand. The N floor drops 1 400 → 350 mg
+— that is what lets the feed sit in the salt-safe CE band. Cert 3 across the
+board.
 
 ## 3. ecFactor calibration (LOCAL override, cert 3)
 
@@ -100,11 +118,11 @@ alone — see `learnings.md`.
 
 ## 4. Recipe sizing — `NURSERY_RECIPE_DEFAULT`
 
-Constraints:
-- **CE** ≤ 3.0 mS/cm (predicted-ce-under-nursery-cap)
-- **pH** ∈ [4.5, 6.5] (predicted-tank-ph-in-nursery-envelope)
-- **N supply** ≥ 1 400 mg/tray (50 % of inline 2 800, `n-supply-half-demand-floor`)
-- **P supply** ≥ 158 mg/tray (50 % of 315, default-recipe-p-supply-half-demand)
+Constraints (re-derived 2026-06-20 at 20 g target + lowered cap):
+- **CE** ≤ 1.0 mS/cm bucket (predicted-ce-under-nursery-cap; cell ~1.5× via dry-down → peak ~1.2 with per-feed leaching)
+- **pH** ∈ [4.5, 6.5] (predicted-tank-ph-in-nursery-envelope; waterPh 6.26)
+- **N supply** ≥ 350 mg/tray (50 % of 700 demand at 20 g, `n-supply-half-demand-floor`)
+- **P supply** ≥ 35 mg/tray (50 % of 70, default-recipe-p-supply-half-demand)
 
 Mass-flow per knob (per tray, per week, mg element):
 
@@ -119,19 +137,20 @@ Acadie Y g/L:  N = Y × 1.25 × 0.02   × 1000 = 25 Y
                 K = Y × 1.25 × 0.00414 × 1000 = 5.18 Y
                 CE = 0.15 × Y
                 pH = -0.10 × Y
-Kelp   Z g/L:  K = Z × 1.25 × 0.01   × 1000 = 12.5 Z
+Kelp   Z g/L:  K = Z × 1.25 × 0.0498 × 1000 = 62.3 Z
                 CE = 0.10 × Z
-                pH = -0.05 × Z
+                pH = +0.02 × Z
 ```
 
-Search heuristic: lock Z = 2 g/L; solve {X, Y} for max(N supply) subject to
-CE ≤ 3.0 and P ≥ 158. Picked `X = 7, Y = 6, Z = 2`:
-- N 1 463 mg = 52 % of 2 800 target (clears `n-supply-half-demand-floor`, edge-close).
-- P 170 mg = 54 % of 315 (clears default-recipe-p-supply-half-demand with room).
-- CE 2.55 + 0.10 baseline = 2.65 mS/cm (~0.4 mS/cm head-room under 3.0 cap).
-- pH 5.25 (centre of [4.5, 6.5]).
+Search heuristic: with the floors quartered, find the smallest doses that
+still clear them while CE stays ≤ 1.0. Picked `X = 2, Y = 1.5, Z = 1`:
+- N 412 mg = supply (375 Ocean + 37 Acadie) ≥ 350 floor ✓.
+- P 44 mg (33 Acadie + 11 Ocean) ≥ 35 floor ✓.
+- CE 0.73 + 0.10 baseline = 0.83 mS/cm (under 1.0 cap; cell peak ~1.2).
+- pH 5.83 (in [4.5, 6.5], waterPh 6.26).
 
-Pareto walk + rejected rows in `learnings.md`.
+Old 90 g recipe (X 7 / Y 6 / Z 2, CE 2.65) + its Pareto walk retired to
+`learnings.md`.
 
 K / Ca / Mg under-supply at default — accepted; see `learnings.md`.
 
@@ -139,19 +158,20 @@ K / Ca / Mg under-supply at default — accepted; see `learnings.md`.
 
 ```
 nurseryRecipeCE(NURSERY_RECIPE_DEFAULT, 1)
-  = 0.10 + 0.20 × 7.0 + 0.15 × 6.0 + 0.10 × 2.0
-  = 0.10 + 1.40 + 0.90 + 0.20
-  = 2.60 mS/cm                                       cert 3 (calibration anchor + analogy)
+  = 0.10 + 0.20 × 2.0 + 0.15 × 1.5 + 0.10 × 1.0 + 1.2 × 0.015
+  = 0.10 + 0.40 + 0.225 + 0.10 + 0.018
+  = 0.85 mS/cm                                       cert 2 (calibration anchor + analogy)
 
-nurseryRecipeTankPh(NURSERY_RECIPE_DEFAULT)
-  = 7.00 + (-0.15) × 7.0 + (-0.10) × 6.0 + (-0.05) × 2.0
-  = 7.00 − 1.05 − 0.60 − 0.10
-  = 5.25                                             cert 2 (linear sum, no buffering)
+nurseryRecipeTankPh(NURSERY_RECIPE_DEFAULT)        waterPh default 6.26
+  = 6.26 + (-0.15) × 2.0 + (-0.10) × 1.5 + (0.02) × 1.0 + (-0.10) × 0.015
+  = 6.26 − 0.30 − 0.15 + 0.02 − 0.0015
+  = 5.83                                             cert 2 (linear sum, no buffering)
 
 nurseryRecipeSupply(NURSERY_RECIPE_DEFAULT, 1.25).perTray_mg
-  N: 1463      cert 3
-  P:  170      cert 3
-  K:   88      cert 2  (kelp matrix not fully captured)
+  N:  412      cert 3
+  P:   44      cert 3
+  K:   90      cert 2  (kelp matrix not fully captured)
+  Fe: 3.75     cert 3  (iron sulfate, ~3 ppm in feed)
 ```
 
 ## 6. Refinement triggers
@@ -161,15 +181,14 @@ Recompute recipe or ecFactor calibration when:
 1. **First in-bucket EC measurement of Ocean-containing recipe.** If measured
    diverges >25 % from `nurseryRecipeCE` prediction, recalibrate
    `NURSERY_PRODUCTS.Ocean_15_1_1.ecFactor`; upgrade Ocean ecFactor cert 2 → 3.
-2. **Substrate EC drift** (post-watering, 30–60 min, 2–3 cells averaged).
-   Consistently >2.5 or <1.5 → adjust doses. Bucket↔substrate has salt-
-   accumulation lag; 2 weeks of data > 1 reading.
-3. **Tissue test on 5-week trays at transplant.** N <4 % DW or P <0.4 % DW
+2. **Pour-through EC after the salt flush.** Confirms the dry-down factor
+   behind the 1.0 cap. Cell consistently <1.2 with room → consider raising
+   the bucket cap; still >1.5 → drop doses or raise feed frequency.
+3. **Tissue test on transplant-ready trays.** N <4 % DW or P <0.4 % DW
    → push doses up. Ca <1.5 % or Mg <0.3 % → source organic supplement.
 4. **Manufacturer EC datasheet.** Acadie technical sheet conductivity per
    dilution would replace single-point calibration.
-5. **Tray-finishing pilot results (90 g → 110 g).** `n-supply-half-demand-floor` / default-recipe-p-supply-half-demand
-   thresholds + default doses shift in lockstep.
-6. **`nutrition/nursery/plant-needs` lands.** When
-   `window.PlantNeedsNursery.demandPerTray('N')` is wired, `n-supply-half-demand-floor` reads
-   dynamically; inline 2 800 fallback retires.
+5. **Salinity under control → raise the plug target.** When pour-through holds
+   in band, step `targetG_default` back up (20 → 30 → …); demand, floors, and
+   doses shift in lockstep, and the N-vs-salt collision returns — frequency
+   (more feeds/wk) is the lever to hold the band at a bigger plug.

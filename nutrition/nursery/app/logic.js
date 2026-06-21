@@ -14,6 +14,8 @@ function buildNutrimentNursery() {
   const traysCohort = parseFloat(document.getElementById('nutr-n-trays').value)   || 50;
   const appsPerWeek = parseFloat(document.getElementById('nutr-n-applications')?.value) || 1;
 
+  buildNurseryRecipeCard();
+
   const demand = calculateNurseryDemand(targetG, cycleDays, cellsPerTray);
   const order = ['N','P','K','Ca','Mg','Fe','Mn','Zn','B','Cu','Mo'];
 
@@ -243,6 +245,66 @@ function buildNutrimentNursery() {
     levHtml += `</div>`;
   }
   document.getElementById('nutr-n-leviers').innerHTML = levHtml;
+}
+
+// Bucket the team mixes per batch. Doses in NURSERY_RECIPE_DEFAULT are
+// concentration (g/L; mL/L ≈ g/L for liquids at density ~1), so the as-poured
+// batch amount = dose × bucket volume.
+const NURSERY_BUCKET_VOLUME_L = 94;
+
+// Presentation metadata per product id — operator-facing name, emoji, dose unit
+// (powders in g, liquids in mL). Numeric amounts are NOT here: they derive from
+// NURSERY_RECIPE_DEFAULT × NURSERY_BUCKET_VOLUME_L. Mirrors LETTUCE_FERTIGATION_RECIPE
+// keeping names/emojis at the app layer.
+const NURSERY_RECIPE_DISPLAY = {
+  Ocean_15_1_1:  { name: 'EZ-GRO Océan 15-1-1', unit: 'g',  emoji: '🦀' },
+  AcadiePoisson: { name: 'Acadie poisson 2-4-0.5', unit: 'mL', emoji: '🐟' },
+  AcadieKelp:    { name: 'Acadie algues', unit: 'mL', emoji: '🌿' },
+  IronSulfate:   { name: 'Sulfate de fer 20 %', unit: 'g', emoji: '🩶' },
+};
+
+// Operator recipe card — as-poured batch for one bucket + run instructions.
+// Every value derives from the model: amounts = recipe dose × bucket volume;
+// CE / pH from the calc functions. Tiles mirror the Fertigation operator card.
+function buildNurseryRecipeCard() {
+  const FN = window.FertigationNursery;
+  const recipe = FN.NURSERY_RECIPE_DEFAULT;
+  const bucketL = NURSERY_BUCKET_VOLUME_L;
+  const appsPerWeek = FN.NURSERY_FERTIGATION_DEFAULTS.applicationsPerWeek;
+  const ce = FN.nurseryRecipeCE(recipe, 1);
+  const tankPh = FN.nurseryRecipeTankPh(recipe);
+  const ceCap = FN.NURSERY_CE_CAP_MS_CM;
+
+  // Whole-grams for powders, whole-mL for liquids — bucket amounts round clean.
+  const amountString = v => (Math.round(v * 10) / 10).toLocaleString('fr-CA');
+
+  // Water tile first, then one tile per product (recipe key order).
+  const tiles = [{ name: 'Eau', amount: bucketL.toLocaleString('fr-CA'), unit: 'L', emoji: '💧' }];
+  Object.keys(recipe).forEach(id => {
+    const meta = NURSERY_RECIPE_DISPLAY[id];
+    tiles.push({ name: meta.name, amount: amountString(recipe[id] * bucketL), unit: meta.unit, emoji: meta.emoji });
+  });
+
+  const tilesHtml = '<div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:4px;">'
+    + tiles.map(t =>
+      `<div style="background:var(--accent-active-light); border:1.5px solid var(--accent-active-border); border-radius:var(--radius-sm); padding:14px 10px; text-align:center;">
+        <div style="font-size:24px; margin-bottom:6px;">${t.emoji}</div>
+        <div style="font-size:10px; font-weight:600; text-transform:uppercase; letter-spacing:1.5px; color:var(--text-muted); margin-bottom:6px;">${t.name}</div>
+        <div style="font-family:'DM Mono',monospace; font-size:24px; font-weight:700; color:var(--text);">${t.amount}</div>
+        <div style="font-family:'DM Mono',monospace; font-size:12px; color:var(--text-muted); margin-top:2px;">${t.unit}</div>
+      </div>`).join('') + '</div>';
+
+  // Run instructions — frequency + flush protocol. Values derived: bucket volume,
+  // applications/week, CE feed + cap from the model; flush trigger from the protocol.
+  const runHtml = `<div style="margin-top:14px; font-size:12px; line-height:1.6;">
+    <div style="font-weight:700; color:var(--text-muted); font-size:10px; text-transform:uppercase; letter-spacing:1px; margin-bottom:6px;">Application</div>
+    <div style="padding:2px 0;">• <strong>${appsPerWeek}× / semaine</strong> · viser un transplant ~20 g.</div>
+    <div style="padding:2px 0;">• <strong>Lessiver 30–50 % à chaque apport</strong> — arroser jusqu'au ruissellement.</div>
+    <div style="padding:2px 0;">• Vérifier au <strong>pour-through</strong> — rincer si CE &gt; 1,5 mS/cm.</div>
+    <div style="padding:2px 0; color:var(--text-muted);">CE bidon prédite ${ce.toFixed(2)} mS/cm (cap ${ceCap.toFixed(1)}) · pH bidon ${tankPh.toFixed(1)}.</div>
+  </div>`;
+
+  document.getElementById('nutr-n-recette').innerHTML = tilesHtml + runHtml;
 }
 
 // Lever advice per element for the Semis subpage. Auto-derived from element

@@ -49,6 +49,50 @@
 // It also serves as the team-visible audit trail for organic certification.
 const RECIPE_HISTORY = [
   {
+    retired: '2026-06-20',
+    recipe: 'STORED_RECIPE.nursery.fertigation',
+    summary: 'Recette semis re-dérivée anti-sel (poisson 13 → 1,5 mL/L, Océan ajouté)',
+    reason: 'La recette pépinière salait les semis (leachate 5,1-5,6 mS/cm, tissu Na 3166, tip-burn, plants bloqués ~16 g) : l\'apport poisson (~2,0 mS/cm) se concentrait en cellule sans drainage. Re-dérivée pour le contrôle du sel (cible plug ~20 g, 1 apport/sem) : le N de poisson et le sel étant couplés, abaisser la cible plug à 20 g divise la demande N par deux et fait passer l\'apport sous la bande sûre. Poisson 13 → 1,5 mL/L, Océan 15-1-1 ajouté à 2 g/L (source N efficace), algues 2 → 1 mL/L, sulfate de fer inchangé (15 mg/L, ~3 ppm Fe, disponible en tourbe acide). CE cuve 2,0 → 0,85 mS/cm. Tous Ecocert CAN/CGSB-32.311. Lessivage 30-50 % par apport (protocole salt-flush). Décision Guillaume.',
+    replacedBy: 'STORED_RECIPE.nursery.fertigation — Océan 2 g/L + poisson 1,5 mL/L + algues 1 mL/L + sulfate de fer 0,015 g/L (≈ par chaudière de 94 L : Eau 94 L · Océan 188 g · Poisson 141 mL · Algue 94 mL · Fer 1,4 g).',
+    fullSnapshot: {
+      nursery: { Ocean_15_1_1: 0, AcadiePoisson: 13, AcadieKelp: 2, IronSulfate: 0.015 },
+    },
+  },
+  {
+    retired: '2026-06-20',
+    recipe: 'STORED_RECIPE.tomato.foliaire.A',
+    summary: 'Acide citrique 65 g ajouté au spray A (chélation 1:1 du fer)',
+    reason: 'Le spray A laissait des taches noires sur les fruits, qu\'il fallait laver avant la vente. Les taches sont des dépôts d\'oxyde ferrique : le FeSO₄·7H₂O (90 g, 0,6 %) sèche sur la peau du fruit, le Fe²⁺ s\'oxyde en Fe³⁺ et précipite en oxyde noir soudé à la cuticule. Le fruit ne tire aucun bénéfice du spray (cible = cuticule foliaire) ; tout dépôt sur fruit est pure perte à laver. Le fer reste sur le canal foliaire à dessein (pH sol ~7,4 verrouille le fer racinaire ; les chélates de fer synthétiques (EDTA/EDDHA) sont interdits CAN/CGSB-32.311). Solution : acide citrique 65 g / 15 L ≈ 1:1 molaire avec les 0,32 mol de fer. Le citrate, non volatil, reste dans le film séché et garde le fer oxydé sous forme de citrate ferrique soluble au lieu d\'un oxyde noir insoluble ; il abaisse aussi le pH cuve (cible 4,5-5,5) et améliore l\'absorption cuticulaire. Bande de tolérance 35-95 g ; CE cuve cible 4-6 mS/cm, plafond brûlure ~10. Acide citrique alimentaire validé Ecocert (issu de fermentation, CAN/CGSB-32.311) — produit fournisseur à confirmer avant achat. Décision Guillaume sur lecture spécialiste (mécanisme oxyde ferrique).',
+    replacedBy: 'STORED_RECIPE.tomato.foliaire.A avec acide citrique 65 g (tous mélanges) — Mn 18 g + Zn 22 g + Fe 90 g + acide citrique 65 g (spray B CaCl₂ inchangé). Calibrer pH (4,5-5,5) et CE (4-6 mS/cm) au compteur sur un sac à dos ; ajuster la dose si taches Mn persistent (vers 95 g) ou si CE dépasse le plafond.',
+    fullSnapshot: {
+      fertigation: {
+        T1: { mgSulfate: 0, kSulfate: 0, borax: 10, naMolybdate: 0.5 },
+        T2: { mgSulfate: 0, kSulfate: 0, borax: 10, naMolybdate: 0.5 },
+        T3: { mgSulfate: 0, kSulfate: 0, borax: 10, naMolybdate: 0.5 },
+        T4: { mgSulfate: 0, kSulfate: 0, borax: 10, naMolybdate: 0.5 },
+        T5: { mgSulfate: 0, kSulfate: 0, borax: 10, naMolybdate: 0.5 },
+      },
+      sidedress: {
+        T1: { actisol_g: 57,  farine_g:   84 },
+        T2: { actisol_g: 180, farine_g:  267 },
+        T3: { actisol_g: 467, farine_g:  695 },
+        T4: { actisol_g: 755, farine_g: 1125 },
+        T5: { actisol_g: 0,   farine_g: 2000 },
+      },
+      foliaire: {
+        masterVol: 15, backpacks: 1, area: '383 m²',
+        A: [
+          { name: 'MnSO₄ (31.5% Mn)', master: '18 g', note: 'réduit 22→18 g 2026-06-03 — ~60% demande, cap toxicité sans yucca' },
+          { name: 'ZnSO₄ (35.5% Zn)', master: '22 g' },
+          { name: 'FeSO₄·7H₂O (20% Fe)', master: '90 g', note: 'augmenté 80→90 g 2026-06-03 — ~95% demande (cuticule contourne lockout sol)' },
+        ],
+        B: [
+          { name: 'CaCl₂·2H₂O', master: '100 g', note: 'Ecocert vérifié ; 2×/semaine ; sans surfactant — coverage cuticulaire ~0.15 ; bypass Ca racinaire pour défense botrytis' },
+        ],
+      },
+    },
+  },
+  {
     retired: '2026-06-05',
     recipe: 'STORED_RECIPE.tomato.foliaire.A',
     summary: 'CuSO₄ retiré du foliaire (2 g → 0) — feed nutritif redondant',

@@ -50,14 +50,19 @@ const LETTUCE_NURSERY_DM_FRACTION = 0.07;
 // Default operational targets for the Décembre nursery. cert 4 —
 // observed at Décembre, single greenhouse, single tray geometry.
 //
-// targetG_default       = 90 g per plant at end of cycle (default, NOT cap;
-//                         user can override for tighter / looser schedules)
+// targetG_default       = 20 g per plant at end of cycle (default, NOT cap;
+//                         user can override for tighter / looser schedules).
+//                         Lowered 90 → 20 (2026-06-20): salt-control phase
+//                         pulls a small healthy plug, not a large salt-damaged
+//                         one. 20 g halves N demand, which lets the fertigation
+//                         feed drop into the salt-safe CE band. Revisit upward
+//                         as salinity is brought under control (see derivation).
 // cycleDays_default     = 35 d (5 weeks germination → transplant-ready)
 // cellsPerTray_default  = 50 cells/tray (Salanova plug tray standard)
 // traysPerCohort_default= 50 trays/cohort (sized to fertigation barrel)
 // trayAreaM2            = 0.149 m² per tray (≈ 11 in × 21 in standard 50-cell)
 const NURSERY_TARGETS = {
-  targetG_default:        90,    // cert 4
+  targetG_default:        20,    // cert 4 — interim salt-control target (was 90)
   cycleDays_default:      35,    // cert 4
   cellsPerTray_default:   50,    // cert 4
   traysPerCohort_default: 50,    // cert 4 (approx; cohort sized to fertigation barrel)

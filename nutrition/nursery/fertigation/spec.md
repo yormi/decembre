@@ -27,12 +27,17 @@ nutrition/chemistry — every-cation-anion-pair-classified / every-chemistry-tag
 ## predicted-ce-under-nursery-cap
 
 **Statement:** `nurseryRecipeCE(NURSERY_RECIPE_DEFAULT, 1) ≤ NURSERY_CE_CAP_MS_CM`
-(= 3.0 mS/cm).
+(= 1.0 mS/cm).
 
-**Rationale:** Substrate EC post-watering target 1.5–2.5 mS/cm (cert 4).
-Week-1 trays have smallest roots / least osmotic buffer; >3.0 in bucket
-carries to >3.0 in cell and suppresses germination on re-seedings. Cert 3 —
-cap is operationally chosen, not measured against yield drop.
+**Rationale:** Domain seedling root-zone band is target 1.0–1.2, hold feed
+> 1.5 (young roots salt-sensitive; `nutrition/lettuce/domain.md`). The cell
+concentrates ~1.5× above the bucket feed as it dries between weekly feeds
+(cert 2 dry-down estimate), so a 1.0 bucket cap keeps the cell peak near the
+1.5 hold line, targeting ~1.2. Per-feed leaching (`nutrition/nursery/protocol/salt-flush.md`)
+resets weekly accumulation; pour-through EC is the cell ground truth.
+Cap lowered 3.0 → 1.0 (2026-06-20) — the prior 1.5–2.5 substrate band was
+rejected by the field (leachate 5+, Na 3166, tip-burn). Cert 2 — dry-down
+factor not yet measured.
 
 ---
 
@@ -42,7 +47,10 @@ cap is operationally chosen, not measured against yield drop.
 `NURSERY_TANK_PH_RANGE` (= [4.5, 6.5]).
 
 **Rationale:** Peat-based seedling substrate buffers in 4.5–6.5; outside
-stalls microbes (>6.5) or cooks substrate (<4.5). Cert 4.
+stalls microbes (>6.5) or cooks substrate (<4.5). Cert 4. `nurseryRecipeTankPh`
+defaults waterPh to the real Décembre source 6.26 (Berger 2026-04-10), not a
+generic 7.0 — the lean salt-control recipe adds little acid, so the source pH
+is what holds the tank in band (predicted 5.83).
 
 ---
 
@@ -51,23 +59,26 @@ stalls microbes (>6.5) or cooks substrate (<4.5). Cert 4.
 **Statement:** `nurseryRecipeSupply(NURSERY_RECIPE_DEFAULT, NURSERY_FERTIGATION_DEFAULTS.trayVolumeL).perTray_mg.N`
 ≥ `0.5 × demandPerTray_N_mg`.
 
-`demandPerTray_N_mg` from `window.PlantNeedsNursery.demandPerTray('N')`. If
-namespace not loaded, verifier falls back to inline **2 800 mg N / tray /
-week** at 90 g target / 35-day cycle / 50 cells / DM 0.07 / tissue N 0.05.
-Cert 3 — derived from `LETTUCE_NURSERY_TISSUE_DW.N` × DW per plant × 50.
+`demandPerTray_N_mg` from `window.PlantNeedsNursery.demandPerTray('N')`, which
+reads `targetG_default` (= 20 g since 2026-06-20) → demand ~700 mg N/tray/wk,
+floor ~350 mg. If namespace not loaded, verifier falls back to inline 3 150 mg
+(90 g reference — stale vs the live 20 g default; only hit if the namespace is
+absent). Cert 3 — `LETTUCE_NURSERY_TISSUE_DW.N` × DW per plant × 50.
 
 **Rationale:** N is rate-limiting macro for seedling growth on peat. <50 %
 from bucket means plant eats peat starter charge (variable batch-to-batch)
 or slows. 50 % is soft floor; full demand is goal once tissue tests come
-back. CE pressure prevents pushing >100 % today.
+back. At the 20 g target the salt-safe feed clears the floor with room
+(supply ~412 mg ≥ 350).
 
 ---
 
 ## default-recipe-p-supply-half-demand
 
 **Statement:** `nurseryRecipeSupply(NURSERY_RECIPE_DEFAULT, NURSERY_FERTIGATION_DEFAULTS.trayVolumeL).perTray_mg.P`
-≥ `0.5 × demandPerTray_P_mg`. Inline fallback **315 mg P / tray / week** at
-90 g / 35 d / 50 cells / DM 0.07 / tissue P 0.005. Cert 3.
+≥ `0.5 × demandPerTray_P_mg`. Live demand at the 20 g default ~70 mg P/tray/wk
+→ floor ~35 mg; supply ~44 mg clears it. Inline fallback 315 mg (90 g
+reference) only if namespace absent. Cert 3.
 
 **Rationale:** P is second-most-important seedling macro (root
 development); peat starter charge unreliable post-2-3 waterings. Acadie

@@ -272,10 +272,11 @@
 // BIOMASS_DEMAND, lettuce-side constants) are NOT triggers — edit them freely.
 //
 // LETTUCE: slot intentionally absent. Add when locked.
-window.STORED_RECIPE = { tomato: {} };
+window.STORED_RECIPE = { tomato: {}, nursery: {} };
 <!-- @include nutrition/tomato/fertigation-recipe/procedure/stored.js -->
 <!-- @include nutrition/tomato/sidedress-recipe/procedure/stored.js -->
 <!-- @include nutrition/tomato/foliar-strategy/procedure/stored.js -->
+<!-- @include nutrition/nursery/fertigation/procedure/stored.js -->
 
 // FP recipe (T5 only — refined 2026-05-08 to mass-balance pure, no soil credit).
 // Single source of truth for the Phase 1 comparison (Block 6) and the bank-

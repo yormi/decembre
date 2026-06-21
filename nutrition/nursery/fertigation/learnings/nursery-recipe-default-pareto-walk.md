@@ -1,5 +1,9 @@
 # NURSERY_RECIPE_DEFAULT — Pareto walk
 
+> **Historical (superseded 2026-06-20).** This walk sized the recipe to a 90 g
+> plug under a 3.0 CE cap. Both retired — see `retarget-20g-salt-control.md`.
+> Kept for the audit trail of how the old default was chosen.
+
 ## NURSERY_RECIPE_DEFAULT — Pareto walk (2026-05-09)
 
 Considered alternatives along the CE budget before locking
