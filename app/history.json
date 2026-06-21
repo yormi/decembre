@@ -1,5 +1,14 @@
 [
   {
+    "date": "2026-06-20",
+    "date_fr": "20 juin 2026",
+    "title": "Spray tomate anti-taches + fertigation semis anti-sel",
+    "changes": "- Spray de tomate ajusté pour éviter les taches noires (acide citrique ajouté au spray A)\n- Fertigation des semis de laitue ajustée pour régler le problème de CE beaucoup trop élevé",
+    "url": "https://main--decembre-staging.netlify.app",
+    "pr": 6,
+    "sha": "208c9c1eb3ee3d04738df47304a5e906a1aa4439"
+  },
+  {
     "date": "2026-06-18",
     "date_fr": "18 juin 2026",
     "title": "Page Fertigation Laitue + boost de racines Tomate",
