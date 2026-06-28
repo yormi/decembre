@@ -24,7 +24,21 @@
     </button>
   </div>
 
-  <!-- Page Toggle: top-level navigation by responsibility -->
+  <!-- Primary section nav. Irrigation is admin-only (revealed by applyAdminMode). -->
+  <div class="section-toggle" id="section-toggle">
+    <button class="section-btn active" id="section-nutriments" onclick="setSection('nutriments')">
+      🧪 Nutriments
+    </button>
+    <button class="section-btn" id="section-effeuillage" onclick="setSection('effeuillage')">
+      ✂️ Effeuillage
+    </button>
+    <button class="section-btn" id="section-irrigation" onclick="setSection('irrigation')" style="display:none;">
+      💧 Irrigation
+    </button>
+  </div>
+
+  <!-- Secondary nav (Nutriments section): pages by responsibility. Shown only
+       when the active section is Nutriments. -->
   <div class="page-toggle" id="page-toggle">
     <button class="page-btn active" id="page-fertigation" onclick="setPage('fertigation')">
       🧪 Fertigation
@@ -34,8 +48,5 @@
     </button>
     <button class="page-btn" id="page-foliar" onclick="setPage('foliar')">
       🍃 Foliaire
-    </button>
-    <button class="page-btn" id="page-irrigation" onclick="setPage('irrigation')">
-      💧 Irrigation
     </button>
   </div>

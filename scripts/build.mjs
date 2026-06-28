@@ -48,6 +48,7 @@ const STATIC_ASSETS = [
 // referenced via <img src="diagnostic/images/...">.
 const STATIC_ASSET_DIRS = [
   ['app/diagnostic/images', 'diagnostic/images'],
+  ['nutrition/lettuce/app/effeuillage/images', 'effeuillage/images'],
 ];
 // Diagnosis-practice field photos (~400 MB, gitignored at source). Copied
 // image-only into dist/ so the practice gallery loads them via
