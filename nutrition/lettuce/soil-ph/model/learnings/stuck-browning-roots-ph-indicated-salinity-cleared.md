@@ -26,6 +26,13 @@ No salt gradient. There is headroom to 3.5 before the sulphur
 gypsum-EC pulse would bite, so **sulphur won't backfire** on the
 salt-sensitive crop. cert 4 (direct SME reading).
 
+⚠️ **Sample-dated to April (CE 1.08).** The June field SME (605536)
+reads **CE 4.01** — salt climbed over the season; the headroom is
+gone and the sulphur-EC caution now applies. The confinement-cause
+analysis below (pH+P at the plug/bed interface) stands for that read;
+the "salt is cleared" verdict does not, for the current crop. See
+`../../../learnings/field-sme-salinity-climbed-2026-06.md`.
+
 ## Consequence for the sulphur programme
 
 **Lettuce is the best-justified, most-direct pH target in the whole

@@ -15,6 +15,13 @@
 - tomato salt tolerance > generic crop   (osmotic damage onset at higher CE)
 
 
+### Leaf area & source capacity
+
+- single-leaf area ∝ leaf-length²   (geometric similarity; area = (length / reference length)² × reference area)
+
+- leaf area → photosynthetic source   (larger lamina = more source; ties into salt-limited source cap above)
+
+
 ### Spectator-ion load
 
 - SO₄ → raises CE, feeds ~nothing   (full osmotic cost, no nutrition)
@@ -42,6 +49,19 @@
 - high pH → B, Mo MORE available   (anionic — opposite of cations)
 
 - root channel gated by pH; foliar channel bypasses   (cuticular uptake sidesteps root lockout)
+
+
+### Foliar spray — deposit on fruit
+
+- foliar metal-sulfate landing on fruit → dries → oxidizes → visible mineral deposit   (cosmetic, not pathogen; surface oxide, washes off)
+
+- FeSO₄ worst offender: Fe²⁺ → ferric oxyhydroxide → black spot welded to cuticle   (highest-dose metal in the oligo spray)
+
+- fruit gains nothing → cuticular uptake targets leaves; fruit contact = pure waste to wash off
+
+- co-sprayed non-volatile chelator (citric acid ~1:1 molar w/ Fe) → stays in dried film → holds oxidized Fe as soluble ferric citrate → no black oxide   (also ↓ tank pH, ↑ cuticle uptake)
+
+- synthetic Fe chelates (EDTA/EDDHA) cert-prohibited → Fe stays sulfate + citric acid, not a pre-chelated product
 
 
 ### Deficiency signature — K

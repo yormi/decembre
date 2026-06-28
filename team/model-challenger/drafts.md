@@ -275,3 +275,168 @@ Land after refreshing the stale worked example (B1 — concrete defect, highest 
 
 ## 2026-06-13 — re-trigger, yield-range/derivation.md (no-op)
 Hook re-fired on the same `GH_LIGHT_TRANSMISSION_DOUBLE_POLY` 0.55 → 0.65 diff already reviewed above (lines 247-274: B1 stale d44 worked example · B2 top-of-band optimism / film-condition · D1 cert-3 holds on literature but now a field-reality bet). Ran the three-angle pass independently; landed on the same findings (plus the annual-average-sun × peak-fresh-transmission time-axis framing, already covered by B2's optimism point). No new claim moved → no-op pass, no duplicate entry. · `PENDING`
+
+## 2026-06-20 — review of nutrition/nursery/fertigation/derivation.md (HEAD working-tree diff)
+
+Scope: salt-control re-derivation. §2 plug target 90 → 20 g (halves all demand: N floor 1 400 → 350, P 158 → 35). §4 constraints block: CE cap 3.0 → 1.0 mS/cm bucket (cell ~1.5× via dry-down → peak ~1.2 with per-feed leaching), waterPh 6.26. Live `data.js` re-sized coherently (Ocean 7/6/2 → 2.0/1.5/1.0, CE 2.6 → 0.83, pH 5.83). Affects `predicted-ce-under-nursery-cap`, `n-supply-half-demand-floor`, `default-recipe-p-supply-half-demand`.
+
+### Coherence (cross-surface drift — flag-don't-fix, highest priority)
+**Stale §4 recipe-pick + §5 verifier block describe the RETIRED 90 g recipe** · `PENDING`
+- The diff edited §2 demand + §4 *constraints* intro only. The §4 "Search heuristic / Picked `X=7, Y=6, Z=2`" bullets and the entire §5 "Predicted CE / pH at default" block were NOT touched.
+- They now contradict both the just-edited constraints AND live `data.js`:
+  - §4 pick: `X=7,Y=6,Z=2`; "CE 2.55+0.10=2.65 (~0.4 head-room under **3.0** cap)"; "N 1463 = 52 % of **2800**"; "P 170 = 54 % of 315". Live recipe is 2.0/1.5/1.0, CE 0.83, N 412 ≥ 350, cap 1.0.
+  - §5: `nurseryRecipeCE = 2.60`, `nurseryRecipeTankPh = 7.00 − … = 5.25`, supply N 1463/P 170/K 88. Live: CE 0.83, pH 5.83 (waterPh **6.26**, not 7.00), N 412.
+  - §4 mass-flow formulas still use pH baseline 7.0 and **kelp pH = −0.05×Z**; `data.js` predicted-pH comment now uses **kelp +0.02** (sign flip, undocumented in derivation).
+- The derivation's whole job is to justify the live numbers; §4/§5 currently justify numbers that no longer exist. A PO/operator reading §5 sees CE 2.60 against a 1.0 cap. Specialist's edit — refresh §4 pick + §5 block to the 2.0/1.5/1.0 recipe, waterPh 6.26, kelp +0.02. **Cost if unfixed: high** (the live verifier check `predicted-ce-under-nursery-cap` asserts ≤1.0 against the real recipe; the derivation reads as if it'd fail).
+
+### Blindspots
+**B1 — field failure was Na-specific (Na 3166), but the model controls total CE, not sodium** · `PENDING`
+- **What the spec assumes:** lowering bucket CE 3.0 → 1.0 fixes the salt damage (leachate 5+, Na 3166, tip-burn cited as the trigger).
+- **What might be ignored:** the damaging ion named is **sodium**, and the two largest dose-carriers are marine-derived (fish hydrolysate + liquid kelp) — both Na-rich feedstocks. CE measures total dissolved salt; it doesn't distinguish Na from nutritive K/Ca/Mg. Cutting dose cuts Na here (helpful, correlated), but the model has no Na term, so it can't tell whether the residual Na at CE 0.83 still clears the tip-burn threshold — or whether the source water itself carries the Na. A future recipe that raises CE with *low-Na* salts would be flagged, while a low-CE high-Na feed would pass.
+- **How to test it:** Na on the three product datasheets + source-water Na; leachate Na (not just EC) after one cycle on the new recipe. If Na is water-borne, no fertilizer cut closes it.
+- **Cost if real:** high — tip-burn persists at CE 0.83 if Na, not total salt, was the driver.
+
+**B2 — 20 g plug viability at 35 d treated as a free lever** · `PENDING`
+- **What the spec assumes:** "halving the plug target halves demand" — framed purely as the knob that drops the feed into the salt-safe band; "revisit upward as salinity controlled."
+- **What might be ignored:** a 78 % cut in target plug size (90 → 20 g) is also an agronomic call — whether a 20 g Salanova plug at 5 weeks transplants well (root-ball integrity, not leggy/undersized) isn't addressed. The derivation reasons only from the salt side. If 20 g plugs transplant poorly, the salt fix has a stand-establishment cost the model doesn't price.
+- **How to test it:** field obs on the first 20 g cohort at transplant (root-ball hold, survival, days-to-establish) vs the prior 90 g plugs.
+- **Cost if real:** medium — interim target, explicitly revisitable; but "halve the plug" shouldn't read as cost-free.
+
+### Complexity
+No new constant, stage, or branch — this diff lowers/removes. Nothing to cut. The dry-down 1.5× factor is the one unmeasured load-bearing number; cert honestly dropped to 2 and flagged in §6 trigger 1/2. No challenge.
+
+### Cert defense
+No new challenge. `predicted-ce-under-nursery-cap` cert dropped 3 → 2 (dry-down factor unmeasured) — honest, conservative. The 350/35 mg floors inherit cert 3 from the tissue-% × DW chain, unchanged in basis (just rescaled by the 20 g target). Fine.
+
+### Verdict
+Land after refreshing the stale §4 pick + §5 verifier block (Coherence finding — concrete defect, the derivation describes a retired recipe) and logging B1 (Na-vs-CE — the field trigger was Na-specific, the model isn't) for a Guillaume/field call. B2 is a watch-item on the first cohort. The re-derivation direction is sound and `data.js` is internally coherent; the derivation prose just didn't follow §4/§5 down to the new recipe.
+
+## 2026-06-20 — re-review, fertigation/derivation.md (specialist refreshed §4/§5; one stale surface remains)
+
+Scope: re-fire after the specialist carried the re-derivation down into §4 (pick now `X=2/Y=1.5/Z=1`) and §5 (CE 0.83, pH 5.83 at waterPh 6.26, N 412/P 44/K 90) — i.e. the prior entry's top **Coherence** defect (stale §4 pick + §5 block, lines 283-290) is now **RESOLVED**, and the undocumented kelp pH sign flip is now stated in §4 (kelp pH `+0.02`). B1 (Na-vs-CE) + B2 (20 g plug viability) from the prior entry still stand — not re-raised. One genuinely new finding below.
+
+### Coherence (cross-surface drift — flag-don't-fix)
+**§1 per-product table still describes the OLD kelp K (5× low) and an obsolete "needs datasheet" note** · `PENDING`
+- §4 mass-flow + §5 supply + live `data.js` all now use **kelp K = 0.0498** (6.0 % K₂O → 4.98 % K element, cert 4, grounded in `nutrition/doc/Acadie Fresh Seaweed Concentrate.pdf`).
+- But §1's "Acadie Algues liquides" table (lines 48-57) was **not touched** — it still reads **K = 0.010** ("approx 1 % — Acadian datasheet", **cert 2**) and closes with "Per-micro cert 1 — needs fresh manufacturer datasheet to upgrade." The datasheet has since landed; data.js used it to move K 1 % → 6 % K₂O and the cert 2 → 4. §1 is the last surface describing a kelp K that's 5× below the live value, at a cert two steps stale.
+- The K-supply number (90 vs the ~40 the old 1 % factor would give) and the K-coverage / frequency-as-DOF narrative all ride on 0.0498. A reader cross-checking §4's `62.3 Z` against §1's 0.010 hits a 5× contradiction. Specialist's edit — refresh §1 to 4.98 % K / cert 4 / datasheet-on-file. **Cost if unfixed: medium** (doc-coherence, not a live-number error — data.js is already correct).
+
+### Blindspots
+**B1 — kelp product identity: "approx 1 %" Algues liquides vs "6 % K₂O" Fresh Seaweed Concentrate — same product or a swap?** · `PENDING`
+- **What the spec assumes:** §1 names the product "Acadie Algues liquides … approx 1 %"; `data.js` names it "Acadie Fresh Seaweed Concentrate (= Acadie Algues liquides)" at 6.0 % K₂O. Treated as one product, datasheet just upgraded.
+- **What might be ignored:** a 1 % → 6 % K₂O jump is a 6× concentration step. If "Fresh Seaweed Concentrate" is a *more concentrated* SKU than the "Algues liquides" the farm was dosing, then the `ecFactor 0.10` (calibrated on the old field measurement: Acadie 13 + kelp **2 mL/L**) and the per-mL dose semantics may not transfer to the new product. The CE-cap satisfaction (0.83) leans on that ecFactor.
+- **How to test it:** confirm the physical product on the shelf matches the datasheet SKU (label name + guaranteed analysis); if it's a different concentration, re-anchor kelp `ecFactor` on an in-bucket reading of the actual product.
+- **Cost if real:** medium — mis-anchored kelp ecFactor shifts predicted CE; the cap is the whole point of this re-derivation.
+
+### Complexity / Cert defense
+No new finding. Kelp K cert 4 is grounded (datasheet on file) — not challenged. CE cert 3 → 2 already logged honest in the prior entry.
+
+### Verdict
+Land after refreshing §1 (Coherence — the last stale surface; data.js is already correct, so this is doc-only) and confirming the kelp product-identity / ecFactor transfer (B1). Prior entry's B1 (Na) + B2 (plug viability) remain the substantive open items.
+
+## 2026-06-20 — re-trigger, fertigation/derivation.md (no-op)
+Hook re-fired on the same salt-control re-derivation diff (90 → 20 g, CE cap 3.0 → 1.0, recipe 2.0/1.5/1.0, waterPh 6.26, kelp K 0.0498 / pH +0.02) already reviewed in the two entries above (lines 279-335). Ran the full three-angle pass independently against `data.js`: arithmetic verifies (demand 700/70, supply 412/44, CE 0.83, pH 5.83) and §4/§5 match the live constants. Landed on the identical findings — §1 kelp table still at the stale 1 % K / cert 2 (Coherence, lines 319-322), dry-down 1.5× the one unmeasured load-bearing constant on a weekly interval (Complexity, line 306 + §6 trigger 2), Na-vs-total-CE (B1, lines 293-297), 20 g plug viability (B2, lines 299-303). No new claim moved → no-op pass, no duplicate entry. · `PENDING`
+
+## 2026-06-20 — review of fertigation/derivation.md (NEW content: iron sulfate channel)
+
+Scope: the working-tree diff now carries a **fourth product not in any prior 2026-06-20 entry** — §1 "Sulfate de fer (FeSO₄·7H₂O, 20 % Fe)" block + the §5 `Fe: 3.75 cert 3` supply row + the iron CE/pH terms (`1.2 × 0.015`, `−0.10 × 0.015`). "Bench practice folded into the model 2026-06-20." `data.js` `IronSulfate` entry is schema-complete (ions, chemistryTags, phContribution −0.10, organicAllowed, ecFactor 1.2) → `products-schema-complete-organic-only` passes. Prior entries' open items (§1 kelp 1 % stale · Na-vs-CE · 20 g plug viability · dry-down 1.5×) still stand, not re-raised.
+
+### Blindspots
+**B1 — Fe dose is bench-anchored, not demand- or tissue-anchored; no Fe floor to check it against** · `PENDING`
+- **What the spec assumes:** 0.015 g/L (≈3 ppm feed, 3.75 mg/tray) is the right Fe rate because it's what the team already pours.
+- **What might be ignored:** §2 demand table has no Fe row (N/P/K/Ca/Mg only), so unlike N/P there is no `½-demand` floor or verifier check on the 3.75 mg — the number is documented, never validated against seedling need. 3 ppm sits at the upper end of the typical 1–3 ppm hydroponic Fe band; on acidic peat with Fe²⁺ held soluble (the derivation's own point), upper-band Fe + kelp's trace Fe could over-supply. "Matches the as-poured feed" justifies *modeling* it, not the *rate*.
+- **How to test it:** Fe on the transplant-tray tissue panel (the §6 trigger-3 tissue test already lands — add Fe to it); if Fe is ample, the bench rate is a candidate to trim, not a floor to defend.
+- **Cost if real:** low–medium — Fe is cheap and the window is wide; a watch-item, not a dose error.
+
+**B2 — flat "organic-allowed" on a micronutrient salt; CAN/CGSB-32.311 micronutrient use is conditional** · `PENDING`
+- **What the spec assumes:** FeSO₄ `organicAllowed: true` / "Organic-allowed (CAN/CGSB-32.311)", cert 4, same footing as the listed fish/kelp inputs.
+- **What might be ignored:** iron sulfate is a listed substance, but CAN/CGSB-32.311 generally gates synthetic micronutrient additions on a *documented deficiency* (soil or tissue showing need), not free use. The derivation states the allowance unconditionally. If Catherine's audit asks "where's the Fe-deficiency record justifying this input," the model has none on file — and B1 notes there's no demand/tissue anchor either.
+- **How to test it:** confirm the listing's use-condition; if deficiency-documentation is required, the §6 tissue trigger doubles as the cert record — note that link.
+- **Cost if real:** medium — an input used without its required justification is exactly the organic-audit failure mode the cert flag exists to catch. `Guillaume call needed:` is there a documented Fe-deficiency basis, or is this preventive?
+
+### Complexity
+**C1 — fourth product added — but it documents an existing pour, so no cut** · `PENDING`
+- **Specialist added:** IronSulfate as a 4th recipe product with its own ecFactor / phContribution / CE term.
+- **Test:** changes a team action? No — the team *already* adds the iron; folding it in makes the model match the bucket (the CE/pH predictions were silently under-counting a real input). That's the right direction, not speculative complexity.
+- **MVP version:** keep. The one observation: its CE contribution is 0.018 of 0.85 (~2 %) — negligible for the cap, so the value of including it is coherence (model = as-poured), not CE accuracy. No change requested.
+
+### Cert defense
+**D1 — ecFactor 1.2 (cert 2), self-flagged "reconcile w/ global PRODUCT FeSO₄" — unresolved** · `PENDING`
+- **Specialist's defense:** "divalent-sulfate analogy" — FeSO₄ is a strong mineral electrolyte, so ~6–10× the organic hydrolysates' 0.10–0.20 ecFactor is physically sensible.
+- **What I'd need to accept cert ≥ 2:** cert 2 is honestly low; no challenge to the *number*. The defect is the dangling reconciliation note — a global `PRODUCT` FeSO₄ presumably already carries an ecFactor, and the local 1.2 was set by analogy without checking it. Either cite the global value (and why local diverges, as the other three products do in the `data.js` header) or drop the "reconcile" note once done.
+- **My read:** cert 2 fine. The CE contribution is ~2 % of total, so even a 2× error here is <2 % on the cap — low stakes. Close as "honest cert + finish the reconciliation note."
+
+### Verdict
+Land — the iron channel is a sound model-matches-reality addition. Address B2 (organic-cert conditionality — the only audit-touching item, Guillaume call) before relying on it for Catherine; fold Fe into the tissue panel to close B1; finish the D1 reconciliation note. No dose challenged.
+
+## 2026-06-20 — review of nutrition/lettuce/soil-ph/model/derivation.md (HEAD working-tree diff)
+
+Scope: one new paragraph under § Guardrails — "Live breach (2026-06)": June field SME CE 4.01 dS/m, "~3× the 1.3 guardrail", up from 1.08 in April → sulphur on HOLD until leaching. Cites `../learnings/field-sme-salinity-climbed-2026-06.md`. No constant/dose/cert/stage moved; sibling `spec.md` still zero-slug (blocked on PO band + calcimeter). The HOLD direction itself is well-founded — not challenged.
+
+### Blindspots
+**B1 — "~3× the 1.3 guardrail" compares SME (saturated-media extract) against an ECe (saturation-paste) guardrail — cross-method multiple** · `PENDING`
+- **What the spec assumes:** CE 4.01 (Berger SME) ÷ 1.3 (the guardrail) = ~3× over.
+- **What might be ignored:** the guardrail row reads **ECe ≤ 1.3 dS/m** (FAO saturation-extract basis), and the file's own pH section forbids mixing scales "~0.3 unit apart … never in one calculation." SME and ECe are different extracts; Berger SME is calibrated for soilless mixes, applied here to a mineral bed. The *trend* (1.08 → 4.01, same lab/method) is apples-to-apples and solid — but the *absolute* "~3× over the guardrail" silently equates SME dS/m with ECe dS/m. The same memo that warns against the pH scale-mix performs the EC scale-mix one paragraph later.
+- **How to test it:** one paired reading — SME vs saturation-paste (or 1:1/1:2 with the stated conversion) on the same sample — to fix the SME→ECe offset; until then state the multiple as "SME 4.01 vs an SME-equivalent of the 1.3 ECe guardrail," not a bare 3×.
+- **Cost if real:** low **for the HOLD** (the 4× same-method climb justifies holding regardless of the offset) — but feeds B2.
+
+**B2 — the HOLD's release gate is undefined: "EC back under the guardrail" on which scale?** · `PENDING`
+- **What the spec assumes:** resume sulphur once "leaching brings EC back under the guardrail" (1.3).
+- **What might be ignored:** if the operator waits for **SME** ≤ 1.3, that's essentially the April baseline (1.08) — coincidentally near-right but not derived; if they read 1.3 as **ECe** and convert, the SME resume-threshold is some higher number. The gate is the only thing standing between "salt-stressed crop" and "add more salt." Resume too early → S⁰/gypsum EC pulse onto a scorch-band crop right as fast-cycle seedlings go in (the file's own worry). Resume too late → defers needed pH correction on a confirmed calcareous/Ca-saturated bed. B1's unresolved offset is exactly what makes this gate ambiguous.
+- **How to test it:** set the resume number in the scale actually being measured (SME) — e.g. "resume when field SME CE ≤ X," X anchored on the April-normal SME band, not the FAO ECe figure.
+- **Cost if real:** medium — wrong-direction either way on the lever the whole programme rides on.
+
+### Complexity
+No cut. The note changes a team action (HOLD sulphur) → it stays. One hygiene flag (flag-don't-fix): the HOLD has no entry in § Refinement triggers — the list says what *picks/refines* a dose but not what *clears the hold*. A future reader scanning triggers won't see "EC retest under threshold → resume." Add a clear-condition row when B2's number is set.
+
+### Cert defense
+No new challenge. The note states CE 4.01 as fact — accurate (that's the lab read), and the learning is honest about provenance (single sample, unlabelled bag "sac non identifié", "minor provenance wobble"). The soft part is the interpretive "~3×" (B1), not the datum. The learning correctly keeps SME pH 6.68 as a secondary-guardrail point, not a new anchor — consistent with this file's anchor-on-Mehlich rule.
+
+### Verdict
+Ship the HOLD — it's the right call and well-evidenced by the 4× same-method climb. Address B1 (restate the multiple in one scale, or footnote the SME→ECe offset) and B2 (set the resume threshold in measured-SME terms) before the bed is leached and someone has to decide when to resume — that's when the undefined gate bites. Both are low-effort precision fixes, no dose moved.
+
+## 2026-06-20 — addendum, soil-ph/model/derivation.md (§ pH-scale change — not covered above)
+
+The entry directly above reviewed only the § Guardrails "Live breach" paragraph (B1 SME-vs-ECe basis · B2 resume-gate). The **same diff also edited § pH scale** — added the June SME pH 6.68 as a second point and the claim "the Ca-saturated carbonate picture is **unchanged**." That second change wasn't reviewed; one finding on it, not a re-raise of B1/B2.
+
+### Blindspots
+**B3 — "carbonate picture unchanged" ignores that the bed self-acidified 0.8 unit — the carbonate-titration dose table may now overshoot** · `PENDING`
+- **What the spec assumes:** the June SME-pH drop is purely a "secondary-guardrail signal," so the dose table (S = 0.32 × CaCO₃, full-pool titration) stands as-is.
+- **What might be ignored:** the same field SME shows **sulfate 417 ppm + nitrate-N 388 ppm** (fish-N nitrification) — both acid-generating — and SME pH fell **0.8 unit in one season**. That in-situ acid load is *already consuming carbonate* the dose table assumes elemental sulphur must neutralise. "Unchanged" answers "still alkaline/Ca-saturated?" (yes) but not "how much carbonate has the season's own acid already titrated?" Dosing the full table-S on top double-counts neutralising capacity → overshoot toward the salt-sensitive 6.0 floor once leaching resumes.
+- **How to test it:** take the pending calcimeter *after* this acid load (not against the April assumption); net table-S against the observed self-acidification (the 0.8-unit/season SME drop is a first estimate of the rate the bed acidifies unaided).
+- **Cost if real:** medium — overshoot on a crop whose own root-zone pH band is still PO-pending (no defined endpoint to titrate toward yet), with no guardrail beneath the 6.0 floor.
+
+### Verdict
+The "not a new anchor" framing for 6.68 is correct (consistent with anchor-on-Mehlich). The gap is the unexamined "carbonate unchanged" → dose-table-stands inference: the bed is now acidifying itself, which the full-pool titration doesn't credit. Gate the next dose on a *post-acid-load* calcimeter, not the April carbonate picture. No dose moved this diff.
+
+## 2026-06-28 — review of nutrition/lettuce/soil-ph/model/derivation.md (HEAD working-tree diff)
+
+Scope: the § Guardrails "Live breach" paragraph reviewed at lines 372–396 **changed its operative decision** — from *sulphur on HOLD until leaching* to **program continues; leach under the guardrail before each pass** (Guillaume call 2026-06-20, per the learning). Plus: aeration row now links `protocol/bed-drainage-test.md`; § pH scale gains the June SME pH 6.68 as a second point. No constant/dose/cert/stage moved; sibling `spec.md` still zero-slug.
+
+**Carry-forward, not re-raised:**
+- Prior **B2** (HOLD resume-gate undefined, line 383) is now **MOOT** — there is no HOLD; it's continuous leach-before-pass.
+- Prior **B1** (the bare "~3× the 1.3 guardrail" mixes Berger **SME** dS/m against an **ECe** guardrail, line 377) **carries forward and now bites harder** — the live decision *gates each sulphur pass* on that guardrail. The leach protocol does define a conversion for its own trigger (1:1 slurry 0.65 ≈ ECe 1.3, `salt-leach.md`), but the derivation's "CE 4.01 vs 1.3 = 3×" still equates SME with ECe with no offset stated. Three scales now in play (SME 4.01 / ECe 1.3 guardrail / 1:1 0.65 leach trigger).
+- Prior **B3** (line 403, "carbonate unchanged" ignores the 0.8-unit self-acidification → full-pool dose table may overshoot) still stands — the pH-scale edit is the same change, no new claim.
+
+### Blindspots
+**B1 — "program continues" rests on a cert-1 leach-efficacy rule never validated on THIS bed; on fast-flip beds the leach must outpace each pass's gypsum-EC or salt ratchets** · `PENDING`
+- **What the spec assumes:** leaching reliably pulls the bed back under guardrail before each sulphur pass, so dosing can continue at a 3×-breached, salt-sensitive bed.
+- **What might be ignored:** the efficacy number is the protocol's own **cert-1** FAO reclamation rule (~100 L/m² over 2–3 passes from 4 dS/m, `salt-leach.md` step 6), gated on a drainage pre-check that isn't yet confirmed on this bed. Lettuce flips every few weeks (the file's own cadence point) → each cycle must complete a multi-pass leach *and* a sulphur pass within that window. If leach throughput lags the flip rhythm, or drainage perches (the pre-check's own failure mode), each gypsum-EC pulse stacks on a bed not yet cleared → salt ratchets up on the crop the guardrail exists to protect. The derivation states the continue-decision as settled; the cert-1 basis + drainage precondition live only in the protocol, invisible to a derivation reader.
+- **How to test it:** first-cycle field validation — paired 1:1 slurry EC before leach / after leach / after the subsequent sulphur pass on the actual bed; confirm one full cycle lands back under 0.65 within the flip window before relying on the rule.
+- **Cost if real:** **high** — salt-sensitive crop, yield falls fast above ECe 1.3; a leach that can't keep pace means continued dosing actively worsens the constraint the whole strategy is fighting.
+
+**B2 — the saline-not-sodic "keep dosing" call rests on a single RAS 1.29 from an unlabelled-bag sample** · `PENDING`
+- *Guillaume call needed (already decided 2026-06-20 — surface for confirmation, not relitigation):* the continue-vs-pause fork was Guillaume's, on the basis that the salt is leachable (RAS 1.29, sulfate/nitrate-dominated, not sodic).
+- **What the spec assumes:** RAS 1.29 = low → neutral salts → leachable → safe to keep dosing.
+- **What might be ignored:** that RAS is one mid-season SME, and the report flags the bag was unlabelled ("sac non identifié"). The entire continue-dosing decision pivots on this one number being right. The learning acknowledges the wobble + cross-checks tissue Na (3166) for the *direction*, but RAS itself is single-point.
+- **How to test it:** a second field SME RAS on a labelled sample next cycle confirms the salt stays sub-sodic before further passes; if Na/RAS is climbing (the field trend Na 40 → 124 already shows accumulation), the "leachable" premise weakens.
+- **Cost if real:** medium — if the salt trends sodic, plain-water leaching stops working and continued dosing compounds it; but it's a slow-moving, retest-catchable failure, and Guillaume owns the call.
+
+### Complexity
+No cut. No new constant, stage, or branch — the diff changes a decision (HOLD → continue+leach) and adds two pointers. The aeration `bed-drainage-test.md` link is a pure improvement: it surfaces inline the exact drainage precondition the leach protocol's pre-check depends on (and that B1 leans on). Keep.
+
+### Cert defense
+No new challenge. CE 4.01 / RAS 1.29 / Na 124 are stated as lab facts — accurate. The interpretive softness is in B1 (cert-1 leach rule presented as a settled mechanism) and B2 (single-sample RAS), both logged as blindspots, not cert mislabels — the derivation doesn't over-stamp a cert on either.
+
+### Verdict
+The continue+leach direction is Guillaume's call and defensible *if* the bed leaches as the FAO rule predicts — but that "if" is the whole bet and is cert-1, unvalidated on this bed, and time-pressured by the flip cadence. Land the diff; gate ongoing dosing on B1's first-cycle leach validation (does one real cycle return under 0.65 in the flip window?) and B2's second RAS read. Carry-forward B1-scale / B3-carbonate remain open from the prior entries. No dose moved this diff.

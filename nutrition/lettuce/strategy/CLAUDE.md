@@ -17,6 +17,10 @@ Rumelt kernel: **diagnosis → guiding policy → coherent action.**
   Mo + citric dropped. Shows depletion ≠ the constraint; lockout is.
 
 - `learnings/` — strategy forks (crowding=over-aging → 3″-pot vehicle).
+- `protocol/` — field operating procedures: `soil-ph-ec-test.md`
+  (1:1 slurry EC/pH bands, salt-vs-pH gate) + `salt-leach.md`
+  (plain-water reclamation, drainage half of the sulphur program;
+  leach under the ECe 1.3 guardrail before each pass).
 - `diagnostic-photos.html` — standalone photo viewer with a batch
   selector: each evidence photo with its ranked diagnoses (confiance
   ★/5 each) and the visual symptoms that justify each one. One data

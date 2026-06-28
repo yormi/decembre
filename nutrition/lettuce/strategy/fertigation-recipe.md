@@ -8,8 +8,9 @@ Scale basis: **3 600 heads** (800 × 4.5 beds), **30 → 100 g**,
 **3-week** growth, **54.7 m²**, weekly batch.
 
 Evidence: tissue `LAIT #1` (Image, 2026-06-12), SME + Mehlich-3
-(Berger 39086 / 39088, 2026-04-10), water test (`../../doc/analyse
-d'eau.pdf`).
+(Berger 39086 / 39088, 2026-04-10), mid-season field SME (Berger
+39580, 2026-06-19 — `../learnings/field-sme-salinity-climbed-2026-06.md`),
+water test (`../../doc/analyse d'eau.pdf`).
 
 
 ## Recipe comparison
@@ -39,6 +40,11 @@ crop (tissue Na 3166), the EC relief is the biggest single benefit.
 at the floor (5.93%) → the limit is **uptake (Na antagonism), not
 supply**. Cutting K is safe; more never got in. Monitor tissue K
 doesn't dip below floor (soil K bank buffers, ~17-wk runway).
+
+The June field SME independently confirms the salt thesis (was
+tissue-only): root-zone CE climbed to 4.01 dS/m (April 1.08), into the
+scorch band — the EC relief is even more the point now. See the
+learning above.
 
 
 ## Depletion vs availability

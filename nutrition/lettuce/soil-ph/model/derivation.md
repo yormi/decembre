@@ -57,9 +57,11 @@ Buffer-only range = tomato's 50–120 kg scaled by topsoil-mass ratio (27 360 / 
 |---|---|---|---|
 | EC (root zone) | **ECe ≤ 1.3 dS/m** (≈0.5–0.6 on 1:2) | ~half tomato's 2.5 | near it → skip/cut next pass; **check EC before transplant**, not just after |
 | pH retest | every flip / ~4 weeks | same | stop at 6.5, hard floor 6.0 |
-| Aeration | never dose a waterlogged bed | same | S⁰ → H₂S root burn |
+| Aeration | never dose a waterlogged bed (test: `../../../../protocol/bed-drainage-test.md`) | same | S⁰ → H₂S root burn |
 
 Lettuce salinity threshold ECe ~1.3 dS/m (cert 4, FAO); yield falls fast above it. Gypsum salinity still self-limits (CaSO₄ solubility ~2.4 g/L, EC self-caps ~2.0–2.2 dS/m) — but lettuce's lower threshold means the transient EC pulse matters more, and it lands right as fast-cycle seedlings go in. Hence the pre-transplant EC check.
+
+**Live breach (2026-06):** June field SME reads **CE 4.01 dS/m**, ~3× the 1.3 guardrail and up from 1.08 in April. The salt is saline-not-sodic (RAS 1.29, mostly CaSO₄ + nitrate) → the program continues; **leach under the guardrail before each pass** so the gypsum-EC pulse lands within band. Protocol: `../../strategy/protocol/salt-leach.md`. Context: `../../learnings/field-sme-salinity-climbed-2026-06.md`.
 
 ## Refinement triggers
 
@@ -71,4 +73,4 @@ Lettuce salinity threshold ECe ~1.3 dS/m (cert 4, FAO); yield falls fast above i
 
 ## pH scale
 
-Anchor on Mehlich-3 water pH per the SME-is-soilless rule; track SME as a secondary guardrail. We currently hold only SME 7.48 for lettuce + an estimated water pH — a direct water-pH reading is the first refinement. Never mix the two scales (~0.3 unit apart) in one calculation.
+Anchor on Mehlich-3 water pH per the SME-is-soilless rule; track SME as a secondary guardrail. We hold two SME pH points (7.48 April, **6.68 June** — `../../learnings/field-sme-salinity-climbed-2026-06.md`) + an estimated water pH; a direct water-pH reading is still the first refinement. The June SME-pH drop is a secondary-guardrail signal (bed self-acidifying under the salt load), **not** a new anchor — the Ca-saturated carbonate picture is unchanged. Never mix the two scales (~0.3 unit apart) in one calculation.

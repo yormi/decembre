@@ -104,5 +104,7 @@ not the ceiling.
 - **Good-plug trial** — 4-wk cool plug → cold soil vs clean media;
   separates plug ceiling from soil ceiling.
 
-Confidence: heat-as-depressor 4–5/5; sodium through-line 3.5–4/5;
+Confidence: heat-as-depressor 4–5/5; sodium through-line 3.5–4/5
+(raised by the June field SME — root-zone CE 4.01, up from April 1.08,
+salt now solution-confirmed: `../learnings/field-sme-salinity-climbed-2026-06.md`);
 plug-as-ceiling 3.5/5.

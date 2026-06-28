@@ -165,6 +165,30 @@ Time-to-bolt held at constant temperature (≈1000 °C·d; constant temp)
 - worst case: closed canopy held past its net-positive window → base loss outruns top gain (net mass + quality loss)
 
 
+### Growth rate
+
+- vegetative fresh weight accumulates **exponentially** in the active phase → time-to-weight is set by a doubling time, not a fixed g/day
+
+- relative growth rate (RGR, whole-plant **mass**) ← saturating(DLI) **+** 24 h avg temp
+
+- per-plant DLI ← spacing → falls at **canopy closure** → RGR drops once lower leaves shade (the source→sink flip caps net mass gain)
+
+- a target harvest weight is reachable only if no quality ceiling (tipburn / bolting / canopy net-negative) fires first
+
+Doubling time by condition (cert 1–2)
+
+| Condition | Doubling time |
+|---|---|
+| DLI ≥ saturation, 18–20 °C, pre-closure | 6–8 d |
+| bed setpoint band (DLI 14–16) | ~8–10 d |
+| closure drag or off-band temp | 10–12+ d |
+
+- best case example:
+    - 30 g → 100 g = 3.3× → ~1.7 doublings
+    - 1.7 * 6-8 d = **~10–14 d** best-case
+    - **~2–3 wk** if any factor is sub-optimal
+
+
 ### Setpoints
 
 
