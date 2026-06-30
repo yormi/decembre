@@ -136,7 +136,10 @@ function setPage(page) {
   const diagBtn = document.getElementById('page-diagnostic');
   diagBtn.style.color = page === 'diagnostic' ? 'var(--text)' : 'var(--text-muted)';
   diagBtn.style.fontWeight = page === 'diagnostic' ? '600' : '500';
-  document.getElementById('page-irrigation').className = page === 'irrigation' ? 'page-btn active' : 'page-btn';
+  const section = sectionOf(page);
+  document.getElementById('section-nutriments').className = section === 'nutriments' ? 'section-btn active' : 'section-btn';
+  document.getElementById('section-effeuillage').className = section === 'effeuillage' ? 'section-btn active' : 'section-btn';
+  document.getElementById('section-irrigation').className = section === 'irrigation' ? 'section-btn active' : 'section-btn';
   document.getElementById('page-fertigation').className = page === 'fertigation' ? 'page-btn active' : 'page-btn';
   document.getElementById('page-sol').className = page === 'sol' ? 'page-btn active' : 'page-btn';
   document.getElementById('page-foliar').className = page === 'foliar' ? 'page-btn active' : 'page-btn';
@@ -145,6 +148,7 @@ function setPage(page) {
   document.getElementById('page-fertigation-content').style.display = page === 'fertigation' ? 'block' : 'none';
   document.getElementById('page-sol-content').style.display = page === 'sol' ? 'block' : 'none';
   document.getElementById('page-foliar-content').style.display = page === 'foliar' ? 'block' : 'none';
+  document.getElementById('page-effeuillage-content').style.display = page === 'effeuillage' ? 'block' : 'none';
   document.getElementById('page-diagnostic-content').style.display = page === 'diagnostic' ? 'block' : 'none';
   document.getElementById('page-diagnostic-practice-content').style.display = page === 'diagnostic-practice' ? 'block' : 'none';
   document.getElementById('page-nutriment-content').style.display = page === 'nutriment' ? 'block' : 'none';
@@ -162,10 +166,13 @@ function setPage(page) {
     rendBtn.style.color = page === 'rendement' ? 'var(--text)' : 'var(--text-muted)';
     rendBtn.style.fontWeight = page === 'rendement' ? '600' : '500';
   }
-  // Hide the main 3-page toggle on tool/admin pages. The ℹ icon (admin-only,
-  // top-left of the header) is the back-nav primitive that returns to the
-  // operational pages from any admin/tool view.
-  document.getElementById('page-toggle').style.display = (page === 'week' || page === 'diagnostic' || page === 'diagnostic-practice' || page === 'nutriment' || page === 'historique-nutriments' || page === 'rendement') ? 'none' : 'flex';
+  // Hide both nav bars on tool/admin pages. The ℹ icon (admin-only, top-left of
+  // the header) is the back-nav primitive that returns to the operational pages
+  // from any admin/tool view. The secondary page-toggle additionally only shows
+  // inside the Nutriments section (Effeuillage / Irrigation are single-page).
+  const isToolPage = (page === 'week' || page === 'diagnostic' || page === 'diagnostic-practice' || page === 'nutriment' || page === 'historique-nutriments' || page === 'rendement');
+  document.getElementById('section-toggle').style.display = isToolPage ? 'none' : 'flex';
+  document.getElementById('page-toggle').style.display = (isToolPage || section !== 'nutriments') ? 'none' : 'flex';
   if (page === 'foliar') buildFoliar();
   if (page === 'week') buildWeek();
   if (page === 'nutriment') buildNutriment();
@@ -189,9 +196,27 @@ function setPage(page) {
 // Default page (fertigation) + default crop (tomato) collapse to `/` (no hash).
 // Why: lets hot-reload / bookmarks land on the same page+crop, and keeps
 // `admin` orthogonal to navigation rather than buried in a comma list.
-const PAGES = ['fertigation','sol','foliar','irrigation','week','diagnostic','diagnostic-practice','nutriment','historique-nutriments','rendement'];
+const PAGES = ['fertigation','sol','foliar','effeuillage','irrigation','week','diagnostic','diagnostic-practice','nutriment','historique-nutriments','rendement'];
 const DEFAULT_PAGE = 'fertigation';
 const DEFAULT_CROP = 'tomato';
+// Primary nav sections. Each operational page belongs to exactly one section;
+// the section is derived from the page (sectionOf), so the URL hash stays
+// page/crop — no section segment, existing bookmarks keep working. The
+// secondary page-toggle (Fertigation/Fertilisation/Foliaire) shows only inside
+// Nutriments; Effeuillage and Irrigation are single-page sections.
+const SECTIONS = {
+  nutriments:  ['fertigation','sol','foliar'],
+  effeuillage: ['effeuillage'],
+  irrigation:  ['irrigation'],
+};
+const SECTION_DEFAULT_PAGE = { nutriments: 'fertigation', effeuillage: 'effeuillage', irrigation: 'irrigation' };
+function sectionOf(page) {
+  for (const s in SECTIONS) if (SECTIONS[s].includes(page)) return s;
+  return 'nutriments';
+}
+function setSection(section) {
+  setPage(SECTION_DEFAULT_PAGE[section] || DEFAULT_PAGE);
+}
 // irrigation is admin-gated: its toggle button lives in the operational
 // page-toggle bar but only shows in admin mode (applyAdminMode hides it
 // otherwise; setPage/redirect guards below block non-admin access).
@@ -280,8 +305,8 @@ function applyAdminMode() {
   document.getElementById('page-historique-nutriments').style.display = admin ? 'inline-block' : 'none';
   const rendNavBtn = document.getElementById('page-rendement');
   if (rendNavBtn) rendNavBtn.style.display = admin ? 'inline-block' : 'none';
-  // Irrigation toggle lives in the operational page-toggle bar but is admin-only.
-  document.getElementById('page-irrigation').style.display = admin ? '' : 'none';
+  // Irrigation is a primary section tab but admin-only.
+  document.getElementById('section-irrigation').style.display = admin ? '' : 'none';
   // Nursery "Bien réglé quand" signs card is admin-only.
   const nurserySignsCard = document.getElementById('nursery-signs-card');
   if (nurserySignsCard) nurserySignsCard.style.display = admin ? '' : 'none';
@@ -372,6 +397,8 @@ applyAdminMode(); // reveal admin buttons if URL has #admin
 // declarations already attach to window, but explicit assignment documents
 // the contract.
 window.setPage = setPage;
+window.setSection = setSection;
+window.sectionOf = sectionOf;
 window.setCrop = setCrop;
 window.setCropBtn = setCropBtn;
 window.setVigor = setVigor;

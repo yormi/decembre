@@ -7,6 +7,12 @@
   .crop-btn.active { background: var(--text); color: white; box-shadow: 0 2px 8px rgba(0,0,0,0.15); }
   .crop-icon { font-size: 16px; }
 
+  /* Primary section nav (Nutriments | Effeuillage | Irrigation) — prominent,
+     dark-filled active to sit visually above the secondary page toggle. */
+  .section-toggle { display: flex; gap: 8px; margin-bottom: 10px; }
+  .section-btn { flex: 1; padding: 11px 8px; border: 1.5px solid var(--border); border-radius: 9px; font-family: inherit; font-size: 14px; font-weight: 700; cursor: pointer; transition: all 0.2s ease; background: var(--card); color: var(--text-muted); display: flex; align-items: center; justify-content: center; gap: 6px; }
+  .section-btn.active { background: var(--text); color: white; border-color: var(--text); box-shadow: 0 2px 8px rgba(0,0,0,0.15); }
+
   /* Page Toggle */
   .page-toggle { display: flex; background: var(--card); border-radius: var(--radius); padding: 4px; box-shadow: var(--shadow); margin-bottom: 16px; border: 1px solid var(--border); }
   .page-btn { flex: 1; padding: 10px 8px; border: none; border-radius: 7px; font-family: inherit; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s ease; background: transparent; color: var(--text-muted); display: flex; align-items: center; justify-content: center; gap: 6px; }

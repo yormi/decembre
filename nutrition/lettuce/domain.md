@@ -139,9 +139,26 @@ Time-to-bolt held at constant temperature (≈1000 °C·d; constant temp)
 | 24 °C (hot) | 24 | ~42 |
 
 
+### Growth rate
+
+- leaf-expansion rate ← DLI (saturating ~20–25 mol/m²/d) + 24 h avg temp (thermal time, same clock as bolting)
+
+- early growth (germination → rosette) is slow; an established plant expands at peak rate → it fills new space far faster than a seedling reaches first closure
+
+- DLI and temp each swing seasonally → unmanaged, growth rate (and so closure timing) runs slower in winter
+
+- supplemental lamps → DLI floor ~11.5 mol/m²/d (200 µmol/m²/s × 16 h photoperiod) ≈ seedling DLI target → winter light-drift removed
+
+- heating → steady night temp → winter cold-drift removed
+
+- 24 h avg temp held in-band by setpoint (heating floors the winter low) → temperature is not an operative knob; among controllable inputs growth rate ← DLI alone
+
+- both pinned → growth rate season-independent; residual is summer-*fast* (sun overshoots DLI target + warmer days, day temp uncapped), never winter-slow
+
+
 ### Canopy closure
 
-- canopy closure timing ← Spacing + DLI   (NOT root volume, NOT temperature)
+- canopy closure timing ← spacing (distance to close) + growth rate (rate of closing)   (NOT root volume; growth rate per `### Growth rate`)
 
 - before closure: yield ← intercepted light
 
@@ -160,9 +177,39 @@ Time-to-bolt held at constant temperature (≈1000 °C·d; constant temp)
 | Plug tray | 50-cell tighter than 32-cell | 0–5 d, ≤~1 wk | stretch + base mold |
 | Crop bed | ~43 heads/m² | ~2–3 wk | base rot + senescence + tipburn |
 
-- plug tray: pitch fixed at sowing by cell count → closure timing set at sowing
+- plug tray: pitch set at sowing by cell count, then re-set by a density split — pitch is NOT fixed for the whole propagation
+
+- density split: at first closure, pull half the plugs to a second tray → ground area per plant doubles → center-to-center spacing ×√2 (≈1.41)
+
+- re-closure after a split runs faster than first closure: established plants at peak expansion need only ~1 leaf-area doubling, vs growing from seed
+
+- Salanova, 32-cell → 3″ pot (Décembre lamps + heating): first closure ~3 wk from sowing → split → re-closure ~5–10 d
 
 - worst case: closed canopy held past its net-positive window → base loss outruns top gain (net mass + quality loss)
+
+
+### Light-budget biomass production
+
+
+- harvestable biomass ← intercepted light, summed over all lit floor   (nursery + beds are one light budget, not two)
+
+- kg per time ← lit floor area × canopy coverage fraction × DLI × RUE   (the production identity)
+
+- biomass conserved nursery → bed: a transplant's mass is light captured earlier on the bench, not mass the bed makes anew
+
+- open canopy → per-floor growth below the light cap   (uncovered floor spills incident light → wasted; per-plant growth still exponential, see `### Growth rate`)
+
+- closed canopy → per-floor growth at the light cap, independent of plant size and density   (sustained only through the net-positive window — see `### Canopy closure`)
+
+- canopy coverage fraction → share of incident light intercepted   (sets where per-floor growth sits between the open and closed regimes)
+
+- DLI → biomass, saturating   (lettuce is a low-light crop; past the knee surplus light becomes tipburn / bolting, not yield — same saturation as leaf-expansion in **Inner-heart tipburn**)
+
+- ceiling levers → raise the light cap: **DLI**, **RUE**, lit floor area (incl. vertical layers)
+
+- coverage levers → approach the cap, never raise it: spacing, density, transplant size, cycle length, succession scheduling
+
+- nursery function: relocates the open-canopy (low-coverage, light-wasting) phase onto a high-density small footprint → keeps beds at closed canopy
 
 
 ### Setpoints
@@ -229,3 +276,12 @@ plug, ~4 wk propagation.
 
 
 **Crown** — the compressed stem base where all leaves attach and roots emerge; the growing point sits just above it; the site of crown/base rot in a closed humid canopy. _Avoid_: collar.
+
+
+**canopy coverage fraction** — share of lit floor under closed, light-intercepting canopy; the term that converts incident light into growth at the floor level.
+
+
+**RUE** — radiation use efficiency: biomass made per mol of intercepted light. _Avoid_: light-use efficiency.
+
+
+**light cap** — the closed-canopy per-floor growth rate at a given DLI; the maximum rate a fully covered floor can sustain.

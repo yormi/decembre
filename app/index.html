@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Ferme Décembre — Système d'opération</title>
+<title>Ferme Décembre</title>
 <link rel="icon" href="favicon.ico" sizes="any">
 <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
@@ -23,7 +23,6 @@
 <div class="container">
   <div class="header">
     <div class="header-label">Ferme Décembre</div>
-    <h1>Système d'opération</h1>
   </div>
 
   <!-- @include app/operator/page.html -->
@@ -90,6 +89,8 @@
   <!-- @include nutrition/tomato/fertigation-recipe/operator/page.html -->
 
   <!-- @include nutrition/tomato/foliar-strategy/operator/page.html -->
+
+  <!-- @include nutrition/lettuce/app/effeuillage/page.html -->
 
   <!-- @include app/diagnostic/page.html -->
 
@@ -212,6 +213,9 @@
 // STORED_RECIPE.tomato.foliaire (window-global, defined in that subproject's
 // stored.js). Single weekly spray since 2026-05-06.
 <!-- @include nutrition/tomato/foliar-strategy/operator/logic.js -->
+
+// Effeuillage — dynamic "feuilles à hauteur des épaules" call (setLeafReach).
+<!-- @include nutrition/lettuce/app/effeuillage/logic.js -->
 
 // Racines (AMF) week-card renderer (buildAmf) — renders into the Fertilisation
 // (sol) page's #amf-week-card during a drench-pass week. Protocol data + pure schedule
