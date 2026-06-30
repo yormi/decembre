@@ -1,5 +1,14 @@
 [
   {
+    "date": "2026-06-30",
+    "date_fr": "30 juin 2026",
+    "title": "Nouvelle page Effeuillage tomates",
+    "changes": "- Nouveau protocole pour maintenir la surface foliaire. Inclut instructions pour effeuillage et flag leaves\n- *Fertilisation*, *Fertigation*, *Spray* sont maintenant des sous-menus de *Nutriments*",
+    "url": "https://main--decembre-staging.netlify.app",
+    "pr": 7,
+    "sha": "cb8a96fbdaa356b648d675e95f4bdeb6bc2b7990"
+  },
+  {
     "date": "2026-06-20",
     "date_fr": "20 juin 2026",
     "title": "Spray tomate anti-taches + fertigation semis anti-sel",
