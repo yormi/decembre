@@ -1,12 +1,21 @@
 // Hand-stored fertigation recipe (PA Taillon, Climax Conseils, April 8 2026).
 // Source PDF: farm info/fertigation oligos éléments tomate avril.pdf.
-// T1-T5 revus 2026-06-03 : canal fertigation dépouillé à K + Mg + micros
-// non-verrouillés (B + Mo). Oligos cationiques Fe / Zn / Mn / Cu retirés du
-// fertigation — verrouillés à pH sol ~7,4 (inefficaces en racinaire), livrés
-// en foliaire (absorption cuticulaire contourne le lockout). Mo conservé/réajouté
-// 2026-06-04 : le molybdate (anionique) devient PLUS disponible à pH élevé →
-// absorption racinaire élevée à 7,4, comme le bore (NaMolybdate 0,5 g tous stades,
-// ~100 % demande). Bore = oligo fertigation, 10 g tous
+// 2026-07-11 : oligos cationiques Mn / Zn RENDUS au fertigation (sprays
+// foliaires A + B retirés — /retire-recipe). pH planches redescendu à 6,5
+// (EC 1:1 par poids, 9 juillet 2026, moyenne 7 planches, étendue 6,1-6,8) :
+// le verrouillage racinaire des sulfates cationiques est levé (courbe
+// sulfate-metal 0,10 à pH 7,4 → 0,75 à pH 6,5). Doses = demande pleine de la
+// plante à efficacité canal 0,75 (aucun rabais crédit-sol, décision Guillaume) ;
+// ramp par stade. Fe NON fertigé : le sol le couvre (banque 310 ppm, tissu
+// suff) et le FeSO₄ s'oxyde dans la cuve maître 5 jours (Fe²⁺→Fe³⁺, colmatage
+// goutteurs) — Fe routé passif ; fallback = FeSO₄ granulaire en sidedress si
+// un tissu montre une carence. Cu non rendu (tissu élevé + sol normal).
+// Déclencheur de révision : prochaine SME Berger à 6,5 (micros verrouillés
+// remontent → réduire/annuler le drip). Historique 2026-06-03 → 2026-06-05 :
+// canal dépouillé à K + Mg + micros non-verrouillés quand pH sol était ~7,4
+// (Fe/Mn/Zn/Cu verrouillés, livrés en foliaire) ; Mo réajusté 2026-06-04 : le
+// molybdate (anionique) est PLUS disponible à pH élevé, absorption racinaire
+// élevée (NaMolybdate 0,5 g tous stades). Bore = oligo fertigation, 10 g tous
 // stades (mono-canal : foliaire Solubore retiré 2026-06-03 — la fertigation
 // porte le bore, borate non-ionique efficacité canal 1.00 + livraison
 // systémique xylème ; 10 g ≈ 119 % demande, bump 9→10 g 2026-06-03 décidé par
@@ -23,15 +32,16 @@
 // EDITS REQUIRE /retire-recipe SKILL FIRST. Path `STORED_RECIPE.tomato.fertigation`
 // preserved verbatim; the skill greps for this identifier.
 window.STORED_RECIPE.tomato.fertigation = {
-  // B (Solubore 10 g, clé `borax`) + Mo (NaMolybdate 0,5 g) seuls. Area 382,6 m² (7 planches).
+  // Oligos cationiques Mn/Zn (rendus 2026-07-11) + B (Solubore 10 g, clé `borax`)
+  // + Mo (NaMolybdate 0,5 g). K/Mg toujours 0. Fe passif (sol). Area 382,6 m² (7 planches).
   // K₂SO₄ + MgSO₄ coupés à 0 le 2026-06-05 (/retire-recipe) : surplus confirmé sur les
   // deux pools — SME 2026-06-04 solution K 301,7 (≥300) / Mg 158,4 (~1,6× plafond) / CE 3,96
   // (>3,5) ; Mehlich-3 2026-04-10 K 7,3 % / Mg 18,3 % saturation CEC, banque pluri-saisonnière.
   // Coupe corrective (réduit la CE > plafond) ; reprise d'entretien gated sur SME K/Mg milieu
   // de gamme ET CE < 3,5.
-  T1: { mgSulfate: 0, kSulfate: 0, borax: 10, naMolybdate: 0.5 },
-  T2: { mgSulfate: 0, kSulfate: 0, borax: 10, naMolybdate: 0.5 },
-  T3: { mgSulfate: 0, kSulfate: 0, borax: 10, naMolybdate: 0.5 },
-  T4: { mgSulfate: 0, kSulfate: 0, borax: 10, naMolybdate: 0.5 },
-  T5: { mgSulfate: 0, kSulfate: 0, borax: 10, naMolybdate: 0.5 },
+  T1: { mgSulfate: 0, kSulfate: 0, mnSulfate: 3,  znSulfate: 1.5, borax: 10, naMolybdate: 0.5 },
+  T2: { mgSulfate: 0, kSulfate: 0, mnSulfate: 6,  znSulfate: 2.5, borax: 10, naMolybdate: 0.5 },
+  T3: { mgSulfate: 0, kSulfate: 0, mnSulfate: 8,  znSulfate: 4,   borax: 10, naMolybdate: 0.5 },
+  T4: { mgSulfate: 0, kSulfate: 0, mnSulfate: 9,  znSulfate: 5,   borax: 10, naMolybdate: 0.5 },
+  T5: { mgSulfate: 0, kSulfate: 0, mnSulfate: 12, znSulfate: 6.5, borax: 10, naMolybdate: 0.5 },
 };

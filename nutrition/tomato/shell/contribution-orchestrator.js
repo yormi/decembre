@@ -63,7 +63,7 @@ let nutrRecipeMode = 'fp';
 // Cert 3 mechanism. Cert 2-3 specific factor values.
 const LUXURY_FACTOR = {
   N:  1.10,  // NO3 luxury uptake small; cert 3
-  P:  1.00,  // closely demand-regulated; lockout usually binds first; cert 4
+  P:  1.00,  // closely demand-regulated; cert 4
   K:  1.15,  // largest vacuolar K storage; cert 3
   Ca: 1.10,  // mass-flow + xylem; cert 3
   Mg: 1.10,  // similar to Ca; cert 3
@@ -76,7 +76,7 @@ const LUXURY_FACTOR = {
   Mo: 1.00,
 };
 
-function calculateNutritionSupply(stage, phLocked, transpFactor, targetYield, recipeMode) {
+function calculateNutritionSupply(stage, transpFactor, targetYield, recipeMode) {
   const mode = recipeMode === 'fp' ? 'fp' : 'stored';
   const area = TOMATO_NUMBER_BEDS * TOMATO_BED_AREA; // 382.9 m²
   const tf = transpFactor || 1.0;
@@ -121,7 +121,6 @@ function calculateNutritionSupply(stage, phLocked, transpFactor, targetYield, re
     const sidedressPre = computeSidedressContribution({
       stage,
       sd: sdFp,
-      phLocked,
       productPct: PRODUCT_PCT,
       areaPerPlanche: SIDEDRESS_AREA_PER_PLANCHE,
       minimumEfficiency: SIDEDRESS_MINIMUM_EFFICIENCY,
@@ -159,7 +158,9 @@ function calculateNutritionSupply(stage, phLocked, transpFactor, targetYield, re
   // "Recette proposée" Fe display label.
   const parseG = (s) => parseFloat(String(s).replace(',', '.')) || 0;
   const A = STORED_RECIPE.tomato.foliaire.A;
-  const get = (substr) => A.find(x => x.name.includes(substr));
+  // Tolerant lookup: the foliar recipe can be empty (sprays retired 2026-07-11,
+  // micros moved to fertigation) — absent product → 0 g.
+  const getG = (substr) => { const e = A.find(x => x.name.includes(substr)); return e ? parseG(e.master) : 0; };
   let mnSO4_g, znSO4_g, sb_g, cuSO4_g, moNa_g, feSO4_g;
   let foliarRecipeArray = null;
   if (mode === 'fp') {
@@ -179,13 +180,12 @@ function calculateNutritionSupply(stage, phLocked, transpFactor, targetYield, re
       { name: 'FeSO₄·7H₂O (20 % Fe)',  master: (fp['FeSO4-7H2O']  || 0) + ' g' },
     ];
   } else {
-    mnSO4_g = parseG(get('MnSO₄').master);
-    znSO4_g = parseG(get('ZnSO₄').master);
-    sb_g    = parseG(get('Solubore').master);
-    cuSO4_g = parseG(get('CuSO₄').master);
-    moNa_g  = parseG(get('Molybdate').master);
-    const feSO4_entry = A.find(x => x.name.includes('FeSO₄'));
-    feSO4_g = feSO4_entry ? parseG(feSO4_entry.master) : 0;
+    mnSO4_g = getG('MnSO₄');
+    znSO4_g = getG('ZnSO₄');
+    sb_g    = getG('Solubore');
+    cuSO4_g = getG('CuSO₄');
+    moNa_g  = getG('Molybdate');
+    feSO4_g = getG('FeSO₄');
     // foliarRecipeArray stays null → computeFoliarSupply defaults to A.
   }
   const feApplied_g = feSO4_g * PRODUCT_PCT.FeSO4_Fe;
@@ -201,8 +201,8 @@ function calculateNutritionSupply(stage, phLocked, transpFactor, targetYield, re
   });
 
   // Soil contributions — direct mass-flow from SME × transpiration × canopy factor.
-  // Lockout shows up automatically in the SME data (P 1.1 ppm, Mn/Zn below detection).
-  // Fe gets a calcareous-chemistry discount inside soilWeeklyAvailable.
+  // Low soil supply shows up automatically in the SME data (P 1.1 ppm, Mn/Zn
+  // below detection) — genuine soil scarcity, not a pH discount.
   // Demand-bounding cap (LUXURY_FACTOR): mass-flow potential overstates real
   // uptake at high SME for transporter-saturating elements (K, Ca, Mg, partially
   // N). The cap is taken against demand_total (fruit + biomass per stage at
@@ -210,14 +210,15 @@ function calculateNutritionSupply(stage, phLocked, transpFactor, targetYield, re
   const demandBreakdown = calculateNutritionDemand(ty, stage, tf);
   const soil = {};
   // FP mode (2026-05-08): drop SME credit for everything fertigation/foliar can
-  // deliver. Keep SME for Ca (saturated, can't add) and P (pH-locked).
+  // deliver. Keep SME for Ca (saturated, can't add) and P (soil/sidedress
+  // channel, not a fertigation/foliar element).
   const FP_SOIL_KEEP = { Ca: true, P: true };
   ['N','P','K','Ca','Mg','Fe','Mn','Zn','B','Cu','Mo'].forEach(element => {
     if (mode === 'fp' && !FP_SOIL_KEEP[element]) {
       soil[element] = 0;
       return;
     }
-    const massFlowPotential = soilWeeklyAvailable(element, phLocked, tf);
+    const massFlowPotential = soilWeeklyAvailable(element, tf);
     const demandTotal_element = (demandBreakdown[element] && demandBreakdown[element].total) || 0;
     const luxury = (LUXURY_FACTOR[element] != null) ? LUXURY_FACTOR[element] : 1.0;
     const demandCap = demandTotal_element * luxury;
@@ -236,7 +237,6 @@ function calculateNutritionSupply(stage, phLocked, transpFactor, targetYield, re
   const sidedress = computeSidedressContribution({
     stage,
     sd,
-    phLocked,
     productPct: PRODUCT_PCT,
     areaPerPlanche: SIDEDRESS_AREA_PER_PLANCHE,
     minimumEfficiency: SIDEDRESS_MINIMUM_EFFICIENCY,

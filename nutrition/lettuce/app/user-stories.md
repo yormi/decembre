@@ -7,11 +7,11 @@ in `nutrition/spec.md`; model-side demand/supply in
 
 ---
 
-## bilan-header-inputs-are-five-scalars
+## bilan-header-inputs-are-four-scalars
 
-The Salanova Bilan accepts exactly five operator inputs in the header
+The Salanova Bilan accepts exactly four operator inputs in the header
 card: `transplantG` (g/head), `targetG` (g/head), `cycleDays` (days),
-`density` (plants/m²), `phLocked` (boolean). Every other displayed
+`density` (plants/m²). Every other displayed
 number is derived from these + source-of-truth constants. No
 front-load input — the weekly feather-meal rate ships as a planted-in
 default and is not weekly-tuned by the operator.
@@ -58,6 +58,4 @@ tissue-test caveats — those live in
 
 Mutating any of the four demand-side header inputs (`transplantG`,
 `targetG`, `cycleDays`, `density`) re-renders the Salanova plant-need
-block with new per-element numbers. The `phLocked` toggle is
-supply-side per `nutrition/lettuce/domain/plant-needs/spec.md` and does not
-enter the demand block render.
+block with new per-element numbers.

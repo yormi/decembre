@@ -22,17 +22,16 @@ import {
   readPhase1StoredFertigationT5,
 } from './test-helpers.mjs';
 
-// ─── Header inputs are exactly five scalars ──────────────────
+// ─── Header inputs are exactly four scalars ──────────────────
 
-describe('Header inputs are exactly five scalars', () => {
-  // The five scalars: target, solarPerGram, stage, phLocked, recipeMode.
+describe('Header inputs are exactly four scalars', () => {
+  // The four scalars: target, solarPerGram, stage, recipeMode.
   // recipeMode is a two-button toggle (one logical input), so the DOM
-  // surface is 6 ids but the operator turns 5 knobs.
+  // surface is 5 ids but the operator turns 4 knobs.
   const REQUIRED_IDS = [
     'nutr-target',
     'nutr-solar-per-gram',
     'nutr-stage-selector',
-    'nutr-phlocked',
     'nutr-recipe-fp',
     'nutr-recipe-stored',
   ];
@@ -43,33 +42,32 @@ describe('Header inputs are exactly five scalars', () => {
     assert.deepEqual(missing, [], `missing ids: ${missing.join(', ')}`);
   });
 
-  test('nutr-current is absent (retired 2026-05-09; no 6th scalar)', () => {
+  test('nutr-current is absent (retired 2026-05-09; no 5th scalar)', () => {
     const { window } = loadTomatoApp();
     assert.equal(window.document.getElementById('nutr-current'), null,
       'nutr-current should not exist in markup');
   });
 
-  test('types: target=number, solarPerGram=number, phlocked=checkbox, recipe=2 BUTTONs', () => {
+  test('types: target=number, solarPerGram=number, recipe=2 BUTTONs', () => {
     const { window } = loadTomatoApp();
     const document = window.document;
     assert.equal(document.getElementById('nutr-target').type, 'number');
     assert.equal(document.getElementById('nutr-solar-per-gram').type, 'number');
-    assert.equal(document.getElementById('nutr-phlocked').type, 'checkbox');
     assert.equal(document.getElementById('nutr-recipe-fp').tagName, 'BUTTON');
     assert.equal(document.getElementById('nutr-recipe-stored').tagName, 'BUTTON');
   });
 
-  test('card body has no other top-level number/checkbox inputs beyond the 5', () => {
-    // Behavioral guard against silent re-introduction of a 6th header
+  test('card body has no other top-level number/checkbox inputs beyond the 4', () => {
+    // Behavioral guard against silent re-introduction of a 5th header
     // scalar. Restricted to the "Cible & contexte" card — block-local
     // foliar inputs and other downstream inputs are out of scope.
     const { window } = loadTomatoApp();
     const headerCard = window.document.querySelector('#nutr-tomato-content .card');
     assert.ok(headerCard, 'header card not found');
     const scalarInputs = headerCard.querySelectorAll('input[type="number"], input[type="checkbox"]');
-    // Allowed: nutr-target, nutr-solar-per-gram, nutr-phlocked. Anything else
-    // is an unspecified header knob and breaks the five-scalar rule.
-    const allowed = new Set(['nutr-target', 'nutr-solar-per-gram', 'nutr-phlocked']);
+    // Allowed: nutr-target, nutr-solar-per-gram. Anything else
+    // is an unspecified header knob and breaks the four-scalar rule.
+    const allowed = new Set(['nutr-target', 'nutr-solar-per-gram']);
     const extras = Array.from(scalarInputs).map(inp => inp.id).filter(id => !allowed.has(id));
     assert.deepEqual(extras, [],
       `unexpected scalar inputs in header card: ${extras.join(', ')}`);
@@ -613,7 +611,7 @@ describe('Bilan reads from source-of-truth recipes', () => {
     const { window } = loadTomatoApp();
     assert.equal(typeof window.calculateNutritionSupply, 'function',
       'calculateNutritionSupply must be exposed on window');
-    const supply = window.calculateNutritionSupply('T5', true, 1.0, 1.5, 'stored');
+    const supply = window.calculateNutritionSupply('T5', 1.0, 1.5, 'stored');
     assert.ok(supply && supply.fert, 'supply.fert should exist');
     assert.equal(typeof supply.fert.K, 'number');
     assert.equal(typeof supply.fert.Mg, 'number');
@@ -627,7 +625,7 @@ describe('Bilan reads from source-of-truth recipes', () => {
     // the const is module-scoped, not hoisted to window) and assert the
     // supply value matches the public formula.
     const { window } = loadTomatoApp();
-    const supply = window.calculateNutritionSupply('T5', true, 1.0, 1.5, 'stored');
+    const supply = window.calculateNutritionSupply('T5', 1.0, 1.5, 'stored');
     const storedKSulfate = window.eval('STORED_RECIPE.tomato.fertigation.T5.kSulfate');
     const area = window.eval('TOMATO_NUMBER_BEDS * TOMATO_BED_AREA');
     const productPct = window.eval('PRODUCT_PCT.K2SO4_K');
@@ -730,7 +728,7 @@ describe('Foliar Efficacité reactive to surfactant lever', () => {
   test('supply.foliar.efficiency differs between surfactant off / on for ≥1 routed element', () => {
     // Capability passthrough: the page's nutrition-supply function must
     // read a surfactant-aware efficiency surface. The route in scope is
-    // window.calculateNutritionSupply(stage, phLocked, transp, target, mode)
+    // window.calculateNutritionSupply(stage, transp, target, mode)
     // — the page's Block 5 renderer feeds supply.foliar.efficiency into
     // renderGapGrid. The supply function must read the current
     // #nutr-foliar-surfactant state and produce a different efficiency
@@ -748,12 +746,12 @@ describe('Foliar Efficacité reactive to surfactant lever', () => {
 
     surf.checked = false;
     surf.dispatchEvent(new window.Event('change', { bubbles: true }));
-    const supplyOff = window.calculateNutritionSupply('T5', true, 1.0, 1.5, 'stored');
+    const supplyOff = window.calculateNutritionSupply('T5', 1.0, 1.5, 'stored');
     const efficiencyOff = (supplyOff && supplyOff.foliar && supplyOff.foliar.efficiency) || {};
 
     surf.checked = true;
     surf.dispatchEvent(new window.Event('change', { bubbles: true }));
-    const supplyOn = window.calculateNutritionSupply('T5', true, 1.0, 1.5, 'stored');
+    const supplyOn = window.calculateNutritionSupply('T5', 1.0, 1.5, 'stored');
     const efficiencyOn = (supplyOn && supplyOn.foliar && supplyOn.foliar.efficiency) || {};
 
     // Restore default state for downstream tests.

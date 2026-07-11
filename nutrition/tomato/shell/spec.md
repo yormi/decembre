@@ -1,7 +1,7 @@
 # Tomate — shell (admin page chrome)
 
 UI invariants for the Tomato Nutrition admin page chrome — header inputs
-(target, solarPerGram, stage, phLocked, recipeMode), light-limit
+(target, solarPerGram, stage, recipeMode), light-limit
 ceiling, recipe-mode toggle, drift block, single-source-of-truth read.
 Per-block builder specs (plant-needs, foliar) live alongside the
 corresponding subproject under `<subproject>/builder/user-stories.md`. Crop-side
@@ -10,11 +10,11 @@ rules in `nutrition/spec.md`.
 
 ---
 
-## header-inputs-five-scalars
+## header-inputs-four-scalars
 
-**Statement:** The Bilan accepts exactly five operator inputs in the header
+**Statement:** The Bilan accepts exactly four operator inputs in the header
 card: `target` (kg/m²/wk), `solarPerGram` (J/g, default 7), `stage`
-(`T1`-`T5`), `phLocked` (boolean), `recipeMode` (`fp`|`stored`). Every
+(`T1`-`T5`), `recipeMode` (`fp`|`stored`). Every
 other displayed number is derived from these + source-of-truth constants.
 No `current` input — the page answers "what's needed at target", not
 "what's needed given current canopy".
@@ -70,7 +70,6 @@ it on next render with no separate edit.
 | Sol — engrais sol tomate (PA Taillon × 1,5) | `TOMATO_SIDEDRESS[stage]` — Actisol 5-3-2 + farine de plumes 13-0-0 g/planche/sem per stage | `calcNutrSupply` reads it; renders as Bilan Block 3 ("Engrais sol granulaire"). Note: soil page HTML displays the same numbers — currently hand-synced; ideal future state = HTML rendered from this constant. | wired |
 | Export fruit tomate | `TOMATO_FRUIT_EXPORT` — g/kg fresh fruit, fruit-only nutrient export (no vegetative tissue). Yara fruit-vs-vegetative split (N/P/K 60%, Ca 5%, Mg 25%, micros 60% default) applied to whole-plant `TOMATO_REMOVAL`. Replaces `TOMATO_REMOVAL × yield` on the demand side (2026-05-04) so it doesn't double-count canopy growth already in `BIOMASS_DEMAND`. | `calcNutrDemand(yield, stage)` reads it directly: `fruit_mg = yield × TOMATO_FRUIT_EXPORT × 1000`. | wired |
 | Demande végétative tomate (T1-T5) | `BIOMASS_DEMAND[stage]` — mg/m²/sem per element per stage (build-out of canopy, roots, trusses). Sources: Haifa F-144 stage program + Sonneveld/Voogt ratios. T4-T5 revised 2026-05-04 to represent the FULL ongoing canopy growth (no longer ~30%/15% of T3) since it's now paired with the fruit-only `TOMATO_FRUIT_EXPORT`. | `calcNutrDemand(yield, stage)` adds it on top of fruit export so T1-T3 (low/no fruit) shows real demand. Bilan Block 1 renders fruit + biomasse breakdown. | wired |
-| Sol — programme soufre | inline in `<div id="page-sol-content">` HTML | **not consumed by the Bilan directly** — pH is a checkbox input (`nutr-phlocked`), not a calculated supply. The soufre schedule is operational, not a nutrient flux. | n/a |
 
 **Remaining clean-up on side-dress** (low priority, future work):
 

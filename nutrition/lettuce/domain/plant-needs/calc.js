@@ -30,10 +30,9 @@ function calculateLettuceNutritionDemand(transplantG, targetG, cycleDays, densit
 }
 
 // Supply per element (mg/m²/wk) decomposed into three contributions:
-//   soil:      SME_LETTUCE_PPM × weeklyMassFlowL × canopyFactor; pH-locked
-//              entries (P / Mn / Zn / Fe) gated when phLocked.
+//   soil:      SME_LETTUCE_PPM × weeklyMassFlowL × canopyFactor.
 //   fert:      LETTUCE recipe constants × PRODUCT_PCT × 1000 / 100 (recipe
-//              is per 100 m²/wk). Fe × 0.15 if phLocked.
+//              is per 100 m²/wk).
 //   frontload: feather meal N spread over LETTUCE_FRONTLOAD_DEFAULTS
 //              mineralizationWeeks.
 // Canopy factor: lettuce transpires less per m² than tomato (smaller plants,
@@ -48,7 +47,7 @@ function calculateLettuceNutritionDemand(transplantG, targetG, cycleDays, densit
 //   dependencies.productPct               — full PRODUCT_PCT map (K2SO4_K, MgSO4_Mg, FeSO4_Fe, FarinePlumes_N)
 //   dependencies.featherMealMineralizationEfficiency — number — 0.75 default
 //   dependencies.frontloadDefaults        — LETTUCE_FRONTLOAD_DEFAULTS shape
-function calculateLettuceNutritionSupply(currentG, targetG, density, phLocked, frontload_g_per_m2, dependencies) {
+function calculateLettuceNutritionSupply(currentG, targetG, density, frontload_g_per_m2, dependencies) {
   const flowL = dependencies.weeklyMassFlowL;
   const canopyFactor = Math.max(0.2, Math.min(0.7,
     (currentG / Math.max(1, targetG)) * 0.7));
@@ -56,14 +55,7 @@ function calculateLettuceNutritionSupply(currentG, targetG, density, phLocked, f
   const soil = {};
   Object.keys(LETTUCE_TISSUE_DW).forEach(element => {
     const ppm = (dependencies.smeLettucePpm && dependencies.smeLettucePpm[element]) || 0;
-    let mass = ppm * flowL * canopyFactor;
-    if (phLocked && (element === 'P' || element === 'Mn' || element === 'Zn')) {
-      mass = Math.min(mass, 100);     // passive-supply-lockout-gate
-    }
-    if (phLocked && element === 'Fe') {
-      mass *= 0.15;                    // pH 7.4 root reductase suppressed (cert 3)
-    }
-    soil[element] = mass;
+    soil[element] = ppm * flowL * canopyFactor;
   });
 
   const area100 = 100;  // LETTUCE recipe constants are per 100 m²/wk
@@ -73,8 +65,7 @@ function calculateLettuceNutritionSupply(currentG, targetG, density, phLocked, f
   Object.keys(LETTUCE_TISSUE_DW).forEach(element => { fert[element] = 0; });
   fert.K  = (recipe.kSulfate  * productPct.K2SO4_K  * 1000) / area100;
   fert.Mg = (recipe.mgSulfate * productPct.MgSO4_Mg * 1000) / area100;
-  const feLabelMg = (recipe.feSulfate * productPct.FeSO4_Fe * 1000) / area100;
-  fert.Fe = phLocked ? feLabelMg * 0.15 : feLabelMg;
+  fert.Fe = (recipe.feSulfate * productPct.FeSO4_Fe * 1000) / area100;
 
   const frontload = {};
   Object.keys(LETTUCE_TISSUE_DW).forEach(element => { frontload[element] = 0; });

@@ -121,7 +121,7 @@ describe('Demand scales linearly with mass-gain, inversely with cycleDays', () =
 
 describe('Supply composition: total = soil + fert + frontload', () => {
   test('total[element] === soil + fert + frontload, per element', () => {
-    const supply = namespace.calculateLettuceNutritionSupply(50, 100, 43, false, 50, TEST_DEPENDENCIES);
+    const supply = namespace.calculateLettuceNutritionSupply(50, 100, 43, 50, TEST_DEPENDENCIES);
     for (const element of ALL_ELEMENTS) {
       const expected = (supply.soil[element] || 0) + (supply.fert[element] || 0) + (supply.frontload[element] || 0);
       assert.ok(Math.abs(supply.total[element] - expected) < 1e-9,
@@ -129,29 +129,8 @@ describe('Supply composition: total = soil + fert + frontload', () => {
     }
   });
 
-  test('phLocked gates P/Mn/Zn soil mass-flow at ≤ 100 mg/m²/wk', () => {
-    // Construct a dependency bag where ppm × flowL × canopyFactor would exceed 100.
-    const heavyPpm = { ...TEST_DEPENDENCIES.smeLettucePpm, P: 100, Mn: 100, Zn: 100 };
-    const heavyDeps = { ...TEST_DEPENDENCIES, smeLettucePpm: heavyPpm, weeklyMassFlowL: 50 };
-    const supply = namespace.calculateLettuceNutritionSupply(50, 100, 43, true, 0, heavyDeps);
-    for (const element of ['P', 'Mn', 'Zn']) {
-      assert.ok(supply.soil[element] <= 100 + 1e-9,
-        `${element}: phLocked soil supply must be ≤ 100 mg/m²/wk, got ${supply.soil[element]}`);
-    }
-  });
-
-  test('phLocked Fe soil × 0.15', () => {
-    const unlocked = namespace.calculateLettuceNutritionSupply(50, 100, 43, false, 0, TEST_DEPENDENCIES);
-    const locked   = namespace.calculateLettuceNutritionSupply(50, 100, 43, true,  0, TEST_DEPENDENCIES);
-    if (unlocked.soil.Fe > 0) {
-      const ratio = locked.soil.Fe / unlocked.soil.Fe;
-      assert.ok(Math.abs(ratio - 0.15) < 0.001,
-        `Fe soil supply ratio (locked/unlocked) should be 0.15, got ${ratio.toFixed(4)}`);
-    }
-  });
-
   test('frontload delivers N only', () => {
-    const supply = namespace.calculateLettuceNutritionSupply(50, 100, 43, false, 50, TEST_DEPENDENCIES);
+    const supply = namespace.calculateLettuceNutritionSupply(50, 100, 43, 50, TEST_DEPENDENCIES);
     for (const element of ALL_ELEMENTS) {
       if (element === 'N') {
         assert.ok(supply.frontload.N > 0,
@@ -164,7 +143,7 @@ describe('Supply composition: total = soil + fert + frontload', () => {
   });
 
   test('frontload.efficiency.N set to mineralization efficiency when N > 0', () => {
-    const supply = namespace.calculateLettuceNutritionSupply(50, 100, 43, false, 50, TEST_DEPENDENCIES);
+    const supply = namespace.calculateLettuceNutritionSupply(50, 100, 43, 50, TEST_DEPENDENCIES);
     assert.equal(supply.frontload.efficiency.N, TEST_DEPENDENCIES.featherMealMineralizationEfficiency,
       `frontload.efficiency.N must equal featherMealMineralizationEfficiency`);
   });
@@ -173,7 +152,7 @@ describe('Supply composition: total = soil + fert + frontload', () => {
     // K  = 2996 g × 0.42  × 1000 / 100 = 12 583.2 mg K/m²/wk
     // Mg =  467 g × 0.0986 × 1000 / 100 =    460.46 mg Mg/m²/wk
     // Fe =  7.5 g × 0.20  × 1000 / 100 =     15.0 mg Fe/m²/wk (unlocked)
-    const supply = namespace.calculateLettuceNutritionSupply(50, 100, 43, false, 0, TEST_DEPENDENCIES);
+    const supply = namespace.calculateLettuceNutritionSupply(50, 100, 43, 0, TEST_DEPENDENCIES);
     assert.ok(Math.abs(supply.fert.K  - 12583.2) < 1e-3,
       `fert.K should be 12583.2, got ${supply.fert.K}`);
     assert.ok(Math.abs(supply.fert.Mg - 460.462) < 1e-2,
@@ -233,7 +212,7 @@ describe('Canopy factor bounded [0.2, 0.7]', () => {
   ]) {
     test(`canopyFactor ∈ [0.2, 0.7] for ${label}`, () => {
       const supply = namespace.calculateLettuceNutritionSupply(
-        currentG, targetG, 43, false, 0, TEST_DEPENDENCIES);
+        currentG, targetG, 43, 0, TEST_DEPENDENCIES);
       assert.ok(supply.canopyFactor >= 0.2 - 1e-9 && supply.canopyFactor <= 0.7 + 1e-9,
         `canopyFactor for ${label} must be in [0.2, 0.7], got ${supply.canopyFactor}`);
     });
@@ -252,7 +231,7 @@ describe('INV-1 — Element coverage closed across demand + every supply channel
   });
 
   test('INV-1 — every supply channel carries a numeric entry per element', () => {
-    const supply = namespace.calculateLettuceNutritionSupply(50, 100, 43, false, 50, TEST_DEPENDENCIES);
+    const supply = namespace.calculateLettuceNutritionSupply(50, 100, 43, 50, TEST_DEPENDENCIES);
     for (const channel of ['soil', 'fert', 'frontload', 'total']) {
       for (const element of Object.keys(namespace.LETTUCE_TISSUE_DW)) {
         assert.equal(typeof supply[channel][element], 'number',

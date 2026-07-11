@@ -44,10 +44,9 @@ function buildNutrimentTomato() {
   const PN = window.PlantNeedsTomato;
   const target  = parseFloat(document.getElementById('nutr-target').value)  || 1.5;
   const solarPerGram = parseFloat(document.getElementById('nutr-solar-per-gram').value) || 7;
-  const phLocked = document.getElementById('nutr-phlocked').checked;
 
-  // header-inputs-five-scalars: header inputs are exactly five scalars (target, solarPerGram,
-  // stage, phLocked, recipeMode). The "current yield" input was retired
+  // header-inputs-four-scalars: header inputs are exactly four scalars (target,
+  // solarPerGram, stage, recipeMode). The "current yield" input was retired
   // 2026-05-09 — page now answers "what's needed at target", not "what's
   // needed given current canopy". ca-mg-biomass-transpiration-coupled Ca/Mg biomass × transpFactor
   // still applies, but transpFactor pins to 1.0 (full-canopy assumption).
@@ -62,7 +61,7 @@ function buildNutrimentTomato() {
   const demandBreakdown = PN.calculateNutritionDemand(target, nutrStage, transpFactor);
   const demand = {};
   Object.keys(demandBreakdown).forEach(element => { demand[element] = demandBreakdown[element].total; });
-  const supply  = calculateNutritionSupply(nutrStage, phLocked, transpFactor, target, nutrRecipeMode);
+  const supply  = calculateNutritionSupply(nutrStage, transpFactor, target, nutrRecipeMode);
   const r = supply.raw;
   const order = ['N','P','K','Ca','Mg','Fe','Mn','Zn','B','Cu','Mo'];
 
@@ -312,11 +311,11 @@ function buildNutrimentTomato() {
     const totalGPerWk = gPerWk * TOMATO_AREA;
 
     const note = element === 'Ca'
-      ? '⚠ Le Ca du compost a contribué à la sursaturation calcique du sol (racine de la crise pH 7,4). Pas un manque à combler — un excès à laisser décliner par lessivage.'
+      ? '⚠ Le Ca du compost a contribué à la sursaturation calcique du sol. Pas un manque à combler — un excès à laisser décliner par lessivage.'
       : (element === 'Mg'
         ? 'Mg % NON déclaré sur l\'étiquette Savaria (assomption conservatrice ~0,3 %). Cert 1-2 — vérifier auprès du fournisseur si le poste devient critique.'
         : (element === 'P'
-          ? 'P verrouillé à pH ≥ 7 : Ca²⁺ précipite le phosphate fraîchement minéralisé en Ca-P avant absorption. Apport effectif très faible tant que le pH reste haut.'
+          ? 'P du compost : libération organique lente (minéralisation année 1). Disponibilité racinaire normale au pH actuel.'
           : 'Minéralisation année 1 × facteur saisonnier (Q10 ≈ 2 sur l\'activité microbienne pendant la fenêtre T3-T5 chaude).'));
     registerPourquoi(`compost.${element}`, {
       title: `${element} — compost résiduel (Savaria ORGANIMIX)`,
@@ -331,15 +330,7 @@ function buildNutrimentTomato() {
   ['N','P','K','Ca','Mg','Fe','Mn','Zn','B','Cu','Mo'].forEach(element => {
     const cert = element === 'Mg' ? 1 : (element === 'Ca' ? 3 : 2);
     let cap;
-    if (element === 'P' && phLocked) {
-      cap = {
-        kind: 'precipitation',
-        constraint: 'Précipitation Ca-P',
-        limit: 'facteur 0,10 à pH ≥ 7',
-        lever: 'soufre → baisser pH',
-        uncappedMg: (compostMg.P || 0) * 10,
-      };
-    } else if (element === 'Ca') {
+    if (element === 'Ca') {
       cap = {
         kind: 'other',
         constraint: 'Sol Ca-sursaturé',
@@ -367,8 +358,8 @@ function buildNutrimentTomato() {
   // ─── Block 4: Engrais sol granulaire (Actisol + farine de plumes) ───
   // Reads STORED_RECIPE.tomato.sidedress[stage] source-of-truth (bilan-reads-source-of-truth-recipes).
   // Per-element supply computed in calculateNutritionSupply (supply.sidedress) using
-  // PRODUCT_PCT analysis × SIDEDRESS_MINIMUM_EFFICIENCY mineralization × pH-lockout
-  // factor for P. Second replenishment channel in the mass-balance gap chain.
+  // PRODUCT_PCT analysis × SIDEDRESS_MINIMUM_EFFICIENCY mineralization × P
+  // mineralization factor. Second replenishment channel in the mass-balance gap chain.
   let html3sd = renderRecipeTable(
     [
       { productId: 'Actisol',      doseLabel: `${fmtGrams(r.sd_actisol_g)} / planche / sem` },
@@ -385,11 +376,9 @@ function buildNutrimentTomato() {
 
       note = 'Apport N effectif au régime stade établi : ~4-8 sem d\'applications hebdomadaires se chevauchent en minéralisation steady-state. La farine de plumes domine (75 % efficace, 13 % N) ; l\'Actisol contribue plus lentement (60 %, 5 %).';
     } else if (element === 'P') {
-      eq = 'sidedress[P] = Actisol_g × Actisol_P × phLockoutFactor_P × 1000 / planche_area';
+      eq = 'sidedress[P] = Actisol_g × Actisol_P × phosphateFactor_P × 1000 / planche_area';
 
-      note = phLocked
-        ? 'P verrouillé à pH ≥ 7 : Ca²⁺ en solution précipite le phosphate fraîchement minéralisé en Ca-P avant absorption racinaire. Facteur 10 % appliqué (Cadre 5-15 %, midpoint). Programme soufre = seul levier durable (pH < 6,5 → P passe à 30-50 % efficace).'
-        : 'pH ajusté : minéralisation P de l\'Actisol à 50 % d\'efficacité (l\'organique relâche plus lentement que le N).';
+      note = 'Minéralisation P de l\'Actisol à 50 % d\'efficacité (l\'organique relâche plus lentement que le N). Disponibilité racinaire normale au pH actuel.';
     } else { // K
       eq = 'sidedress[K] = Actisol_g × Actisol_K × eff_K × 1000 / planche_area';
 
@@ -418,15 +407,7 @@ function buildNutrimentTomato() {
   const sdDetails = {};
   ['N','P','K','Ca','Mg','Fe','Mn','Zn','B','Cu','Mo'].forEach(element => {
     let cap;
-    if (element === 'P' && phLocked) {
-      cap = {
-        kind: 'precipitation',
-        constraint: 'Précipitation Ca-P',
-        limit: 'facteur 0,10 à pH ≥ 7',
-        lever: 'soufre → baisser pH',
-        uncappedMg: (supply.sidedress.P || 0) / 0.10,
-      };
-    } else if (element === 'N' || element === 'P' || element === 'K') {
+    if (element === 'N' || element === 'P' || element === 'K') {
       cap = {
         kind: 'other',
         constraint: 'Régime stade établi',
@@ -503,24 +484,28 @@ function buildNutrimentTomato() {
       cert: 3,
       equation: `fert[B] = Solubore_g × Solubore_B_analysis / area × 1000`,
       plugged: `${sb_fert_g} g × ${PRODUCT_PCT.Solubore_B} × 1000 / ${r.area.toFixed(0)} m² = <strong>${supply.fert.B.toFixed(2)} mg B/m²/sem</strong>`,
-      interpretation: `Acide borique (Solubore 20-B) — non-ionique, 100 % d'efficacité au pH 7,4 (no-decorative-products-at-current-ph OK, pas de Ksp). Seul micro qui traverse le baril sans pertes chimiques. Ecocert validé 2026-05-08. Foliaire B = 0 (canal unique : la fertigation porte tout le B).`
+      interpretation: `Acide borique (Solubore 20-B) — non-ionique, 100 % d'efficacité au pH actuel (no-decorative-products-at-current-ph OK, pas de Ksp). Seul micro qui traverse le baril sans pertes chimiques. Ecocert validé 2026-05-08. Foliaire B = 0 (canal unique : la fertigation porte tout le B).`
     });
   }
   // Other elements: register a generic "not in fertigation" entry so a row
   // click still produces a useful answer instead of opening an empty modal.
   // Reasons below are stable — domain chemistry, not dependent on dose values.
   const fertSkipEls = sb_fert_g > 0
-    ? ['N','P','Ca','Fe','Mn','Zn','Cu','Mo']
-    : ['N','P','Ca','Fe','Mn','Zn','B','Cu','Mo'];
+    ? ['N','P','Ca','Fe','Cu']
+    : ['N','P','Ca','Fe','B','Cu'];
   fertSkipEls.forEach(element => {
     const reason = element === 'N'
 
       ? 'N retiré de la fertigation : risque de biofilm dans le baril (matière organique des poissons hydrolysés non utilisée en production) et la minéralisation organique (Actisol + farine de plumes) couvre la sortie. Apport via granulaire au sol + compost.'
       : (element === 'Ca' || element === 'Mg' || element === 'P')
 
-        ? `${element} non ajouté en fertigation : ${element === 'Ca' ? 'sol Ca-saturé — surplus inutile' : (element === 'P' ? 'le P précipite avec Ca²⁺ à pH ≥ 7 avant d\'atteindre les racines' : '')}.`
+        ? `${element} non ajouté en fertigation : ${element === 'Ca' ? 'sol Ca-saturé — surplus inutile' : (element === 'P' ? 'P porté par le compost + engrais sol granulaire, pas par la fertigation' : '')}.`
 
-        : `${element} retiré de la fertigation 2026-04-26 : à pH ≥ 7 les sulfates d'oligos précipitent (oxydation, hydroxydes, phosphates de Ca) avant absorption. Foliaire bypasse cette chimie. Réintroduction en fertigation seulement si pH &lt; 6,5.`;
+        : element === 'Fe'
+
+          ? 'Fe non fertigé : le sol le couvre à pH 6,5 (banque 310 ppm, mass-flow ~86 %, tissu suff 80 ppm) et le FeSO₄ s\'oxyde dans la cuve maître 5 jours (Fe²⁺→Fe³⁺ → colmatage goutteurs). Fe routé passif. Fallback : FeSO₄ granulaire en sidedress si un tissu montre une carence (Mn/Zn eux restent fertigés — tank-stables). '
+
+          : 'Cu non nourri : sol normal + tissu élevé, aucune carence à combler ; fenêtre suffisance→toxicité la plus étroite des micros + charge sol cert-tracked → ROI négatif.';
     registerPourquoi(`fert.${element}`, {
       title: `${element} — pas en fertigation`,
       cert: 3,
@@ -553,10 +538,10 @@ function buildNutrimentTomato() {
       };
     } else if (element === 'P') {
       cap = {
-        kind: 'precipitation',
-        constraint: 'Précipitation Ca-P',
-        limit: 'inutile à pH ≥ 7',
-        lever: 'soufre → baisser pH',
+        kind: 'other',
+        constraint: 'Canal sol/sidedress',
+        limit: 'P porté par le granulaire',
+        lever: '↑ Actisol sidedress',
         uncappedMg: 0,
       };
     } else if (element === 'Ca') {
@@ -567,12 +552,29 @@ function buildNutrimentTomato() {
         lever: 'aucun (laisser décliner)',
         uncappedMg: 0,
       };
+    } else if (supplied && (element === 'Mn' || element === 'Zn')) {
+      const prod = element === 'Mn' ? 'MnSO₄' : 'ZnSO₄';
+      cap = {
+        kind: 'damage',
+        constraint: 'Efficacité canal 0,75 (sulfate-metal, pH sol 6,5) + CE bidon',
+        limit: 'dose ' + prod + ' = demande pleine (aucun rabais crédit-sol)',
+        lever: 'SME à 6,5 → créditer le sol, réduire la dose',
+        uncappedMg: 0,
+      };
+    } else if (element === 'Fe') {
+      cap = {
+        kind: 'other',
+        constraint: 'Sol le couvre (passif)',
+        limit: 'FeSO₄ s\'oxyde en cuve → colmatage',
+        lever: 'FeSO₄ granulaire sidedress si carence',
+        uncappedMg: 0,
+      };
     } else {
       cap = {
         kind: 'other',
-        constraint: 'Sulfates oligos précipitent',
-        limit: 'décoratif à pH ≥ 7',
-        lever: 'foliaire bypass',
+        constraint: element === 'Cu' ? 'Non nourri (sol OK, tissu élevé)' : 'Trace / anion racinaire',
+        limit: element === 'Cu' ? 'aucune carence' : 'dose minime',
+        lever: element === 'Cu' ? 'aucun' : '—',
         uncappedMg: 0,
       };
     }
@@ -588,7 +590,7 @@ function buildNutrimentTomato() {
     window.FertigationBuilder.renderFertigationPredictedChips(r, nutrStage);
   }
 
-  // ─── Block 6: Foliar (micros — bypass root lockout at pH 7,4) ───
+  // ─── Block 6: Foliar (micros — soil supply below detection) ───
   // Mass-balance numbering 2026-05-11: 1 besoin · 2 sol (banque) ·
   // 3 compost · 4 sidedress · 5 fertigation · 6 foliaire · 7 leviers ·
   // 8 stockée vs FP.
@@ -623,7 +625,7 @@ function buildNutrimentTomato() {
 
       // window is invariant chemistry. Fe-margin claim stripped 2026-05-08
       // (depended on a specific dose vs T5 demand, both can change).
-      interpretation: `Coverage ${Math.round(cov*100)}% sans yucca (cert 4). Foliaire bypasse le verrouillage racinaire à pH 7,4 — la cuticule n'est pas affectée par la saturation Ca du sol.${element === 'Cu' ? ' ⚠ Cu : fenêtre de sécurité étroite (toxicité observée sans surfactant — pooling concentre localement).' : ''}`
+      interpretation: `Spray foliaire retiré 2026-07-11 (pH sol repassé à 6,5, verrouillage levé) — Fe/Mn/Zn désormais livrés en fertigation. Dose foliaire = 0. Machinerie conservée pour restauration événementielle (pH remonte > 7 → réintroduire spray A ; coverage ${Math.round(cov*100)}% sans yucca).${element === 'Cu' ? ' ⚠ Cu : fenêtre de sécurité étroite si réintroduit (toxicité observée sans surfactant).' : ''}`
     });
   });
   registerPourquoi('foliar.Ca', {
@@ -776,7 +778,6 @@ function buildNutrimentTomato() {
   // of being hand-written. This eliminates stale advice when recipes / channel
   // state change. Inputs read by deriveLever:
   //   - gapAfterFoliar[element]                residual gap after the 4 channels
-  //   - phLocked                          pH state (drives P sulfur lever)
   //   - supply.{fert,foliar,sidedress}[element] which channel owns it
   // Returns an HTML string (lever advice) or '' (no entry).
   // Foliar-channel elements (Mn/Zn/Cu/Fe/B/Mo) share the same no-yucca
@@ -785,9 +786,9 @@ function buildNutrimentTomato() {
   function deriveLever(element) {
     const gap = gapAfterFoliar[element] || 0;
     if (gap <= 0) return '';
-    // P + phLocked → sulfur is the only durable lever (stable domain context).
-    if (element === 'P' && phLocked) {
-      return '<strong>Verrouillage chimique du sol</strong> au pH actuel — programme soufre = seul levier durable. Foliar P peu efficace (précipitation Ca-P sur la feuille) ; fertigation P précipite avant absorption.';
+    // P → soil/sidedress channel. Close a residual gap on the granular side.
+    if (element === 'P') {
+      return 'Augmenter le dosage granulaire (Actisol au sidedress) ou attendre la minéralisation du compost. P porté par le sol + granulaire, pas la fertigation.';
     }
     // N → mass-balance check: compost + sidedress should cover the bulk; if
     // gap remains, the obvious lever is to step up the granular dose at the
@@ -830,7 +831,7 @@ function buildNutrimentTomato() {
       const ratio = gapAfterFoliar[element] / Math.max(demand[element], 1);
       return ratio > 0.5 ? '🔴' : (ratio > 0.2 ? '🟡' : '🟢');
     };
-    html5 += `<div style="font-size:12.5px; color:var(--text-muted); margin-bottom:10px; line-height:1.5;">Après les 4 canaux de réapprovisionnement (compost, granulaire, fertigation, foliaire), voici ce qui n'est pas couvert. Chaque ligne = le levier qui ferme le gap (dérivé de l'état actuel des canaux + pH).</div>`;
+    html5 += `<div style="font-size:12.5px; color:var(--text-muted); margin-bottom:10px; line-height:1.5;">Après les 4 canaux de réapprovisionnement (compost, granulaire, fertigation, foliaire), voici ce qui n'est pas couvert. Chaque ligne = le levier qui ferme le gap (dérivé de l'état actuel des canaux).</div>`;
     html5 += `<ol style="padding-left:20px; font-size:13px; line-height:1.5; margin:0;">`;
     sorted.forEach(element => {
       const gap = gapAfterFoliar[element];
@@ -840,12 +841,6 @@ function buildNutrimentTomato() {
       html5 += `<li style="margin-bottom:10px;">${severity(element)} <strong>${element}</strong> — il manque ${formatValue(gap)}/m²/sem (${pct}% de la demande). <br><span style="color:var(--text-muted); font-size:12px;">${lever}</span></li>`;
     });
     html5 += `</ol>`;
-  }
-  // Always-on structural reminder when pH is locked.
-
-  // (P precipitates Ca-P ; Fe/Mn/Zn oxidize to insoluble forms) is invariant.
-  if (phLocked) {
-    html5 += `<div style="background:var(--accent-tomato-light); border:1.5px solid var(--accent-tomato-border); border-radius:6px; padding:10px 12px; margin-top:12px; font-size:12.5px; line-height:1.5;"><strong style="color:var(--accent-tomato);">Action structurelle :</strong> tant que le pH du sol reste ≥ 7, P / Mn / Zn / Fe restent foliaire-only. Programme soufre = seul vrai levier durable.</div>`;
   }
   document.getElementById('nutr-missing').innerHTML = html5;
 

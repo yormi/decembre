@@ -17,8 +17,8 @@ Rumelt kernel: **diagnosis → guiding policy → coherent action.**
   Mo + citric dropped. Shows depletion ≠ the constraint; lockout is.
 
 - `learnings/` — strategy forks (crowding=over-aging → 3″-pot vehicle).
-- Salinity procedures live in the shared `../protocol/`:
-  `salt-leach.md` (clean-water leach holding root-zone EC under the ECe
+- Salinity procedures live in the shared `../../protocol/`:
+  `salt-leach-DRAFT.md` (clean-water leach holding root-zone EC under the ECe
   1.3 guardrail; salt is saline/leachable, not sodic — see the June-SME
   learning) + `measure-bed-ec-DRAFT.md` (bed-EC method). The 1:1 slurry
   salinity band lives in `../domain/domain.md` § Bed salinity.

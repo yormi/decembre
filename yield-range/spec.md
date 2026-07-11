@@ -67,7 +67,8 @@ Per-plant dry mass integrates in `GROWTH_STEP_DAYS` steps:
 DM        = nursery ? PLUG_DRY_MATTER_FRACTION : DRY_MATTER_FRACTION
 LAI       = W_dry × SPECIFIC_LEAF_AREA / A_ground
 fi        = 1 − exp(−LEAF_AREA_EXTINCTION_K × LAI)
-gain      = ε × DLI_TARGET × A_ground × fi
+DLI_use   = min(DLI_TARGET, nurseryLightCeiling(day))   # age ceiling: wk1 10 · wk2 14 · wk3+ 17
+gain      = ε × DLI_use × A_ground × fi
 net_dry   = daysClosed < SENESCENCE_ONSET_DAYS ? gain : −SENESCENCE_DECLINE_RATE × W_dry
 W_dry     = clamp(W_dry + net_dry × dt, 0, capFresh × DM)
 W_fresh   = W_dry / DM
@@ -83,10 +84,14 @@ never reaches its volume cap, so plug DM sets its fresh weight directly.
 `fi` is the fraction of light the canopy intercepts (Beer–Lambert). Open
 canopy (small `LAI`) → `fi ≈ k·LAI` → gain ≈ `GROWTH_RGR × W` → exponential;
 `SPECIFIC_LEAF_AREA` is derived so this limit is exact. Leaves fill the ground
-→ `fi → 1` → gain → `ε × DLI_TARGET × A_ground`, linear, slowing → volume cap.
+→ `fi → 1` → gain → `ε × DLI_use × A_ground`, linear, slowing → volume cap.
 RGR sags smoothly from `GROWTH_RGR` toward 0 across the band — no hard knee.
-The light response folds into `ε × DLI_TARGET` (no separate `f_light`
-multiplier). `A_ground = TRAY_FRAME_M2 / nurseryTrayCells` in the nursery
+The light response folds into `ε × DLI_use` (no separate `f_light`
+multiplier), where `DLI_use` is the DLI the plant can use at its age —
+`min(DLI_TARGET, nurseryLightCeiling(day))`, stepping 10 (cotyledon wk1) → 14
+(true-leaf wk2) → 17 (plug/field wk3+). Light past the stage ceiling buys no
+growth; this slows the early nursery to what the fragile plug can realize
+(derivation Light fold). `A_ground = TRAY_FRAME_M2 / nurseryTrayCells` in the nursery
 (×2 after a checker-thin), `1 / density` in the field. `trajectory` samples
 integer days 0..`nurseryDays + fieldDays`, tagged `nursery` for
 `day ≤ nurseryDays` else `field`.

@@ -131,7 +131,10 @@ function predictYield(inputs) {
 
     const leafAreaIndex = weightDry * SPECIFIC_LEAF_AREA / areaGround;
     const interceptedFraction = 1 - Math.exp(-LEAF_AREA_EXTINCTION_K * leafAreaIndex);
-    const gain = radiationUseEfficiency * DLI_TARGET * areaGround * interceptedFraction;
+    // Light the plant can actually use at its age — cotyledon/true-leaf stages
+    // saturate below the target (#3). Field ages sit at the full target.
+    const effectiveDli = Math.min(DLI_TARGET, nurseryLightCeiling(day));
+    const gain = radiationUseEfficiency * effectiveDli * areaGround * interceptedFraction;
     const canopyClosed = leafAreaIndex >= LAI_CLOSURE;
     daysClosed = canopyClosed ? daysClosed + GROWTH_STEP_DAYS : 0;
 

@@ -63,7 +63,9 @@ it's safe to start before the calcimeter lands.
   next. EC near cap *and* pH still high → **skip, don't push.**
   (Gypsum self-limits ~2.0–2.2; salt mostly transient.)
 - **Aeration:** never dose waterlogged.
-- **Mn:** foliar Mn zero through drawdown; tissue Mn next panel = stop trigger.
+- **Mn:** foliar Mn retired (moved to fertigation 2026-07-11). Mn availability
+  rises as pH drops → tissue Mn already élevé (132); next panel climbing =
+  cut/zero fertigation Mn (toxicity guard).
 
 ## Abort
 

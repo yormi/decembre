@@ -19,12 +19,15 @@ fix rides on root recovery (SG1) plus root-bypass.
 
 ## Actions
 
-### Root-bypass — foliar Ca (the only direct Ca lever now)
-- Lever: CaCl₂·2H₂O foliar spray, 2×/wk, no surfactant
-  (~17 mg Ca/m²/wk) — bypasses the impaired root path.
-- Status: live in STORED foliaire (reintroduced 2026-05-28),
-  operator timing via `/retire-recipe`.
-- Cert: Ecocert-verified.
+### Root-bypass — foliar Ca (RETIRED 2026-07-11)
+- Was: CaCl₂·2H₂O foliar spray, 2×/wk, no surfactant — bypassed
+  the impaired root path (botrytis / stem-canker Ca-pectate defense).
+- Retired with the whole foliar program: pH beds recovered to 6.5
+  (EC 1:1, 9 July), sprays A+B retired via `/retire-recipe`.
+- **No direct Ca lever now.** Ca rides entirely on SG1 root
+  recovery + indirect Ocean/AMF root extension (below).
+- Restore event-driven if BER or stem-canker pressure returns —
+  CaCl₂ source Ecocert-verified, machinery kept dormant.
 
 ### Rides on SG1 — root recovery
 - Ca uptake recovers as P/pH frees root growth (SG1). No
@@ -42,6 +45,6 @@ fix rides on root recovery (SG1) plus root-bypass.
   → old tissue won't recover).
 
 ## Open questions
-- Whether foliar Ca alone holds the resistance band before SG1
-  root recovery delivers the structural (stem) Ca that foliage
-  sprays reach poorly.
+- Whether Ca holds the resistance band on SG1 root recovery alone
+  now that the foliar Ca lever is retired. **Watch BER + stem
+  canker** — restore foliar CaCl₂ event-driven if pressure returns.

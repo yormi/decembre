@@ -42,7 +42,6 @@ actual uptake (tissue tests); soil amendment recipe sizing.
 | `currentG`              | number  | Current head mass; drives canopy factor        |
 | `targetG`               | number  | Same as demand input                           |
 | `density`               | number  | plants/m²                                      |
-| `phLocked`              | boolean | True when soil pH ≥ 7 (lockout gate)           |
 | `frontload_g_per_m2`    | number  | Farine de plumes application rate              |
 | `dependencies`          | object  | Pure-function dependency bag (see below)       |
 
@@ -126,13 +125,13 @@ Hochmuth + Sonneveld leafy-greens norms).
 
 For every element in `LETTUCE_TISSUE_DW`, `total[element] = soil[element]
 + fert[element] + frontload[element]` (exactly, no rounding). Soil mass-flow
-is gated by `phLocked` for P/Mn/Zn (nutrition — passive-supply-lockout-gate cap) and Fe (× 0.15
-root-reductase suppression). Fert is sourced from `lettuceRecipe`
-(K₂SO₄ + MgSO₄·7H₂O + FeSO₄·7H₂O per 100 m²/wk; Fe also × 0.15 if phLocked).
+is `SME ppm × weeklyMassFlowL × canopyFactor` at full root-zone availability.
+Fert is sourced from `lettuceRecipe`
+(K₂SO₄ + MgSO₄·7H₂O + FeSO₄·7H₂O per 100 m²/wk).
 Front-load delivers N only via feather meal × mineralization efficiency
 ÷ mineralization window.
 
-**Cert:** 3 (canopy factor and lockout discounts are calibrated, not
+**Cert:** 3 (canopy factor is calibrated, not
 peer-reviewed; refinement triggers in derivation.md).
 
 ---
@@ -171,8 +170,6 @@ supply lockout discounts.
 
 ## Inherited specs
 
-- **passive-supply-lockout-gate** (`nutrition/spec.md`) — pH-locked soil-solution cap for P/Mn/Zn
-  when `phLocked = true`.
 - **channel-efficiency-capability-map** (`nutrition/spec.md`) — channel efficiency map exposed alongside
   supply. Front-load `efficiency.N` set when N > 0 (`supply-composition-soil-fert-frontload` supply output).
 

@@ -49,6 +49,41 @@
 // It also serves as the team-visible audit trail for organic certification.
 const RECIPE_HISTORY = [
   {
+    retired: '2026-07-11',
+    recipe: 'STORED_RECIPE.tomato.foliaire + STORED_RECIPE.tomato.fertigation',
+    summary: 'pH beds 6,5 : sprays A+B retirés, oligos Fe/Mn/Zn rendus au fertigation',
+    reason: 'Le pH des planches est redescendu à 6,5 en moyenne (mesure EC 1:1 par poids au compteur liquide, 9 juillet 2026, moyenne des 7 planches, étendue 6,1-6,8 ; cible 6,0-6,5). À 6,5 le verrouillage racinaire des sulfates cationiques est levé (courbe sulfate-metal : efficacité canal 0,10 à pH 7,4 → 0,75 à pH 6,5) — le canal foliaire n\'est plus le seul moyen de livrer Fe/Mn/Zn. Spray A (MnSO₄ 18 g + ZnSO₄ 22 g + FeSO₄·7H₂O 90 g + acide citrique 65 g / 15 L) et spray B (CaCl₂·2H₂O 100 g / 15 L) retirés. Mn/Zn rendus au fertigation à la demande pleine de la plante (aucun rabais de crédit-sol appliqué, décision Guillaume) : dose livrée = demande à efficacité 0,75, soit à T5 Mn 12 g / Zn 6,5 g par cuve maître (382,9 m²), ramp par stade. Fe NON fertigé : le sol le couvre à 6,5 (banque Mehlich 310 ppm, SME 0,86 ppm → ~86 % en mass-flow, tissu suff 80 ppm) et le FeSO₄ s\'oxyde dans la cuve maître 5 jours (Fe²⁺→Fe³⁺, colmatage goutteurs) — Fe routé passif (canal sol). Fallback documenté : FeSO₄ granulaire en sidedress (Ecocert, contrairement aux chélates EDDHA/EDTA interdits) si un tissu futur montre une carence Fe. Acide citrique abandonné (c\'était un anti-tache pour le fer foliaire sur fruit, sans objet au niveau racinaire). Spray B abandonné sans remplacement : Ca sol déjà en surplus (Ca-saturé calcaire), le Ca en fertigation est sans effet (Ca xylème-mobile, transpiration-limité) ; le rôle défense (botrytis / chancre par pontage Ca-pectate) cesse — surveiller BER + chancre de tige. Panel tissulaire T5 (22 mai 2026) : Mn 132 ppm élevé, Zn 56 suff, Fe 80 suff — aucune carence, marge pour la transition. Produits inchangés côté cert : FeSO₄·7H₂O, MnSO₄, ZnSO₄ tous Ecocert CAN/CGSB-32.311. Modèle ré-ancré pH 7,4 → 6,5. Déclencheur pour finaliser les doses : prochaine lecture SME Berger à 6,5 (les micros verrouillés remontent en solution — s\'attendre à réduire ou annuler le drip Fe/Mn/Zn).',
+    replacedBy: 'STORED_RECIPE.tomato.fertigation avec oligos cationiques Mn/Zn rendus (par cuve maître, ramp T1→T5) — Mn : 3/6/8/9/12 g · Zn : 1,5/2,5/4/5/6,5 g (K/Mg toujours 0, Solubore 10 g, NaMolybdate 0,5 g inchangés ; Fe passif au sol, non fertigé). STORED_RECIPE.tomato.foliaire retiré (plus de spray hebdomadaire).',
+    fullSnapshot: {
+      fertigation: {
+        T1: { mgSulfate: 0, kSulfate: 0, borax: 10, naMolybdate: 0.5 },
+        T2: { mgSulfate: 0, kSulfate: 0, borax: 10, naMolybdate: 0.5 },
+        T3: { mgSulfate: 0, kSulfate: 0, borax: 10, naMolybdate: 0.5 },
+        T4: { mgSulfate: 0, kSulfate: 0, borax: 10, naMolybdate: 0.5 },
+        T5: { mgSulfate: 0, kSulfate: 0, borax: 10, naMolybdate: 0.5 },
+      },
+      sidedress: {
+        T1: { actisol_g: 57,  farine_g:   84 },
+        T2: { actisol_g: 180, farine_g:  267 },
+        T3: { actisol_g: 467, farine_g:  695 },
+        T4: { actisol_g: 755, farine_g: 1125 },
+        T5: { actisol_g: 0,   farine_g: 2000 },
+      },
+      foliaire: {
+        masterVol: 15, backpacks: 1, area: '383 m²',
+        A: [
+          { name: 'MnSO₄ (31.5% Mn)', master: '18 g' },
+          { name: 'ZnSO₄ (35.5% Zn)', master: '22 g' },
+          { name: 'FeSO₄·7H₂O (20% Fe)', master: '90 g' },
+          { name: 'Acide citrique', master: '65 g' },
+        ],
+        B: [
+          { name: 'CaCl₂·2H₂O', master: '100 g' },
+        ],
+      },
+    },
+  },
+  {
     retired: '2026-06-20',
     recipe: 'STORED_RECIPE.nursery.fertigation',
     summary: 'Recette semis re-dérivée anti-sel (poisson 13 → 1,5 mL/L, Océan ajouté)',

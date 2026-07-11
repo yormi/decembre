@@ -8,7 +8,11 @@ cause); slowest clock, starts now.
 | KPI | Now | Target | Measure | Horizon |
 |---|---|---|---|---|
 | tissue P | 0.23 % | ≥ 0.50 % | tissue (quarterly anchor) | multi-cycle |
-| soil pH (Mehlich-3 water) | 7.4 | aim 6.3 (band 6.0–6.5) | pour-through / soil probe (cheap gauge) | multi-cycle |
+| soil pH | SME 6.9 (Jun) · bed 1:1 6.5 (9 Jul, avg) | aim 6.3 (band 6.0–6.5) | pour-through / SME / bed EC 1:1 | multi-cycle |
+
+**pH band reached on the bed 1:1 gauge (6.5, 9 Jul).** P recovery
+still pending — judge on next tissue/SME, not the 1:1 pH (different
+ruler than the SME the lockout curve is calibrated on).
 
 ## Why this is #1
 
@@ -25,8 +29,9 @@ root recovers; the other two subgoals ride on it.
 - Model + dosing: `../tomato/soil-ph/model/derivation.md`.
 - **Operator protocol: `protocol/sulphur-ph-drawdown.md`.**
 - Endpoint: target band 6.0–6.5, aim 6.3, hard floor 5.8
-  (Mehlich-3 water pH; specialist-defined, conditioned on
-  zeroing foliar Mn through the drawdown;
+  (Mehlich-3 water pH; specialist-defined. The "zero foliar Mn
+  through the drawdown" condition is now met — the whole foliar
+  program was retired 2026-07-11, Mn/Zn moved to fertigation;
   `../tomato/soil-ph/model/learnings/define-soil-root-zone-ph-target-band.md`).
 - Status: **gated** on the calcimeter free-carbonate reading
   (ordered) — sets dose + feasibility row. Slow once started —

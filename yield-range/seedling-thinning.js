@@ -52,7 +52,7 @@ function seedlingWeightFresh(plateauSize, thinDay, targetDay, stressed = false) 
     const areaGround = thinned ? 2 * areaBase : areaBase;
     const capDry = (thinned ? seedlingCapSpaced(plateauSize) : seedlingCapPacked(plateauSize)) * SEEDLING_DM_FRACTION;
     const lai = weightDry * SEEDLING_SLA / areaGround;
-    const grow = rue * SEEDLING_DLI * areaGround * (1 - Math.exp(-SEEDLING_K * lai));
+    const grow = rue * Math.min(SEEDLING_DLI, nurseryLightCeiling(t)) * areaGround * (1 - Math.exp(-SEEDLING_K * lai));
     weightDry = Math.min(weightDry + grow * SEEDLING_STEP_DAYS, capDry);
   }
   return weightDry / SEEDLING_DM_FRACTION;
@@ -80,7 +80,7 @@ function seedlingTrajectory(plateauSize, thinDay, maximumDay, stressed = false) 
     const areaGround = thinned ? 2 * areaBase : areaBase;
     const capDry = (thinned ? seedlingCapSpaced(plateauSize) : seedlingCapPacked(plateauSize)) * SEEDLING_DM_FRACTION;
     const lai = weightDry * SEEDLING_SLA / areaGround;
-    const grow = rue * SEEDLING_DLI * areaGround * (1 - Math.exp(-SEEDLING_K * lai));
+    const grow = rue * Math.min(SEEDLING_DLI, nurseryLightCeiling(t)) * areaGround * (1 - Math.exp(-SEEDLING_K * lai));
     weightDry = Math.min(weightDry + grow * SEEDLING_STEP_DAYS, capDry);
     series.push({ day: t, weight: weightDry / SEEDLING_DM_FRACTION });
   }
@@ -116,7 +116,7 @@ function seedlingClosureDay(plateauSize, stressed = false) {
   for (let t = 0; t <= 60; t += SEEDLING_STEP_DAYS) {
     const lai = weightDry * SEEDLING_SLA / areaBase;
     if (lai >= SEEDLING_LAI_CLOSURE) return t;
-    const grow = rue * SEEDLING_DLI * areaBase * (1 - Math.exp(-SEEDLING_K * lai));
+    const grow = rue * Math.min(SEEDLING_DLI, nurseryLightCeiling(t)) * areaBase * (1 - Math.exp(-SEEDLING_K * lai));
     weightDry = weightDry + grow * SEEDLING_STEP_DAYS;
   }
   return null;

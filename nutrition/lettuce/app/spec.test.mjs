@@ -13,21 +13,20 @@ import { test, describe } from 'node:test';
 import assert from 'node:assert/strict';
 import { loadLettuceApp, readLogicJs } from './test-helpers.mjs';
 
-// ─── Header inputs are exactly five scalars ──────────────────
+// ─── Header inputs are exactly four scalars ──────────────────
 //
-// Spec names the five scalars in camelCase (transplantG, targetG, cycleDays,
-// density, phLocked). The DOM-id convention on this subpage is `nutr-l-<x>`
-// — assert by direct id lookup. Critically, a sixth front-load operator
+// Spec names the four scalars in camelCase (transplantG, targetG, cycleDays,
+// density). The DOM-id convention on this subpage is `nutr-l-<x>`
+// — assert by direct id lookup. Critically, a fifth front-load operator
 // input is rejected: the weekly feather-meal rate ships planted-in.
 
-describe('Salanova Bilan header inputs are exactly five scalars', () => {
+describe('Salanova Bilan header inputs are exactly four scalars', () => {
   // Mapping spec scalar → DOM id on the Salanova header card.
   const SCALAR_TO_DOM_ID = {
     transplantG: 'nutr-l-transplant',
     targetG:     'nutr-l-target',
     cycleDays:   'nutr-l-days',
     density:     'nutr-l-density',
-    phLocked:    'nutr-l-phlocked',
   };
 
   test('every required scalar DOM id is present', () => {
@@ -38,7 +37,7 @@ describe('Salanova Bilan header inputs are exactly five scalars', () => {
     assert.deepEqual(missing, [], `missing scalar inputs: ${missing.join(', ')}`);
   });
 
-  test('sixth front-load input nutr-l-frontload is absent', () => {
+  test('fifth front-load input nutr-l-frontload is absent', () => {
     // Current source still ships `nutr-l-frontload` (and its sibling
     // logic.js front-load reads). It is rejected — the weekly rate ships
     // as a planted-in default, not an operator knob. This test fails today
@@ -51,21 +50,20 @@ describe('Salanova Bilan header inputs are exactly five scalars', () => {
     );
   });
 
-  test('types: 4× number, 1× checkbox', () => {
+  test('types: 4× number', () => {
     const { window } = loadLettuceApp();
     const document = window.document;
     assert.equal(document.getElementById('nutr-l-transplant').type, 'number');
     assert.equal(document.getElementById('nutr-l-target').type, 'number');
     assert.equal(document.getElementById('nutr-l-days').type, 'number');
     assert.equal(document.getElementById('nutr-l-density').type, 'number');
-    assert.equal(document.getElementById('nutr-l-phlocked').type, 'checkbox');
   });
 
-  test('header card body has no other top-level number/checkbox inputs beyond the 5', () => {
+  test('header card body has no other top-level number/checkbox inputs beyond the 4', () => {
     // Behavioral guard: count every <input type="number"|"checkbox"> directly
     // inside the Salanova header card and assert each id is in the allowed
-    // five-scalar set. Anything else (e.g. nutr-l-frontload) is an
-    // unspecified header knob and breaks the five-scalar rule.
+    // four-scalar set. Anything else (e.g. nutr-l-frontload) is an
+    // unspecified header knob and breaks the four-scalar rule.
     const { window } = loadLettuceApp();
     const headerCard = window.document.querySelector('#nutr-lettuce-content .card');
     assert.ok(headerCard, 'header card not found inside #nutr-lettuce-content');
@@ -309,28 +307,10 @@ describe('Plant-need row click opens cert + equation + plugged modal (3 pieces)'
 // ─── Plant-need block reactive to demand-side header inputs ──
 //
 // Mutating transplantG | targetG | cycleDays | density → re-render with new
-// numbers (innerHTML changes). Mutating phLocked → demand block unchanged
-// (phLocked is supply-side per supply-composition-soil-fert-frontload; even if
-// buildNutrimentLettuce re-runs, the demand result is independent of phLocked
-// → #nutr-l-needs innerHTML must be byte-identical).
+// numbers (innerHTML changes). The demand block reads only these four
+// demand-side scalars.
 
 describe('Plant-need block reactive to demand-side header inputs', () => {
-  // Helper: mutate an input, dispatch the appropriate event, return the
-  // current #nutr-l-needs innerHTML. Restore state afterwards.
-  function readNeedsAfterMutation(window, inputId, mutator, eventName) {
-    const input = window.document.getElementById(inputId);
-    assert.ok(input, `${inputId} must exist`);
-    const previousValue = input.type === 'checkbox' ? input.checked : input.value;
-    mutator(input);
-    input.dispatchEvent(new window.Event(eventName, { bubbles: true }));
-    const html = window.document.getElementById('nutr-l-needs').innerHTML;
-    // Restore.
-    if (input.type === 'checkbox') input.checked = previousValue;
-    else input.value = previousValue;
-    input.dispatchEvent(new window.Event(eventName, { bubbles: true }));
-    return html;
-  }
-
   // For each demand-side input, mutating to a distinct value MUST change the
   // rendered plant-need block.
   const DEMAND_INPUT_CASES = [
@@ -360,31 +340,4 @@ describe('Plant-need block reactive to demand-side header inputs', () => {
       );
     });
   }
-
-  test('mutating phLocked does NOT change #nutr-l-needs innerHTML', () => {
-    // phLocked is supply-side per supply-composition-soil-fert-frontload. Even if buildNutrimentLettuce
-    // re-runs on toggle, the demand block's innerHTML must be byte-identical
-    // because calculateLettuceNutritionDemand has no phLocked input.
-    const { window } = loadLettuceApp();
-    const checkbox = window.document.getElementById('nutr-l-phlocked');
-    assert.ok(checkbox, 'nutr-l-phlocked must exist');
-    // Force baseline state.
-    checkbox.checked = true;
-    checkbox.dispatchEvent(new window.Event('change', { bubbles: true }));
-    checkbox.dispatchEvent(new window.Event('input', { bubbles: true }));
-    const before = window.document.getElementById('nutr-l-needs').innerHTML;
-    // Toggle off.
-    checkbox.checked = false;
-    checkbox.dispatchEvent(new window.Event('change', { bubbles: true }));
-    checkbox.dispatchEvent(new window.Event('input', { bubbles: true }));
-    const after = window.document.getElementById('nutr-l-needs').innerHTML;
-    // Restore (default is checked).
-    checkbox.checked = true;
-    checkbox.dispatchEvent(new window.Event('change', { bubbles: true }));
-    checkbox.dispatchEvent(new window.Event('input', { bubbles: true }));
-    assert.equal(
-      before, after,
-      'phLocked toggle must not affect the demand block — supply-composition-soil-fert-frontload says phLocked is supply-side only',
-    );
-  });
 });

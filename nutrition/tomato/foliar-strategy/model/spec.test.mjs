@@ -504,9 +504,9 @@ describe('FP foliar recipe live-derived from pre-foliar gap chain', () => {
 
     const originalMnRelease = CC.releasePerWeek.Mn;
     try {
-      // Baseline: canonical state. T5, phLocked=true, transpFactor=1.0,
+      // Baseline: canonical state. T5, transpFactor=1.0,
       // target=1.5 kg/m²/wk → match Bilan defaults.
-      calculateNutritionSupply('T5', true, 1.0, 1.5, 'fp');
+      calculateNutritionSupply('T5', 1.0, 1.5, 'fp');
       const baselineMn = fpFoliar['MnSO4'];
       assert.ok(isFinite(baselineMn) && baselineMn >= 0,
         `baseline FP_RECIPE_T5.foliar.MnSO4=${baselineMn}; expected finite ≥ 0`);
@@ -515,7 +515,7 @@ describe('FP foliar recipe live-derived from pre-foliar gap chain', () => {
       // demand. Pre-foliar gap.Mn collapses to 0, so the gap-derived recipe
       // must drop MnSO4 to 0 (min-dose clamp).
       CC.releasePerWeek.Mn = 1.0;
-      calculateNutritionSupply('T5', true, 1.0, 1.5, 'fp');
+      calculateNutritionSupply('T5', 1.0, 1.5, 'fp');
       const droppedMn = fpFoliar['MnSO4'];
       assert.ok(droppedMn < baselineMn,
         `after compost.Mn bump, expected MnSO4 < baseline ${baselineMn}, got ${droppedMn}`);
@@ -524,7 +524,7 @@ describe('FP foliar recipe live-derived from pre-foliar gap chain', () => {
     } finally {
       // Restore canonical compost state for any subsequent test.
       CC.releasePerWeek.Mn = originalMnRelease;
-      try { calculateNutritionSupply('T5', true, 1.0, 1.5, 'fp'); } catch (_) { /* swallow */ }
+      try { calculateNutritionSupply('T5', 1.0, 1.5, 'fp'); } catch (_) { /* swallow */ }
     }
   });
 

@@ -397,3 +397,51 @@ Scope: **not** the full rewrite (already at lines 310-360). This diff evolves it
 
 ### Verdict
 Land the engine evolution (Beer–Lambert + derived SLA is a genuine improvement — net-simpler, kills the LAI-1.4 cliff artifact). But three new exposures ride on top of the still-open 2026-07-05 set: the anchor is a population **max** feeding a mean surface (B1, high), the senescence retune makes the **2-vs-3-week lever unreliable** in the range that matters (B2, Guillaume call), and "validated" overstates a **degenerate one-point fit** (D1). None block the math; all bear on whether the sales/labor surfaces can be read as decision-grade. · `PENDING`
+
+
+## 2026-07-11 — review of yield-range/derivation.md (HEAD working-tree diff: age-stepped DLI ceiling + SLA re-anchor)
+
+Scope: `carbon-balance-growth`. Two moves: flat-17 light fold → `NURSERY_DLI_CEILING_BY_WEEK = [10,14,17]`, growth on `min(DLI_TARGET, nurseryLightCeiling(day))` (`calc.js:136`); `SPECIFIC_LEAF_AREA` re-derived at the week-2 ceiling (14) not `DLI_TARGET` (17), 0.015 → 0.019. Not re-raised: the 2026-07-08 / 07-05 PENDING set (max-anchor, senescence-lever, one-point fit) all still stand.
+
+**Steelman first (why this diff is net-good):** day 10 sits in the week bucket that gets ceiling 14, so deriving `SLA` at 14 makes the small-LAI limit `ε·DLI·k·SLA·W` actually equal `GROWTH_RGR·W` *at the anchor's real DLI* — deriving at 17 (prior state) was an internal inconsistency this fixes. And the stepped ceiling removes the flat-17 over-lighting of fragile cotyledon/true-leaf plugs (the named `#3` fix). Both are improvements. The findings below are narrow.
+
+### Blindspots
+**B1 — sibling `spec.md` contract still says flat `DLI_TARGET`; code + derivation moved to the age-stepped `min()`** · `PENDING`
+- **What the contract states:** `spec.md` § carbon-balance-growth line 71 `gain = ε × DLI_TARGET × A_ground × fi`; lines 86-88 "folds into `ε × DLI_TARGET` (no separate `f_light` multiplier)"; Assumptions line 50 "Growth DLI held at `DLI_TARGET`".
+- **What the model now does:** `calc.js:136` `effectiveDli = Math.min(DLI_TARGET, nurseryLightCeiling(day))` and this derivation's age-stepped fold. All three contract statements now contradict the code. The contract is the read surface — it understates the model.
+- **How to test it:** n/a — coherence, not physics. Specialist / context-coherence lane updates `spec.md` § carbon-balance-growth pseudo-code + Assumptions to the `min(DLI_TARGET, nurseryLightCeiling(day))` form.
+- **Cost if real:** low on yield; but live drift on the contract surface — the exact vestigial-hold pattern the shop bans.
+
+**B2 — `SLA` is now pinned to an unmeasured directional band-top, and `SLA` sets closure/senescence timing model-wide** · `PENDING`
+- **What the spec assumes:** `SLA = GROWTH_RGR/(ε·NURSERY_DLI_CEILING_BY_WEEK[1]·k)` is "**derived, not free**" — reads as anchored.
+- **What might be ignored:** the anchor DLI (14) is itself a cert-2 band-top from `light/domain.md`, self-labeled "directional only, not a Décembre measurement." Moving the anchor DLI 17→14 lifted `SLA` ~27 % (0.015→0.019). `SLA` feeds `LAI → closure day → senescence onset → the whole labor-routine trajectory`. So an unmeasured nursery light band now propagates into field yield + senescence predictions, and the next band revision moves `SLA` again.
+- **How to test it:** first leaf-area / SLA measurement at week 2 (already the named trigger). Until then, closure timing inherits the band's cert 2 — the derivation's "derived, not free" should read "derived from the week-2 band (cert 2), not measured."
+- **Cost if real:** medium — closure/senescence timing is exactly what the 2-vs-3-week labor lever (B2, 07-08) rides on; an SLA shift re-phases the LAI-3 oscillation that lever depends on.
+
+### Complexity
+**C1 — three-step ceiling `[10, 14, 17]`** · `PENDING`
+- **Specialist added:** per-week 3-value lookup + `nurseryLightCeiling(day)`.
+- **Test:** changes a team action vs a single early-nursery sub-ceiling, or vs just anchoring? The 5 g @ d25 anchor lands either way (4.9 g); field ages all sit at 17, so the steps only bite wk1-2.
+- **MVP version:** could fold to one "fragile-plug" sub-ceiling — but the SLA anchor now needs the week-2 value (14) named explicitly, and the 3 steps carry no extra data cost.
+- **Why it might stay:** it is the `#3` over-lighting fix *and* the SLA-at-14 coherence needs the week-2 step. Weak cut — lean **stays**.
+
+### Verdict
+Ship — net a coherence improvement (SLA now consistent with the day-10 anchor's actual DLI; fragile-plug over-lighting removed). Two follow-ups, neither a math blocker: `spec.md` contract is now stale vs the `min()`-form code (B1, low-yield / live drift — route to coherence lane), and the derived `SLA` inherits the unmeasured week-2 band's cert 2 and propagates it into closure/senescence timing that the labor lever depends on (B2, medium). · `PENDING`
+
+## 2026-07-11 — re-trigger, yield-range/derivation.md (no-op)
+Hook re-fired on the same age-stepped-ceiling + SLA-re-anchor diff already reviewed above (lines 402-429: B1 spec.md flat-`DLI_TARGET` drift · B2 SLA pinned to unmeasured cert-2 band-top → closure/senescence timing · C1 three-step ceiling lean-stays). Ran the three-angle pass independently and landed the identical findings. One extra angle considered and dropped: whether the `GROWTH_RGR = 0.20` day-10 anchor lived at clean ε (1.1) vs stressed (0.85) — the SLA back-solve uses clean 1.1, so a stressed-cohort 0.20 would over-set SLA ~1.3×; steelmanned away because the day-10 refutation of 0.30 is coverage-geometric (ε-independent, `learnings/day10-open-canopy-refutes-rm-030.md`), so 0.20 stands as a clean rate. No new claim, constant, or cert moved → no-op pass, no duplicate entry. · `PENDING`
+
+## 2026-07-11 — supplement, same diff (one finding the 402-429 pass + the two re-triggers all missed)
+
+Not a re-trigger no-op: the passes above ran the three-angle sweep and converged, but none noticed the field-side consequence of the SLA re-anchor. The 402-429 steelman ("deriving SLA at 14 makes the small-LAI limit equal `GROWTH_RGR·W` at the anchor's real DLI") is circular — "real DLI = 14" is *imposed by the new ceiling model*, not measured. Only this one finding; B1/B2/C1 above stand as written.
+
+### Blindspots
+**B1 — SLA back-solved at DLI 14 while the engine runs field + late-nursery at DLI 17 → field open-canopy RGR silently became 0.24, not the 0.20 anchor; the "open-canopy limit = GROWTH_RGR" invariant now holds only at nursery week 2** · `PENDING`
+- **What the spec assumes:** `derivation.md` `carbon-balance-growth` and `spec.md:85` state the small-LAI limit equals `GROWTH_RGR·W` as an **unqualified invariant** ("derived so this limit is exact"). The 402-429 C1 treats "field ages all sit at 17, so the steps only bite wk1-2" as benign.
+- **What might be ignored:** open-canopy RGR = `ε·DLI·k·SLA`, *linear in the operating DLI*. SLA was pinned to make that = 0.20 at DLI 14. The engine runs field plants (and day ≥ 14 nursery) at `effectiveDli = 17`, where the rate is `1.1·17·0.7·0.019 = 0.243/day` — **+21% over GROWTH_RGR = 0.20**. Post-transplant a head sits deeply open-canopy (LAI ≈ 0.3 at field spacing) for much of the field window, so this faster exponential phase feeds `harvestWeightG → kgPerYear → yearlySalesDollars`. Field yield rode up as a side effect of a change whose stated purpose (`#3`) was the *early* plug. The d25 nursery anchor can't catch it — there the plug is near-closed (light-limited), so SLA↑ and ceiling↓ cancel (5 → 4.9 g). Validation sits exactly where the bias is invisible.
+- **Why the steelman is circular:** "the anchor's real DLI is 14" comes from the new ceiling model (day 10 → week bucket → 14), not a measurement. It's only right if the day-10 cohort was genuinely light-limited to ~14. If the propagation space delivered ~17 and the plug grew at 0.20, then 0.20 is the rate at 17, SLA should derive off 17 (stays 0.015), and this diff over-derives SLA and inflates field growth.
+- **How to test it:** `Guillaume call needed:` what usable DLI did the day-10 open-canopy anchor cohort actually see — full propagation-space 17, or young-tissue-limited ~14? Independent back-check: a clean field cohort weighed at a non-cap-bound day/spacing shows whether field open-canopy RGR is 0.20 or 0.24. MVP alternative if the ceiling effect is wanted only early: keep SLA off 17 (0.015) so the invariant holds at the field DLI, and let the wk1/2 ceiling slow only the early plug — isolates the `#3` fix without the field inflation.
+- **Cost if real:** high — a ~21% multiplier on the field open-canopy phase, i.e. on the headline revenue surface, introduced silently by the SLA re-anchor.
+
+### Verdict
+Hold the SLA re-derivation pending the day-10-anchor-DLI call. The 402-429 "net coherence improvement" read holds only if that cohort was truly light-limited to 14; if it saw 17, the re-anchor breaks the open-canopy invariant in the field and lifts sold-weight ~21% with no anchor to catch it. The age-stepped ceiling mechanism itself is fine — the exposure is coupling it to the SLA back-solve rather than leaving SLA anchored at the field DLI. · `PENDING`

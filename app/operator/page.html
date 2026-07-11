@@ -49,7 +49,11 @@
     <button class="page-btn" id="page-sol" onclick="setPage('sol')">
       🌱 Fertilisation
     </button>
-    <button class="page-btn" id="page-foliar" onclick="setPage('foliar')">
+    <!-- Foliaire masqué du nav 2026-07-11 : les deux sprays (A oligos + B Ca)
+         sont retirés (pH sol 6,5, micros rendus au fertigation). Page conservée
+         et joignable par hash #foliar pour restauration event-driven ; retirer
+         le style display:none pour la ré-afficher. -->
+    <button class="page-btn" id="page-foliar" onclick="setPage('foliar')" style="display:none;">
       🍃 Foliaire
     </button>
   </div>

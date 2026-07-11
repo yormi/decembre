@@ -54,7 +54,8 @@ const FIRST_PRINCIPLES_T5_FERTIGATION = {
 // ─── PH_UPTAKE_FACTOR_AT_CURRENT_SOIL — bed → plant transfer efficiency ──
 //
 // Per-element fraction of bed-released ions that the plant actually takes up,
-// at current Décembre soil chemistry (pH 7.28, Ca 10 989 kg/ha). Models the
+// at current Décembre soil chemistry (pH 6.5, bed EC 1:1 9 July 2026; Ca
+// 10 989 kg/ha — Ca-saturation persists, it's structural not pH-driven). Models the
 // gap between "released to bed" and "taken up by plant" due to root-zone
 // effects independent of channel of delivery — applies uniformly to compost,
 // sidedress, and fertigation bed sources. Multiplies plant demand in
@@ -68,37 +69,42 @@ const PH_UPTAKE_FACTOR_AT_CURRENT_SOIL = {
   K:  0.90,   // cert 2 — Ca-K cation competition on Ca-saturated CEC; 5-15 % literature discount, mid-band 10 %
   Mg: 0.85,   // cert 2 — Ca-Mg competition (Mg²⁺ loses to Ca²⁺ at root membrane) + dripper-bed equilibration; 10-25 % range, mid 15 %
   B:  0.80,   // cert 2 — soil B adsorption in Ca-rich beds at pH > 7 (Fe/Al oxides + Ca-borate complexes); 15-25 % range, mid 20 %
+  Mn: 1.00,   // cert 1 — bed→plant micro uptake not separately discounted; the sulfate-metal pH curve (channel→bed, 0.75 at pH 6.5) carries the loss. Placeholder 1.0 pending tissue correlation (2026-07-11). Fe absent — soil-covered, not fertigated (channel-role Fe = passive)
+  Zn: 1.00,   // cert 1 — idem
 };
 
 // Per-element efficiency for the Efficacité column (channel-efficiency-capability-map) — share of
 // applied fertigation-product mass that reaches the bed as plant-available
-// form per applied gram, under current soil pH 7.4 chemistry. This is the
+// form per applied gram, under current soil pH 6.5 chemistry. This is the
 // channel → bed axis (dripper-line chemistry); the bed → plant uptake
 // inefficiency is a separate axis declared in PH_UPTAKE_FACTOR_AT_CURRENT_SOIL
 // above (uptake-efficiency-factor).
 //
 // Values reflect the PH_RESPONSE curves at current Décembre tomato-block
-// soil pH 7.28-7.4 (Berger April 2026):
-//   K  (K2SO4 → 'soluble-cation' class): 1.0 − 0.15 × (7.4 − 7.0) = 0.94
-//   Mg (MgSO4-7H2O → 'soluble-cation' class):                       0.94
+// soil pH 6.5 (bed EC 1:1, 9 July 2026, 7-bed average, range 6.1-6.8):
+//   K  (K2SO4 → 'soluble-cation' class): 1.0 (no penalty below pH 7.0)
+//   Mg (MgSO4-7H2O → 'soluble-cation' class):                       1.00
 //   B  (Solubor disodium octaborate → 'borate' class, non-ionic):   1.00
 //   Mo (sodium molybdate → 'molybdate' class, anion):               1.00
-//      (single-fertigation-tank-per-week carve-out 2026-05-16: Mo is anion, fully available at
-//       pH ≥ 7.0; routed via fertigation rather than foliar because the
-//       pH-lockout argument that keeps cation micros on foliar doesn't
-//       apply to anionic molybdate.)
+//   Mn/Zn (sulfate salts → 'sulfate-metal' class): 1.0 − 0.50×(6.5−6.0)
+//       = 0.75 (was 0.10 at pH 7.4 — lockout). Rendus au canal 2026-07-11
+//       quand le pH sol est repassé sous 7,0. Fe exclu — sol le couvre
+//       (310 ppm, tissu suff) + FeSO₄ s'oxyde dans la cuve 5 jours → passif.
 //
-// Cert 4 — pH curves are well-characterized (`soluble-cation` curve at
-// cert 4 in PH_RESPONSE source); current soil pH itself is cert 5 (Berger
-// April 2026 lab reading). Refinement triggers in derivation.md.
+// Cert 4 — pH curves are well-characterized (`sulfate-metal` / `soluble-cation`
+// curves at cert 4 in PH_RESPONSE source); current bed pH is cert 3 (bed EC
+// 1:1 method, operator-measured, not yet SME-lab-confirmed). Refinement
+// triggers in derivation.md; next Berger SME re-sources the micro side.
 //
-// Elements absent from the map (N / P / Ca / Fe / Mn / Zn / Cu) are
-// not routed by the fertigation channel under STORED at current pH —
-// single-fertigation-tank-per-week cascade order locks the cation micros to foliar, N to sidedress,
-// Ca not fertigated, P drawn down via soil bank.
+// Elements absent from the map (N / P / Ca / Cu) are not routed by the
+// fertigation channel under STORED — N to sidedress, Ca not fertigated
+// (soil-saturated), P drawn down via soil bank, Cu foliar-routed but unfed.
 const FERTIGATION_EFFICIENCY_AT_CURRENT_SOIL = {
-  K:  0.94,
-  Mg: 0.94,
+  K:  1.00,   // soluble-cation curve at pH 6.5: no penalty below 7.0 (1.0 − 0.15×max(0,6.5−7.0)); was 0.94 at pH 7.4
+  Mg: 1.00,   // idem
   B:  1.00,
   Mo: 1.00,
+  Mn: 0.75,   // sulfate-metal curve at pH 6.5: 1.0 − 0.50×(6.5−6.0) = 0.75; was 0.10 at pH 7.4 (lockout). Rendu au canal 2026-07-11
+  Zn: 0.75,   // idem
+  // Fe absent — soil-covered at 6.5 + FeSO₄ oxidizes in the 5-day tank; routed passive (channel-role Fe), not fertigated.
 };

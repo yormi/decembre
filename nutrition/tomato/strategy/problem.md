@@ -40,6 +40,7 @@ Aeration ruled out (live roots).
 | Read | Value | Meaning |
 |---|---|---|
 | SME pH | 7.4 → **6.9** | sulphur drawdown progressing (target 6.3) |
+| bed 1:1 pH | **6.5** (9 Jul, 7-bed avg) | band 6.0–6.5 reached on the 1:1 gauge; foliar sprays retired |
 | P | **0.9 ppm** | still locked — judge P recovery on tissue, not SME |
 | CE | **3.96** | over the ~3.0 rail — salt creep |
 | Sulfate | **1786** | the binding salt |

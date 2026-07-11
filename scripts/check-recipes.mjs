@@ -808,7 +808,7 @@ header('months-to-depletion-clamped-by-peak-demand — monthsToDepletion = bank 
     if (typeof caMonths !== 'number' || !(caMonths > 0)) {
       offenders.push(`monthsToDepletion(tomato, Ca) = ${caMonths} (expected positive number)`);
     }
-    // Tomato P — lockout regime (mass-flow 16.5 < peak 660). Runway ~780 mo.
+    // Tomato P — low-SME regime (mass-flow 16.5 < peak 660). Runway ~780 mo.
     const pMonths = SC.monthsToDepletion('tomato', 'P');
     if (typeof pMonths !== 'number' || !(pMonths > 0)) {
       offenders.push(`monthsToDepletion(tomato, P) = ${pMonths} (expected positive number)`);
@@ -838,7 +838,7 @@ header('months-to-depletion-clamped-by-peak-demand — monthsToDepletion = bank 
     if (typeof lettuceCa !== 'number' || !(lettuceCa > 0)) {
       offenders.push(`monthsToDepletion(lettuce, Ca) = ${lettuceCa} (expected positive number)`);
     }
-    // Pinned arithmetic — tomato P (lockout, clamp no-op).
+    // Pinned arithmetic — tomato P (low SME, clamp no-op).
     //   bank 55770 ; mass-flow 1.1 × 15 = 16.5 ; peak 660 ; min = 16.5.
     //   runway = 55770 / (16.5 × 52/12) ≈ 780 mois.
     const expectedP = 55770 / (Math.min(1.1 * 15, 660) * WPM);
@@ -868,7 +868,7 @@ header('months-to-depletion-clamped-by-peak-demand — monthsToDepletion = bank 
     if (offenders.length > 0) {
       fail('monthsToDepletion behaviour', offenders.map(o => `  ${o}`).join('\n'));
     } else {
-      pass(`Clamped runway: tomato Ca ${caMonths.toFixed(0)} mois (demand-bound) · P ${pMonths.toFixed(0)} mois (lockout) · K ${kMonths.toFixed(0)} mois (mass-flow-bound) · N → null (turnover) · lettuce Ca ${lettuceCa.toFixed(0)} mois`);
+      pass(`Clamped runway: tomato Ca ${caMonths.toFixed(0)} mois (demand-bound) · P ${pMonths.toFixed(0)} mois (low SME) · K ${kMonths.toFixed(0)} mois (mass-flow-bound) · N → null (turnover) · lettuce Ca ${lettuceCa.toFixed(0)} mois`);
     }
   }
 }
@@ -1618,7 +1618,7 @@ function stageDemandMg(stage, element) {
 
 const STAGES = ['T1', 'T2', 'T3', 'T4', 'T5'];
 const MASS_BALANCE_ELEMENTS = ['N', 'P', 'K', 'Mg'];  // CHANNEL_ROLE elements with non-foliar supply
-const SOIL_PH_NOW = 7.4;  // current soil pH per CLAUDE.md (April 2026 Berger)
+const SOIL_PH_NOW = 6.5;  // current bed pH — bed EC 1:1, 9 July 2026, 7-bed avg (range 6.1-6.8); was 7.4 (April 2026 Berger root-zone)
 
 // ─── under-fert-guard — Σ(channel_supply) ≥ 0.9 × demand per (element, stage) ──────
 //
@@ -2680,7 +2680,7 @@ if (!lettucePlantNeedsNs || typeof lettucePlantNeedsNs.calculateLettuceNutrition
        lettucePlantNeedsLoadError || 'function missing on namespace');
 } else {
   const handler = lettucePlantNeedsNs.calculateLettuceNutritionSupply;
-  const supply = handler(50, 100, 43, false, 50, LETTUCE_TEST_DEPENDENCIES);
+  const supply = handler(50, 100, 43, 50, LETTUCE_TEST_DEPENDENCIES);
   const elements = Object.keys(lettucePlantNeedsNs.LETTUCE_TISSUE_DW);
   const offenders = [];
   for (const element of elements) {
@@ -2747,7 +2747,7 @@ if (!lettucePlantNeedsNs || typeof lettucePlantNeedsNs.calculateLettuceNutrition
   ];
   const offenders = [];
   for (const [label, currentG, targetG] of cases) {
-    const supply = handler(currentG, targetG, 43, false, 0, LETTUCE_TEST_DEPENDENCIES);
+    const supply = handler(currentG, targetG, 43, 0, LETTUCE_TEST_DEPENDENCIES);
     if (!(supply.canopyFactor >= 0.2 - 1e-9 && supply.canopyFactor <= 0.7 + 1e-9)) {
       offenders.push(`${label} (currentG=${currentG}, targetG=${targetG}): canopyFactor=${supply.canopyFactor}`);
     }
@@ -3086,15 +3086,22 @@ header('public-api-namespace — window.FoliarRecipeTomato public API surface');
     if (missing.length > 0) {
       fail('FoliarRecipeTomato exposes the public API', `manquants: ${missing.join(', ')}`);
     } else {
+      // Default supply reads STORED foliaire, which can be empty (sprays
+      // retired 2026-07-11 — micros moved to fertigation). Retired-tolerant:
+      // default supply is a valid ≥0 number; the machinery still delivers >0
+      // from a non-empty probe recipe (capability survives dormancy).
       const t5Fe = FRT.computeFoliarSupply('T5').Fe;
+      const probeFe = FRT.computeFoliarSupply('T5', {}, [{ name: 'FeSO₄·7H₂O (20% Fe)', master: '90 g' }]).Fe;
       const okShape = typeof FRT.AREA_M2 === 'number'
                     && typeof FRT.FOLIAR_COVERAGE_DEFAULT === 'number'
                     && typeof FRT.FOLIAR_COVERAGE_WITH_YUCCA === 'number'
-                    && typeof t5Fe === 'number' && isFinite(t5Fe) && t5Fe > 0;
+                    && typeof t5Fe === 'number' && isFinite(t5Fe) && t5Fe >= 0
+                    && typeof probeFe === 'number' && isFinite(probeFe) && probeFe > 0;
       if (!okShape) {
-        fail('FoliarRecipeTomato shape', `AREA_M2: ${typeof FRT.AREA_M2}; COV_DEFAULT: ${FRT.FOLIAR_COVERAGE_DEFAULT}; COV_YUCCA: ${FRT.FOLIAR_COVERAGE_WITH_YUCCA}; T5.Fe: ${t5Fe}`);
+        fail('FoliarRecipeTomato shape', `AREA_M2: ${typeof FRT.AREA_M2}; COV_DEFAULT: ${FRT.FOLIAR_COVERAGE_DEFAULT}; COV_YUCCA: ${FRT.FOLIAR_COVERAGE_WITH_YUCCA}; T5.Fe(stored): ${t5Fe}; T5.Fe(probe): ${probeFe}`);
       } else {
-        pass(`FoliarRecipeTomato exposes ${expectedKeys.length} clés (toutes présentes, T5.Fe=${t5Fe.toFixed(2)} mg/m²/wk)`);
+        const dormant = t5Fe === 0 ? ' (STORED dormant — sprays retired)' : '';
+        pass(`FoliarRecipeTomato exposes ${expectedKeys.length} clés (toutes présentes, T5.Fe stored=${t5Fe.toFixed(2)} probe=${probeFe.toFixed(2)} mg/m²/wk)${dormant}`);
       }
     }
   }
@@ -3332,10 +3339,10 @@ header('fp-strategy-live-derived — FP foliar recipe live-derived from pre-foli
     let offenders = [];
     const originalMnRelease = CC.releasePerWeek.Mn;
     try {
-      // Baseline: default compost state. T5, phLocked=true, transpFactor=1.0,
+      // Baseline: default compost state. T5, transpFactor=1.0,
       // target=1.5 kg/m²/wk — match the page defaults so FP_RECIPE_T5.foliar
       // reflects the canonical FP state.
-      calculateNutritionSupply('T5', true, 1.0, 1.5, 'fp');
+      calculateNutritionSupply('T5', 1.0, 1.5, 'fp');
       const baselineMn = fpFoliar['MnSO4'];
       if (!isFinite(baselineMn) || baselineMn < 0) {
         offenders.push(`baseline FP_RECIPE_T5.foliar.MnSO4 = ${baselineMn} (expected finite ≥ 0 after calculateNutritionSupply FP call)`);
@@ -3346,7 +3353,7 @@ header('fp-strategy-live-derived — FP foliar recipe live-derived from pre-foli
       // so computeFoliarRecipeForGap should return MnSO4_g = 0 (min-dose
       // clamp). Confirms calculateNutritionSupply consults the live compost chain.
       CC.releasePerWeek.Mn = 1.0;
-      calculateNutritionSupply('T5', true, 1.0, 1.5, 'fp');
+      calculateNutritionSupply('T5', 1.0, 1.5, 'fp');
       const droppedMn = fpFoliar['MnSO4'];
       if (!(droppedMn < baselineMn)) {
         offenders.push(`after compost.Mn bump, FP_RECIPE_T5.foliar.MnSO4 = ${droppedMn}; expected < baseline ${baselineMn} (gap closed → recipe shrinks)`);
@@ -3361,7 +3368,7 @@ header('fp-strategy-live-derived — FP foliar recipe live-derived from pre-foli
       CC.releasePerWeek.Mn = originalMnRelease;
       // Re-derive once at canonical state so FP_RECIPE_T5.foliar reflects
       // baseline for any subsequent verifier that reads it.
-      try { calculateNutritionSupply('T5', true, 1.0, 1.5, 'fp'); } catch (e) { void e; }
+      try { calculateNutritionSupply('T5', 1.0, 1.5, 'fp'); } catch (e) { void e; }
     }
     if (offenders.length === 0) {
       pass('FP_RECIPE_T5.foliar.MnSO4 shrinks when compost.Mn rises (pre-foliar gap chain wired through calculateNutritionSupply)');
@@ -3375,15 +3382,14 @@ header('fp-strategy-live-derived — FP foliar recipe live-derived from pre-foli
 //
 // Section 1 of the Bilan UI specs. Asserts header inputs, light ceiling
 // formula, recipe-mode toggle behaviour. Spec:
-// nutrition/tomato/shell/spec.md → header-inputs-five-scalars..107.
+// nutrition/tomato/shell/spec.md → header-inputs-four-scalars..107.
 
-header('header-inputs-five-scalars — Header inputs are exactly five scalars (no nutr-current)');
+header('header-inputs-four-scalars — Header inputs are exactly four scalars (no nutr-current)');
 
 const REQUIRED_HEADER_INPUTS = [
   'nutr-target',
   'nutr-solar-per-gram',
   'nutr-stage-selector',
-  'nutr-phlocked',
   'nutr-recipe-fp',
   'nutr-recipe-stored',
 ];
@@ -4232,10 +4238,9 @@ header('contribution-block-gap-grid — Tomato Bilan blocks: 6-col gap-grid + ce
       }
     }
   }
-  // Note: 💧 precipitation emoji on sidedress P fires only when supply.sidedress.P > 0
-  // AND phLocked. At current Ca-aware default (Actisol=0, ca-aware-product-gate), supply.sidedress.P
-  // is 0 → no cap fires → no emoji. That's consistent with apport-ici-clickable-cert-and-cap-modals semantics
-  // (cap fires only when there's a value to cap). Synthetic-cap test deferred.
+  // Note: sidedress P no longer carries a precipitation cap (pH-lockout retired),
+  // so no 💧 emoji fires on sidedress P. At current Ca-aware default
+  // (Actisol=0, ca-aware-product-gate), supply.sidedress.P is 0 anyway.
   if (offs.length === 0) {
     pass('Tomato compost/sidedress/fert/foliar blocks: 6-col grid · cell-keyed · gap-grid is <table>\'s next sibling');
   } else {
@@ -4409,8 +4414,8 @@ header('channel-efficiency-capability-map — Contribution-channel efficiency ma
     let supply = null;
     try {
       // Match the canonical FP call shape used by the fp-strategy-live-derived verifier
-      // above: T5, phLocked=true, transpFactor=1.0, target=1.5.
-      supply = window.calculateNutritionSupply('T5', true, 1.0, 1.5, 'fp');
+      // above: T5, transpFactor=1.0, target=1.5.
+      supply = window.calculateNutritionSupply('T5', 1.0, 1.5, 'fp');
     } catch (e) {
       offenders.push(`calculateNutritionSupply threw: ${e && e.message ? e.message : e}`);
     }
@@ -4454,7 +4459,7 @@ header('channel-efficiency-capability-map — Contribution-channel efficiency ma
       // Post-2026-05-16 carve: calculateLettuceNutritionSupply is pure and
       // takes a `dependencies` bag instead of reading globals.
       const PNL = window.PlantNeedsLettuce || {};
-      lettuceSupply = window.calculateLettuceNutritionSupply(30, 100, 43, true, 50, {
+      lettuceSupply = window.calculateLettuceNutritionSupply(30, 100, 43, 50, {
         weeklyMassFlowL: 50,
         smeLettucePpm: PNL.SME_LETTUCE_PPM || {},
         lettuceRecipe: window.LETTUCE || { kSulfate: 2996, mgSulfate: 467, feSulfate: 7.5 },

@@ -39,7 +39,7 @@ crop (tissue Na 3166), the EC relief is the biggest single benefit.
 **4.01** (Jun), over spec — the EC this cut chases was real and rising. The
 co-produced salt is gypsum + nitrate, leachable (saline, not sodic) →
 `../domain/learnings/field-sme-salinity-climbed-2026-06.md` + the leach procedure
-`salt-leach.md`.
+`../../protocol/salt-leach-DRAFT.md`.
 
 **Key proof:** feeding 910 g K₂SO₄/wk (over demand) still left tissue K
 at the floor (5.93%) → the limit is **uptake (Na antagonism), not

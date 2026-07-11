@@ -77,7 +77,7 @@ const PRODUCT = {
     cert: 4,
   },
   'MnSO4': {
-    mode: 'flux', ch: 'foliar',
+    mode: 'flux', ch: 'fertigation',       // rendu au fertigation 2026-07-11 (pH sol 6,5, lockout levé)
     base: { Mn: 0.315 },                   // label; cert 5
     phClass: { Mn: 'sulfate-metal' },
     ions: { 'Mn2+': 0.36, 'SO4-2': 0.64 }, // anhydrous; cert 4
@@ -90,7 +90,7 @@ const PRODUCT = {
     cert: 4,
   },
   'ZnSO4': {
-    mode: 'flux', ch: 'foliar',
+    mode: 'flux', ch: 'fertigation',       // rendu au fertigation 2026-07-11 (pH sol 6,5, lockout levé)
     base: { Zn: 0.355 },                   // label; cert 5
     phClass: { Zn: 'sulfate-metal' },
     ions: { 'Zn2+': 0.40, 'SO4-2': 0.60 },

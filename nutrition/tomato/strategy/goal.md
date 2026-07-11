@@ -8,7 +8,7 @@ monitoring, open questions):
 
 | # | Subgoal | Symptom(s) | KPI | Now | Target | Measure | Horizon | File |
 |---|---|---|---|---|---|---|---|---|
-| 1 | Free P (break pH lockout) | abortion · botrytis · thin growth | tissue P | 0.23% | ≥0.5% | tissue; soil pH 7.4→~6.5 | multi-cycle | `sg1-free-p.md` |
+| 1 | Free P (break pH lockout) | abortion · botrytis · thin growth | tissue P | 0.23% | ≥0.5% | tissue; soil pH 7.4→6.5 (bed 1:1 band reached 9 Jul; P recovery pending SME) | multi-cycle | `sg1-free-p.md` |
 | 2 | N to vigour sufficiency | thin growth | tissue N | 2.27% | 4–4.5% (3.1% = exit-crisis only) | tissue | weeks | `sg2-nitrogen.md` |
 | 3 | Ca to resistance + structural band | botrytis · thin growth (stem) | tissue Ca | 3.46% | 4.5–5.5% | tissue | weeks–months | `sg3-calcium.md` |
 
@@ -35,8 +35,9 @@ CE is one shared budget across three taps. The sulphur fix
 sulfate byproduct), so the pH cure and the salt problem are the
 same lever. June SME: CE 3.96 (over the ~3.0 rail), sulfate 1787.
 
-- **Tap A — sulphur dose: never throttle.** pH 6.9, target 6.3;
-  backing off delays the root fix (the binding constraint).
+- **Tap A — sulphur dose: never throttle.** SME pH 6.9 (Jun),
+  bed 1:1 6.5 (Jul, band reached), target 6.3; backing off delays
+  the root fix (the binding constraint).
 - **Tap B — added K/Mg sulfate: off** (already 0 all stages).
 - **Tap C — leaching irrigation: up** (dilutes/leaches sulfate).
 - **Protect the CE rail via B + C, never A.**

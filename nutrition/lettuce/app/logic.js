@@ -11,12 +11,11 @@ function buildNutrimentLettuce() {
   const cycleDays   = parseFloat(document.getElementById('nutr-l-days').value)       || 14;
   const density     = parseFloat(document.getElementById('nutr-l-density').value)    || 43;
   const frontloadG  = PN.LETTUCE_FRONTLOAD_DEFAULTS.featherMeal_g_per_m2;
-  const phLocked    = document.getElementById('nutr-l-phlocked').checked;
 
   const demand = PN.calculateLettuceNutritionDemand(transplantG, targetG, cycleDays, density);
   // Pure-function dependency bag — resolved at the integrator boundary so
   // the calc layer reads no globals. Spec: nutrition/lettuce/domain/plant-needs/spec.md.
-  const supply = PN.calculateLettuceNutritionSupply(transplantG, targetG, density, phLocked, frontloadG, {
+  const supply = PN.calculateLettuceNutritionSupply(transplantG, targetG, density, frontloadG, {
     weeklyMassFlowL: weeklyMassFlowL(),
     smeLettucePpm: PN.SME_LETTUCE_PPM,
     lettuceRecipe: LETTUCE,
@@ -134,13 +133,13 @@ function buildNutrimentLettuce() {
     }
     const mgPerWk = gPerWk * 1000;
     const totalGPerWk = gPerWk * LETTUCE_AREA;
-    // stable — Ca-saturation context; mineralization model; Mg label gap; P pH lockout
+    // stable — Ca-saturation context; mineralization model; Mg label gap; P mineralization
     const note = element === 'Ca'
-      ? '⚠ Le Ca du compost a contribué à la sursaturation calcique du sol (racine de la crise pH 7,4-7,5). Pas un manque à combler — un excès à laisser décliner par lessivage.'
+      ? '⚠ Le Ca du compost a contribué à la sursaturation calcique du sol. Pas un manque à combler — un excès à laisser décliner par lessivage.'
       : (element === 'Mg'
         ? 'Mg % NON déclaré sur l\'étiquette Savaria (assomption conservatrice ~0,3 %). Cert 1-2 — vérifier auprès du fournisseur si le poste devient critique.'
         : (element === 'P'
-          ? 'P verrouillé à pH ≥ 7 : Ca²⁺ précipite le phosphate fraîchement minéralisé en Ca-P avant absorption. Apport effectif très faible tant que le pH reste haut.'
+          ? 'P du compost : libération organique lente (minéralisation année 1). Banque Mehlich déjà saturée ; disponibilité racinaire normale au pH actuel.'
           : 'Minéralisation année 1 × facteur saisonnier (Q10 ≈ 2 sur l\'activité microbienne).'));
     registerPourquoi(`lettuce-compost.${element}`, {
       title: `${element} — compost résiduel (Savaria ORGANIMIX)`,
@@ -178,7 +177,7 @@ function buildNutrimentLettuce() {
       plugged: `Apport front-load = 0 mg/m²/sem`,
       // stable — feather meal is N-only; P/Ca already saturated, others not delivered
       interpretation: element === 'P' || element === 'Ca'
-        ? `Pas de ${element} dans le front-load — ${element === 'P' ? 'banque Mehlich saturée + lockout pH' : 'sol Ca-saturé, ajout anti-utile'}. Farine de plumes = 13-0-0 (N seul).`
+        ? `Pas de ${element} dans le front-load — ${element === 'P' ? 'banque Mehlich saturée' : 'sol Ca-saturé, ajout anti-utile'}. Farine de plumes = 13-0-0 (N seul).`
         : `Farine de plumes = 13-0-0 (N seul). ${element} doit venir d'un autre canal.`
     });
   });
@@ -188,13 +187,12 @@ function buildNutrimentLettuce() {
   document.getElementById('nutr-l-frontload-block').innerHTML = flHtml;
 
   // ─── Block 4: Fertigation actuelle (LETTUCE constant) ───
-  // K₂SO₄ + MgSO₄·7H₂O + FeSO₄·7H₂O per 100 m²/wk. Fe × 0.15 if pH ≥ 7
-  // (root reductase suppressed in calcareous soils).
+  // K₂SO₄ + MgSO₄·7H₂O + FeSO₄·7H₂O per 100 m²/wk.
   let fertHtml = `<div style="font-size:12px; color:var(--text-muted); line-height:1.6; padding:10px 12px; background:var(--input-bg); border-radius:var(--radius-sm); margin-bottom:10px;">`;
   fertHtml += `<div>K₂SO₄ ${LETTUCE.kSulfate} g → <strong style="color:var(--text);">${fmt(supply.fert.K)} mg K/m²/sem</strong></div>`;
   fertHtml += `<div>MgSO₄·7H₂O ${LETTUCE.mgSulfate} g → <strong style="color:var(--text);">${fmt(supply.fert.Mg)} mg Mg/m²/sem</strong></div>`;
-  fertHtml += `<div>FeSO₄·7H₂O ${LETTUCE.feSulfate} g → <strong style="color:var(--text);">${fmt(supply.fert.Fe)} mg Fe/m²/sem</strong>${phLocked ? ' (× 0,15 à pH ≥ 7)' : ''}</div>`;
-  fertHtml += `<div style="margin-top:6px; padding-top:6px; border-top:1px dashed var(--border); font-size:11px;">Recette LETTUCE par 100 m²/sem (constante app). Pas de N (biofilm baril) · pas d'oligos (verrouillage racinaire à pH actuel).</div>`;
+  fertHtml += `<div>FeSO₄·7H₂O ${LETTUCE.feSulfate} g → <strong style="color:var(--text);">${fmt(supply.fert.Fe)} mg Fe/m²/sem</strong></div>`;
+  fertHtml += `<div style="margin-top:6px; padding-top:6px; border-top:1px dashed var(--border); font-size:11px;">Recette LETTUCE par 100 m²/sem (constante app). Pas de N (biofilm baril) · oligos cationiques livrés en foliaire (apport sol micro faible).</div>`;
   fertHtml += `</div>`;
   // Per-element fertigation pourquoi entries.
   registerPourquoi(`lettuce-fert.K`, {
@@ -216,10 +214,10 @@ function buildNutrimentLettuce() {
   registerPourquoi(`lettuce-fert.Fe`, {
     title: 'Fe — fertigation (FeSO₄·7H₂O)',
     cert: 3,
-    equation: `fert[Fe] = LETTUCE.feSulfate × FeSO4_Fe_analysis × 1 000 / 100 ${phLocked ? '× 0,15 (pH ≥ 7)' : ''}`,
-    plugged: `${LETTUCE.feSulfate} g × ${PRODUCT_PCT.FeSO4_Fe} × 1 000 / 100 m² ${phLocked ? '× 0,15' : ''} = <strong>${fmt(supply.fert.Fe)} mg Fe/m²/sem</strong>`,
-    // stable — Fe oxidation chemistry at high pH is invariant
-    interpretation: 'À pH ≥ 7, Fe²⁺ → Fe³⁺ rapide (oxydation) ; réductase racinaire supprimée en sol calcaire. Apport effectif ~15 % de la dose. Foliaire Fe-EDDHA = bypass durable si la carence persiste.'
+    equation: `fert[Fe] = LETTUCE.feSulfate × FeSO4_Fe_analysis × 1 000 / 100`,
+    plugged: `${LETTUCE.feSulfate} g × ${PRODUCT_PCT.FeSO4_Fe} × 1 000 / 100 m² = <strong>${fmt(supply.fert.Fe)} mg Fe/m²/sem</strong>`,
+    // stable — FeSO₄ root availability at the current root-zone pH
+    interpretation: 'FeSO₄ racinaire à disponibilité normale au pH actuel. Si une carence Fe visible persiste, valider par test foliaire avant d\'ajuster la dose.'
   });
   ['N','P','Ca','Mn','Zn','B','Cu','Mo'].forEach(element => {
     registerPourquoi(`lettuce-fert.${element}`, {
@@ -227,14 +225,14 @@ function buildNutrimentLettuce() {
       cert: 3,
       equation: `fert[${element}] = 0 (élément absent de LETTUCE)`,
       plugged: `Apport fertigation = 0 mg/m²/sem`,
-      // stable — N biofilm risk; Ca-saturated soil; sulfate-oligo high-pH precipitation
+      // stable — N biofilm risk; Ca-saturated soil; Mehlich P bank; foliar micro channel
       interpretation: element === 'N'
         ? 'N retiré de la fertigation laitue : risque de biofilm dans le baril (matière organique). Le compost résiduel + le front-load couvrent.'
         : element === 'Ca'
           ? 'Sol Ca-saturé — apport supplémentaire anti-utile.'
           : element === 'P'
-            ? 'P précipite avec Ca²⁺ à pH ≥ 7 avant d\'atteindre les racines. Banque Mehlich saturée (678 kg/ha).'
-            : `${element} retiré de la fertigation à pH ≥ 7 (sulfates d'oligos précipitent en hydroxydes/phosphates de Ca avant absorption). Foliaire bypasse cette chimie. Réintroduire si pH < 6,5.`
+            ? 'Banque Mehlich saturée (678 kg/ha) — P porté par le sol + compost, pas la fertigation.'
+            : `${element} livré en foliaire plutôt qu'en fertigation : l'apport du sol est faible, la foliaire cible directement la demande micro.`
     });
   });
   fertHtml += `<div style="font-size:11.5px; color:var(--text-muted); margin-bottom:4px;">Manque entrant (après front-load) → manque restant après fertigation :</div>`;
@@ -260,7 +258,7 @@ function buildNutrimentLettuce() {
       <div style="font-weight:700; color:var(--text-muted); font-size:10px; text-transform:uppercase; letter-spacing:1px;">Levier</div>`;
     gaps.forEach(g => {
       const pct = (g.gap / g.demand) * 100;
-      const lever = lettuceLeverFor(g.element, phLocked);
+      const lever = lettuceLeverFor(g.element);
       const pctColor = pct >= 80 ? '#8a3e1e' : pct >= 50 ? '#a86a1e' : 'var(--text)';
       missHtml += `
         <div style="font-weight:600;">${g.element}</div>
@@ -345,15 +343,11 @@ function renderProposedRecipeLettuce({ demand, supply, frontloadMg, gapAfterFron
   const fePctL = demand.Fe > 0 ? Math.round((supply.fert.Fe / demand.Fe) * 100) : 0;
   h += row('K₂SO₄ (0-0-50)',         `${LETTUCE.kSulfate} g`,  `Couvre ~${kPctL} % du besoin K (${fmt(supply.fert.K)} / ${fmt(demand.K)} mg/m²/sem). Banque K SME laitue 54 ppm (en spec) — surveiller, dose ajustable.`, false);
   h += row('MgSO₄·7H₂O',              `${LETTUCE.mgSulfate} g`, `Couvre ~${mgPctL} % du besoin Mg (${fmt(supply.fert.Mg)} / ${fmt(demand.Mg)}). Antagonisme K:Mg à valider au tissue test si symptômes.`, false);
-  h += row('FeSO₄·7H₂O',              `${LETTUCE.feSulfate} g`, `Couvre ~${fePctL} % du besoin Fe à pH ≥ 7 (× 0,15 d'efficacité). Foliaire Fe-EDDHA = bypass durable si carence visible.`, false);
-
-  // Soufre élémentaire — monthly
-  h += channelHeader('Soufre élémentaire', 'Par planche · mensuel');
-  h += row('Salanova', '0,76 kg/mois', 'Standardisation 2,5 kg/100 m²/mois (planche 30,4 m² × 4,5 = 136,8 m²). Programme à long terme pour faire descendre le pH sous 7 — seul levier durable pour débloquer P/Mn/Zn/Fe au niveau racinaire.', false);
+  h += row('FeSO₄·7H₂O',              `${LETTUCE.feSulfate} g`, `Couvre ~${fePctL} % du besoin Fe (${fmt(supply.fert.Fe)} / ${fmt(demand.Fe)} mg/m²/sem). Disponibilité racinaire normale au pH actuel.`, false);
 
   // Foliar (no current program)
   h += channelHeader('Foliaire', 'Programme retiré 2026-04');
-  h += '<div style="font-size:11.5px; color:var(--text-muted); padding:6px 0;">Pas de spray foliaire actif sur Salanova (cycle court 14 j, fenêtre d\'application limitée). Mn / Zn / B sans canal de livraison à pH 7,4. À revisiter quand pH baisse sous 6,5 ; en attendant, la foliaire Solubore + ZnSO₄/MnSO₄ peut être réintroduite événementiellement si symptômes visibles.</div>';
+  h += '<div style="font-size:11.5px; color:var(--text-muted); padding:6px 0;">Pas de spray foliaire actif sur Salanova (cycle court 14 j, fenêtre d\'application limitée). L\'apport sol en Mn / Zn / B est faible ; la foliaire Solubore + ZnSO₄/MnSO₄ peut être réintroduite événementiellement si symptômes visibles.</div>';
 
   // Conditions for becoming official
   h += channelHeader('Conditions pour devenir officielle', '');
@@ -367,15 +361,13 @@ function renderProposedRecipeLettuce({ demand, supply, frontloadMg, gapAfterFron
 }
 
 // Lever advice per element for the Salanova subpage. Auto-derived from
-// element identity + pH state. Kept short so the Block 5 grid stays readable.
-function lettuceLeverFor(element, phLocked) {
+// element identity. Kept short so the Block 5 grid stays readable.
+function lettuceLeverFor(element) {
   if (element === 'N') {
     return 'Augmenter le front-load (farine de plumes) OU ajouter du poisson hydrolysé Acadie 2-4-0.5 à la fertigation (1-2 mL/L stock). Bypass quasi immédiat (1-3 jours) vs farine (1-2 sem). <strong>N est le plus gros gap structurel</strong> tant que la fertigation reste sans N.';
   }
   if (element === 'P') {
-    return phLocked
-      ? 'Lockout pH — soufre élémentaire à la planche (programme en cours). Pas d\'apport supplémentaire de P (banque Mehlich 678 kg/ha déjà saturée).'
-      : 'Le bank Mehlich devrait suivre une fois le pH baissé. Pas d\'apport supplémentaire.';
+    return 'Banque Mehlich 678 kg/ha saturée — pas d\'apport supplémentaire de P.';
   }
   if (element === 'Ca') {
     return 'Sol Ca-saturé — pas d\'apport. Si la cinétique de translocation devient limitante (tip-burn), gérer par climat (VPD, ventilation) plutôt que par apport.';
@@ -384,13 +376,13 @@ function lettuceLeverFor(element, phLocked) {
     return 'Déjà luxe via fertigation actuelle ; ne pas augmenter.';
   }
   if (element === 'Fe') {
-    return 'Programme actuel : nursery loading + FeSO₄ 7,5 g/100m²/sem (efficacité ~15% à pH 7,4). Foliaire Fe-EDDHA pourrait combler à court terme ; soufre + chute pH = solution durable.';
+    return 'Programme actuel : nursery loading + FeSO₄ 7,5 g/100m²/sem, à disponibilité racinaire normale au pH actuel. Si carence Fe visible, valider par test foliaire.';
   }
   if (element === 'Mn' || element === 'Zn') {
-    return `<strong>Aucun canal de livraison</strong> à pH 7,4 (lockout sol + foliaire laitue retiré). Réintroduire foliaire ${element}SO₄ pour les laitues tant que pH ≥ 6,5. À revisiter quand le soufre baisse le pH.`;
+    return `Apport sol faible et pas de spray foliaire actif sur Salanova (cycle court). Réintroduire foliaire ${element}SO₄ événementiellement si symptômes visibles.`;
   }
   if (element === 'B') {
-    return 'Bore Mehlich vide (<0,1 ppm) — amendement bore prévu sur la page Sol (déclenché à pH < 7). En attendant : foliaire Solubore avec spray laitue.';
+    return 'Bore Mehlich vide (<0,1 ppm) — amendement bore prévu sur la page Sol. En attendant : foliaire Solubore avec spray laitue.';
   }
   if (element === 'Cu' || element === 'Mo') {
     return 'Demande absolue petite ; banque sol comble probablement. Surveiller au tissue test.';

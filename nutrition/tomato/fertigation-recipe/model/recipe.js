@@ -82,7 +82,25 @@ function computeStageRecipe(stage) {
   // ── Mo (sodium molybdate) — flat 0.5 g/wk across stages, replenishment-cascade-earliest-first Mo carve-out ──
   const naMolybdate = 0.5;
 
-  return { mgSulfate, kSulfate, solubore, naMolybdate };
+  // ── Cation micros Mn / Zn (rendus au fertigation 2026-07-11) ──
+  // Soil pH recovered to 6.5 → sulfate-metal lockout lifted (channel efficiency
+  // 0.10 → 0.75). Delivered to FULL plant demand: no soil-bank credit applied
+  // (decision Guillaume 2026-07-11 — feed demand, let the next SME re-source).
+  // Unlike K/Mg, the micro dose divides by the channel efficiency because the
+  // sulfate-metal loss at pH 6.5 (25 %) is material, not noise. Bed→plant
+  // uptake factor = 1.0 (PH_UPTAKE_FACTOR, cert 1 placeholder).
+  // Fe is NOT fertigated: soil-covered at 6.5 + FeSO₄ oxidizes in the 5-day
+  // drip tank (channel-role Fe = passive). Granular FeSO₄ sidedress = fallback.
+  const microDose = function(element, productPct) {
+    const demand_mg = (TOMATO_FRUIT_EXPORT[element].g * 1000 * y) + (biomass[element] || 0);
+    const demand_to_bed = demand_mg / (uptake[element] || 1);
+    const channelEfficiency = FERTIGATION_EFFICIENCY_AT_CURRENT_SOIL[element] || 1;
+    return Math.round((demand_to_bed / 1000 / productPct / channelEfficiency) * totalArea);
+  };
+  const mnSulfate = microDose('Mn', PRODUCT_PCT.MnSO4_Mn);
+  const znSulfate = microDose('Zn', PRODUCT_PCT.ZnSO4_Zn);
+
+  return { mgSulfate, kSulfate, solubore, naMolybdate, mnSulfate, znSulfate };
 }
 
 // computeFertigationSupply(stage, opts, recipe) — per-element delivered
@@ -103,12 +121,16 @@ function computeFertigationSupply(stage, opts, recipe) {
     canonical = {
       kSulfate_g:    stored.kSulfate    || 0,
       mgSulfate_g:   stored.mgSulfate   || 0,
+      mnSulfate_g:   stored.mnSulfate   || 0,
+      znSulfate_g:   stored.znSulfate   || 0,
       solubore_g:    0,
       naMolybdate_g: stored.naMolybdate || 0,
     };
   }
   const kSulfate_g    = Number(canonical.kSulfate_g)    || 0;
   const mgSulfate_g   = Number(canonical.mgSulfate_g)   || 0;
+  const mnSulfate_g   = Number(canonical.mnSulfate_g)   || 0;
+  const znSulfate_g   = Number(canonical.znSulfate_g)   || 0;
   const solubore_g    = Number(canonical.solubore_g)    || 0;
   const naMolybdate_g = Number(canonical.naMolybdate_g) || 0;
   const deliver = function(grams, pct) {
@@ -122,8 +144,8 @@ function computeFertigationSupply(stage, opts, recipe) {
     Ca: 0,
     Mg: deliver(mgSulfate_g,   PRODUCT_PCT.MgSO4_Mg),
     Fe: 0,
-    Mn: 0,
-    Zn: 0,
+    Mn: deliver(mnSulfate_g,   PRODUCT_PCT.MnSO4_Mn),
+    Zn: deliver(znSulfate_g,   PRODUCT_PCT.ZnSO4_Zn),
     Cu: 0,
     B:  deliver(solubore_g,    PRODUCT_PCT.Solubore_B),
     Mo: deliver(naMolybdate_g, PRODUCT_PCT.NaMoO4_Mo),

@@ -29,17 +29,21 @@
 // à laver). pH cuve cible 4,5-5,5, CE 4-6 mS/cm. Ecocert (fermentation).
 // Yucca surfactant not on order — A coverage operates at 30 %, B at 15 %.
 //
+// 2026-07-11 : DEUX SPRAYS RETIRÉS (A oligos + B Ca) — /retire-recipe, snapshot
+// complet dans RECIPE_HISTORY. pH planches redescendu à 6,5 (EC 1:1, 9 juillet
+// 2026) : le verrouillage racinaire pH 7,4 est levé, Fe/Mn/Zn rendus au canal
+// fertigation (STORED_RECIPE.tomato.fertigation, demande pleine à eff. 0,75).
+// Spray B (CaCl₂) abandonné sans remplacement : Ca sol en surplus, le Ca
+// fertigation est sans effet (Ca xylème-mobile, transpiration-limité) ; rôle
+// défense botrytis/chancre (pontage Ca-pectate) cessé — surveiller BER + chancre.
+// Plus de spray foliaire hebdomadaire. Objet vide (aucun spray) mais conservé
+// pour l'identifiant grep + restauration éventuelle event-driven (BER/chancre
+// persistant → réintroduire spray B CaCl₂ ; pH remonte > 7 → réintroduire A).
+//
 // EDITS REQUIRE /retire-recipe SKILL FIRST. Path `STORED_RECIPE.tomato.foliaire`
 // preserved verbatim; the skill greps for this identifier.
 window.STORED_RECIPE.tomato.foliaire = {
   masterVol: 15, backpacks: 1, area: '383 m²',
-  A: [
-    { name: 'MnSO₄ (31.5% Mn)', master: '18 g', note: 'réduit 22→18 g 2026-06-03 — ~60% demande, cap toxicité sans yucca' },
-    { name: 'ZnSO₄ (35.5% Zn)', master: '22 g' },
-    { name: 'FeSO₄·7H₂O (20% Fe)', master: '90 g', note: 'augmenté 80→90 g 2026-06-03 — ~95% demande (cuticule contourne lockout sol)' },
-    { name: 'Acide citrique', master: '65 g', note: 'ajouté 2026-06-20 — chélation 1:1 du fer (0,32 mol) contre les taches noires d\'oxyde ferrique sur fruit ; pH cuve cible 4,5-5,5, CE 4-6 mS/cm ; Ecocert (fermentation, CAN/CGSB-32.311)' },
-  ],
-  B: [
-    { name: 'CaCl₂·2H₂O', master: '100 g', note: 'Ecocert vérifié ; 2×/semaine ; sans surfactant — coverage cuticulaire ~0.15 ; bypass Ca racinaire pour défense botrytis' },
-  ],
+  A: [],
+  B: [],
 };

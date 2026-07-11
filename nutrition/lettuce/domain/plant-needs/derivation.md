@@ -36,6 +36,9 @@ accumulation; no flowering / fruit-set discontinuity to bracket the
 curve at. Stage-driven modelling considered then dropped — see
 `learnings.md`.
 
+Crop-removal-per-kg-fresh restatement of this formula →
+`crop-removal.md`.
+
 ---
 
 ## Formula — supply
@@ -59,27 +62,11 @@ floor mid-bed at Décembre's 43 plants/m² density, so 1.0 is unreachable).
 The 0.2 floor matches a stunted-but-alive transpiration minimum — root
 pressure + osmotic flow keep the soil-mass-flow channel from going dry.
 
-`phLocked` gates:
-- P / Mn / Zn → `min(mass_flow, 100 mg/m²/wk)` (nutrition — passive-supply-lockout-gate inherited cap;
-  cert 3). Mechanism: at pH ≥ 7 in Ca-saturated soil, P precipitates as
-  Ca-phosphate (variscite / hydroxyapatite) before reaching the root
-  surface; Mn²⁺ oxidises to insoluble Mn³⁺/Mn⁴⁺ oxides; Zn²⁺ adsorbs
-  to CEC and precipitates as Zn-hydroxide. The 100 mg/m²/wk absolute
-  ceiling is a safety upper-bound against SME spikes after lockout
-  breaks (e.g. a recoated bed reading anomalously high P before the
-  next reading triages the cause). With the 2026-04-10 SME state
-  (lettuce-bed P 0.8 ppm, Mn/Zn < DL per P-04), mass-flow currently
-  reads ≈ 2 mg/m²/wk for P and 0 for Mn/Zn, so the cap is non-binding
-  in today's data. It becomes load-bearing only when soil pH drops and
-  Mn/Zn lift back above detection.
-- Fe → × 0.15 (cert 3). Mechanism: Fe³⁺ to Fe²⁺ reduction by root
-  ferric-chelate reductase (FRO2 family) is competitively inhibited by
-  bicarbonate buffering in calcareous soil at pH 7.2-7.4. The 0.15
-  midpoint matches the 10-20 % residual-uptake range documented in the
-  Décembre Cadre page; aligned to the tomato `soilWeeklyAvailable`
-  branch (`nutrition/soil-contribution/integrator.js`) which uses the
-  same 0.15 factor with the same mechanism. Refines on tissue Fe after
-  pH drops < 6.5.
+Soil mass-flow is `SME ppm × weeklyMassFlowL × canopyFactor` at full
+root-zone availability — no pH-lockout discount. With the 2026-04-10 SME
+state (lettuce-bed P 0.8 ppm, Mn/Zn < DL per P-04), soil supply reads
+≈ 2 mg/m²/wk for P and 0 for Mn/Zn — genuine soil scarcity, carried by
+the fert + foliar channels, not a pH gate.
 
 ---
 
@@ -215,6 +202,7 @@ modal built by the integrator.
 | `nutrition/lettuce/domain/plant-needs/model.js`        | `window.PlantNeedsLettuce` namespace wrapper                                          |
 | `nutrition/lettuce/domain/plant-needs/spec.md`         | Spec                                                                                  |
 | `nutrition/lettuce/domain/plant-needs/derivation.md`   | This file                                                                             |
+| `nutrition/lettuce/domain/plant-needs/crop-removal.md` | Crop removal per kg fresh (steady-state replenishment table)                          |
 | `nutrition/lettuce/domain/plant-needs/learnings.md`    | Rejected alternatives, deferred refinements                                           |
 
 Build order in `app/index.html`: `data.js` → `calc.js` → `model.js`.

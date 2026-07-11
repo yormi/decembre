@@ -2,8 +2,8 @@
 
 Hold root-zone salinity under the sulphur guardrail without pausing the sulphur
 program. The salt is saline (Ca-sulfate + nitrate), not sodic → it leaches with
-clean water. Basis: `../domain/learnings/field-sme-salinity-climbed-2026-06.md`.
-EC method: `soil-ph-ec-test.md`.
+clean water. Basis: `../lettuce/domain/learnings/field-sme-salinity-climbed-2026-06.md`.
+EC method: `measure-bed-ec-DRAFT.md`; band: `../lettuce/domain/domain.md` § Bed salinity.
 
 **Question it closes:** is the root zone back under ECe 1.3 before the next
 sulphur pass / transplant?
@@ -22,7 +22,7 @@ Scale: salanova bed, 30″ × 100 ft = 23.2 m² top.
 
 ## Steps
 
-1. Read 1:1 slurry EC + pH first (`soil-ph-ec-test.md`) → log bed, date.
+1. Read 1:1 slurry EC + pH first (`measure-bed-ec-DRAFT.md`) → log bed, date.
 
 2. Apply clean water only, no feed → until ~half of it drains past the root
    zone (leaching fraction ~0.5).

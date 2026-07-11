@@ -36,7 +36,7 @@ const G = fixture.globals;
 
 const STAGES = ['T1', 'T2', 'T3', 'T4', 'T5'];
 const MASS_BALANCE_ELEMENTS = ['N', 'P', 'K', 'Mg'];
-const SOIL_PH_NOW = 7.4;
+const SOIL_PH_NOW = 6.5;  // bed EC 1:1, 9 July 2026, 7-bed avg (was 7.4, April Berger root-zone)
 
 // ─── channel-role-coverage — CHANNEL_ROLE covers every demand element ──
 //

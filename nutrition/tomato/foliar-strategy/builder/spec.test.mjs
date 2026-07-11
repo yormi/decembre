@@ -184,12 +184,12 @@ describe('efficacite-reactive-to-surfactant — Efficacité column updates on su
 
     surf.checked = false;
     surf.dispatchEvent(new window.Event('change', { bubbles: true }));
-    const supplyOff = window.calculateNutritionSupply('T5', true, 1.0, 1.5, 'stored');
+    const supplyOff = window.calculateNutritionSupply('T5', 1.0, 1.5, 'stored');
     const efficiencyOff = (supplyOff && supplyOff.foliar && supplyOff.foliar.efficiency) || {};
 
     surf.checked = true;
     surf.dispatchEvent(new window.Event('change', { bubbles: true }));
-    const supplyOn = window.calculateNutritionSupply('T5', true, 1.0, 1.5, 'stored');
+    const supplyOn = window.calculateNutritionSupply('T5', 1.0, 1.5, 'stored');
     const efficiencyOn = (supplyOn && supplyOn.foliar && supplyOn.foliar.efficiency) || {};
 
     // Restore.

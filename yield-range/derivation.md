@@ -38,9 +38,13 @@ Constants (all from the validated seedling sandbox; `domain.md`):
 - `LEAF_AREA_EXTINCTION_K = 0.7` — canopy light-extinction coefficient
   (Beer–Lambert), cert 2 lettuce literature.
 - `SPECIFIC_LEAF_AREA` — **derived, not free**: `GROWTH_RGR /
-  (RADIATION_USE_EFFICIENCY·DLI_TARGET·LEAF_AREA_EXTINCTION_K)` ≈ 0.015 m²/g
-  dry. Chosen so the small-LAI limit equals exactly `GROWTH_RGR·W`. Refinement
-  trigger: first leaf-area / SLA measurement → free `SLA` and refit `k`.
+  (RADIATION_USE_EFFICIENCY·NURSERY_DLI_CEILING_BY_WEEK[1]·LEAF_AREA_EXTINCTION_K)`
+  ≈ 0.019 m²/g dry. Chosen so the small-LAI limit equals exactly `GROWTH_RGR·W`
+  **at the day-10 anchor's stage** (week 2), whose usable DLI is the week-2
+  ceiling (14), not the full `DLI_TARGET` the cotyledon-week plug cannot use.
+  Derived at 14 rather than 17, SLA rises 0.015→0.019 so the day-10 rate stays
+  `GROWTH_RGR`; the stressed 5 g @ d25 anchor is preserved (reproduces 4.9 g).
+  Refinement trigger: first leaf-area / SLA measurement → free `SLA` and refit `k`.
 - `RADIATION_USE_EFFICIENCY = 1.1 g dry/mol` PAR — clean-root, well-watered
   lettuce RUE, cert 2 literature. Used clean; the nursery under drought+heat
   uses `NURSERY_STRESS_RUE` instead.
@@ -65,7 +69,8 @@ Constants (all from the validated seedling sandbox; `domain.md`):
     single plug 0.07 in the field would cut field sales ~40 % in the uncapped
     short routine.
 - `DLI_TARGET = 17 mol/m²/j` — the nursery-space DLI (Guillaume: the propagation
-  space delivers ~17) and the field photosynthetic optimum (see f_light fold).
+  space delivers ~17) and the field photosynthetic optimum. The growth term
+  caps it at the age ceiling (see Light fold below).
 
 **Validation.** The anchored params reproduce the one real Décembre weight —
 **5 g biggest @ d25**, 50-cell, drought+heat, DLI 17 — in both `calc.js`
@@ -75,15 +80,27 @@ d35" anchors are retired (salt-stalled / unsourced;
 `learnings/5g-day25-drought-heat-primary-anchor.md`). The clean-condition ε
 (1.1) is unanchored — no well-watered 50-cell weighed yet.
 
-**f_light fold.** The retired logistic engine multiplied growth by a
-piecewise `f_light(DLI)` (0 below 4, plateau 12–17, saturating to 0.7 above
-22). The carbon-balance gain is linear in DLI with no saturation, so we clamp
-the engine's effective DLI to the optimum by driving it at `DLI_TARGET = 17` —
-the plateau value. This preserves the anchor fit (the sandbox held 17) and
-folds the light response into `ε·DLI` without a separate multiplier. Below-4
-stall never triggers at Décembre's lighting; above-17 saturation is handled by
-not exceeding the target in the growth term. Whether sun + LED actually reaches
-17 is the lighting-feasibility concern (`light/`), decoupled from growth.
+**Light fold — age-stepped ceiling (`NURSERY_DLI_CEILING_BY_WEEK`).** The
+carbon-balance gain is linear in DLI with no saturation, so the growth term
+drives on `min(DLI_TARGET, nurseryLightCeiling(day))`, not a flat 17. The
+ceiling is the DLI the tissue can *use* at its age — young tissue saturates
+low and tipburns above it, so light past the ceiling buys no growth:
+
+- wk1 cotyledon **10**, wk2 true-leaf **14**, wk3+ plug/field **17** — top of
+  the `light/domain.md` bands (8–10 / 12–14 / ~17). Field ages sit at 17, so
+  the ceiling only bites in the early nursery.
+- This replaces the earlier flat-17 fold, which over-lit the cotyledon and
+  true-leaf weeks — growth the fragile plug cannot realize (the `#3` fix). It
+  makes the early curve slower and physiologically honest; the stressed 5 g @
+  d25 anchor still lands (4.9 g) because `SPECIFIC_LEAF_AREA` is anchored at
+  the week-2 ceiling.
+- Below-4 stall never triggers at Décembre's lighting. Whether sun + LED
+  actually *delivers* the ceiling is the lighting-feasibility concern
+  (`light/`), decoupled from what the plant can use.
+- **Directional only** — the 10/14/17 steps are band-tops, cert 2 from the
+  light domain, not a Décembre light-response measurement. Refinement trigger:
+  a staged-DLI nursery cohort weighed weekly.
+- See `learnings/nursery-dli-ceiling-by-stage.md`.
 
 ---
 

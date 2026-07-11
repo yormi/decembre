@@ -107,10 +107,24 @@ const SKY_CONDITION_FACTORS = [
 // separate saturation multiplier (derivation.md carbon-balance-growth).
 const DLI_TARGET = 17;
 
+// Usable DLI ceiling by plug age (mol/m²/j). Young tissue saturates low:
+// cotyledons tipburn above ~10-12, the ceiling climbs as leaves harden. The
+// growth term drives on min(DLI_TARGET, ceiling) — light past the stage
+// ceiling buys no growth, it only stresses tender tissue. From light/domain.md
+// setpoints (wk1 8-10 · wk2 12-14 · plug ~17). Field plants (age ≥ wk3) sit at
+// the full target, so this only bites in the early nursery.
+const NURSERY_DLI_CEILING_BY_WEEK = [10, 14, 17]; // wk1 cotyledon · wk2 true-leaf · wk3+ plug
+function nurseryLightCeiling(dayFromGermination) {
+  const week = Math.floor(dayFromGermination / 7);
+  return NURSERY_DLI_CEILING_BY_WEEK[Math.min(week, NURSERY_DLI_CEILING_BY_WEEK.length - 1)];
+}
+
 // Specific leaf area (m²/g dry) — DERIVED, not free: back-solved so the
-// small-LAI limit of the interception curve equals exactly GROWTH_RGR·W,
-// keeping the day-10 open-canopy anchor load-bearing. ≈ 0.015 m²/g.
-const SPECIFIC_LEAF_AREA = GROWTH_RGR / (RADIATION_USE_EFFICIENCY * DLI_TARGET * LEAF_AREA_EXTINCTION_K);
+// small-LAI limit of the interception curve equals exactly GROWTH_RGR·W at the
+// day-10 anchor's stage (week 2), whose usable DLI is the week-2 ceiling — not
+// the full target the cotyledon-week plug cannot use. Keeps the open-canopy
+// anchor load-bearing under the age-stepped ceiling. ≈ 0.019 m²/g.
+const SPECIFIC_LEAF_AREA = GROWTH_RGR / (RADIATION_USE_EFFICIENCY * NURSERY_DLI_CEILING_BY_WEEK[1] * LEAF_AREA_EXTINCTION_K);
 
 // Maximum healthy lamp photoperiod (h). Past this, lettuce risks chlorosis
 // and the bolting clock runs; a day needing more lamp than this to reach
