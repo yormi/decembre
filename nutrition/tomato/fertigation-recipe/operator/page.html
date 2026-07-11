@@ -109,6 +109,34 @@
 
     <!-- Semis laitue (nursery) content, shown when crop=nursery -->
     <div id="fert-nursery-content" style="display:none;">
+      <!-- ADMIN-ONLY block — hidden for non-admin via applyAdminMode
+           (#nursery-admin-block). Visually distinct from operator cards.
+           Inputs not wired to the model yet (rendement + type de plateau). -->
+      <div class="card" id="nursery-admin-block" style="border:2px dashed #7c4dff; background:rgba(124,77,255,0.05);">
+        <div style="display:flex; align-items:center; gap:8px; margin-bottom:12px;">
+          <span style="font-size:10px; font-weight:700; letter-spacing:1.5px; text-transform:uppercase; color:#fff; background:#7c4dff; padding:3px 8px; border-radius:4px;">⚙ Admin uniquement</span>
+          <span style="font-size:11px; color:var(--text-muted);">hors vue opérateur</span>
+        </div>
+        <div class="input-row">
+          <div class="input-group">
+            <label>Rendement attendu / transplant</label>
+            <input type="number" id="nutr-n-admin-yield" value="20" min="1" max="500" step="1" inputmode="decimal">
+            <div class="input-unit">g / plant</div>
+          </div>
+        </div>
+        <div class="input-group" style="margin-top:12px;">
+          <label>Type de plateau</label>
+          <div style="display:flex; flex-wrap:wrap; gap:8px; margin-top:6px;">
+            <button type="button" id="nutr-n-admin-tray-50" data-tray="50-cell" onclick="setNurseryAdminTray('50-cell')"
+              style="cursor:pointer; padding:8px 14px; font-size:12px; font-weight:600; border-radius:var(--radius-sm); border:1.5px solid #7c4dff; background:#7c4dff; color:#fff;">50 cellules</button>
+            <button type="button" id="nutr-n-admin-tray-18" data-tray="18-pot-3in" onclick="setNurseryAdminTray('18-pot-3in')"
+              style="cursor:pointer; padding:8px 14px; font-size:12px; font-weight:600; border-radius:var(--radius-sm); border:1.5px solid #7c4dff; background:transparent; color:var(--text);">18 × pot 3 po</button>
+            <button type="button" id="nutr-n-admin-tray-32" data-tray="32-pot-2.5in" onclick="setNurseryAdminTray('32-pot-2.5in')"
+              style="cursor:pointer; padding:8px 14px; font-size:12px; font-weight:600; border-radius:var(--radius-sm); border:1.5px solid #7c4dff; background:transparent; color:var(--text);">32 × pot 2,5 po</button>
+          </div>
+        </div>
+      </div>
+
       <div class="card">
         <div class="card-title">Nombre de plateaux</div>
         <div style="display:flex; justify-content:center;">
@@ -155,39 +183,5 @@
         </div>
       </div>
 
-      <div class="card" id="nursery-signs-card">
-        <div class="card-title">✓ Bien réglé quand</div>
-
-        <div style="font-size:11px; text-transform:uppercase; letter-spacing:1.5px; color:var(--text-muted); font-weight:600; margin-bottom:8px;">Semaine 1-2 — germination</div>
-        <div style="font-size:12px; color:var(--text-muted); line-height:1.7; margin-bottom:14px;">
-          <div style="padding:4px 0;">🌱 <strong style="color:var(--text);">Cotylédons vert vif et fermes :</strong> azote suffisant. Si jaunissement → la fertigation hebdo a été oubliée ou les racines sont saturées.</div>
-          <div style="padding:4px 0;">📏 <strong style="color:var(--text);">Plants uniformes dans le plateau :</strong> arrosage régulier. Si grande variabilité de taille → arrosage inégal ou problème de germination.</div>
-          <div style="padding:4px 0;">🤍 <strong style="color:var(--text);">Racines blanches visibles au fond (~10 j) :</strong> aux trous de drainage. Si brunes ou molles → trop d'eau, oxygène manquant.</div>
-        </div>
-
-        <div style="font-size:11px; text-transform:uppercase; letter-spacing:1.5px; color:var(--text-muted); font-weight:600; margin-bottom:8px;">Semaine 3-4 — croissance</div>
-        <div style="font-size:12px; color:var(--text-muted); line-height:1.7; margin-bottom:14px;">
-          <div style="padding:4px 0;">🍃 <strong style="color:var(--text);">2-3 vraies feuilles compactes près de la couronne :</strong> bonne lumière + bonne nutrition. Si tiges étirées (étiolement) → manque de lumière ou trop d'eau.</div>
-          <div style="padding:4px 0;">🌿 <strong style="color:var(--text);">Vert franc et uniforme :</strong> couleur soutenue sur l'ensemble du plant. Si pâle ou marbré → fertigation à renforcer.</div>
-          <div style="padding:4px 0;">💪 <strong style="color:var(--text);">Tiges qui tiennent debout sans support :</strong> les plants commencent à se raidir. Si encore mous ou tombants → durcissement insuffisant.</div>
-        </div>
-
-        <div style="font-size:11px; text-transform:uppercase; letter-spacing:1.5px; color:var(--text-muted); font-weight:600; margin-bottom:8px;">Semaine 5 — prêts au repiquage</div>
-        <div style="font-size:12px; color:var(--text-muted); line-height:1.7; margin-bottom:14px;">
-          <div style="padding:4px 0;">📅 <strong style="color:var(--text);">3-4 vraies feuilles bien formées :</strong> rosette définie, pas juste des feuilles isolées. Trop tôt = plant trop petit pour le repiquage.</div>
-          <div style="padding:4px 0;">🪴 <strong style="color:var(--text);">Racines remplissent l'alvéole :</strong> motte qui se tient quand on sort le plant. Si racines tournent en cercle au fond → on a attendu trop longtemps, repiquer maintenant.</div>
-          <div style="padding:4px 0;">🍃 <strong style="color:var(--text);">Feuilles légèrement épaissies :</strong> texture moins tendre qu'en semaine 2. Signe que le plant est durci, prêt à supporter le choc du repiquage.</div>
-        </div>
-
-        <div style="font-size:11px; text-transform:uppercase; letter-spacing:1.5px; color:var(--text-muted); font-weight:600; margin-bottom:8px;">En continu</div>
-        <div style="font-size:12px; color:var(--text-muted); line-height:1.7;">
-          <div style="padding:4px 0;">💧 <strong style="color:var(--text);">Surface du terreau qui sèche entre les arrosages :</strong> on arrose par le dessus, donc le haut du terreau prend l'eau en premier et doit pouvoir respirer entre les sessions. Si toujours humide → réduire le volume ou la fréquence.</div>
-          <div style="padding:4px 0;">🌫️ <strong style="color:var(--text);">Cotylédons et feuilles secs au coucher du soleil :</strong> arroser tôt en journée pour que les feuilles aient le temps de sécher. Feuilles humides la nuit → risque de fonte des semis (Pythium, Rhizoctonia).</div>
-          <div style="padding:4px 0;">🟢 <strong style="color:var(--text);">Pas de mousse verte sur le terreau :</strong> indicateur précoce d'arrosage trop fréquent. Apparaît plus rapidement avec arrosage par le dessus.</div>
-          <div style="padding:4px 0;">⚡ <strong style="color:var(--text);">CE du seau stable d'un cycle à l'autre :</strong> ~1.9-2.6 mS/cm chaque semaine. Si dérive → réévaluer la dose ou vérifier le calibrage du Bluelab.</div>
-          <div style="padding:4px 0;">🌱 <strong style="color:var(--text);">CE du terreau stable ou descendant :</strong> ~1.5-2.5 mS/cm. Si monte cycle après cycle → sels qui s'accumulent (typique avec arrosage par le dessus). Faire un arrosage de rinçage à l'eau pure.</div>
-          <div style="padding:4px 0;">🪣 <strong style="color:var(--text);">Seau vide en fin de session :</strong> la quantité préparée correspond aux besoins. Si restes réguliers → l'écrire sur <strong style="color:var(--text);">#recherche-et-developpement</strong> (Slack).</div>
-        </div>
-      </div>
     </div>
   </div>

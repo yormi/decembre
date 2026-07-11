@@ -1,249 +1,216 @@
 # Yield Range — derivation
 
-Why-this-number trace for the currently live REQs in `spec.md`. Rejected
+Why-this-number trace for the live spec entries in `spec.md`. Rejected
 alternatives and superseded decisions live in `learnings.md`. Empirical
-anchor (live cohort data) lives in
-`yield-range/doc/yield-range-calibration-2026-spring.md`.
+anchor (live cohort data): `doc/yield-range-calibration-2026-spring.md`.
+
+The 2026-07-04 rewrite unified nursery + field on one carbon-balance engine
+with senescence, retiring the logistic `predictNurseryYield` and its
+`best-non-light-conditions` senescence exclusion (Guillaume decision
+2026-07-04; see `learnings/senescence-branch-rejected-for-prediction-model.md`
+for the superseded stance).
 
 ---
 
-## canopy-cap-is-ceiling / nursery-canopy-cap-by-plateau
+## carbon-balance-growth
 
-`yield-range/data.js:CANOPY_CAP_BY_PLATEAU` = `{ 50: 25, 32: 39, 24: 52,
-18: 69 }` (g/plant). Breeder-anchored geometric scaling: each entry is
-`area_per_cell × FOLIAGE_HEIGHT_M × FOLIAGE_DENSITY_KG_PER_M3 × 1000`
-on a 1020 tray (`tray_area = 0.1525 m²`, `28 × 54 cm`), with
-`FOLIAGE_HEIGHT_M = 0.10` and `FOLIAGE_DENSITY_KG_PER_M3 = 82`. The
-50-cell value pins the Salanova breeder anchor (cert 3); 32 / 24 / 18
-follow by holding the canopy mass-loading product `h × ρ ≈ 8.2 kg/m²`
-constant across cell footprints — the conservative-physics baseline
-(any real spacing-dependent canopy expansion adds mass on top, never
-below).
+`dW_dry/dt = ε·DLI·A_ground·(1 − exp(−k·LAI))`, `LAI = W_dry·SLA/A_ground`,
+clamped to the volume cap. One Beer–Lambert interception term, no `min()`:
 
-Per-tray cert: 50-cell breeder-anchored cert 3; 32 / 24 / 18 all
-cert 2 — same single-anchor dependence (only the canopy
-mass-loading product `h × ρ ≈ 8.2 kg/m²` is breeder-grounded; the
-split into individual `h = 0.10 m` and `ρ = 82 kg/m³` is back-derived
-from the 50-cell anchor, not independently measured). Cert 2
-reflects the shared evidence base across the three extrapolated
-rows; bumps to cert 3 when `FOLIAGE_HEIGHT_M` lands on an independent
-anchor (see refinement-trigger table below). The constant-`h × ρ`
-assumption is the floor, but lettuce given more space per plant
-tends to grow taller and denser (plausible upper band at 18-cell:
-`h ≈ 0.13-0.15 m`, `ρ ≈ 90-100 kg/m³`, asymptote 75-95 g vs predicted
-69 g). Refit upward on first 18-cell cohort under best non-light
-conditions; same shape but smaller magnitude expected at 24-cell
-(+5 to +10 %).
+- small LAI (open canopy) → `fi ≈ k·LAI` → gain ≈ `ε·DLI·k·SLA·W` = `Rm·W`,
+  exponential. `A_ground` cancels, so below closure equal-DLI seedlings weigh
+  the same regardless of spacing (domain invariant).
+- large LAI (closed canopy) → `fi → 1` → gain → `ε·DLI·A_ground`, linear.
+  Crowding enters through `A_ground` alone (small cell → low ceiling; field
+  spacing → big head).
+- between them RGR sags smoothly from `Rm` toward 0 as the canopy fills —
+  replacing the former `min(Rm·W, ε·DLI·A)` hard knee, which held `Rm` flat to
+  closure and overstated growth through the LAI 1→3 band
+  (`learnings/expolinear-beer-law.md`).
 
-Why not power-law extrapolation from two anchors? Archived in
-`learnings.md` § "Rejected: two-anchor power-law extrapolation".
-Why not Hochmuth root-volume cap? Archived in `learnings.md` §
-"Hochmuth root-volume cap rejected as the operative ceiling".
+Constants (all from the validated seedling sandbox; `domain.md`):
 
-Refinement trigger: cohort weighing at non-50-cell trays (18-cell
-highest-priority gap). Refit `CANOPY_CAP_BY_PLATEAU` to observed
-asymptote when n ≥ 5 cohorts under best non-light conditions land
-for the relevant tray.
+- `GROWTH_RGR = 0.20 /day` — open-canopy exponential rate, now the small-LAI
+  limit of the interception curve (`ε·DLI·k·SLA`). Anchored by the day-10
+  open-canopy observation refuting the logistic 0.30
+  (`learnings/day10-open-canopy-refutes-rm-030.md`); `SPECIFIC_LEAF_AREA` is
+  back-solved from it so the anchor stays load-bearing.
+- `LEAF_AREA_EXTINCTION_K = 0.7` — canopy light-extinction coefficient
+  (Beer–Lambert), cert 2 lettuce literature.
+- `SPECIFIC_LEAF_AREA` — **derived, not free**: `GROWTH_RGR /
+  (RADIATION_USE_EFFICIENCY·DLI_TARGET·LEAF_AREA_EXTINCTION_K)` ≈ 0.015 m²/g
+  dry. Chosen so the small-LAI limit equals exactly `GROWTH_RGR·W`. Refinement
+  trigger: first leaf-area / SLA measurement → free `SLA` and refit `k`.
+- `RADIATION_USE_EFFICIENCY = 1.1 g dry/mol` PAR — clean-root, well-watered
+  lettuce RUE, cert 2 literature. Used clean; the nursery under drought+heat
+  uses `NURSERY_STRESS_RUE` instead.
+- `NURSERY_STRESS_RUE = 0.85 g dry/mol` — effective ε for the nursery under
+  drought + high heat. **Anchored, not assumed:** back-solved so a 50-cell at
+  DLI 17 with plug DM 0.07 reaches 5 g (biggest) @ d25 — the real Décembre
+  datum (`doc/…-2026-spring.md`, 2026-07 batch). cert 1 (single stressed
+  cohort). Falls out near the domain's documented pH/EC-stress ε (0.85),
+  reused for heat/drought. Applied via `nurseryStress`; the field always runs
+  clean.
+- Dry-matter fraction is **stage-specific**, not one value — the plug never
+  reaches its volume cap (real plug ~5 g vs a 25 g cap), so DM sets its fresh
+  weight *directly* (it is not the inert cap-parameter an earlier single-value
+  pass assumed):
+  - `PLUG_DRY_MATTER_FRACTION = 0.07` — nursery plug, firm young tissue, drier
+    under drought. cert 3. This is the *same physical quantity* the nursery
+    lane calls `LETTUCE_NURSERY_DM_FRACTION` (0.07); still separate consumers.
+  - `DRY_MATTER_FRACTION = 0.045` — hydrated field/mature head. cert 2. DM
+    steps *up* at transplant (0.07→0.045), lifting fresh weight — the
+    rehydration gain.
+  - Not unified: a single field 0.045 would over-state the plug ~1.56×; a
+    single plug 0.07 in the field would cut field sales ~40 % in the uncapped
+    short routine.
+- `DLI_TARGET = 17 mol/m²/j` — the nursery-space DLI (Guillaume: the propagation
+  space delivers ~17) and the field photosynthetic optimum (see f_light fold).
 
-## best-non-light-conditions
+**Validation.** The anchored params reproduce the one real Décembre weight —
+**5 g biggest @ d25**, 50-cell, drought+heat, DLI 17 — in both `calc.js`
+(`predictYield`, `nurseryStress: true`) and the `seedling-thinning.js` chart
+view, which share the constants via `data.js`. The former "16 g @ d28 / 40 g @
+d35" anchors are retired (salt-stalled / unsourced;
+`learnings/5g-day25-drought-heat-primary-anchor.md`). The clean-condition ε
+(1.1) is unanchored — no well-watered 50-cell weighed yet.
 
-The model is the upper-bound "best-case" prediction. Tomato-zone
-calibration data (heat-stressed, sub-optimal for lettuce) shows
-~16 g/plant peak at d28 — below the modeled ~25 g — because in-zone
-T_day stayed in the 22-26 °C range that bolts lettuce. The model
-intentionally answers "what could this cohort do if non-light
-conditions are optimal", not "what did this cohort do in the
-tomato zone". Senescence + bolting + heat (the operational d28 → d35
-mass-loss observed at Décembre) are deliberately excluded — those
-collapse the model into a calibration to one specific stressed
-condition rather than a planning surface.
+**f_light fold.** The retired logistic engine multiplied growth by a
+piecewise `f_light(DLI)` (0 below 4, plateau 12–17, saturating to 0.7 above
+22). The carbon-balance gain is linear in DLI with no saturation, so we clamp
+the engine's effective DLI to the optimum by driving it at `DLI_TARGET = 17` —
+the plateau value. This preserves the anchor fit (the sandbox held 17) and
+folds the light response into `ε·DLI` without a separate multiplier. Below-4
+stall never triggers at Décembre's lighting; above-17 saturation is handled by
+not exceeding the target in the growth term. Whether sun + LED actually reaches
+17 is the lighting-feasibility concern (`light/`), decoupled from growth.
 
-If a stress-aware variant is ever needed, it belongs in a separate
-spec, not as a multiplier into logistic-growth-no-decay's growth term. See learnings.md
-for the rejected senescence-branch alternative.
+---
 
-## dli-annual-sun-plus-led ↔ double-poly-transmission-decomposed
+## canopy-closure-detection / senescence-past-closure
 
-Bench DLI is the sum of two transparent terms:
+Closure = the step where `LAI ≥ 3` (`fi ≥ 0.88`) — the canopy fully shades its
+ground and growth is light-limited. (The old cliff bound at `LAI = 1/k ≈ 1.4`,
+an artifact of the `min()`; the Beer–Lambert form lets closure sit at the
+physical LAI≈3 the domain names.) `daysClosed` counts consecutive closed days
+and resets when the canopy re-opens — a checker-thin or transplant
+doubles/swaps `A_ground` and drops `LAI` back below 3, and a senescing plant
+shrinks back below the closure LAI. So thinning *early* (before the plant
+outgrows even the doubled area) delays senescence; thinning a plant already
+large past closure does not rescue it.
 
-```
-DLI_SUN_OUTDOOR_QC_ANNUAL × GH_LIGHT_TRANSMISSION_DOUBLE_POLY
-  + (LED_PPFD × ledHours × 3600 / 1e6)
-```
+`SENESCENCE_ONSET_DAYS = 1.7` and `SENESCENCE_DECLINE_RATE = 0.04 /day` —
+**UNCALIBRATED, cert 1.**
 
-double-poly-transmission-decomposed owns the sun-side decomposition. Why two constants instead of
-one post-transmission baked-in value? The film transmission updates
-independently of the outdoor-DLI baseline — when poly is replaced or
-ages (0.65 fresh → 0.45 aged), the operator-side adjustment touches
-one constant, not a recomputed composite.
+Mechanism modeled: **crowding self-shading only.** Once the canopy holds
+`LAI ≥ 3` long enough, its lower/inner leaves sit below the light compensation
+point, respire net-negative, senesce and die. Loose-leaf Salanova is picked
+leaf-by-leaf, so each dead leaf is lost sellable mass — the `−DECLINE·W`
+biomass-loss form is correct for this product (not a whole-head marketability
+haircut). Crowding recurs in the field (a held bed self-shades the same way),
+so this is the durable driver the labor-routine tradeoff needs.
 
-Constant choices:
-- `DLI_SUN_OUTDOOR_QC_ANNUAL = 30 mol/m²/d` — Quebec annual-average
-  outdoor PAR DLI; cert 2 from public climate-data summaries. Refit
-  when a site-specific pyranometer dataset lands.
-- `GH_LIGHT_TRANSMISSION_DOUBLE_POLY = 0.65` — PAR transmission for a
-  newer/clean 6-mil inflated double-poly film; cert 3 (published range
-  0.50-0.65 fresh; aged drops to ~0.45). Top of the fresh band; drop
-  toward 0.55-0.45 as film ages/fouls. Update when film is replaced.
-- `LED_PPFD = 200 µmol/m²/s` — installed bench LED capacity; cert 4
-  (datasheet-anchored).
+Salt is deliberately **excluded**: it is being driven to safe (nursery
+salt-flush, CE cap 1.0), so it is an input at optimum, not a modeled decline.
 
-## logistic-growth-no-decay
+Anchor is an **upper bound, not a clean fit.** The only decline datum is the
+spring cohort: 16 g → 10 g over d28–d35 = ~−0.066/day — but that is crowding
+**+ salt (Na 3166 ppm, leachate EC 5+) + heat/bolting** combined. With no
+clean-salt cohort to decompose it, the crowding-only rate is unknown, bounded
+above by 0.066/day. `0.04` is held as a placeholder below that ceiling.
 
-```
-W(d+1) = W(d) × (1 + RGR_MAX × (1 − W/cap) × f_light(dpp))
-```
+Onset was `7` under the old `min()` cliff (closure at effective LAI≈1.4).
+Moving closure to the physical `LAI ≥ 3` pushes field closure to the very end
+of the 2-week window, so the plant then oscillates around LAI 3 (senescence
+shrink re-opens the canopy, growth resumes). Onset was retuned `7 → 1.7` to
+keep the labor-routine tradeoff *directional* (hold longer → lose more).
 
-Pure logistic in W with light-modulated growth rate. When `f_light → 0`
-(insufficient DLI) or `W → cap` (density ceiling), the increment
-collapses to 0; W never decreases. This is the "no senescence branch"
-spec claim — the model never flips to negative growth.
+**Caveat — the strict 2wk<3wk<4wk ordering is now phase-sensitive.** With
+closure at the end of the 2-week window and the LAI-3 oscillation, the
+directional signal is robust only for *over-holding past the closure peak*
+(4wk < 3wk). Whether the 2-week harvest reads below the 3-week one depends on
+where the oscillation phase falls, which `1.7` tunes. Together onset + rate
+keep the tradeoff directional, not quantitative.
 
-`RGR_MAXIMUM_LETTUCE_NURSERY = 0.30 d⁻¹` — anchored on cross-cultivar
-butterhead seedling RGR_max literature. The 0.30 d⁻¹ value sits at the
-upper end of the typical pre-canopy-closure seedling-RGR band
-(0.25–0.30 d⁻¹) reported for Salanova-class butterhead in
-controlled-environment (CE) chambers, Wageningen / Hoogendoorn-line
-publications. Cert 3 reflects cross-cultivar literature
-transferability under comparable regimes (DLI 25-30 mol/m²/d,
-day-temp ~22 °C, packed-tray seedling phase 0-28 d) — not a
-Décembre-specific or breeder-anchored measurement.
+**Refinement triggers:**
 
-**Missing-doc gap (per [[P-10]]).** No Salanova / butterhead RGR_max
-primary-source document currently lives in `nutrition/doc/`. The
-nearest on-disk anchors (`fertigation oligos éléments tomate avril.pdf`,
-`Recette fertigation oligo-éléments laitues - 1er mai 2026 PA.pdf`)
-cover fertigation chemistry, not growth physiology. Cert ladder per
-P-10: one mechanistic step from the breeder-anchored cap (nursery-canopy-cap-by-plateau) is
-the literature seedling-RGR band at cert 3; no further extrapolation
-this turn. Refinement trigger names where the literature band is
-expected to underpredict or overpredict for Décembre's regime.
+- First **salt-controlled** held cohort (nursery 50-cell or field bed) weighed
+  serially past closure → sets the crowding-only `SENESCENCE_DECLINE_RATE` and
+  `SENESCENCE_ONSET_DAYS`, replacing the salt-contaminated upper bound.
+- First field cohort at harvest vs `harvestWeightG` at the operational spacing
+  + routine → cross-checks the rate.
 
-**Integrator output at the anchor point.** 50-cell packed,
-`DLI_bench = sun(16.5) + LED(11.5) = 28.02 mol/m²/d` (16 LED-hours),
-`cap = 25 g`, `RGR = 0.30` → `daysToTransplantPotential = d44`
-(W reaches `0.95 × 25 = 23.75 g` at d44). The asymptote curve under
-the spacing-factor decay (packed-canopy-spacing) and `f_light` saturation:
-`f_light ≈ 0.70` for d ≤ 14 (per-plant DLI ≈ 28, above the 0.7
-saturation floor); ramps to ≈ 0.90 by d = 28 (per-plant DLI = 11.2,
-on the linear ramp toward the optimum plateau). Per-tray timing at
-the same `DLI_bench`: 32-cell `cap = 39 g` → `d46`; 24-cell
-`cap = 52 g` → ~d49; 18-cell `cap = 69 g` → falls past the
-49-day `TRAJECTORY_MAXIMUM_DAYS` window. Lower `ledHours` push every
-tray's timing later; at `ledHours ≤ ~8` the 50-cell asymptote also
-slips past the window and the operator surface renders the
-`Plein potentiel non atteint` annotation.
+---
 
-**Why not 0.40 (prior value).** Archived in `learnings.md` §
-"Rejected: back-calculated RGR_max from cap-asymptote target". The
-0.40 anchor was back-fit to produce a chosen d28–d35 asymptote at
-the breeder-anchored 25 g cap — circular: cap is the data-anchored
-target, RGR_max should independently predict timing under that cap
-rather than be tuned to hit a target timing. The +82 % jump from
-the 2026-spring cohort's observed-stressed back-fit (`RGR ≈ 0.22`,
-heat-stressed) to the 0.40 best-case anchor had no intermediate
-data point.
+## nursery-canopy-cap / field-canopy-cap-by-density
 
-**Refinement triggers (symmetric per [[P-03]]):**
-- Refit **upward** if a Décembre best-case cohort (n ≥ 5, best
-  non-light conditions: cooler zone, no bolting, no VPD pockets, no
-  mold) lands an asymptote *above* the literature band — i.e.
-  `daysToTransplantPotential` observed < d44 at 50-cell / DLI=28 /
-  16 LED-h. Signal: literature is too conservative for the Décembre
-  regime; refit toward the observed value.
-- Refit **downward** if the same cohort lands *below* the literature
-  band (asymptote > d44 at the anchor point). Signal: the Décembre
-  regime sub-performs vs CE chambers; refit toward observed.
-- Refit either direction on landing a Salanova-specific or
-  Rijk-Zwaan-cultivar-trial RGR_max primary source — overrides the
-  literature-band cert 3 to the cited source's cert.
+Volume cap = ground area × canopy mass-loading (height × foliage density).
 
-`f_light` piecewise-linear breakpoints (cert 3, lettuce literature):
+- Packed nursery: 0.10 m × 82 kg/m³ = 8.2 kg/m². 50-cell (0.00305 m²) → 25 g.
+- Spaced (post-thin / field): 0.18 m × 55 kg/m³ = 9.9 kg/m². 43 heads/m²
+  (0.0233 m²) → 230 g.
 
-| Per-plant DLI (mol/m²/d) | f_light |
-|---|---|
-| < 4 | 0 (photosynthesis stalls) |
-| 4 → 12 | linear ramp 0 → 1.0 |
-| 12 → 17 | 1.0 (optimum plateau) |
-| 17 → 22 | linear ramp 1.0 → 0.7 (saturation) |
-| ≥ 22 | 0.7 (saturation floor) |
+cert 2 — only the mass-loading product is breeder-grounded; the split into
+individual height and density is back-derived. Total kg/m² of canopy is set by
+the areal loading, so kg/bed is ~flat across spacing configs; density trades
+head size for head count. Refinement trigger: first Décembre cohort weight at
+the operational density (field) or non-50-cell tray (nursery).
 
-## packed-canopy-spacing
+---
 
-Per-plant DLI = bench DLI × spacing_factor(d). The decay between bound
-endpoints (1.0 at d ≤ 14, 0.40 at d ≥ 28) is **linearly interpolated**
-between d=14 and d=28 via `piecewiseLinear` in `calc.js`. Linear is
-the defensible default: no breeder-anchored shape data exists for
-Salanova packed-canopy spacing; the linear interpolation is the
-minimum-assumption span.
+## field-spacing-config
 
-`NURSERY_SPACING_PACKED = [{0, 1.0}, {14, 1.0}, {28, 0.40}, {99, 0.40}]`.
-Cert 3 on the bound endpoints (photo evidence from spring cohort
-anchors canopy closure d21-28 visually); cert 2 on the linear-decay
-shape (no measured intra-window data).
+Density = `rows / (BED_WIDTH_M × inRowInch × IN_TO_M)`. The bedtop width
+(30 in = 0.762 m) is divided by the row count to place rows; the in-row step
+sets plants per row-metre. Example 5r × 6": `5 / (0.762 × 0.1524) = 43.1`
+heads/m². Geometric, cert 3.
 
-Refinement trigger: per-plant PAR measurements (or inferred from
-photo coverage analysis) at d=18, d=21, d=24 — if the curve is
-significantly non-linear (e.g. sigmoidal at canopy-closure threshold),
-refit to a 4-breakpoint shape.
+---
 
-## days-to-potential-by-regime
+## labor-routine-cadence / throughput-and-sales
 
-`POTENTIAL_THRESHOLD = 0.95`. First integer d where W ≥ 0.95 × cap.
-Logistic asymptote is approached but never reached; 95 % is the
-operator-meaningful "ready" mark.
+The 4 beds run as a rotation: a bed is cut and replanted every `fieldDays`, so
+one bed's worth of heads leaves the field every `fieldDays` days. Steady state
+gives Little's law throughput:
 
-## trajectory-output-shape
+- `bedsPerWeek = BED_COUNT ÷ (fieldDays / 7)` — 4 beds ÷ cycle-weeks.
+- `headsPerWeek = bedsPerWeek × headsPerBed`; kg/week = heads × harvest weight.
+- Monthly = weekly × 52/12; yearly = weekly × 52; sales = yearly × `PRICE_PER_KG`.
+- `traysInNursery = (heads/day) × Σ trays-per-head over nursery age`. Every day
+  `heads/day` seedlings sit at each age 0..`nurseryDays`; post-thin ages occupy
+  2× trays. So the integral is `nurseryDays/cells` (no thin) or
+  `thinDay/cells + (nurseryDays − thinDay)·2/cells` (thin).
 
-50 entries from day 0 to day 49 inclusive. `TRAJECTORY_MAXIMUM_DAYS = 49`
-covers the longest plausible nursery cycle (worst-case low-LED,
-low-density) plus headroom for the chart to show the asymptote.
+`BED_AREA_M2 = 0.762 × 30.48 = 23.23 m²` (30 in × 100 ft). `PRICE_PER_KG = 25`
+(Salanova wholesale, Guillaume input 2026-07-04).
+
+---
+
+## Supplemental-lighting feasibility — double-poly transmission
+
+Bench sun DLI = `clearDayMax × conditionFactor × GH_LIGHT_TRANSMISSION_DOUBLE_POLY`.
+Two explicit constants, not one baked-in composite, so a film swap or aging
+touches one value:
+
+- `DLI_SUN_OUTDOOR_QC_ANNUAL = 30 mol/m²/d` — Quebec annual-average outdoor PAR
+  DLI; cert 2 from public climate summaries.
+- `GH_LIGHT_TRANSMISSION_DOUBLE_POLY = 0.65` — PAR transmission, fresh/clean
+  6-mil double-poly; cert 3 (published 0.50–0.65 fresh; ~0.45 aged). Update at
+  film swap.
+- `LED_PPFD = 200 µmol/m²/s` — installed bench capacity; cert 4 datasheet.
+- `SKY_CONDITION_FACTORS` — day-type attenuation (sunny 1.0 / partly 0.60 /
+  cloudy 0.25), cert 2.
 
 ---
 
 ## Refinement triggers (consolidated)
 
-Live triggers across REQs:
-
-| Trigger | What it refines | When |
+| Trigger | Refines | When |
 |---|---|---|
-| Décembre best-case cohort (n ≥ 5, cooler zone, no bolting / VPD / mold) — asymptote vs d44 at 50-cell / DLI=28 / 16 LED-h | `RGR_MAXIMUM_LETTUCE_NURSERY` (logistic-growth-no-decay); refit **upward** if observed < d44 (literature too conservative for the regime), **downward** if > d44 — symmetric per [[P-03]] | per `doc/yield-range-calibration-2026-spring.md` § "How to add new observations" |
-| Salanova-specific or Rijk-Zwaan cultivar-trial RGR_max primary source lands in `nutrition/doc/` | `RGR_MAXIMUM_LETTUCE_NURSERY` (logistic-growth-no-decay) — cert ladder overrides cross-cultivar literature transferability | when the doc lands; supersedes the [[P-10]] missing-doc gap in the logistic-growth-no-decay trace |
-| n ≥ 5 cohorts at non-50-cell trays | `CANOPY_CAP_BY_PLATEAU` (canopy-cap-is-ceiling / nursery-canopy-cap-by-plateau) | per `doc/yield-range-calibration-2026-spring.md` § "How to add new observations" |
-| First 18-cell cohort under best non-light conditions | `CANOPY_CAP_BY_PLATEAU[18]` — geometric likely underpredicts (`h × ρ` rises at wider spacing); refit upward toward observed asymptote (plausible band 75-95 g vs predicted 69 g) | first 18-cell cohort weigh-in at d ≥ 28; smaller +5-10 % expected at 24-cell |
-| Site-specific pyranometer dataset | `DLI_SUN_OUTDOOR_QC_ANNUAL` (double-poly-transmission-decomposed) | when measurement equipment lands |
-| Poly film replacement or aging | `GH_LIGHT_TRANSMISSION_DOUBLE_POLY` (double-poly-transmission-decomposed) | at film swap; 0.65 fresh → 0.45 aged |
-| Per-plant PAR at d=18/21/24 | `NURSERY_SPACING_PACKED` shape (packed-canopy-spacing) | when measurement equipment lands or photo-coverage analysis runs |
-| Rijk Zwaan breeder density curves | `FOLIAGE_HEIGHT_M` / `FOLIAGE_DENSITY_KG_PER_M3` independent anchors (nursery-canopy-cap-by-plateau) — currently back-derived from the 50-cell anchor | when curves load |
-
----
-
-## Extension-pending — nursery + field + throughput
-
-Decision (Guillaume, 2026-05-16): extend yield-range to cover nursery +
-field + throughput balance. Objective: **maximize annual harvested kg**.
-Daily grain throughout.
-
-Model plan lives in `working files/yield-range-extension-draft.md`.
-Settled inputs (2026-05-17):
-- `bench_dli_mol_per_m2_per_day` — `ledHours` stays a dynamic operator
-  input (max 18); existing dli-annual-sun-plus-led formula preserved.
-- `per_plant_dli_share_field` curve — 1.0 until rosette covers
-  spacing, then decays with 0.40 floor (cert 2 borrowed from packed
-  nursery; refinement trigger = field cohort data).
-
-Nursery cap basis landed in the live REQ trace (canopy-cap-is-ceiling / nursery-canopy-cap-by-plateau
-section above); no separate pending entry.
-
-Open inputs (block REQ landing):
-- **Marketability constraint on head size** — does 200 g matter or is
-  150-160 g sellable? Drives whether 43/m² is final density or we
-  drop for bigger heads. Yield/m² ≈ flat across 25-50 heads/m²;
-  commercial decision, not biological. Guillaume-owned.
-
-REQ landing is scheduled when the marketability question lands —
-not part of the 2026-05-17 audit pass. The extension model adds 6+
-new REQs (regime-switch integrator, annual-yield wrapper, nursery /
-field cap accessors, per-plant DLI share, canopy-geometry constants);
-those claim through `scripts/claim-req.sh` in a contiguous block
-once Guillaume signals the density call.
+| First field cohort harvest weight vs `harvestWeightG` | `SENESCENCE_DECLINE_RATE`; `RADIATION_USE_EFFICIENCY` | at first field weigh-in |
+| Serial weights across a held bed | `SENESCENCE_ONSET_DAYS` | when a bed is sampled over its cycle |
+| Cohort weight at non-50-cell tray / operational field density | `FOLIAGE_HEIGHT_M`·density split; field cap | per calibration doc "add observations" |
+| Salanova-specific RGR primary source | `GROWTH_RGR` | when the doc lands |
+| First leaf-area / SLA measurement | `SPECIFIC_LEAF_AREA`, `LEAF_AREA_EXTINCTION_K` | when a cohort's leaf area is measured |
+| Poly film replacement or aging | `GH_LIGHT_TRANSMISSION_DOUBLE_POLY` | at film swap (0.65 → 0.45) |
+| Site pyranometer dataset | `DLI_SUN_OUTDOOR_QC_ANNUAL` | when equipment lands |

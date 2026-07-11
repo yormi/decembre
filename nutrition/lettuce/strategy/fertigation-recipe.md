@@ -35,6 +35,12 @@ PDF as printed (K₂SO₄ 910 g/wk).
 Net: total salt ~1 680 g/wk → ~280 g/wk (**−78%**). On a salt-stressed
 crop (tissue Na 3166), the EC relief is the biggest single benefit.
 
+**June SME confirms this in solution:** root-zone CE climbed 1.08 (Apr) →
+**4.01** (Jun), over spec — the EC this cut chases was real and rising. The
+co-produced salt is gypsum + nitrate, leachable (saline, not sodic) →
+`../learnings/field-sme-salinity-climbed-2026-06.md` + the leach procedure
+`protocol/salt-leach.md`.
+
 **Key proof:** feeding 910 g K₂SO₄/wk (over demand) still left tissue K
 at the floor (5.93%) → the limit is **uptake (Na antagonism), not
 supply**. Cutting K is safe; more never got in. Monitor tissue K

@@ -3,9 +3,8 @@
 // Mirrors nutrition/tomato/plant-needs/test-helpers.mjs: load data.js +
 // calc.js + model.js into a node:vm sandbox with `window` as host, return
 // the namespace plus the raw window so tests can inspect read-only
-// constants (CANOPY_CAP_BY_PLATEAU, geometric inputs, etc.) without
-// committing to a particular public-API key list — yield-range is mid-
-// extension and the surface is being expanded in Wave 2.
+// constants (spacing configs, canopy geometry, etc.) without committing to
+// a particular public-API key list.
 
 import vm from 'node:vm';
 import { readFileSync } from 'node:fs';

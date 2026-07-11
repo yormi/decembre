@@ -1,26 +1,50 @@
-// ─── yield-range/model.js — public API for the two-regime yield model ─
+// ─── yield-range/model.js — public API for the carbon-balance yield model ─
 //
 // Spec: yield-range/spec.md.
 window.YieldRange = {
-  predictNurseryYield,
-  dliBenchAvg,
-  f_light,
+  // Growth + throughput + sales
+  predictYield,
+  fieldDensityFromConfig,
   fieldCanopyCapByDensity,
-  perPlantDliShareField,
+  nurseryCapPackedFresh,
+  nurseryCapSpacedFresh,
 
-  RGR_MAXIMUM_LETTUCE_NURSERY,
+  // Input option sets
+  FIELD_SPACING_CONFIGS,
+  LABOR_ROUTINES,
+  NURSERY_TRAY_CELLS,
+
+  // Operation geometry
+  BED_AREA_M2,
+  BED_COUNT,
+  PRICE_PER_KG,
+
+  // Growth-engine constants
+  GROWTH_RGR,
+  RADIATION_USE_EFFICIENCY,
+  NURSERY_STRESS_RUE,
+  LEAF_AREA_EXTINCTION_K,
+  SPECIFIC_LEAF_AREA,
+  LAI_CLOSURE,
+  DRY_MATTER_FRACTION,
+  PLUG_DRY_MATTER_FRACTION,
   W_INIT_GERMINATED_G,
-  LED_PPFD,
-  DLI_SUN_OUTDOOR_QC_ANNUAL,
-  GH_LIGHT_TRANSMISSION_DOUBLE_POLY,
-  DLI_SUN_GH_ANNUAL_AVG_QC,
-  CANOPY_CAP_BY_PLATEAU,
+  SENESCENCE_ONSET_DAYS,
+  SENESCENCE_DECLINE_RATE,
   FOLIAGE_HEIGHT_M,
   FOLIAGE_DENSITY_KG_PER_M3,
   FIELD_CANOPY_HEIGHT_M,
   FIELD_FOLIAGE_DENSITY_KG_PER_M3,
-  LEAF_PROJECTED_AREA_M2_PER_G,
-  TRAJECTORY_MAXIMUM_DAYS,
-  POTENTIAL_THRESHOLD,
-  F_LIGHT_BREAKPOINTS,
+
+  // Supplemental-lighting feasibility (Lumière page)
+  benchSunDli,
+  supplementalLedHours,
+  ledDli,
+  LED_PPFD,
+  DLI_SUN_GH_ANNUAL_AVG_QC,
+  GH_LIGHT_TRANSMISSION_DOUBLE_POLY,
+  CLEAR_DAY_MAXIMUM_DLI_BY_MONTH,
+  SKY_CONDITION_FACTORS,
+  DLI_TARGET,
+  MAXIMUM_HEALTHY_PHOTOPERIOD_HOURS,
 };

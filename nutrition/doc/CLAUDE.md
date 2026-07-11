@@ -22,6 +22,11 @@ Report 39463, tomato soil sampled 2026-06-01. First SME retest since April. SME 
 **Reach for:** sulphur-drawdown pH progress vs the April SME baseline; EC/sulfate salinity watch as S dosing continues; corroboration of hold-B-at-10g + Mo-to-fertigation calls; P-still-locked confirmation (judge P recovery on tissue, not SME).
 **Caveat:** SME spec ranges are soilless/hydroponic — Ca/Mg/K/CE "high" flags partly reflect calcareous soil, not actionable surplus. pH trend + P + CE are the real reads.
 
+### `SME - 2026-06-17 laitue.pdf`
+Report 39580, lettuce-under-lamps root-zone SME (sample "laitue 15 juin", requested by Catherine, received 2026-06-17, completed 2026-06-19). First lettuce SME retest since April. Salinity signature: CE **4.01** (April 1.08 → June 4.01), pH SME **6.68** (April 7.48 → 6.68, S-drawdown progressing), Nitrate **388.5**, Sulfate **417.0**, Na **124.4** (April ~40) — all high; Ca 471 / Mg 137.6 high; P **1.7** + Fe **0.14** low (high-pH lockout). SAR (RAS) **1.29** → salt is **saline, not sodic** (mostly CaSO₄ from the S program + nitrate) → leachable.
+**Reach for:** lettuce root-zone salinity climb April → June; whether the salt is leachable (SAR check) before recommending a flush vs a program cut; corroboration of field tip-burn; pH-drawdown progress on the lettuce side.
+**Caveat:** SME spec ranges are soilless/hydroponic — Ca/Mg/CE "high" flags partly reflect calcareous soil. pH 6.68 is a secondary guardrail, **not** a new anchor. P read via Mehlich-3 + tissue, not SME.
+
 ## Soil tests — pre-greenhouse (Agriquanta, July 2024)
 
 ### `Analyse de sol avant installation serre.pdf`
@@ -94,6 +99,13 @@ Pure alfalfa pellet, Quebec-made. 3-0.5-2 NPK, no animal by-products, no Ca. Slo
 ✅ **Crisis-fit vs Selectus:** pure alfalfa = no Ca, no bone meal, no gypsum.
 ⚠️ Open: (a) Ecocert / CAN/CGSB-32.311 status unverified here (likely allowed). (b) Verify bag matches 3-0.5-2 (older Acti-Sol skews 3-1-2 — see `working files/nutrient-model-reference.md:507`). (c) Non-GMO source.
 Drop PDFs in `nutrition/doc/eco-luzerne-3-0-5-2/` when they land.
+
+### `alfalfa-green-3-0-2/` (Alfalfa Green — Western Alfalfa) — *bag photo only*
+Pure alfalfa pellet, second maker alongside Eco-luzerne. `bag-label.jpeg` (2026-07-09): Organic All-Purpose **3-0-2** (N 3 % / P **0 %** / K₂O 2 %), 100 % alfalfa, 4 mm pellets, slow release, high OM, neutral pH. 22 kg bag covers 170 m² (1,830 sq ft) → ~129 g/m². Mfr Western Alfalfa.
+
+**Reach for:** low-Ca organic N top-dress/sidedress option; direct alternative to Eco-luzerne 3-0.5-2 (this one carries **zero P** — nothing added to the already-banked P vault); building the alfalfa-pellet proposition sidedress.
+✅ **Crisis-fit:** pure alfalfa = no Ca, no bone meal, no gypsum — right direction for the Ca-saturated, high-pH beds.
+⚠️ Open: (a) **Cert status unverified** — bag says "Organic" but shows no Ecocert / CAN/CGSB-32.311 badge here; confirm before any audit claim. (b) Non-GMO source unverified. (c) 3-0-2 vs Eco-luzerne 3-0.5-2 — near-identical; pick on price + cert paperwork. Drop datasheet / Ecocert PDFs into this dir when they land.
 
 ### `Ligne directrice - fertilisation serres plein-sol.pdf`
 Quebec greenhouse fertilization guidelines, plein-sol.

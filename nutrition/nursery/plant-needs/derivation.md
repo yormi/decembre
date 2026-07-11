@@ -46,7 +46,15 @@ from generic greenhouse leafy norms. Refit on tissue panel.
 `0.07` (7 %). Cert 3 — Décembre operator notes, no lab. Mature heads
 sit ~5 %; seedlings higher because younger tissue is leaf-rich and
 less hydrated, active growth builds protein/structural carbohydrate,
-and Salanova practice keeps moisture moderate to push roots.
+and Salanova practice keeps moisture moderate to push roots. Held-long
+crowded plugs run drier still (≥ 0.07).
+
+**Not the same number as `yield-range`'s `DRY_MATTER_FRACTION = 0.045`.**
+That is a different quantity — a hydrated field/mature-head fraction used
+as a cap-and-display converter in the yield engine, not the plug. This
+0.07 is the plug's firm-tissue fraction, used uncapped and linearly to
+size nutrient demand. Do not unify them: dropping this to 0.045 would cut
+computed demand ~36 % and mask the salt-driven under-supply.
 
 ## `NURSERY_TARGETS` — operational defaults
 

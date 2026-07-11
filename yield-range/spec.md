@@ -1,276 +1,210 @@
-# Yield Range — Salanova nursery time-to-canopy-cap model
+# Yield Range — Salanova carbon-balance yield model
 
-Predicts how many days a Salanova seedling needs to approach its
-canopy-density cap, under best non-light conditions, packed-only.
-Inputs: tray choice (32 or 50-cell) and supplemental-LED hours.
-Outputs: canopy cap (g/plant) and the daily growth trajectory.
+Predicts a Salanova cohort from germination through field harvest on a
+single carbon-balance growth engine, then rolls the per-plant harvest
+weight into the operation's throughput: kg/month, yearly sales, and trays
+held in the nursery at a time.
 
-Math derivation, constant choices, refinement triggers, and reasoning
-trail live in `derivation.md`. Rejected alternatives and historical
-decisions in `learnings.md`. Empirical anchor:
-`yield-range/doc/yield-range-calibration-2026-spring.md`. App-side
-specs in `yield-range/app/user-stories.md`.
+Growth law: `dW_dry/dt = ε·DLI·A_ground·(1 − exp(−k·LAI))`,
+`LAI = W_dry·SLA/A_ground`, clamped to the canopy-volume cap; once the canopy
+has been closed past an onset the term flips to `−DECLINE·W` (senescence).
+Nursery and field are the same law with different ground area per plant.
+
+Math derivation and constant choices live in `derivation.md`. Rejected
+alternatives and superseded decisions live in `learnings.md`. Empirical
+anchor: `doc/yield-range-calibration-2026-spring.md`. Domain model:
+`domain.md`. App-side specs: `app/user-stories.md`. Supplemental-lighting
+page: `light/`.
 
 ## Contract
 
-### Inputs (one cohort, two-regime)
-- `plateauSize` — `18`, `24`, `32`, or `50` (cells per tray; always packed end-to-end in nursery)
-- `ledHours` — number 0–18, hours of supplemental LED at 200 µmol/m²/s
+### Inputs (`predictYield`)
+- `fieldSpacingKey` — one of `FIELD_SPACING_CONFIGS` keys (`field-spacing-config`)
+- `laborRoutineKey` — one of `LABOR_ROUTINES` keys (`labor-routine-cadence`)
+- `nurseryTrayCells` — `50`, `32`, or `18` (`nursery-tray-config`)
+- `thinning` — boolean; checker-thin during the nursery regime
+- `thinDay` — integer in `[1, nurseryDays]` when `thinning`, else `null`
 - `nurseryDays` — integer ≥ 1, days in nursery before transplant
-- `fieldDays` — integer ≥ 1, days in field after transplant
-- `fieldDensityHeadsPerM2` — number, plants per m² in field beds
-- `nurseryAreaM2` — number, bench area dedicated to nursery (m²)
-- `fieldAreaM2` — number, bed area dedicated to field (m²)
+- `nurseryStress` — boolean (default `false`); `true` = drought + high-heat
+  nursery (reduced ε, anchored to 5 g @ d25), `false` = clean/well-watered
+  (`carbon-balance-growth`)
 
 ### Outputs
-- `nurseryCanopyCapG` — biomass asymptote at packed tray density (g/plant)
-- `fieldCanopyCapG` — biomass asymptote at field density (g/plant)
-- `transplantWeightG` — weight at day `nurseryDays` (g/plant)
-- `harvestWeightG` — weight at day `nurseryDays + fieldDays` (g/plant)
-- `daysToTransplantPotential` — first integer day in nursery where
-  W(d) ≥ 0.95 × `nurseryCanopyCapG`, or `null` if not reached
-  (`days-to-potential-by-regime`)
-- `daysToHarvestPotential` — first integer day in field where
-  W(d) ≥ 0.95 × `fieldCanopyCapG`, or `null` if not reached
-  (`days-to-potential-by-regime`)
-- `trajectory` — array of `{ day, weight_g, regime }` from day 0
-  through day `nurseryDays + fieldDays` (`trajectory-output-shape`)
-- `annualYieldKg` — annual harvested kg/year at steady state
-  (`annual-yield-from-throughput`)
-- `bottleneckStage` — `'nursery' | 'field'`
-  (`annual-yield-from-throughput`)
+- `density` — field planting density (heads/m²), from the spacing config
+- `fieldDays`, `bedsPerWeek` — from the labor routine
+- `headsPerBed` — `BED_AREA_M2 × density`
+- `nurseryCapPackedG`, `nurseryCapSpacedG`, `fieldCapG` — volume caps (g/plant)
+- `transplantWeightG` — fresh weight at day `nurseryDays` (g/plant)
+- `harvestWeightG` — fresh weight at day `nurseryDays + fieldDays` (g/plant)
+- `peakWeightG`, `peakDay` — max weight over the cycle and its day
+- `nurseryPeakWeightG` — max weight during the nursery phase (day ≤ `nurseryDays`)
+- `senescingAtHarvest` — `harvestWeightG < 0.98 × peakWeightG`
+- `senescingAtTransplant` — `transplantWeightG < 0.98 × nurseryPeakWeightG`
+- `trajectory` — `{ day, weight_g, regime }` from day 0 to `nurseryDays + fieldDays` (`carbon-balance-growth`)
+- `headsPerWeek`, `kgPerWeek`, `kgPerMonth`, `kgPerYear`, `yearlySalesDollars`, `traysInNursery` (`throughput-and-sales`)
 
 ### Assumptions
-- Trays packed end-to-end throughout the nursery regime; field at
-  uniform spacing throughout the field regime. No within-regime
-  spread schedule.
-- All non-light stress factors fixed at 1.0 (T, T_night, CE, VPD, CO₂,
-  nutrients, no disease, no bolting, no decay).
-- Solar contribution = annual-average Quebec outdoor PAR DLI ×
-  double-poly greenhouse transmission factor (both constants explicit
-  in `data.js`; no seasonal lookup). Same bench DLI applies in both
-  regimes (both stages under LEDs at Décembre).
-- Days are days-from-germination (not days-from-sow).
-- Steady-state continuous operation: nursery and field cohorts overlap
-  in parallel, weekly harvest cadence emerges automatically.
+- Steady-state weekly rotation: one bed's cohorts cut and replanted on the
+  labor cadence; nursery and field cohorts overlap in parallel.
+- Growth DLI held at `DLI_TARGET` (the photosynthetic optimum). Whether sun +
+  LED reaches it is the lighting-feasibility concern (`light/`), not a growth
+  input.
+- All non-light stress (VPD, CE, nutrients, disease) fixed at optimum except
+  the emergent crowding/senescence the engine models — and the nursery
+  drought+heat regime exposed by `nurseryStress` (the one calibrated stress,
+  anchored to 5 g @ d25).
+- Days are days-from-germination.
+- Bed geometry: 4 beds, 30 in × 100 ft each (`BED_AREA_M2 = 23.23 m²`).
 
 ---
 
-## canopy-cap-is-ceiling
+## carbon-balance-growth
 
-The growth ceiling is `canopyCapG`, a density-driven biomass
-asymptote derived from Salanova breeder data. The Hochmuth root-volume
-cap (cellVol × 1.6) is NOT used as the prediction ceiling.
+Per-plant dry mass integrates in `GROWTH_STEP_DAYS` steps:
 
----
+```
+ε         = nursery ∧ nurseryStress ? NURSERY_STRESS_RUE : RADIATION_USE_EFFICIENCY
+DM        = nursery ? PLUG_DRY_MATTER_FRACTION : DRY_MATTER_FRACTION
+LAI       = W_dry × SPECIFIC_LEAF_AREA / A_ground
+fi        = 1 − exp(−LEAF_AREA_EXTINCTION_K × LAI)
+gain      = ε × DLI_TARGET × A_ground × fi
+net_dry   = daysClosed < SENESCENCE_ONSET_DAYS ? gain : −SENESCENCE_DECLINE_RATE × W_dry
+W_dry     = clamp(W_dry + net_dry × dt, 0, capFresh × DM)
+W_fresh   = W_dry / DM
+```
 
-## best-non-light-conditions
+`ε` and `DM` are **stage-specific**. Nursery: plug DM (`0.07`, firm/dry) and,
+when `nurseryStress`, the drought+heat ε (`NURSERY_STRESS_RUE = 0.85`) — this
+pair reproduces the real anchor, 5 g (biggest) @ d25 for a 50-cell at DLI 17.
+Field: hydrated head DM (`0.045`) and clean ε (`1.1`). DM steps *up* at
+transplant (nursery→field), lifting `W_fresh` — the rehydration gain. The plug
+never reaches its volume cap, so plug DM sets its fresh weight directly.
 
-The integration applies no stress multipliers other than
-`f_light(dliPerPlant)`. No `f_Tday`, `f_Tnight`, `f_CE`, `f_VPD`,
-`f_CO2`, `f_pH` in the daily growth term.
-
----
-
-## dli-annual-sun-plus-led
-
-Bench DLI is `DLI_SUN_GH_ANNUAL_AVG_QC + (LED_PPFD × ledHours × 3600
-/ 1e6)`, where `DLI_SUN_GH_ANNUAL_AVG_QC = DLI_SUN_OUTDOOR_QC_ANNUAL
-× GH_LIGHT_TRANSMISSION_DOUBLE_POLY` (see
-`double-poly-transmission-decomposed`). All constants live in
-`data.js`. No seasonal sun lookup; single annual constant.
-
----
-
-## double-poly-transmission-decomposed
-
-Bench sun DLI is computed as `DLI_SUN_OUTDOOR_QC_ANNUAL ×
-GH_LIGHT_TRANSMISSION_DOUBLE_POLY`. Both constants are declared
-explicitly in `data.js`; no hardcoded post-transmission value.
-
----
-
-## logistic-growth-no-decay
-
-Daily integration:
-`W(d+1) = W(d) × (1 + RGR_MAX × (1 − W/canopyCapG) × f_light(dliPerPlant(d)))`.
-No senescence branch, no decay, no negative-growth flip.
+`fi` is the fraction of light the canopy intercepts (Beer–Lambert). Open
+canopy (small `LAI`) → `fi ≈ k·LAI` → gain ≈ `GROWTH_RGR × W` → exponential;
+`SPECIFIC_LEAF_AREA` is derived so this limit is exact. Leaves fill the ground
+→ `fi → 1` → gain → `ε × DLI_TARGET × A_ground`, linear, slowing → volume cap.
+RGR sags smoothly from `GROWTH_RGR` toward 0 across the band — no hard knee.
+The light response folds into `ε × DLI_TARGET` (no separate `f_light`
+multiplier). `A_ground = TRAY_FRAME_M2 / nurseryTrayCells` in the nursery
+(×2 after a checker-thin), `1 / density` in the field. `trajectory` samples
+integer days 0..`nurseryDays + fieldDays`, tagged `nursery` for
+`day ≤ nurseryDays` else `field`.
 
 ---
 
-## packed-canopy-spacing
+## canopy-closure-detection
 
-Per-plant DLI is `dliBenchAvg × spacing_factor(d)`, where
-`spacing_factor` is `1.0` for `d ≤ 14`, linearly interpolated between
-`d = 14` and `d = 28`, and `0.40` for `d ≥ 28`. No spread-schedule
-input.
-
----
-
-## days-to-potential-by-regime
-
-`daysToTransplantPotential` = first integer day `d ∈ [1, nurseryDays]`
-where `W(d) ≥ 0.95 × nurseryCanopyCapG`, or `null` if the nursery
-trajectory does not reach the threshold by day `nurseryDays`.
-`daysToHarvestPotential` = first integer day
-`d ∈ [nurseryDays + 1, nurseryDays + fieldDays]` where
-`W(d) ≥ 0.95 × fieldCanopyCapG`, or `null` if the field trajectory
-does not reach the threshold by day `nurseryDays + fieldDays`. Each
-output binds to its regime's cap unambiguously; the `0.95` threshold
-is shared.
+The canopy is "closed" on any step where `LAI ≥ LAI_CLOSURE` (= 3, `fi ≈
+0.88`) — leaves fully shade the ground and growth is light-limited.
+`daysClosed` accumulates while closed and **resets to 0** when the canopy
+re-opens — which happens when ground area jumps (checker-thin doubles it;
+transplant swaps tray area for field spacing) or when senescence has shrunk
+the plant back below the closure LAI.
 
 ---
 
-## trajectory-output-shape
+## senescence-past-closure
 
-Output `trajectory` is an array of `{ day, weight_g, regime }` from
-day 0 through day `nurseryDays + fieldDays` inclusive
-(`nurseryDays + fieldDays + 1` entries). `regime ∈ { 'nursery',
-'field' }`, transitioning from `'nursery'` to `'field'` at
-`day = nurseryDays + 1`. Trajectory length is dynamic, not capped at
-49 days; the legacy `TRAJECTORY_MAXIMUM_DAYS` constant in `data.js`
-is repurposed as a sanity ceiling on the sum `nurseryDays + fieldDays`
-(coder lane).
-
----
-
-## two-regime-integrator
-
-Daily integration spans nursery + field in a single loop running from
-`day = 1` through `day = nurseryDays + fieldDays`. For
-`day ≤ nurseryDays`, the step uses the nursery canopy cap (from
-`CANOPY_CAP_BY_PLATEAU[plateauSize]`, `nursery-canopy-cap-by-plateau`)
-and the nursery per-plant DLI share (`NURSERY_SPACING_PACKED`,
-`packed-canopy-spacing`). For `day > nurseryDays`, the step uses the
-field canopy cap (from `fieldCanopyCapByDensity(fieldDensityHeadsPerM2)`,
-`field-canopy-cap-by-density`) and the field per-plant DLI share
-(`perPlantDliShareField(weight, fieldDensityHeadsPerM2)`,
-`field-per-plant-dli-share`). `RGR_MAX`, `f_light`, and the
-multiplicative logistic update of `logistic-growth-no-decay` are
-unchanged across the regime boundary. The function exposes
-`transplantWeightG`, `harvestWeightG`, and the full per-day trajectory
-tagged with regime.
+Once `daysClosed ≥ SENESCENCE_ONSET_DAYS`, net growth flips to
+`−SENESCENCE_DECLINE_RATE × W_dry` — **crowding** decline: a canopy held
+closed too long self-shades its lower/inner leaves below the light
+compensation point, they die, and mass is lost. Loose-leaf Salanova is
+harvested leaf-by-leaf, so dead tissue is real yield lost — the biomass-loss
+form is correct, not a whole-head marketability downgrade. Salt is **not**
+modeled: it is an input driven to safe (nursery salt-flush), not a growth
+term. This is what makes a longer labor routine able to *lose* yield: a bed
+held past the head's peak harvests below it. `senescingAtHarvest` is true when
+`harvestWeightG < 0.98 × peakWeightG`; `senescingAtTransplant` applies the
+same test to the seedling — a long/crowded nursery declines in the tray, so
+`transplantWeightG < 0.98 × nurseryPeakWeightG`. `SENESCENCE_ONSET_DAYS` and
+`SENESCENCE_DECLINE_RATE` are **uncalibrated (cert 1)** — the only decline
+datum (16 → 10 g, d28–d35) is crowding + salt + heat combined, an upper bound
+on the crowding-only rate, not a clean anchor.
 
 ---
 
-## nursery-canopy-cap-by-plateau
+## field-spacing-config
 
-`CANOPY_CAP_BY_PLATEAU` covers all four `plateauSize` values:
-`{ 18: 69, 24: 52, 32: 39, 50: 25 }` (g/plant). Each entry is
-`area_per_cell × FOLIAGE_HEIGHT_M × FOLIAGE_DENSITY_KG_PER_M3 × 1000`,
-where `area_per_cell = 0.1525 / plateauSize` on a 1020 tray frame
-(28 × 54 cm = 0.1525 m²), `FOLIAGE_HEIGHT_M = 0.10`, and
-`FOLIAGE_DENSITY_KG_PER_M3 = 82`. The 50-cell value is anchored to
-Salanova breeder spec sheets (cert 3); 32 / 24 / 18 follow by
-holding the canopy mass-loading product (`h × ρ ≈ 8.2 kg/m²`)
-constant across cell footprints. Cert 2 at 32 / 24 / 18 — same
-single-anchor dependence as the 50-cell pin (only `h × ρ` is
-breeder-grounded; the split into individual `h` and `ρ` is
-back-derived, not independently measured). Bumps to cert 3 when
-`FOLIAGE_HEIGHT_M` lands on an independent anchor (Décembre cohort
-photo measurement at 50-cell d28 packed density, or a published
-Salanova / butterhead canopy-height value at packed nursery
-densities). Refinement triggers: cohort weighing at non-50-cell
-trays (18-cell highest-priority); `FOLIAGE_HEIGHT_M` independent
-anchor.
+`FIELD_SPACING_CONFIGS` is seven `{ key, label, rows, inRowInch }` options
+(`6r × 4"` … `3r × 10"`). `fieldDensityFromConfig(config)` returns
+`rows / (BED_WIDTH_M × inRowInch × IN_TO_M)` heads/m². Total kg/bed is ~flat
+across configs (mass-loading dominates); density trades head size for count.
+
+---
+
+## labor-routine-cadence
+
+`LABOR_ROUTINES` is three `{ key, label, fieldDays, cutDays }` options: 2/3/4
+weeks per bed → `fieldDays` 14/21/28. `bedsPerWeek = BED_COUNT ÷ (fieldDays / 7)`
+= 2.0 / 1.33 / 1.0.
+
+---
+
+## nursery-tray-config
+
+`nurseryTrayCells ∈ {50, 32, 18}` sets nursery ground area per plant
+(`TRAY_FRAME_M2 / cells`) and heads per transport tray. `thinning` with
+`thinDay` doubles the ground area from `thinDay` on (checker-thin re-spaces
+survivors into 2× trays — see `throughput-and-sales` trays).
+
+---
+
+## nursery-canopy-cap
+
+`nurseryCapPackedFresh(cells) = (TRAY_FRAME_M2 / cells) × FOLIAGE_HEIGHT_M ×
+FOLIAGE_DENSITY_KG_PER_M3 × 1000` (packed, 0.10 m × 82 kg/m³).
+`nurseryCapSpacedFresh(cells)` uses doubled area at field geometry
+(0.18 m × 55 kg/m³) — the post-thin ceiling. cert 2, geometric; only the
+mass-loading product is breeder-grounded.
 
 ---
 
 ## field-canopy-cap-by-density
 
-`fieldCanopyCapByDensity(fieldDensityHeadsPerM2)` returns the per-plant
-cap (g) at a given field spacing:
-
-```
-fieldCanopyCapByDensity(d) =
-  (1 / d) × FIELD_CANOPY_HEIGHT_M × FIELD_FOLIAGE_DENSITY_KG_PER_M3 × 1000
-```
-
-With `FIELD_CANOPY_HEIGHT_M = 0.18` and
-`FIELD_FOLIAGE_DENSITY_KG_PER_M3 = 55` (geometric basis for mature
-Salanova: 18 cm tall × 55 kg/m³ fresh foliage density). At 43
-heads/m²: cap = 230 g/head. Cert 2 — geometric basis, no breeder
-anchor at field densities; refinement trigger is first Décembre
-cohort weight at the operational density.
+`fieldCanopyCapByDensity(d) = (1 / d) × FIELD_CANOPY_HEIGHT_M ×
+FIELD_FOLIAGE_DENSITY_KG_PER_M3 × 1000`. With 0.18 m × 55 kg/m³: at 43
+heads/m² → 230 g/head. Monotonic decreasing in `d`. cert 2, geometric; no
+breeder anchor at field densities. Refinement trigger: first Décembre cohort
+weight at the operational density.
 
 ---
 
-## field-per-plant-dli-share
+## throughput-and-sales
 
-`perPlantDliShareField(weightG, fieldDensityHeadsPerM2)` returns the
-share of bench DLI a single plant integrates as effective input
-post-transplant:
+Steady weekly rotation (Little's law):
 
 ```
-perPlantDliShareField(w, d) =
-  max(0.40,
-      min(1.0,
-          1 / (LEAF_PROJECTED_AREA_M2_PER_G × w × d)))
+headsPerBed        = BED_AREA_M2 × density
+headsPerWeek       = bedsPerWeek × headsPerBed
+kgPerWeek          = headsPerWeek × harvestWeightG / 1000
+kgPerMonth         = kgPerWeek × 52 / 12
+kgPerYear          = kgPerWeek × 52
+yearlySalesDollars = kgPerYear × PRICE_PER_KG
+traysInNursery     = (headsPerWeek / 7) × trayDayIntegral
 ```
 
-With `LEAF_PROJECTED_AREA_M2_PER_G = 0.00035` m²/g (Salanova
-empirical: 200 g head ≈ 30 cm rosette ≈ 700 cm² projected leaf
-area). Share holds at `1.0` until the rosette covers the per-plant
-bench footprint (`w × d × LEAF_PROJECTED_AREA_M2_PER_G ≥ 1.0`), then
-decays as `1 / leaf_cover`. Floor `0.40` mirrors
-`NURSERY_SPACING_PACKED` (`packed-canopy-spacing`) — at full canopy closure, plants
-still integrate ~40 % of bench DLI via gaps, sunflecks, and scattered
-radiation. Cert 2 on both the leaf-area-per-gram constant and the
-floor value; refinement trigger is cohort leaf-area measurement or
-Beer-Lambert canopy modelling.
+`trayDayIntegral` = `nurseryDays / cells` without thinning, else
+`thinDay / cells + (nurseryDays − thinDay) × 2 / cells` (post-thin cohorts
+occupy 2× trays). `PRICE_PER_KG = 25 $/kg`.
 
 ---
 
-## annual-yield-from-throughput
+## Supplemental-lighting feasibility (Lumière page)
 
-`annualYieldKg` is computed at steady state from the throughput
-balance between nursery output and field intake:
-
-```
-trayCellsPerM2      = plateauSize / 0.1525
-nurseryOutputPerDay = (nurseryAreaM2 × trayCellsPerM2) / nurseryDays
-fieldIntakePerDay   = (fieldAreaM2 × fieldDensityHeadsPerM2) / fieldDays
-headsPerDay         = min(nurseryOutputPerDay, fieldIntakePerDay)
-annualYieldKg       = headsPerDay × 365 × harvestWeightG / 1000
-```
-
-`bottleneckStage` returns `'nursery'` if `nurseryOutputPerDay` was
-the `min`, else `'field'`. The `min` enforces that nursery cannot
-supply faster than its area × density / days, and field cannot
-absorb faster than its area × density / days; whichever is smaller
-caps the operation.
+Whether sun + LED can hit `DLI_TARGET` on a given day — the growth engine
+assumes it does. `benchSunDli(clearDayMax, conditionFactor) = clearDayMax ×
+conditionFactor × GH_LIGHT_TRANSMISSION_DOUBLE_POLY`; both constants explicit
+in `data.js` (no baked-in post-transmission value). `supplementalLedHours(benchSunDli,
+DLI_TARGET)` = LED hours to close the gap, floored at 0; capped healthily at
+`MAXIMUM_HEALTHY_PHOTOPERIOD_HOURS`. `ledDli(hours)` = DLI the fixture
+delivers. `SKY_CONDITION_FACTORS` and `CLEAR_DAY_MAXIMUM_DLI_BY_MONTH` feed
+the operator table. Consumed by `light/operator/`.
 
 ---
 
 ## Inherited / cross-references
 
-- App-side spec: `yield-range/app/user-stories.md`
-- Empirical anchor: `yield-range/doc/yield-range-calibration-2026-spring.md`
-
----
-
-## Specialist note (2026-05-17) — extension pending
-
-Decision (Guillaume, 2026-05-16): extend yield-range to cover
-nursery + field + throughput balance. Objective:
-**maximize annual harvested kg**.
-
-Model plan in `working files/yield-range-extension-draft.md` —
-function signature, two-stage integrator, throughput formula,
-constant list, settled + open inputs, and requirement queue.
-
-Settled 2026-05-17: `bench_dli_mol_per_m2_per_day` (`dli-annual-sun-plus-led`
-formula preserved, `ledHours` stays a dynamic operator input up to 18);
-nursery cap basis (breeder-anchored, 50-cell = 25 g pinned; other
-trays scaled by geometric proportion); `per_plant_dli_share_field`
-shape (1.0 until rosette covers spacing, then decays with 0.40 floor,
-cert 2).
-
-Extension landing gated on the marketability constraint on head size
-(commercial input — does 200 g matter or is 150-160 g sellable?
-yield/m² ≈ flat across 25-50 heads/m² so density choice is
-commercial, not biological). When that lands, the extension claims a
-contiguous block of ledger ids (regime-switch integrator,
-`annual_yield_kg` output, nursery + field cap accessors,
-`per_plant_dli_share_field`, `canopy_geometry`) through
-`scripts/claim-req.sh`.
+- App-side spec: `app/user-stories.md`
+- Domain model: `domain.md`
+- Empirical anchor: `doc/yield-range-calibration-2026-spring.md`

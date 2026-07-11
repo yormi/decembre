@@ -21,6 +21,8 @@ function setCrop(crop) {
   setCropBtn('irr-crop-nursery', crop === 'nursery', 'nursery');
   // Sol page: 1 button (tomato-only since 2026-05-28 — Salanova sol removed).
   setCropBtn('sol-crop-tomato', crop === 'tomato', 'tomato');
+  // Lumière page: 1 button (lettuce-only — supplemental lighting is lettuce-only).
+  setCropBtn('lum-crop-lettuce', crop === 'lettuce', 'lettuce');
 
   const isField = crop === 'tomato' || crop === 'lettuce';
 
@@ -129,6 +131,10 @@ function setPage(page) {
   if (page === 'sol' && currentCrop !== 'tomato') {
     setCrop('tomato');
   }
+  // Lumière page is lettuce-only (supplemental lighting is lettuce-only).
+  if (page === 'lumiere' && currentCrop !== 'lettuce') {
+    setCrop('lettuce');
+  }
   // Subtle text-only Semaine + Diagnostic buttons: darken color when active
   const weekBtn = document.getElementById('page-week');
   weekBtn.style.color = page === 'week' ? 'var(--text)' : 'var(--text-muted)';
@@ -139,6 +145,7 @@ function setPage(page) {
   const section = sectionOf(page);
   document.getElementById('section-nutriments').className = section === 'nutriments' ? 'section-btn active' : 'section-btn';
   document.getElementById('section-effeuillage').className = section === 'effeuillage' ? 'section-btn active' : 'section-btn';
+  document.getElementById('section-lumiere').className = section === 'lumiere' ? 'section-btn active' : 'section-btn';
   document.getElementById('section-irrigation').className = section === 'irrigation' ? 'section-btn active' : 'section-btn';
   document.getElementById('page-fertigation').className = page === 'fertigation' ? 'page-btn active' : 'page-btn';
   document.getElementById('page-sol').className = page === 'sol' ? 'page-btn active' : 'page-btn';
@@ -154,6 +161,7 @@ function setPage(page) {
   document.getElementById('page-nutriment-content').style.display = page === 'nutriment' ? 'block' : 'none';
   document.getElementById('page-historique-nutriments-content').style.display = page === 'historique-nutriments' ? 'block' : 'none';
   document.getElementById('page-rendement-content').style.display = page === 'rendement' ? 'block' : 'none';
+  document.getElementById('page-lumiere-content').style.display = page === 'lumiere' ? 'block' : 'none';
   // Highlight the active admin tool button
   const nutrBtn = document.getElementById('page-nutriment');
   nutrBtn.style.color = page === 'nutriment' ? 'var(--text)' : 'var(--text-muted)';
@@ -178,6 +186,7 @@ function setPage(page) {
   if (page === 'nutriment') buildNutriment();
   if (page === 'historique-nutriments') buildHistoriqueNutriments();
   if (page === 'rendement') buildYieldRange();
+  if (page === 'lumiere') buildLight();
   if (page === 'diagnostic-practice') buildDiagnosticPractice();
   if (page === 'diagnostic') {
     // Apply the diagnostic crop's accent color when entering the page,
@@ -196,7 +205,7 @@ function setPage(page) {
 // Default page (fertigation) + default crop (tomato) collapse to `/` (no hash).
 // Why: lets hot-reload / bookmarks land on the same page+crop, and keeps
 // `admin` orthogonal to navigation rather than buried in a comma list.
-const PAGES = ['fertigation','sol','foliar','effeuillage','irrigation','week','diagnostic','diagnostic-practice','nutriment','historique-nutriments','rendement'];
+const PAGES = ['fertigation','sol','foliar','effeuillage','lumiere','irrigation','week','diagnostic','diagnostic-practice','nutriment','historique-nutriments','rendement'];
 const DEFAULT_PAGE = 'fertigation';
 const DEFAULT_CROP = 'tomato';
 // Primary nav sections. Each operational page belongs to exactly one section;
@@ -207,9 +216,10 @@ const DEFAULT_CROP = 'tomato';
 const SECTIONS = {
   nutriments:  ['fertigation','sol','foliar'],
   effeuillage: ['effeuillage'],
+  lumiere:     ['lumiere'],
   irrigation:  ['irrigation'],
 };
-const SECTION_DEFAULT_PAGE = { nutriments: 'fertigation', effeuillage: 'effeuillage', irrigation: 'irrigation' };
+const SECTION_DEFAULT_PAGE = { nutriments: 'fertigation', effeuillage: 'effeuillage', lumiere: 'lumiere', irrigation: 'irrigation' };
 function sectionOf(page) {
   for (const s in SECTIONS) if (SECTIONS[s].includes(page)) return s;
   return 'nutriments';
@@ -229,6 +239,7 @@ const CROP_PAGES = {
   fertigation: ['tomato','lettuce','nursery'],
   irrigation:  ['tomato','lettuce','nursery'],
   sol:         ['tomato','lettuce'],
+  lumiere:     ['lettuce'],
   diagnostic:  ['tomato','lettuce'],
   nutriment:   ['tomato','lettuce','nursery'],
 };
@@ -307,9 +318,12 @@ function applyAdminMode() {
   if (rendNavBtn) rendNavBtn.style.display = admin ? 'inline-block' : 'none';
   // Irrigation is a primary section tab but admin-only.
   document.getElementById('section-irrigation').style.display = admin ? '' : 'none';
-  // Nursery "Bien réglé quand" signs card is admin-only.
-  const nurserySignsCard = document.getElementById('nursery-signs-card');
-  if (nurserySignsCard) nurserySignsCard.style.display = admin ? '' : 'none';
+  // Nursery admin block (rendement + type de plateau) is admin-only.
+  const nurseryAdminBlock = document.getElementById('nursery-admin-block');
+  if (nurseryAdminBlock) nurseryAdminBlock.style.display = admin ? '' : 'none';
+  // Lumière page: DLI-target block is admin-only.
+  const lightAdminBlock = document.getElementById('light-admin-block');
+  if (lightAdminBlock) lightAdminBlock.style.display = admin ? '' : 'none';
   document.getElementById('admin-toggle').classList.toggle('is-admin', admin);
   // If the user dropped out of admin mode while on an admin page, send them
   // back to the default operational view.

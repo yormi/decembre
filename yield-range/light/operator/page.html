@@ -1,0 +1,33 @@
+  <!-- ═══════════════ LUMIÈRE PAGE (operator) ═══════════════ -->
+  <!-- Supplemental-LED-hours guide for Salanova (lettuce-only supplemental
+       lighting). Month selector → lamp hours per sky condition to reach the
+       DLI target, capped at the healthy photoperiod, + shortfall warning.
+       Auto-derived from the monthly clear-day-max DLI + cloud factors + GH
+       transmission (yield-range/light/domain.md); no hardcoded values here.
+       Wired via setPage('lumiere') → buildLight() in
+       yield-range/light/operator/logic.js. -->
+  <div id="page-lumiere-content" style="display:none;">
+
+    <!-- Crop sub-toggle: Laitue only (supplemental lighting is lettuce-only). -->
+    <div class="crop-toggle">
+      <button class="crop-btn active-lettuce" id="lum-crop-lettuce" onclick="setCrop('lettuce')">
+        <span class="crop-icon">🥬</span> Laitue
+      </button>
+    </div>
+
+    <div class="card">
+      <div class="card-title" id="lum-suppl-title">Heures DEL</div>
+      <div id="lum-suppl-table"></div>
+    </div>
+
+    <!-- Admin-only: the DLI target the lamp-hours table solves for.
+         Value rendered from window.YieldRange.DLI_TARGET in buildLight;
+         visibility toggled by applyAdminMode (light-admin-block). -->
+    <div class="card admin-block" id="light-admin-block" style="display:none;">
+      <div style="display:flex; align-items:baseline; justify-content:space-between; gap:12px;">
+        <div style="font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:1.5px; color:var(--text-muted);">Cible DLI <span class="admin-badge">admin</span></div>
+        <div style="font-size:22px; font-weight:700; color:var(--text); line-height:1.1; font-family:'DM Mono',monospace;"><span id="light-dli-target">—</span> mol/m²/j</div>
+      </div>
+    </div>
+
+  </div><!-- end page-lumiere-content -->

@@ -38,7 +38,11 @@ Observed seedling weights from Décembre nursery. Source-of-truth for empirical 
 1. **Peak yield ≈ d28 at 16 g/plant** in 50-cell packed, current zone temps.
 2. **Net biomass loss d28→d35** (16 → 10–12 g): senescence dominates past
    d28, not just stalled growth. **Operationally: harvest by d28 or accept
-   both yield and quality loss.**
+   both yield and quality loss.** This −0.066/day is crowding **+ salt
+   (Na 3166 ppm, leachate EC 5+) + heat/bolting** combined — an **upper bound**
+   on the crowding-only `SENESCENCE_DECLINE_RATE` the model uses, not a clean
+   anchor. Salt is being removed (nursery salt-flush); a salt-controlled held
+   cohort is the trigger to refit the crowding-only rate.
 3. **Quality regression visible at d35**: yellowing (N export from senescing
    leaves), mold (low-VPD pockets in packed canopy), bolting (heat).
 4. **Implied effective RGR_max ≈ 0.30–0.35 g/g/day** in early phase
@@ -67,6 +71,41 @@ Backed-out parameters that fit the 4 observations:
 **DLI correction note.** Initial fit (RGR_max = 0.35) assumed DLI = 11.5 (LED only) — wrong; greenhouse gets sun too. With corrected DLI ≈ 27.5 (sun 16 + LED 11.5), spacing decay no longer creates a light-starvation cliff past d18, so RGR_max refit to 0.22. Operationally d28→d35 mass loss is dominated by **bolting + heat + root-cap saturation**, not light starvation.
 
 Starting points; refit iteratively when integration code runs against the 4 observations.
+
+---
+
+## 2026-07 batch — Tray 50, drought + high heat
+
+**Variety:** Salanova (mixed loose-leaf)
+**Tray:** 50-cell
+**Nursery-space DLI:** 17 mol/m²/j
+**Condition:** water-stressed (lack of water) under high heat; patchy heat
+mortality (empty cells across the tray)
+**Source:** Décembre operator (Guillaume), 2026-07 photos + report
+
+| Day from sow | FW biggest (g/plant) | Notes |
+|---|---|---|
+| 25 | **5** | biggest plants; bushy survivors, canopy locally closed; stand thinned by heat mortality |
+
+### What this anchors
+
+**Primary empirical weight anchor for the 50-cell nursery**, replacing the
+retired 16 g @ d28 (salt-stalled, and inconsistent with 5 g @ d25 — 16 g @ d28
+would need ~3× in 5 days). Reads *grams* (operator-weighed), unlike the
+coverage-only 2026-07-04 photos.
+
+This cohort is **stress-reduced** (drought + heat), so it anchors the
+**stressed** growth regime, not the clean optimum. At the model's DLI 17 it is
+reproduced by a stressed ε (≈0.85 — the documented pH/EC-stress value, reused
+for heat/drought) × the plug DM (0.07); see derivation `carbon-balance-growth`.
+A well-watered, cooler 50-cell would run larger (clean ε 1.1) — no clean 50-cell
+cohort weighed yet.
+
+### Not modeled here
+
+Heat mortality (empty cells) is a stand-loss mechanism the growth engine does
+not carry — see the open candidate to model it or keep it out of scope
+(operational fix: water + cooler nursery).
 
 ---
 

@@ -10,6 +10,7 @@
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
 <!-- @include lib/global.css -->
+<!-- @include lib/admin.css -->
 <!-- @include app/operator/page.css -->
 <!-- @include nutrition/lib/styles.css -->
 <!-- @include nutrition/tomato/lib/styles.css -->
@@ -136,6 +137,12 @@
        yield-range/app/page.html; wired via setPage('rendement') →
        buildYieldRange() in yield-range/app/logic.js. -->
   <!-- @include yield-range/app/page.html -->
+
+  <!-- ═══════════════ LUMIÈRE PAGE (operator) ═══════════════ -->
+  <!-- Supplemental-LED-hours guide (lettuce-only). Defined in
+       yield-range/light/operator/page.html; wired via setPage('lumiere') →
+       buildLight() in yield-range/light/operator/logic.js. -->
+  <!-- @include yield-range/light/operator/page.html -->
 
   <div class="footer">
     <span id="last-update"></span>Ferme Décembre · Système d'opération 2026 · <a href="historique.html" style="color:inherit;text-decoration:underline;">Historique</a>
@@ -563,6 +570,7 @@ const ACCEPTED_EXCESSES = [
 <!-- @include yield-range/data.js -->
 <!-- @include yield-range/calc.js -->
 <!-- @include yield-range/model.js -->
+<!-- @include yield-range/seedling-thinning.js -->
 
 // ── 9. Bilan supply orchestrator + Block 7 drift renderer ─────────────────
 // nutrStage + nutrRecipeMode page-local state + LUXURY_FACTOR demand cap +
@@ -602,6 +610,7 @@ const ACCEPTED_EXCESSES = [
 <!-- @include nutrition/lettuce/app/logic.js -->
 
 <!-- @include yield-range/app/logic.js -->
+<!-- @include yield-range/light/operator/logic.js -->
 
 <!-- @include nutrition/nursery/app/logic.js -->
 

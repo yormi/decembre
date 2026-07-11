@@ -1,7 +1,8 @@
 # Lettuce stuck/browning roots — pH+P-lockout the lead cause; salinity cleared; browning is a separate problem
 
 **Date:** 2026-05-30
-**Status:** accepted (field-evidenced; browning differential open)
+**Status:** accepted (field-evidenced; browning differential open). Salinity
+clearance is April-only — superseded June 2026 (see the dated note below).
 
 Field signal (Guillaume, photos IMG_4210 / 4364 / 4133 / 4365):
 lettuce roots **conform to the plug shape and refuse to colonise
@@ -17,6 +18,13 @@ browning elongated stem, i.e. root death, not just confinement.
 | Roots browning / necrotic | NOT pH. Candidates: wet-plug anaerobism (peat plug holds water while mineral bed drains → root suffocation) or root pathogen (Pythium / Rhizoctonia) | **No** |
 
 ## Why salinity is ruled out as the confinement cause
+
+> **Dated (June 2026):** valid for **April only** (CE 1.08). By June the field
+> SME CE climbed to **4.01** (Na 124, SAR 1.29) — salinity is now a live field
+> constraint (still saline, not sodic → leachable). See
+> `../../../learnings/field-sme-salinity-climbed-2026-06.md`. The confinement
+> analysis below stands for the April state; do not cite the CE-1.08 clearance
+> as current.
 
 "Roots won't leave the plug" is also the textbook osmotic/salt-
 gradient signature, and lettuce SME N is high (68.8–72.6 ppm). But

@@ -1,105 +1,77 @@
 # Yield Range — app UI specs
 
-UI contract for the Yield Range admin page. Math model:
-`yield-range/spec.md`.
+UI contract for the Rendement admin page. Yield model:
+`yield-range/spec.md` (carbon-balance `predictYield`).
 
-Admin page. Salanova nursery only. French UI text.
+Admin page. Salanova. French UI text.
 
 ## Contract
 
-- **2 inputs**: plateau (18/24/32/50), heures DEL (0–18)
-- **2 outputs**: capacité plafond (g/plant), graphique poids tête vs jours
+- **5 inputs** (toggle groups): field spacing · labor routine · nursery
+  duration (weeks) · nursery tray · thinning on/off
+- **Outputs**: yearly sales, kg/week, trays-in-nursery (stat tiles) +
+  seedling (transplant) weight, harvest weight, peak + full-cycle growth
+  chart + nursery-thinning heatmap
 
 ---
 
-## two-inputs
+## inputs
 
-The page provides exactly two inputs:
-1. **Plateau** — toggle 18 / 24 / 32 / 50 (cells per tray)
-2. **Heures DEL** — slider 0–18 (step 1, default 16)
+Five toggle groups, each rendered from the engine's option sets (no option
+text hardcoded), state held in the `.active` button:
 
-No other operator-facing inputs.
+1. **Espacement** — `FIELD_SPACING_CONFIGS` (7 options, `6r×4"` … `3r×10"`)
+2. **Récolte** — `LABOR_ROUTINES` (2/3/4 semaines); sub-label shows field days
+3. **Durée pépinière** — 2/3/4/5 semaines → `nurseryDays = weeks × 7`
+4. **Plateau pépinière** — `NURSERY_TRAY_CELLS` (50/32/18)
+5. **Éclaircissage** — Oui / Non (checker-thin)
+
+Derived: `thinDay = max(1, nurseryDays − 7)` (thin ~1 week before
+transplant). Defaults: `5r6` · `2wk` · `4 sem` · `50` · thin on.
 
 ---
 
-## capacite-plafond-labeled-number
+## results
 
-The page renders the canopy ceiling as a labeled number:
-`Capacité plafond: X g/plant` (where X is the math model's
-`canopyCapG`). Separate display from the chart's reference line in
-`growth-chart`.
+Rendered from `predictYield(inputs)`:
+
+- Three stat tiles: **Ventes / an** (`yearlySalesDollars`, green),
+  **Récolte / semaine** (`kgPerWeek`), **Plateaux pépinière** (`traysInNursery`)
+- Detail rows: seedling (transplant) weight, harvest weight (+ **sénescence**
+  badge when `senescingAtHarvest`), peak weight · day
+- Assumptions note: transplant day, thin day (if on), bed geometry, price/kg —
+  plus the uncalibrated-senescence caveat
+
+Thousands grouped with a space; no value computed in the renderer.
 
 ---
 
 ## growth-chart
 
-The page renders a chart with:
-- x-axis labeled **`Jours depuis germination`** (range 0–49, integer)
-- y-axis labeled **`Poids tête (g)`**
-- Data series = math model's `trajectory` output
-- Horizontal reference line at `canopyCapG` (the asymptote)
-- Vertical marker at `daysToPotential` when not null
-- When `daysToPotential` is null, an annotation reads
-  `Plein potentiel non atteint dans la fenêtre de 49 jours`
+Full-cycle fresh-weight trajectory from `predictYield().trajectory`:
+
+- x-axis **`Jours depuis germination`** (0..`nurseryDays + fieldDays`,
+  ticks every 7 days)
+- y-axis **`Poids tête (g)`** (0 to `max(peak, fieldCap) × 1.1`)
+- polyline bends at canopy closure, declines past senescence onset
+- horizontal reference line at `fieldCapG`, labeled **`Plafond champ`**
+- vertical marker at the transplant day, labeled **`Transplant J<day>`**
+- peak dot at (`peakDay`, `peakWeightG`), labeled with the weight
 
 ---
 
-## clickable-dli-display-with-f-light-modal
+## thinning-heatmap
 
-The page renders a clickable element showing the current bench DLI
-(`DLI banc: X.X mol/m²/j`). Clicking it opens a modal showing the
-`f_light` response curve as a table:
-
-| DLI (mol/m²/j) | Multiplicateur f_light |
-|---|---|
-| < 4 | 0 (photosynthèse arrêtée) |
-| 4 → 12 | rampe linéaire 0 → 1,0 |
-| 12 – 17 | 1,0 (optimum) |
-| 17 → 22 | rampe linéaire 1,0 → 0,7 (saturation) |
-| ≥ 22 | 0,7 (plafond saturation) |
-
-The modal also shows the current `dliBenchAvg` and `dliPerPlant`
-values for context.
-
----
-
-## peak-potential-day-shown
-
-The Capacité plafond card displays both `canopyCapG` AND
-`daysToPotential` in a single line: `Capacité plafond: X g/plant · pic
-à J<n>` (or `pic non atteint dans la fenêtre de 49 jours` when null).
-
----
-
-## bench-dli-shown-as-integer
-
-Bench DLI shown in the page card (`#yr-dli-value`) is rounded to the
-nearest integer with `Math.round()`. The modal context line keeps one
-decimal for transparency.
-
----
-
-## bench-dli-colour-coded
-
-The bench DLI display value (`#yr-dli-value`) text colour is set based
-on `f_light(dliBenchAvg)`: green if ≥ 0.95, yellow if 0.7–0.95, red if
-< 0.7. Colour updates on every `renderYieldRange` call. Colour
-reflects what young, pre-canopy-closure plants (d ≤ 14) experience —
-at that stage `spacing_factor = 1.0` so per-plant DLI equals bench
-DLI. Late-cycle reality (per-plant after canopy closure at d ≥ 28,
-bench × 0.40) is surfaced in the modal context line, not in this
-colour. Three-tier convention.
+Nursery-only detail (unchanged): fresh weight (g) per plateau × checker-thin
+day × sample day from `seedlingThinningGrid()` (same carbon-balance law,
+nursery phase). Cell shade tracks weight; ▲ marks a canopy-cap hit.
 
 ---
 
 ## Inherited
 
 Cross-app conventions (`spec — ui-language-ce-not-ec`,
-`spec — url-hash-routing`, `spec — ui-language-algue-not-kelp`,
-`spec — ui-language-plain-french`) apply by default per the root
-`CLAUDE.md` "Conventions inherited by every page" section. This page
-does not deviate.
-
-- All math-model rules in `yield-range/spec.md` must be satisfied by
-  the underlying functions before the page renders meaningful
-  predictions.
+`spec — url-hash-routing`, `spec — ui-language-plain-french`) apply per the
+root `CLAUDE.md`. This page does not deviate. All math-model rules in
+`yield-range/spec.md` must hold in the underlying functions before the page
+renders meaningful predictions.

@@ -159,3 +159,16 @@ function buildRootFixSteps() {
     { number: 5, title: 'Rincer le seau pour le lendemain', acid: false },
   ]);
 }
+
+// Admin-only nursery tray-type picker (#nursery-admin-block). Flips the active
+// button styling; the selected value is NOT wired to the model yet (yield +
+// tray type are standalone inputs for now).
+function setNurseryAdminTray(trayId) {
+  ['50-cell', '18-pot-3in', '32-pot-2.5in'].forEach(id => {
+    const btn = document.querySelector(`[data-tray="${id}"]`);
+    if (!btn) return;
+    const selected = id === trayId;
+    btn.style.background = selected ? '#7c4dff' : 'transparent';
+    btn.style.color = selected ? '#fff' : 'var(--text)';
+  });
+}

@@ -1,272 +1,379 @@
-// ─── yield-range/app/logic.js — Rendement semis admin page ─
+// ─── yield-range/app/logic.js — Rendement admin page ─
 //
-// Spec: yield-range/app/user-stories.md (two inputs · capacité
-// plafond display · chart with axis labels + reference line +
-// marker). Math contract: yield-range/spec.md (canopy-cap-is-ceiling to
-// trajectory-output-shape).
+// Spec: yield-range/app/user-stories.md. Yield model:
+// window.YieldRange.predictYield (yield-range/spec.md, carbon-balance) — all
+// numbers come from the engine; this file only wires inputs and maps outputs
+// to markup. Nursery heatmap: window.YieldRange.seedlingThinningGrid().
 //
-// State held in the DOM (no module-level vars). Page entry: buildYieldRange.
-// setupYieldRangeInputs is idempotent — wires listeners once across re-entries.
-
-let _yrInputsWired = false;
+// State held in the DOM (.active toggle buttons). Page entry: buildYieldRange.
+// renderYieldRangeInputs renders the toggles once and wires one delegated
+// listener; re-entries keep operator state.
 
 function buildYieldRange() {
-  // Defensive: if the inputs are already in the DOM (page render), don't
-  // reset their values — re-entries (admin nav round-trip, hashchange) keep
-  // operator state. setupYieldRangeInputs is idempotent.
-  setupYieldRangeInputs();
+  renderYieldRangeInputs();
   renderYieldRange();
 }
 
-function setupYieldRangeInputs() {
-  if (_yrInputsWired) return;
-  // Plateau toggle: button group with data-yr-plateau="18" / "24" / "32" / "50".
-  document.querySelectorAll('[data-yr-plateau]').forEach(btn => {
-    btn.addEventListener('click', () => {
-      document.querySelectorAll('[data-yr-plateau]').forEach(b => b.classList.toggle('active', b === btn));
-      renderYieldRange();
+// Seedling-thinning heatmap. Fresh weight (g/plant) for each plateau ×
+// checker-thin day × sample day, from window.YieldRange.seedlingThinningGrid()
+// (merged expolinear + cap model, yield-range/domain.md). Static — renders
+// once from buildYieldRange. Cell shade tracks weight; ▲ marks a plant that
+// hit its canopy-volume cap. No numeric values hardcoded in the renderer.
+function renderSeedlingThinningTable(stressed = false) {
+  const container = document.getElementById('yr-thinning-table');
+  if (!container || !window.YieldRange.seedlingThinningGrid) return;
+  const grid = window.YieldRange.seedlingThinningGrid(stressed);
+
+  const maximumWeight = Math.max(...grid.rows.flatMap(r => r.cells.flatMap(c => c.weights.map(w => w.weight))));
+  const fmtDay = d => (Math.round(d * 10) / 10).toString().replace('.', ',');
+  // Green heatmap: alpha ramps with weight so the eye reads size at a glance.
+  const cellStyle = (w) => {
+    const alpha = 0.06 + 0.5 * (w.weight / maximumWeight);
+    const border = w.atCap ? 'border:1px solid #1e6b2d;' : 'border:1px solid transparent;';
+    return `background:rgba(30,107,45,${alpha.toFixed(3)}); ${border}`;
+  };
+
+  const cols = `grid-template-columns:1.25fr repeat(${grid.sampleDays.length}, 1fr);`;
+  const conditionsLabel = grid.conditions.stressed
+    ? 'chaleur + sécheresse (ancré 5 g @ J25, 50 cell.)'
+    : 'optimales (bien arrosé)';
+  let html = `<div style="font-size:11.5px; color:var(--text-muted); margin-bottom:12px; line-height:1.5;">`
+    + `Poids frais (g/plant) · DLI <strong style="color:var(--text);">${grid.conditions.dli} mol/m²/j</strong> · conditions <strong style="color:var(--text);">${conditionsLabel}</strong> · aucun plant retiré (éclaircissage vers plus de plateaux). `
+    + `<span style="color:#1e6b2d; font-weight:700;">▲</span> = plafond canopée atteint.</div>`;
+
+  grid.rows.forEach(row => {
+    // Plateau band: start area, canopy-closure day, cap packed → spaced.
+    html += `<div style="margin-top:14px; margin-bottom:6px; display:flex; align-items:baseline; justify-content:space-between; gap:8px;">`
+      + `<div style="font-weight:700; color:var(--text); font-size:13px;">${row.plateauSize} cellules `
+      + `<span style="font-weight:400; color:var(--text-muted); font-size:11px;">(${(Math.round(row.areaIn2 * 10) / 10).toString().replace('.', ',')} po²/plant)</span></div>`
+      + `<div style="font-family:'DM Mono',monospace; font-size:11px; color:var(--text-muted);">${row.closureDay == null ? 'ne ferme pas' : `ferme ~J${fmtDay(row.closureDay)}`} · plafond ${row.capPacked.toFixed(0)}→${row.capSpaced.toFixed(0)} g</div>`
+      + `</div>`;
+
+    html += `<div style="display:grid; ${cols} gap:5px 8px; font-size:12px;">`;
+    // Column header: sample days.
+    html += `<div style="font-weight:700; color:var(--text-muted); font-size:10px; text-transform:uppercase; letter-spacing:1px;">Éclaircir</div>`;
+    grid.sampleDays.forEach(d => {
+      html += `<div style="font-weight:700; color:var(--text-muted); font-size:10px; text-transform:uppercase; letter-spacing:1px; text-align:right;">J${d}</div>`;
     });
+    // One row per thin-day.
+    row.cells.forEach(cell => {
+      html += `<div style="color:var(--text); font-weight:600; align-self:center;">J${cell.thinDay}</div>`;
+      cell.weights.forEach(w => {
+        html += `<div style="${cellStyle(w)} border-radius:4px; padding:5px 7px; text-align:right; font-family:'DM Mono',monospace; color:var(--text);">`
+          + `${w.weight.toFixed(0)}${w.atCap ? ' <span style="color:#1e6b2d;">▲</span>' : ''}</div>`;
+      });
+    });
+    html += `</div>`;
   });
-  // DEL hours slider — both 'input' (live drag) and 'change' (commit on
-  // release). Chart re-renders on every input change.
-  const slider = document.getElementById('yr-led-hours');
-  if (slider) {
-    slider.addEventListener('input', renderYieldRange);
-    slider.addEventListener('change', renderYieldRange);
-  }
-  _yrInputsWired = true;
+
+  container.innerHTML = html;
 }
+
+// Nursery-duration options (weeks). Checker-thin fires ~1 week before
+// transplant, floored at day 1.
+const YR_NURSERY_WEEKS = [2, 3, 4, 5];
+const nurseryDaysFromWeeks = weeks => weeks * 7;
+const thinDayFromNurseryDays = nurseryDays => Math.max(1, nurseryDays - 7);
+
+// Default selections mirror the yield-range worked example. Nursery conditions
+// default to 'stress' — the measured Décembre reality (drought+heat, 5 g @ d25).
+const YR_DEFAULTS = { spacing: '5r6', routine: '2wk', nursery: '4', tray: '50', thin: 'on', conditions: 'stress' };
+
+// Render the four input toggle groups from the engine's option sets, then wire
+// one delegated click listener. Idempotent — skips if already rendered so page
+// re-entries keep operator selections.
+function renderYieldRangeInputs() {
+  const container = document.getElementById('yr-inputs');
+  if (!container || container.dataset.wired === '1') return;
+  const YR = window.YieldRange;
+  if (!YR || !YR.FIELD_SPACING_CONFIGS) return;
+
+  const group = (title, name, options) => {
+    const btns = options.map(o =>
+      `<button class="stage-btn${o.value === YR_DEFAULTS[name] ? ' active' : ''}" data-yr-group="${name}" data-yr-value="${o.value}">`
+      + `<span class="stage-label">${o.label}</span>`
+      + (o.sub ? `<span class="stage-weeks">${o.sub}</span>` : '')
+      + `</button>`).join('');
+    return `<div style="margin-bottom:16px;">`
+      + `<div style="font-size:12px; color:var(--text-muted); margin-bottom:8px;">${title}</div>`
+      + `<div class="stage-selector" style="flex-wrap:wrap;">${btns}</div></div>`;
+  };
+
+  container.innerHTML =
+    group('Espacement (planche 30 po)', 'spacing',
+      YR.FIELD_SPACING_CONFIGS.map(c => ({ value: c.key, label: `${c.rows}r×${c.inRowInch}"` })))
+    + group('Récolte de chaque planche', 'routine',
+      YR.LABOR_ROUTINES.map(r => ({ value: r.key, label: r.label.replace('Aux ', '').replace(' semaines', ' sem'), sub: `${r.fieldDays} j` })))
+    + group('Durée pépinière', 'nursery',
+      YR_NURSERY_WEEKS.map(w => ({ value: String(w), label: String(w), sub: 'sem' })))
+    + group('Plateau pépinière', 'tray',
+      YR.NURSERY_TRAY_CELLS.map(n => ({ value: String(n), label: String(n), sub: 'cellules' })))
+    + group('Éclaircissage échiquier', 'thin',
+      [{ value: 'on', label: 'Oui', sub: '≈1 sem avant' }, { value: 'off', label: 'Non', sub: '—' }])
+    + group('Conditions pépinière', 'conditions',
+      [{ value: 'stress', label: 'Chaleur + sécheresse', sub: 'stressé (réel)' }, { value: 'clean', label: 'Optimales', sub: 'bien arrosé' }]);
+
+  container.addEventListener('click', (e) => {
+    const btn = e.target.closest('[data-yr-group]');
+    if (!btn) return;
+    const grp = btn.dataset.yrGroup;
+    container.querySelectorAll(`[data-yr-group="${grp}"]`).forEach(b => b.classList.toggle('active', b === btn));
+    renderYieldRange();
+  });
+  container.dataset.wired = '1';
+}
+
+// Read the active toggle in each group → predictYield input object. Falls back
+// to the defaults when a group has no active button (first render safety).
+function readYieldRangeInputs() {
+  const activeValue = name => {
+    const button = document.querySelector(`#yr-inputs [data-yr-group="${name}"].active`);
+    return button ? button.dataset.yrValue : YR_DEFAULTS[name];
+  };
+  const thinning = activeValue('thin') === 'on';
+  const nurseryDays = nurseryDaysFromWeeks(parseInt(activeValue('nursery'), 10));
+  return {
+    fieldSpacingKey: activeValue('spacing'),
+    laborRoutineKey: activeValue('routine'),
+    nurseryTrayCells: parseInt(activeValue('tray'), 10),
+    thinning,
+    thinDay: thinning ? thinDayFromNurseryDays(nurseryDays) : null,
+    nurseryDays,
+    nurseryStress: activeValue('conditions') === 'stress',
+  };
+}
+
+// Chart view: full-cycle trajectory (default) or the nursery thinning-timing
+// comparison. Held in a module var — persists across input re-renders.
+let yrChartMode = 'fullcycle';
 
 function renderYieldRange() {
-  // Read input state. Plateau toggle: the .active button's data attr.
-  // Fallbacks mirror the markup defaults (50, 16).
-  const activeBtn = document.querySelector('[data-yr-plateau].active');
-  const plateauSize = activeBtn ? parseInt(activeBtn.dataset.yrPlateau, 10) : 50;
-  const slider = document.getElementById('yr-led-hours');
-  const ledHours = slider ? parseInt(slider.value, 10) : 16;
+  if (!window.YieldRange || !window.YieldRange.predictYield) return;
+  const inputs = readYieldRangeInputs();
+  const model = window.YieldRange.predictYield(inputs);
+  const results = document.getElementById('yr-results');
+  if (results) results.innerHTML = renderYieldResults(model);
+  const chart = document.getElementById('yr-chart-container');
+  if (chart) {
+    const svg = yrChartMode === 'thinning'
+      ? renderNurseryThinningChart(inputs.nurseryTrayCells, inputs.nurseryStress)
+      : renderYieldChart(inputs);
+    chart.innerHTML = renderChartModeToggle(yrChartMode) + svg;
+    wireChartModeToggle(chart);
+  }
+  renderSeedlingThinningTable(inputs.nurseryStress);
+}
 
-  // Update slider label.
-  const labelElement = document.getElementById('yr-led-hours-label');
-  if (labelElement) labelElement.textContent = `${ledHours} h`;
+// Two-button toggle above the chart: full cycle ↔ nursery thinning comparison.
+function renderChartModeToggle(mode) {
+  const btn = (value, label) =>
+    `<button class="stage-btn${value === mode ? ' active' : ''}" data-yr-chart="${value}" `
+    + `style="flex:0 0 auto; padding:5px 12px;">${label}</button>`;
+  return `<div style="display:flex; gap:6px; margin-bottom:10px;">`
+    + btn('fullcycle', 'Plein cycle') + btn('thinning', 'Éclaircissage') + `</div>`;
+}
 
-  // Run the math model. The yield-range model accepts a two-regime input
-  // set; the legacy admin page exposes only plateauSize + ledHours,
-  // so the remaining inputs are wired here from page-level defaults until
-  // the page is extended to surface them. nurseryDays/fieldDays/density/areas
-  // come from the operator inputs once that spec lands; PO-routing follow-up.
-  const result = window.YieldRange.predictNurseryYield({
-    plateauSize,
-    ledHours,
-    nurseryDays: 28,
-    fieldDays: 21,
-    fieldDensityHeadsPerM2: 43,
-    nurseryAreaM2: 1,
-    fieldAreaM2: 1,
+function wireChartModeToggle(container) {
+  if (container.dataset.chartWired) return;
+  container.addEventListener('click', (e) => {
+    const btn = e.target.closest('[data-yr-chart]');
+    if (!btn) return;
+    yrChartMode = btn.dataset.yrChart;
+    renderYieldRange();
   });
-  const canopyCapG = result.nurseryCanopyCapG;
-  const daysToTransplantPotential = result.daysToTransplantPotential;
-  const trajectory = result.trajectory;
-  const windowDays = trajectory[trajectory.length - 1].day;
-
-  // Capacité plafond display.
-  const capEl = document.getElementById('yr-canopy-cap');
-  if (capEl) capEl.textContent = canopyCapG.toFixed(0);
-
-  // daysToTransplantPotential rendered inline next to the cap.
-  const daysElement = document.getElementById('yr-days-to-potential');
-  if (daysElement) {
-    daysElement.textContent = (daysToTransplantPotential != null)
-      ? `· pic à J${daysToTransplantPotential}`
-      : `· pic non atteint dans la fenêtre de ${windowDays} jours`;
-  }
-
-  // Clickable bench-DLI display. Recompute via the model API so
-  // the page tracks any future change in the DLI formula without a UI edit.
-  // Page-card value rounded to integer for quick-read; the modal
-  // context line keeps one decimal for transparency.
-  // Text colour reflects the f_light response zone at the current
-  // bench DLI (green optimum / yellow ramp / red stalled or saturated).
-  // Breakpoints sourced from F_LIGHT_BREAKPOINTS via f_light(); no
-  // hardcoded DLI thresholds in the UI (narrative-derived-from-live-data).
-  const dliElement = document.getElementById('yr-dli-value');
-  const dliBench = window.YieldRange.dliBenchAvg(ledHours);
-  if (dliElement) {
-    dliElement.textContent = String(Math.round(dliBench));
-    const fLight = window.YieldRange.f_light(dliBench);
-    // Tier thresholds: ≤5% (green), ≤30% (yellow), >30% (red) —
-    // same green/yellow/red palette signals "near optimum / partial / off-band".
-    let dliColor;
-    if      (fLight >= 0.95) dliColor = '#1e6b2d';  // green — optimum band
-    else if (fLight >= 0.70) dliColor = '#a08020';  // yellow — light-limited ramp or mild saturation
-    else                     dliColor = '#b03030';  // red — stalled (<4 mol) or saturation floor
-    dliElement.style.color = dliColor;
-  }
-
-  // Chart re-render. Replace SVG markup wholesale on each call —
-  // simplest approach; trajectory is 50 points so cost is negligible.
-  const chartElement = document.getElementById('yr-chart-container');
-  if (chartElement) chartElement.innerHTML = renderYieldRangeChart(trajectory, canopyCapG, daysToTransplantPotential);
+  container.dataset.chartWired = '1';
 }
 
-// f_light response modal. Auto-renders the breakpoint table from
-// window.YieldRange.F_LIGHT_BREAKPOINTS (narrative-derived-from-live-data — no hardcoded duplicate
-// of the breakpoint numeric values in HTML). Descriptive labels for each
-// row are kept here since they don't live in data.js.
-function openDliModal() {
-  const modal = document.getElementById('yr-dli-modal');
-  const body  = document.getElementById('yr-dli-modal-body');
-  if (!modal || !body) return;
+// Headline stat tiles (yearly sales · kg/month · trays) + a secondary detail
+// list, all from the model object. fmtInt groups thousands with a space
+// (locale-independent). No values computed here.
+function renderYieldResults(m) {
+  const fmtInt = n => Math.round(n).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
+  const YR = window.YieldRange;
 
-  const bp = window.YieldRange.F_LIGHT_BREAKPOINTS || [];
-  // Read current operator state for the context line. Mirrors renderYieldRange's
-  // input read so the modal context stays in sync without coupling to a shared
-  // state variable.
-  const activeBtn = document.querySelector('[data-yr-plateau].active');
-  const plateauSize = activeBtn ? parseInt(activeBtn.dataset.yrPlateau, 10) : 50;
-  const slider = document.getElementById('yr-led-hours');
-  const ledHours = slider ? parseInt(slider.value, 10) : 16;
-  const dliBench = window.YieldRange.dliBenchAvg(ledHours);
+  const tile = (value, unit, label, accent) =>
+    `<div style="flex:1; min-width:92px; background:var(--input-bg); border:1px solid var(--border); border-radius:var(--radius-sm); padding:12px 10px;">`
+    + `<div style="font-family:'DM Mono',monospace; font-size:21px; font-weight:700; color:${accent || 'var(--text)'}; line-height:1.1;">${value}`
+    + (unit ? `<span style="font-size:12px; font-weight:600; color:var(--text-muted);"> ${unit}</span>` : '')
+    + `</div><div style="font-size:10px; text-transform:uppercase; letter-spacing:1px; color:var(--text-muted); margin-top:6px;">${label}</div></div>`;
 
-  // Per-plant DLI at full canopy bind (d ≥ 28, packed-canopy floor 0.40 per
-  // packed-canopy-spacing). Surfaced for context — operator can see what fraction of
-  // bench DLI an average plant actually receives once canopies overlap.
-  const dliPerPlantAtBind = dliBench * 0.40;
+  const tiles = `<div style="display:flex; gap:8px; flex-wrap:wrap;">`
+    + tile(fmtInt(m.yearlySalesDollars), "$", 'Ventes / an', 'var(--accent-lettuce)')
+    + tile(fmtInt(m.kgPerWeek), 'kg', 'Récolte / semaine')
+    + tile(fmtInt(m.traysInNursery), '', 'Plateaux pépinière')
+    + `</div>`;
 
-  // Identify breakpoint roles by index, not by hardcoded x-values:
-  //   bp[0]/[1]: zero floor (< 4 mol/m²/d → f_light = 0)
-  //   bp[1]→[2]: linear ramp 0 → 1.0
-  //   bp[2]→[3]: optimum plateau (1.0)
-  //   bp[3]→[4]: saturation ramp 1.0 → 0.7
-  //   bp[4]→[5]: saturation floor (0.7)
-  // The labels match the f_light comment block in data.js and the spec table
-  // in yield-range/app/user-stories.md.
-  const fmtX = v => Number.isInteger(v) ? `${v}` : v.toFixed(1);
-  const fmtY = v => v.toFixed(1).replace('.', ',');
-  const rows = [];
-  if (bp.length >= 6) {
-    rows.push({ range: `< ${fmtX(bp[1].x)}`,                              mult: `${fmtY(bp[1].y)} (photosynthèse arrêtée)` });
-    rows.push({ range: `${fmtX(bp[1].x)} → ${fmtX(bp[2].x)}`,             mult: `rampe linéaire ${fmtY(bp[1].y)} → ${fmtY(bp[2].y)}` });
-    rows.push({ range: `${fmtX(bp[2].x)} – ${fmtX(bp[3].x)}`,             mult: `${fmtY(bp[2].y)} (optimum)` });
-    rows.push({ range: `${fmtX(bp[3].x)} → ${fmtX(bp[4].x)}`,             mult: `rampe linéaire ${fmtY(bp[3].y)} → ${fmtY(bp[4].y)} (saturation)` });
-    rows.push({ range: `≥ ${fmtX(bp[4].x)}`,                              mult: `${fmtY(bp[4].y)} (plafond saturation)` });
-  }
+  const badge = flag => flag
+    ? ` <span style="font-size:9px; font-weight:700; text-transform:uppercase; letter-spacing:0.5px; color:#8a3e1e; background:#fbeee8; border:1px solid #e8c9bc; border-radius:4px; padding:1px 5px;">sénescence</span>`
+    : '';
+  const row = (label, value) =>
+    `<div style="display:flex; justify-content:space-between; align-items:baseline; padding:6px 0; border-top:1px solid var(--border);">`
+    + `<span style="color:var(--text-muted);">${label}</span>`
+    + `<span style="font-family:'DM Mono',monospace; color:var(--text);">${value}</span></div>`;
 
-  let html = '';
-  // Context line: current bench DLI (early-cycle reality, what young plants
-  // feel pre-canopy-closure — the value the page colour code is anchored to)
-  // + per-plant DLI at full canopy bind (late-cycle reality, what mature
-  // plants get once canopies overlap).
-  html += `<div style="font-size:12px; color:var(--text-muted); margin-bottom:12px; line-height:1.55;">`
-       +    `DLI banc actuel <em style="font-style:normal; color:var(--text-muted);">(jeunes plants, j ≤ 14)</em> : <strong style="color:var(--text); font-family:'DM Mono',monospace;">${dliBench.toFixed(1)} mol/m²/j</strong><br>`
-       +    `DLI par plant à canopée fermée <em style="font-style:normal; color:var(--text-muted);">(j ≥ 28)</em> : <strong style="color:var(--text); font-family:'DM Mono',monospace;">${dliPerPlantAtBind.toFixed(1)} mol/m²/j</strong><br>`
-       +    `<em style="font-style:normal; font-size:11px;">La couleur du DLI banc reflète la condition des jeunes plants. Une fois la canopée fermée, chaque plant ne reçoit plus que ~40 % du DLI banc.</em>`
-       + `</div>`;
-  // Breakpoint table.
-  html += `<div style="display:grid; grid-template-columns:1fr 1.4fr; gap:6px 12px; font-size:12px; line-height:1.5;">`;
-  html +=   `<div style="font-weight:700; color:var(--text); padding-bottom:4px; border-bottom:1px solid var(--border);">DLI (mol/m²/j)</div>`;
-  html +=   `<div style="font-weight:700; color:var(--text); padding-bottom:4px; border-bottom:1px solid var(--border);">Multiplicateur f_light</div>`;
-  rows.forEach(r => {
-    html += `<div style="font-family:'DM Mono',monospace; color:var(--text);">${r.range}</div>`;
-    html += `<div style="color:var(--text-muted);">${r.mult}</div>`;
-  });
-  html += `</div>`;
+  const detail = `<div style="margin-top:16px; font-size:12.5px;">`
+    + row('Poids semis (transplant)', `${fmtInt(m.transplantWeightG)} g${badge(m.senescingAtTransplant)}`)
+    + row('Poids tête récolte', `${fmtInt(m.harvestWeightG)} g${badge(m.senescingAtHarvest)}`)
+    + row('Pic', `${fmtInt(m.peakWeightG)} g · J${m.peakDay}`)
+    + `</div>`;
 
-  body.innerHTML = html;
-  modal.classList.add('open');
+  const inputs = readYieldRangeInputs();
+  const conditionsNote = inputs.nurseryStress
+    ? 'Pépinière : chaleur + sécheresse (ancré 5 g @ J25).'
+    : 'Pépinière : conditions optimales (non mesuré).';
+  const note = `<div style="margin-top:12px; font-size:10.5px; color:var(--text-muted); line-height:1.5;">`
+    + `Transplant J${inputs.nurseryDays}${inputs.thinning ? ` · éclaircissage J${inputs.thinDay}` : ''} · ${YR.BED_COUNT} planches 30 po × 100 pi · ${YR.PRICE_PER_KG} $/kg. `
+    + `${conditionsNote} Sénescence champ non calibrée — poids absolus indicatifs.</div>`;
+
+  return tiles + detail + note;
 }
 
-function closeDliModal() {
-  const modal = document.getElementById('yr-dli-modal');
-  if (modal) modal.classList.remove('open');
-}
+// renderYieldChart(inputs) → SVG of the full-cycle fresh-weight trajectory
+// (nursery → field), four checker-thin timings overlaid (no thin · 2/3/4
+// weeks): exponential ramp → linear at closure → decline past senescence.
+// Transplant marker, field-cap reference line, legend with harvest weight.
+// A thin timing at or past the nursery length is skipped (identical to no
+// thin — no nursery days remain after it). From window.YieldRange.predictYield.
+function renderYieldChart(inputs) {
+  const YR = window.YieldRange;
+  const scenarios = [
+    { label: 'Sans éclaircir',  thinning: false, thinDay: null, color: '#8a8f98' },
+    { label: 'Éclaircir 2 sem', thinning: true,  thinDay: 14,   color: '#27874a' },
+    { label: 'Éclaircir 3 sem', thinning: true,  thinDay: 21,   color: '#2b6cb0' },
+    { label: 'Éclaircir 4 sem', thinning: true,  thinDay: 28,   color: '#b8562a' },
+  ].filter(s => !s.thinning || s.thinDay < inputs.nurseryDays)
+   .map(s => ({ ...s, model: YR.predictYield({ ...inputs, thinning: s.thinning, thinDay: s.thinning ? s.thinDay : null }) }));
 
-// Close the f_light modal on Escape, mirroring the Pourquoi modal handler.
-document.addEventListener('keydown', (e) => {
-  if (e.key === 'Escape') closeDliModal();
-});
+  const baseline = scenarios[0].model;
+  const xMaximum = baseline.trajectory[baseline.trajectory.length - 1].day;
+  const yMaximum = Math.max(baseline.fieldCapG, ...scenarios.flatMap(s => s.model.trajectory.map(p => p.weight_g))) * 1.08;
+  const transplantDay = inputs.nurseryDays;
 
-// renderYieldRangeChart(trajectory, canopyCapG, daysToTransplantPotential) → SVG markup string.
-//
-// Chart contract:
-//   - x-axis labeled "Jours depuis germination" (range 0 to nurseryDays + fieldDays, integer, ticks every 7 days)
-//   - y-axis labeled "Poids tête (g)" (range 0 to canopyCapG × 1.1, auto-scale)
-//   - polyline series for trajectory
-//   - horizontal dashed reference line at canopyCapG, labeled "Plafond" at the right edge
-//   - vertical marker at daysToTransplantPotential when not null, labeled "Pic potentiel: J<n>"
-//   - when daysToTransplantPotential is null, render annotation
-//     "Plein potentiel non atteint dans la fenêtre nurseryDays + fieldDays" inside the chart area
-function renderYieldRangeChart(trajectory, canopyCapG, daysToTransplantPotential) {
-  // SVG canvas + plot-area math. viewBox keeps the chart responsive within
-  // its container; margins reserve room for axis labels and tick text.
-  const W = 600, H = 320;
-  const ML = 56, MR = 60, MT = 18, MB = 48;
-  const plotW = W - ML - MR;
-  const plotH = H - MT - MB;
+  const FS_TICK = 14, FS_TITLE = 15, FS_MARK = 13, FS_CAP = 12.5, FS_LEGEND = 14;
+  const W = 660, H = 400, ML = 62, MR = 104, MT = 22, MB = 62;
+  const plotW = W - ML - MR, plotH = H - MT - MB;
+  const x = d => ML + d / xMaximum * plotW;
+  const y = w => MT + plotH - w / yMaximum * plotH;
 
-  const xMinimum = 0;
-  const xMaximum = trajectory[trajectory.length - 1].day; // nurseryDays + fieldDays
-  const yMinimum = 0;
-  const yMaximum = canopyCapG * 1.1;
-
-  const x = day => ML + (day - xMinimum) / (xMaximum - xMinimum) * plotW;
-  const y = w   => MT + plotH - (w - yMinimum) / (yMaximum - yMinimum) * plotH;
-
-  // X ticks every 7 days (0, 7, 14, … up to xMaximum).
-  const xTicks = [];
-  for (let d = 0; d <= xMaximum; d += 7) xTicks.push(d);
-  // Y ticks: 0, then evenly-spaced fractions of canopyCapG (0.25, 0.5, 0.75, 1.0).
-  const yTicks = [0, canopyCapG * 0.25, canopyCapG * 0.5, canopyCapG * 0.75, canopyCapG];
-
-  // Axis lines.
-  const axisColor = 'var(--text-muted)';
-  const gridColor = 'var(--border)';
-  const seriesColor = 'var(--text)';
-  const referenceLineColor = 'var(--text-muted)';
-  const markerColor = '#8a3e1e';
+  const axisColor = 'var(--text-muted)', gridColor = 'var(--border)';
+  const capColor = 'var(--text-muted)', markerColor = '#8a3e1e';
 
   let svg = `<svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" style="width:100%; height:auto; display:block; font-family:inherit;">`;
 
-  // Y grid + tick labels.
-  yTicks.forEach(v => {
+  [0, 0.25, 0.5, 0.75, 1.0].map(f => yMaximum * f).forEach(v => {
     const yy = y(v);
     svg += `<line x1="${ML}" y1="${yy}" x2="${ML + plotW}" y2="${yy}" stroke="${gridColor}" stroke-width="0.5"/>`;
-    svg += `<text x="${ML - 8}" y="${yy + 4}" text-anchor="end" font-size="11" fill="${axisColor}" font-family="'DM Mono',monospace">${v.toFixed(0)}</text>`;
+    svg += `<text x="${ML - 9}" y="${yy + 5}" text-anchor="end" font-size="${FS_TICK}" fill="${axisColor}" font-family="'DM Mono',monospace">${Math.round(v)}</text>`;
   });
-  // X grid + tick labels.
-  xTicks.forEach(d => {
+  for (let d = 0; d <= xMaximum; d += 7) {
     const xx = x(d);
     svg += `<line x1="${xx}" y1="${MT}" x2="${xx}" y2="${MT + plotH}" stroke="${gridColor}" stroke-width="0.5"/>`;
-    svg += `<text x="${xx}" y="${MT + plotH + 16}" text-anchor="middle" font-size="11" fill="${axisColor}" font-family="'DM Mono',monospace">${d}</text>`;
-  });
-
-  // Axis lines (over grid).
+    svg += `<text x="${xx}" y="${MT + plotH + 20}" text-anchor="middle" font-size="${FS_TICK}" fill="${axisColor}" font-family="'DM Mono',monospace">${d}</text>`;
+  }
   svg += `<line x1="${ML}" y1="${MT + plotH}" x2="${ML + plotW}" y2="${MT + plotH}" stroke="${axisColor}" stroke-width="1"/>`;
   svg += `<line x1="${ML}" y1="${MT}" x2="${ML}" y2="${MT + plotH}" stroke="${axisColor}" stroke-width="1"/>`;
 
-  // Horizontal reference line at canopyCapG. Dashed, with a
-  // "Plafond" label at the right edge.
-  const yCap = y(canopyCapG);
-  svg += `<line x1="${ML}" y1="${yCap}" x2="${ML + plotW}" y2="${yCap}" stroke="${referenceLineColor}" stroke-width="1" stroke-dasharray="4 3"/>`;
-  svg += `<text x="${ML + plotW + 6}" y="${yCap + 4}" text-anchor="start" font-size="11" fill="${referenceLineColor}" font-family="'DM Mono',monospace">Plafond</text>`;
+  // Field-cap reference line.
+  const yCap = y(baseline.fieldCapG);
+  svg += `<line x1="${ML}" y1="${yCap}" x2="${ML + plotW}" y2="${yCap}" stroke="${capColor}" stroke-width="1" stroke-dasharray="4 3"/>`;
+  svg += `<text x="${ML + plotW + 6}" y="${yCap + 4}" text-anchor="start" font-size="${FS_CAP}" fill="${capColor}" font-family="'DM Mono',monospace">Plafond champ</text>`;
 
-  // Trajectory polyline.
-  const points = trajectory.map(p => `${x(p.day)},${y(p.weight_g)}`).join(' ');
-  svg += `<polyline points="${points}" fill="none" stroke="${seriesColor}" stroke-width="2"/>`;
+  // Transplant marker (shared — nursery length is a single input).
+  const xT = x(transplantDay);
+  svg += `<line x1="${xT}" y1="${MT}" x2="${xT}" y2="${MT + plotH}" stroke="${markerColor}" stroke-width="1" stroke-dasharray="3 3"/>`;
+  svg += `<text x="${xT + 5}" y="${MT + 15}" text-anchor="start" font-size="${FS_MARK}" fill="${markerColor}" font-weight="600">Transplant J${transplantDay}</text>`;
 
-  // Vertical marker at daysToTransplantPotential — or empty-state text.
-  if (daysToTransplantPotential != null) {
-    const xd = x(daysToTransplantPotential);
-    svg += `<line x1="${xd}" y1="${MT}" x2="${xd}" y2="${MT + plotH}" stroke="${markerColor}" stroke-width="1" stroke-dasharray="3 3"/>`;
-    svg += `<text x="${xd + 5}" y="${MT + 14}" text-anchor="start" font-size="11" fill="${markerColor}" font-weight="600">Pic potentiel: J${daysToTransplantPotential}</text>`;
-  } else {
-    svg += `<text x="${ML + plotW / 2}" y="${MT + plotH / 2}" text-anchor="middle" font-size="12" fill="${markerColor}" font-weight="600">Plein potentiel non atteint dans la fenêtre de ${xMaximum} jours</text>`;
-  }
+  // One trajectory per thinning scenario.
+  scenarios.forEach(s => {
+    const points = s.model.trajectory.map(p => `${x(p.day).toFixed(1)},${y(p.weight_g).toFixed(1)}`).join(' ');
+    svg += `<polyline points="${points}" fill="none" stroke="${s.color}" stroke-width="2.5"/>`;
+  });
+
+  // Legend, top-left (curves are low there early).
+  let ly = MT + 14;
+  scenarios.forEach(s => {
+    svg += `<line x1="${ML + 12}" y1="${ly - 4}" x2="${ML + 34}" y2="${ly - 4}" stroke="${s.color}" stroke-width="3"/>`;
+    svg += `<text x="${ML + 40}" y="${ly}" text-anchor="start" font-size="${FS_LEGEND}" fill="var(--text)">${s.label} · ${Math.round(s.model.harvestWeightG)} g récolte</text>`;
+    ly += 21;
+  });
 
   // Axis titles.
-  // X-axis title — "Jours depuis germination".
-  svg += `<text x="${ML + plotW / 2}" y="${H - 6}" text-anchor="middle" font-size="12" fill="${axisColor}" font-weight="600">Jours depuis germination</text>`;
-  // Y-axis title — "Poids tête (g)". Rotated 90° at left margin.
-  svg += `<text x="${14}" y="${MT + plotH / 2}" text-anchor="middle" font-size="12" fill="${axisColor}" font-weight="600" transform="rotate(-90 14 ${MT + plotH / 2})">Poids tête (g)</text>`;
+  svg += `<text x="${ML + plotW / 2}" y="${H - 8}" text-anchor="middle" font-size="${FS_TITLE}" fill="${axisColor}" font-weight="600">Jours depuis germination</text>`;
+  svg += `<text x="16" y="${MT + plotH / 2}" text-anchor="middle" font-size="${FS_TITLE}" fill="${axisColor}" font-weight="600" transform="rotate(-90 16 ${MT + plotH / 2})">Poids tête (g)</text>`;
+
+  svg += `</svg>`;
+  return svg;
+}
+
+// renderNurseryThinningChart(plateauSize) → SVG overlaying four nursery
+// growth curves for the given plateau: no thin, and checker-thin at 2 / 3 / 4
+// weeks. Shows why thinning before canopy closure lifts final weight, and why
+// the no-thin curve plateaus at the packed volume cap (dashed). Pure seedling
+// model (window.YieldRange.seedlingTrajectory), nursery phase only.
+function renderNurseryThinningChart(plateauSize, stressed = false) {
+  const YR = window.YieldRange;
+  const maximumDay = 42;
+  const scenarios = [
+    { label: 'Sans éclaircir',  thinDay: null, color: '#8a8f98' },
+    { label: 'Éclaircir 2 sem', thinDay: 14,   color: '#27874a' },
+    { label: 'Éclaircir 3 sem', thinDay: 21,   color: '#2b6cb0' },
+    { label: 'Éclaircir 4 sem', thinDay: 28,   color: '#b8562a' },
+  ];
+  const series = scenarios.map(s => ({ ...s, traj: YR.seedlingTrajectory(plateauSize, s.thinDay, maximumDay, stressed) }));
+  const capPacked = YR.seedlingChartModel(plateauSize, null, maximumDay, stressed).capPacked;
+
+  const xMaximum = maximumDay;
+  const yMaximum = Math.max(...series.flatMap(s => s.traj.map(p => p.weight))) * 1.08;
+
+  // Bigger type throughout (Guillaume request): ticks 14, titles 15, legend 14.
+  const FS_TICK = 14, FS_TITLE = 15, FS_LEGEND = 14, FS_CAP = 12.5;
+  const W = 660, H = 400, ML = 62, MR = 28, MT = 22, MB = 62;
+  const plotW = W - ML - MR, plotH = H - MT - MB;
+  const x = d => ML + d / xMaximum * plotW;
+  const y = w => MT + plotH - w / yMaximum * plotH;
+
+  const axisColor = 'var(--text-muted)', gridColor = 'var(--border)', capColor = 'var(--text-muted)';
+  // Downsample the 0.05-day series for a lighter polyline; the curve is smooth.
+  const thin = pts => pts.filter((_, i) => i % 4 === 0).concat(pts[pts.length - 1]);
+
+  let svg = `<svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" style="width:100%; height:auto; display:block; font-family:inherit;">`;
+
+  [0, 0.25, 0.5, 0.75, 1.0].map(f => yMaximum * f).forEach(v => {
+    const yy = y(v);
+    svg += `<line x1="${ML}" y1="${yy}" x2="${ML + plotW}" y2="${yy}" stroke="${gridColor}" stroke-width="0.5"/>`;
+    svg += `<text x="${ML - 9}" y="${yy + 5}" text-anchor="end" font-size="${FS_TICK}" fill="${axisColor}" font-family="'DM Mono',monospace">${Math.round(v)}</text>`;
+  });
+  for (let d = 0; d <= xMaximum; d += 7) {
+    const xx = x(d);
+    svg += `<line x1="${xx}" y1="${MT}" x2="${xx}" y2="${MT + plotH}" stroke="${gridColor}" stroke-width="0.5"/>`;
+    svg += `<text x="${xx}" y="${MT + plotH + 20}" text-anchor="middle" font-size="${FS_TICK}" fill="${axisColor}" font-family="'DM Mono',monospace">${d}</text>`;
+  }
+  svg += `<line x1="${ML}" y1="${MT + plotH}" x2="${ML + plotW}" y2="${MT + plotH}" stroke="${axisColor}" stroke-width="1"/>`;
+  svg += `<line x1="${ML}" y1="${MT}" x2="${ML}" y2="${MT + plotH}" stroke="${axisColor}" stroke-width="1"/>`;
+
+  // Packed-cap reference (the ceiling the no-thin curve plateaus against).
+  const yCap = y(capPacked);
+  svg += `<line x1="${ML}" y1="${yCap}" x2="${ML + plotW}" y2="${yCap}" stroke="${capColor}" stroke-width="1" stroke-dasharray="4 3"/>`;
+  svg += `<text x="${ML + plotW - 4}" y="${yCap - 6}" text-anchor="end" font-size="${FS_CAP}" fill="${capColor}" font-family="'DM Mono',monospace">Plafond plateau ${capPacked.toFixed(0)} g</text>`;
+
+  // Four trajectory polylines.
+  series.forEach(s => {
+    const points = thin(s.traj).map(p => `${x(p.day).toFixed(1)},${y(p.weight).toFixed(1)}`).join(' ');
+    svg += `<polyline points="${points}" fill="none" stroke="${s.color}" stroke-width="2.5"/>`;
+  });
+
+  // Legend, top-left inside the plot (curves are low there early).
+  let ly = MT + 14;
+  series.forEach(s => {
+    svg += `<line x1="${ML + 12}" y1="${ly - 4}" x2="${ML + 34}" y2="${ly - 4}" stroke="${s.color}" stroke-width="3"/>`;
+    const g35 = Math.round(s.traj.find(p => p.day >= 35 - 1e-9).weight);
+    svg += `<text x="${ML + 40}" y="${ly}" text-anchor="start" font-size="${FS_LEGEND}" fill="var(--text)">${s.label} · ${g35} g @ J35</text>`;
+    ly += 21;
+  });
+
+  // Axis titles.
+  svg += `<text x="${ML + plotW / 2}" y="${H - 8}" text-anchor="middle" font-size="${FS_TITLE}" fill="${axisColor}" font-weight="600">Jours depuis germination</text>`;
+  svg += `<text x="16" y="${MT + plotH / 2}" text-anchor="middle" font-size="${FS_TITLE}" fill="${axisColor}" font-weight="600" transform="rotate(-90 16 ${MT + plotH / 2})">Poids semis (g)</text>`;
 
   svg += `</svg>`;
   return svg;
