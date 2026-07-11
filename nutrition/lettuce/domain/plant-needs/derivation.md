@@ -15,7 +15,7 @@ demand[el] = (targetG − transplantG) × density / 1 000           // kg/m² ga
               × LETTUCE_TISSUE_DW[el] × 1 000                    // → mg el/m²/wk
 ```
 
-Implemented in `nutrition/lettuce/plant-needs/calc.js`:
+Implemented in `nutrition/lettuce/domain/plant-needs/calc.js`:
 
 ```js
 function calculateLettuceNutritionDemand(transplantG, targetG, cycleDays, density) {
@@ -210,12 +210,12 @@ modal built by the integrator.
 
 | File                                            | Owns                                                                                  |
 |-------------------------------------------------|---------------------------------------------------------------------------------------|
-| `nutrition/lettuce/plant-needs/data.js`         | `LETTUCE_DM_FRACTION`, `LETTUCE_TISSUE_DW`, `LETTUCE_FRONTLOAD_DEFAULTS`, `SME_LETTUCE_PPM` |
-| `nutrition/lettuce/plant-needs/calc.js`         | `calculateLettuceNutritionDemand`, `calculateLettuceNutritionSupply`                  |
-| `nutrition/lettuce/plant-needs/model.js`        | `window.PlantNeedsLettuce` namespace wrapper                                          |
-| `nutrition/lettuce/plant-needs/spec.md`         | Spec                                                                                  |
-| `nutrition/lettuce/plant-needs/derivation.md`   | This file                                                                             |
-| `nutrition/lettuce/plant-needs/learnings.md`    | Rejected alternatives, deferred refinements                                           |
+| `nutrition/lettuce/domain/plant-needs/data.js`         | `LETTUCE_DM_FRACTION`, `LETTUCE_TISSUE_DW`, `LETTUCE_FRONTLOAD_DEFAULTS`, `SME_LETTUCE_PPM` |
+| `nutrition/lettuce/domain/plant-needs/calc.js`         | `calculateLettuceNutritionDemand`, `calculateLettuceNutritionSupply`                  |
+| `nutrition/lettuce/domain/plant-needs/model.js`        | `window.PlantNeedsLettuce` namespace wrapper                                          |
+| `nutrition/lettuce/domain/plant-needs/spec.md`         | Spec                                                                                  |
+| `nutrition/lettuce/domain/plant-needs/derivation.md`   | This file                                                                             |
+| `nutrition/lettuce/domain/plant-needs/learnings.md`    | Rejected alternatives, deferred refinements                                           |
 
 Build order in `app/index.html`: `data.js` → `calc.js` → `model.js`.
 Consumers reach for `window.PlantNeedsLettuce`. The Salanova subpage

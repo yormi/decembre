@@ -202,7 +202,7 @@ const exposeNames = [
   'NURSERY_TARGETS', 'calculateNurseryDemand',
   'LETTUCE_NURSERY_TISSUE_DW', 'LETTUCE_NURSERY_DM_FRACTION',
   // Salanova plant-needs (lettuce plant-needs spec). After the 2026-05-16 carve, the
-  // partials in nutrition/lettuce/plant-needs/ supply LETTUCE_TISSUE_DW,
+  // partials in nutrition/lettuce/domain/plant-needs/ supply LETTUCE_TISSUE_DW,
   // LETTUCE_DM_FRACTION, LETTUCE_FRONTLOAD_DEFAULTS, SME_LETTUCE_PPM,
   // calculateLettuceNutrition{Demand,Supply}, and window.PlantNeedsLettuce.
   'PlantNeedsLettuce',
@@ -2580,20 +2580,20 @@ if (!nurseryNs) {
 
 // ─── salanova plant-needs subproject ────────────────────
 //
-// nutrition/lettuce/plant-needs/{data.js,calc.js,model.js} carved out of
+// nutrition/lettuce/domain/plant-needs/{data.js,calc.js,model.js} carved out of
 // app/index.html 2026-05-16. Same vm-loaded pattern as nursery plant-needs:
 // load the partials in a shared sandbox, prefer the real jsdom window
 // when present, else fall back to the vm copy.
 //
-// Spec: nutrition/lettuce/plant-needs/spec.md → public-api-namespace..169 + INV-1.
+// Spec: nutrition/lettuce/domain/plant-needs/spec.md → public-api-namespace..169 + INV-1.
 
 let lettucePlantNeedsNs = window.PlantNeedsLettuce || null;
 let lettucePlantNeedsLoadError = null;
 if (!lettucePlantNeedsNs) {
   try {
-    const dataSrc  = readFileSync(join(REPO_ROOT, 'nutrition/lettuce/plant-needs/data.js'),  'utf8');
-    const pureFunctionSource  = readFileSync(join(REPO_ROOT, 'nutrition/lettuce/plant-needs/calc.js'),  'utf8');
-    const modelSrc = readFileSync(join(REPO_ROOT, 'nutrition/lettuce/plant-needs/model.js'), 'utf8');
+    const dataSrc  = readFileSync(join(REPO_ROOT, 'nutrition/lettuce/domain/plant-needs/data.js'),  'utf8');
+    const pureFunctionSource  = readFileSync(join(REPO_ROOT, 'nutrition/lettuce/domain/plant-needs/calc.js'),  'utf8');
+    const modelSrc = readFileSync(join(REPO_ROOT, 'nutrition/lettuce/domain/plant-needs/model.js'), 'utf8');
     const sandbox = { window: {} };
     vm.createContext(sandbox);
     vm.runInContext(dataSrc + '\n' + pureFunctionSource + '\n' + modelSrc, sandbox, {
@@ -2709,7 +2709,7 @@ if (!lettucePlantNeedsNs || typeof lettucePlantNeedsNs.calculateLettuceNutrition
 // (Fe, Mn, Zn, B, Cu, Mo) at cert 3 (broader range, varies with light +
 // genetics). The verifier asserts the structural shape (5 macros + 6 micros,
 // every element numeric); the per-element cert annotation lives in
-// nutrition/lettuce/plant-needs/derivation.md and is surfaced via the
+// nutrition/lettuce/domain/plant-needs/derivation.md and is surfaced via the
 // integrator pourquoi modal — not enforced by code today.
 
 header('demand-certainty-floor — Lettuce demand: 5 macros + 6 micros structurally present');

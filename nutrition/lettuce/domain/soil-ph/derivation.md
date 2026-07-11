@@ -61,7 +61,7 @@ Buffer-only range = tomato's 50–120 kg scaled by topsoil-mass ratio (27 360 / 
 
 Lettuce salinity threshold ECe ~1.3 dS/m (cert 4, FAO); yield falls fast above it. Gypsum salinity still self-limits (CaSO₄ solubility ~2.4 g/L, EC self-caps ~2.0–2.2 dS/m) — but lettuce's lower threshold means the transient EC pulse matters more, and it lands right as fast-cycle seedlings go in. Hence the pre-transplant EC check.
 
-**Live overshoot (June 2026):** SME CE **4.01** — ~3× the ECe 1.3 guardrail (report 39580). The salt is saline, not sodic (SAR 1.29) → **leach before the next pass, don't pause the program** (`../../strategy/protocol/salt-leach.md`). Full read: `../../learnings/field-sme-salinity-climbed-2026-06.md`. The pre-transplant EC check is currently a hard gate, not a formality. (SME pH also fell 7.48 → 6.68 — sulphur drawdown; secondary guardrail, not a re-anchor of the dose model.)
+**Live overshoot (June 2026):** SME CE **4.01** — ~3× the ECe 1.3 guardrail (report 39580). The salt is saline, not sodic (SAR 1.29) → **leach before the next pass, don't pause the program** (`../../protocol/salt-leach.md`). Full read: `../learnings/field-sme-salinity-climbed-2026-06.md`. The pre-transplant EC check is currently a hard gate, not a formality. (SME pH also fell 7.48 → 6.68 — sulphur drawdown; secondary guardrail, not a re-anchor of the dose model.)
 
 ## Refinement triggers
 

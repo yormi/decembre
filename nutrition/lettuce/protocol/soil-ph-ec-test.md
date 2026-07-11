@@ -1,8 +1,8 @@
 # Protocol — salanova bed pH/EC/salt test (DRAFT v1)
 
 Confirm/refute the salt-not-pH field diagnosis and set safe sulphur +
-transplant timing. Diagnosis: `../problem.md`. Evidence:
-`../../../lettuce/doc/diagnostic-2026-06-06/diagnosis.md`.
+transplant timing. Diagnosis: `../strategy/problem.md`. Evidence:
+`../domain/doc/diagnostic-2026-06-06/diagnosis.md`.
 
 **Question it must close:** at transplant, in the top root zone, is the
 bed hostile because EC (salt) is high or because pH is high — and does
@@ -68,6 +68,6 @@ Lettuce = moderately salt-sensitive.
 
 ## Feeds back into
 
-- `../problem.md` field-gate recast (salt + self-applied S, not pH).
+- `../strategy/problem.md` field-gate recast (salt + self-applied S, not pH).
 
-- `../goal.md` (to write) — safe S rate/timing + transplant practice.
+- `../strategy/goal.md` (to write) — safe S rate/timing + transplant practice.

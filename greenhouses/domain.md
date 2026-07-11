@@ -61,7 +61,7 @@
 
 - Covers the light **supply** — fixture power and how PPFD becomes DLI.
 
-- Hands off crop DLI **targets / bands / edges** to each crop domain (e.g. `nutrition/lettuce/domain.md`).
+- Hands off crop DLI **targets / bands / edges** to each crop domain (e.g. `nutrition/lettuce/domain/domain.md`).
 
 
 ## Vocabulary

@@ -8,7 +8,7 @@ Crop-specific nutrition specs live in:
 - `nutrition/tomato/spec.md` — tomato model/recipe/biology
 - `nutrition/tomato/shell/spec.md` — Tomato Nutrition page shell (orchestration, layout)
 - `nutrition/tomato/{plant-needs,fertigation-recipe,sidedress-recipe,foliar-strategy}/builder/user-stories.md` — per-block page surface
-- `nutrition/lettuce/spec.md` — Salanova post-transplant nutrition
+- `nutrition/lettuce/domain/spec.md` — Salanova post-transplant nutrition
 - `nutrition/lettuce/app/user-stories.md` — Salanova subpage UI
 - `nutrition/nursery/spec.md` — Semis laitue nutrition
 - `nutrition/nursery/app/user-stories.md` — Semis subpage UI

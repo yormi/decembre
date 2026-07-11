@@ -1,6 +1,6 @@
 // Public API for the Salanova plant-needs model.
 //
-// Spec:    nutrition/lettuce/plant-needs/spec.md
+// Spec:    nutrition/lettuce/domain/plant-needs/spec.md
 // public-api-namespace: this namespace exists at runtime with the keys below.
 //
 // Consumers (Salanova subpage builder, recipe calculators) should never read

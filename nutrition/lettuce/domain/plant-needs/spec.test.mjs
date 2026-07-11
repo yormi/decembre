@@ -1,4 +1,4 @@
-// Tests for nutrition/lettuce/plant-needs/spec.md.
+// Tests for nutrition/lettuce/domain/plant-needs/spec.md.
 //
 // One node:test file pinning every claim in the subproject's spec:
 //   Public API namespace window.PlantNeedsLettuce.

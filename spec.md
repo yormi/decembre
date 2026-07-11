@@ -19,7 +19,7 @@ code under `nutrition/**/spec.md` and `yield-range/**/spec.md`.
 | `nutrition/tomato/sidedress-recipe/builder/user-stories.md` | Sidedress builder block on the admin page (supply vs demand + drift sub-block) |
 | `nutrition/tomato/fertigation-recipe/operator/user-stories.md` | Operator-facing tomato fertigation page UI |
 | `nutrition/tomato/fertigation-recipe/procedure/user-stories.md` | Procedural data layer behind the operator fertigation page (stage, steps, calc) |
-| `nutrition/lettuce/spec.md` | Salanova post-transplant nutrition (model/recipe) |
+| `nutrition/lettuce/domain/spec.md` | Salanova post-transplant nutrition (model/recipe) |
 | `nutrition/lettuce/app/user-stories.md` | Salanova admin subpage UI |
 | `nutrition/nursery/spec.md` | Semis laitue nutrition (seedling DW%, cell volume cap) |
 | `nutrition/nursery/app/user-stories.md` | Semis admin subpage UI |

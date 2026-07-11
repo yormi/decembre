@@ -347,17 +347,17 @@ const FP_RECIPE_T5 = {
 <!-- @include nutrition/tomato/sidedress-recipe/model/data.js -->
 
 // ═══════════════ SALANOVA — POST-TRANSPLANT NUTRITION MODEL ═══════════════
-// Carved out 2026-05-16 into nutrition/lettuce/plant-needs/.
+// Carved out 2026-05-16 into nutrition/lettuce/domain/plant-needs/.
 // Public API at runtime:
 //   window.PlantNeedsLettuce — LETTUCE_DM_FRACTION, LETTUCE_TISSUE_DW,
 //                              LETTUCE_FRONTLOAD_DEFAULTS, SME_LETTUCE_PPM,
 //                              calculateLettuceNutritionDemand,
 //                              calculateLettuceNutritionSupply (pure;
 //                              caller passes a dependency bag).
-// Spec: nutrition/lettuce/plant-needs/spec.md → public-api-namespace..canopy-factor-bounded, INV-1.
-<!-- @include nutrition/lettuce/plant-needs/data.js -->
-<!-- @include nutrition/lettuce/plant-needs/calc.js -->
-<!-- @include nutrition/lettuce/plant-needs/model.js -->
+// Spec: nutrition/lettuce/domain/plant-needs/spec.md → public-api-namespace..canopy-factor-bounded, INV-1.
+<!-- @include nutrition/lettuce/domain/plant-needs/data.js -->
+<!-- @include nutrition/lettuce/domain/plant-needs/calc.js -->
+<!-- @include nutrition/lettuce/domain/plant-needs/model.js -->
 
 // ═══════════════ SEMIS LAITUE — NURSERY NUTRITION MODEL ═══════════════
 // 50-cell trays in Berger OM2 + feather meal substrate. Seed → target weight

@@ -45,7 +45,7 @@ the soil-correction endpoint is a model decision, defined in
 PO owns plant-facing contracts (tissue bands, recipe guards); the soil
 pH that frees them is the model's call. The lettuce sibling needs its
 own band defined (tighter, salt-sensitive, floor 6.0) — pending in
-`nutrition/lettuce/soil-ph/model/`.
+`nutrition/lettuce/domain/soil-ph/`.
 
 The specs below cover the *coupling* between plant-needs and the supply
 chain (`under-fert-guard`, `luxury-feeding-guard`) plus the

@@ -243,14 +243,14 @@ plug, ~4 wk propagation.
 
 #### Transplant in bed
 
-~4 wk in soil. EC by Bluelab Pulse, pH by 1:1 soil:water
+~4 wk in soil. EC + pH by 1:1 slurry — method `../protocol/measure-bed-ec-DRAFT.md`, sample top 0–5 cm. Salinity band below.
 
 | Factor | Target | Band | Edge |
 |---|---|---|---|
 | DLI | 14–16 mol/m²/d | 12–17 | >17 → tipburn |
 | Soil water tension | 15–25 kPa | 10–30 | >30 → growth check; <10 → waterlogged |
 | Soil pH (1:1) | 6.0–6.5 | 5.8–6.8 | <5.5 → Mn/Al; >7 → Fe/Mn/P lockout |
-| Soil EC (Bluelab Pulse) | 1.5 mS/cm | 1.2–2.0 | salt-sensitive; >2.5 → growth loss, tipburn |
+| Soil EC (1:1 slurry) | ≤ 0.65 mS/cm | 0.65–1.6 | > 1.6 → ≥25% loss, salt gate (band below) |
 | Air temp — day | 18–21 °C | 16–22 | >24 → bolting |
 | Air temp — night | 12–14 °C | 10–16 | warm night → soft heads |
 | Root-zone temp | 18–21 °C | 15–24 | <15 → AMF inactive |
@@ -259,6 +259,24 @@ plug, ~4 wk propagation.
 - worst quadrant: high DLI × low humidity deficit (bright, still, humid) → fast growth + no Ca transport → tipburn
 
 - DLI is the master driver: raising it forces CO₂, water, HD, HAF, and temp control up in step, or surplus light becomes tipburn/bolting, not yield
+
+
+#### Bed salinity — 1:1 slurry band
+
+Measurement `../protocol/measure-bed-ec-DRAFT.md` (canonical, all crops). Lettuce = moderately salt-sensitive.
+
+| EC 1:1 (`EC_slurry`, mS/cm) | ECe (≈ ×2, dS/m) | Read |
+|---|---|---|
+| ≤ 0.65 | ≤ 1.3 | target — no yield loss |
+| 0.65–1.0 | 1.3–2.0 | caution — onset, up to ~10% loss |
+| 1.0–1.6 | 2.0–3.2 | act — ~10–25% bulking loss |
+| > 1.6 | > 3.2 | hostile — ≥25% loss, the salt gate |
+
+- Basis: lettuce threshold **ECe 1.3 dS/m**, then **13% yield loss per dS/m** above (Maas-Hoffman; FAO/USDA, UF/IFAS SS117).
+
+- ⚠️ Calibrate with one paired sample (1:1 slurry + lab ECe) → replace the ~2; until then the band is an estimate.
+
+- Mature heads can tolerate up to 1.8 but **transplants are salt-sensitive** and need EC_slurry to be at 1.6 or lower. Since we are in constant establishment rate with 1 fertigation system, we **use 1.6 as the reference**
 
 
 ## Boundaries
@@ -285,3 +303,6 @@ plug, ~4 wk propagation.
 
 
 **light cap** — the closed-canopy per-floor growth rate at a given DLI; the maximum rate a fully covered floor can sustain.
+
+
+**ECe** — Saturated paste EC

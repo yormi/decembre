@@ -10,7 +10,7 @@
 // the integrator boundary and pass them through the `dependencies` bag.
 //
 // Formula provenance, certainty, and refinement triggers live in
-// `nutrition/lettuce/plant-needs/derivation.md`.
+// `nutrition/lettuce/domain/plant-needs/derivation.md`.
 // Pre-carve global-reading history lives in `learnings.md`.
 
 // Demand per element (mg/m²/wk) for a Salanova cycle gaining (targetG−transplantG)

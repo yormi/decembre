@@ -49,7 +49,7 @@ Fe stay locked-low — the high-pH lockout signature persists even as pH falls.
 - **Keep the sulphur program; leach, don't pause** (Guillaume). Sulphur is still
   drawing pH down (7.48 → 6.68). The salt it co-produces is leachable, so the
   answer to the EC breach is an active clean-water leach —
-  `../strategy/protocol/salt-leach.md` — not halting sulphur. Live EC-overshoot
+  `../../protocol/salt-leach-DRAFT.md` — not halting sulphur. Live EC-overshoot
   note in `../soil-ph/model/derivation.md`.
 
 - **The April "salinity cleared" verdict is now dated** —

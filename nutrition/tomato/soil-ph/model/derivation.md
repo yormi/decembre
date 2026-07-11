@@ -160,7 +160,7 @@ NOT a current-crop rescue.** Even in the fast ≤0.1% case, rhizosphere
 pH movement is ~2–3 months out; with carbonate present it is months-to-
 multi-cycle, past the current crop. (Contrast lettuce: tills at every
 flip → faster tier + constant bare-bed windows → the better near-term
-target. See `nutrition/lettuce/soil-ph/model/learnings/stuck-browning-
+target. See `nutrition/lettuce/domain/soil-ph/learnings/stuck-browning-
 roots-ph-indicated-salinity-cleared`.) cert 3 (titration stoichiometry
 cert 5; which calcimeter row cert 0 until measured).
 

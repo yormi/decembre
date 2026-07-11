@@ -15,6 +15,8 @@ canopy-volume cap. Nursery phase only.
 
 - **DLI** → carbon-gain rate   (the only growth driver held in this model)
 
+- **usable DLI is age-capped** — young tissue saturates low; growth drives on `min(DLI_TARGET, stage ceiling)`, stepping 10 (cotyledon wk1) → 14 (true-leaf wk2) → 17 (plug/field wk3+). Light past the ceiling buys no growth, only tipburn. See `light/domain.md`.
+
 - leaf area → light interception   (saturates at full ground cover)
 
 

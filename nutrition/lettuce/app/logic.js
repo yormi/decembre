@@ -15,7 +15,7 @@ function buildNutrimentLettuce() {
 
   const demand = PN.calculateLettuceNutritionDemand(transplantG, targetG, cycleDays, density);
   // Pure-function dependency bag — resolved at the integrator boundary so
-  // the calc layer reads no globals. Spec: nutrition/lettuce/plant-needs/spec.md.
+  // the calc layer reads no globals. Spec: nutrition/lettuce/domain/plant-needs/spec.md.
   const supply = PN.calculateLettuceNutritionSupply(transplantG, targetG, density, phLocked, frontloadG, {
     weeklyMassFlowL: weeklyMassFlowL(),
     smeLettucePpm: PN.SME_LETTUCE_PPM,

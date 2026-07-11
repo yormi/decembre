@@ -9,7 +9,7 @@
 // demand exports with channel fractions summing to 1.0 ± 0.05.
 //
 // Today only tomato qualifies (lettuce's demand table lives at
-// nutrition/lettuce/plant-needs/data.js — different path). The test
+// nutrition/lettuce/domain/plant-needs/data.js — different path). The test
 // auto-extends when a future crop ships nutrition/<crop>/plant-needs/
 // model/data.js + nutrition/<crop>/channel-role.js.
 //

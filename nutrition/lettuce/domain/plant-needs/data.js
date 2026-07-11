@@ -1,12 +1,12 @@
 // Salanova — plant-needs data tables.
 //
 // Constants extracted from app/index.html on 2026-05-16 as part of the
-// nutrition/lettuce/plant-needs subproject carve-out (mirrors the
+// nutrition/lettuce/domain/plant-needs subproject carve-out (mirrors the
 // nutrition/tomato/plant-needs structure: data + calc + model).
 //
 // Values unchanged from the pre-carve in-line definitions. Provenance,
 // source tables, certainty rationale and refinement triggers live in
-// `nutrition/lettuce/plant-needs/derivation.md`. Rejected alternatives
+// `nutrition/lettuce/domain/plant-needs/derivation.md`. Rejected alternatives
 // (stage-based modelling, etc.) live in `learnings.md`.
 
 // Dry-matter fraction for fresh Salanova heads. Cert 4 — butterhead literature

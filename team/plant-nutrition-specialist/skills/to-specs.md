@@ -13,7 +13,7 @@ Philosophy in `team/everyone/principles.md § spec-is-statement-only`. PO-side s
 | Model layer (`*/model/`) | `spec.md` + `derivation.md` (mandatory) |
 | Algorithmic subproject (`fertigation-recipe/`, `foliar-strategy/`, `sidedress-recipe/`, `plant-needs/`, `nursery/*`, `chemistry/`, etc.) | `spec.md` + `derivation.md` (mandatory when math present) |
 
-PO-level REQs (`nutrition/spec.md`, `nutrition/tomato/spec.md`, `nutrition/lettuce/spec.md`, root `spec.md`) are **fixed contracts** — read, do not edit. Unsatisfiable → flag in spec, don't rewrite.
+PO-level REQs (`nutrition/spec.md`, `nutrition/tomato/spec.md`, `nutrition/lettuce/domain/spec.md`, root `spec.md`) are **fixed contracts** — read, do not edit. Unsatisfiable → flag in spec, don't rewrite.
 
 ## Procedure
 

@@ -1,9 +1,9 @@
 # Nutrition — Salanova — app UI specs
 
 UI invariants for the Salanova Nutrition admin subpage. Crop-side recipe
-specs live in `nutrition/lettuce/spec.md`; chemistry / cross-crop rules
+specs live in `nutrition/lettuce/domain/spec.md`; chemistry / cross-crop rules
 in `nutrition/spec.md`; model-side demand/supply in
-`nutrition/lettuce/plant-needs/spec.md`.
+`nutrition/lettuce/domain/plant-needs/spec.md`.
 
 ---
 
@@ -33,7 +33,7 @@ render path.
 Each row in the Salanova plant-need block displays exactly 2 columns:
 element symbol and total weekly demand (mg/m²/wk). No fruit/biomass
 split — Salanova demand has no flowering transition and is monotonic
-in mass gain per `nutrition/lettuce/plant-needs/spec.md`.
+in mass gain per `nutrition/lettuce/domain/plant-needs/spec.md`.
 
 ---
 
@@ -44,13 +44,13 @@ the Salanova plant-need block. Clicking a row opens the pourquoi modal
 showing **exactly three pieces of content**:
 
 1. The cert badge for the element (cert 4 macros, cert 3 micros — per
-   `nutrition/lettuce/plant-needs/spec.md`).
+   `nutrition/lettuce/domain/plant-needs/spec.md`).
 2. The demand equation (formula symbolically — `demand[el] = …`).
 3. The plugged-in numbers (formula with current values substituted).
 
 No interpretation prose, no per-element rationale paragraphs, no
 tissue-test caveats — those live in
-`nutrition/lettuce/plant-needs/derivation.md`.
+`nutrition/lettuce/domain/plant-needs/derivation.md`.
 
 ---
 
@@ -59,5 +59,5 @@ tissue-test caveats — those live in
 Mutating any of the four demand-side header inputs (`transplantG`,
 `targetG`, `cycleDays`, `density`) re-renders the Salanova plant-need
 block with new per-element numbers. The `phLocked` toggle is
-supply-side per `nutrition/lettuce/plant-needs/spec.md` and does not
+supply-side per `nutrition/lettuce/domain/plant-needs/spec.md` and does not
 enter the demand block render.

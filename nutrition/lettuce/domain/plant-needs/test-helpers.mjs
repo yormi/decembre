@@ -1,4 +1,4 @@
-// Test helpers for nutrition/lettuce/plant-needs.
+// Test helpers for nutrition/lettuce/domain/plant-needs.
 //
 // Same pattern as nutrition/tomato/plant-needs/test-helpers.mjs: load the
 // three source files into a node:vm sandbox with a `window` host object,

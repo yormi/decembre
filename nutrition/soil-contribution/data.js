@@ -93,7 +93,7 @@ const TURNOVER_BOUND_ELEMENTS = ['N'];
 //     1.5 kg/m²/wk (whole-plant Koller-aligned ratio at T5 production peak;
 //     cert 3 for macros, cert 1-2 for micros — inherits per-element from
 //     plant-needs).
-//   - Lettuce: nutrition/lettuce/plant-needs/data.js LETTUCE_TISSUE_DW ×
+//   - Lettuce: nutrition/lettuce/domain/plant-needs/data.js LETTUCE_TISSUE_DW ×
 //     ~75 g DW/m²/wk head-formation peak (1.5× cycle-mean of a Salanova
 //     transplant 30 g → target 350 g × density 16 plants/m² × 35-day
 //     cycle; cert 4 macros, cert 3 micros).

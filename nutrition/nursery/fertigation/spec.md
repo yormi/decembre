@@ -30,7 +30,7 @@ nutrition/chemistry — every-cation-anion-pair-classified / every-chemistry-tag
 (= 1.0 mS/cm).
 
 **Rationale:** Domain seedling root-zone band is target 1.0–1.2, hold feed
-> 1.5 (young roots salt-sensitive; `nutrition/lettuce/domain.md`). The cell
+> 1.5 (young roots salt-sensitive; `nutrition/lettuce/domain/domain.md`). The cell
 concentrates ~1.5× above the bucket feed as it dries between weekly feeds
 (cert 2 dry-down estimate), so a 1.0 bucket cap keeps the cell peak near the
 1.5 hold line, targeting ~1.2. Per-feed leaching (`nutrition/nursery/protocol/salt-flush.md`)

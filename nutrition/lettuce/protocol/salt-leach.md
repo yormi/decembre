@@ -2,7 +2,7 @@
 
 Hold root-zone salinity under the sulphur guardrail without pausing the sulphur
 program. The salt is saline (Ca-sulfate + nitrate), not sodic → it leaches with
-clean water. Basis: `../../learnings/field-sme-salinity-climbed-2026-06.md`.
+clean water. Basis: `../domain/learnings/field-sme-salinity-climbed-2026-06.md`.
 EC method: `soil-ph-ec-test.md`.
 
 **Question it closes:** is the root zone back under ECe 1.3 before the next
