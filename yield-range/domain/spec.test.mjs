@@ -1,4 +1,4 @@
-// Tests for yield-range/spec.md — carbon-balance yield model.
+// Tests for yield-range/domain/spec.md — carbon-balance yield model.
 //
 // Pins the unified engine (ε·DLI·A·(1 − exp(−k·LAI)) → volume cap →
 // senescence), the four operator inputs (field spacing, labor routine,

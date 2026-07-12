@@ -1,8 +1,8 @@
-// ─── yield-range/light/operator/logic.js — Lumière operator page ─
+// ─── yield-range/app/light/operator/logic.js — Lumière operator page ─
 //
 // Supplemental-LED-hours guide for Salanova (lettuce-only supplemental
-// lighting). Model: yield-range/light/domain.md. Pure math lives in
-// yield-range/{data,calc,model}.js (window.YieldRange); this file is the
+// lighting). Model: yield-range/domain/light/domain.md. Pure math lives in
+// yield-range/domain/{data,calc,model}.js (window.YieldRange); this file is the
 // render edge only (reads new Date at render, model functions stay pure).
 //
 // Page entry: buildLight (called from setPage('lumiere')).

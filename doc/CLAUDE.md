@@ -1,6 +1,6 @@
 # doc — farm reference docs index
 
-Primary sources for Décembre that aren't crop-nutrition-specific (crop nutrition → `nutrition/doc/`). Farm baseline, pre-greenhouse soil tests, branding. Calibration datasets live next to their model (e.g. nursery yields under `yield-range/doc/`).
+Primary sources for Décembre that aren't crop-nutrition-specific (crop nutrition → `nutrition/doc/`). Farm baseline, pre-greenhouse soil tests, branding. Calibration datasets live next to their model (e.g. nursery yields under `yield-range/domain/doc/`).
 
 ---
 

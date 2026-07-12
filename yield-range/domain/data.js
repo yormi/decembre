@@ -1,12 +1,12 @@
-// ─── yield-range/data.js — constants for the carbon-balance yield model ─
+// ─── yield-range/domain/data.js — constants for the carbon-balance yield model ─
 //
-// Spec: yield-range/spec.md. Calc: calc.js. Public API: model.js.
-// Empirical anchor: yield-range/doc/yield-range-calibration-2026-spring.md.
+// Spec: yield-range/domain/spec.md. Calc: calc.js. Public API: model.js.
+// Empirical anchor: yield-range/domain/doc/yield-range-calibration-2026-spring.md.
 //
 // Two concerns share this file:
 //   1. Growth engine (carbon-balance) + operation geometry → predictYield.
 //   2. Supplemental-lighting feasibility (sun + LED to hit DLI_TARGET) →
-//      the Lumière page (yield-range/light/operator/).
+//      the Lumière page (yield-range/app/light/operator/).
 
 // ── Carbon-balance growth engine ─────────────────────────────────────
 // dW_dry/dt = ε·DLI·A_ground·(1 − exp(−k·LAI)), LAI = W_dry·SLA/A_ground,

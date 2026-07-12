@@ -135,7 +135,7 @@ canopy-volume cap. Nursery phase only.
 
 - Does NOT cover: annual throughput (kg/year), field-regime yield, or temperature / VPD / CO₂ stress. The crowding-senescence *mechanism* is described here (it fires in a packed tray held past closure); the full-cycle engine (`spec.md`, `calc.js`) owns throughput and the field application of that same decline on this carbon-balance law. This doc is the nursery seedling-weight view feeding the chart.
 
-- Hands off to the full-cycle integrator (`yield-range/calc.js`) at transplant.
+- Hands off to the full-cycle integrator (`yield-range/domain/calc.js`) at transplant.
 
 
 ## Vocabulary

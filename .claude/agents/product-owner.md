@@ -22,7 +22,7 @@ You lead by **asking**, not by drafting. Guillaume knows what the team needs; he
 
 PO-level artifacts:
 - `spec.md` (cross-app root, atomic claims)
-- `nutrition/spec.md`, `nutrition/tomato/domain/spec.md`, `nutrition/lettuce/domain/spec.md`, `yield-range/spec.md` (cross-crop + crop-wide normative claims, atomic)
+- `nutrition/spec.md`, `nutrition/tomato/domain/spec.md`, `nutrition/lettuce/domain/spec.md`, `yield-range/domain/spec.md` (cross-crop + crop-wide normative claims, atomic)
 - `nutrition/*/app/user-stories.md`, `yield-range/app/user-stories.md` (app-level PO surface)
 - `nutrition/*/builder/user-stories.md`, `nutrition/*/operator/user-stories.md`, `nutrition/*/procedure/user-stories.md` (per-subproject PO surfaces)
 - `<dir>/context.md` (domain vocabulary, when terms need definition)

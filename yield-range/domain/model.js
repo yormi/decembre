@@ -1,6 +1,6 @@
-// ─── yield-range/model.js — public API for the carbon-balance yield model ─
+// ─── yield-range/domain/model.js — public API for the carbon-balance yield model ─
 //
-// Spec: yield-range/spec.md.
+// Spec: yield-range/domain/spec.md.
 window.YieldRange = {
   // Growth + throughput + sales
   predictYield,

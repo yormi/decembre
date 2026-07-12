@@ -1,6 +1,6 @@
-// ─── yield-range/seedling-thinning.js — merged seedling-weight model ─
+// ─── yield-range/domain/seedling-thinning.js — merged seedling-weight model ─
 //
-// Domain: yield-range/domain.md (expolinear light-limited engine clamped
+// Domain: yield-range/domain/domain.md (expolinear light-limited engine clamped
 // by the canopy-volume cap; nursery phase only).
 //
 // Nursery-chart view — NOT spec-tied. Anchored to the real Décembre datum

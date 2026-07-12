@@ -140,9 +140,9 @@
 
   <!-- ═══════════════ LUMIÈRE PAGE (operator) ═══════════════ -->
   <!-- Supplemental-LED-hours guide (lettuce-only). Defined in
-       yield-range/light/operator/page.html; wired via setPage('lumiere') →
-       buildLight() in yield-range/light/operator/logic.js. -->
-  <!-- @include yield-range/light/operator/page.html -->
+       yield-range/app/light/operator/page.html; wired via setPage('lumiere') →
+       buildLight() in yield-range/app/light/operator/logic.js. -->
+  <!-- @include yield-range/app/light/operator/page.html -->
 
   <div class="footer">
     <span id="last-update"></span>Ferme Décembre · Système d'opération 2026 · <a href="historique.html" style="color:inherit;text-decoration:underline;">Historique</a>
@@ -565,10 +565,10 @@ const ACCEPTED_EXCESSES = [
 <!-- @include nutrition/tomato/domain/plant-needs/demand.js -->
 
 // ─── Yield Range (Salanova nursery time-to-canopy-cap model) ────────────────
-<!-- @include yield-range/data.js -->
-<!-- @include yield-range/calc.js -->
-<!-- @include yield-range/model.js -->
-<!-- @include yield-range/seedling-thinning.js -->
+<!-- @include yield-range/domain/data.js -->
+<!-- @include yield-range/domain/calc.js -->
+<!-- @include yield-range/domain/model.js -->
+<!-- @include yield-range/domain/seedling-thinning.js -->
 
 // ── 9. Bilan supply orchestrator + Block 7 drift renderer ─────────────────
 // nutrStage + nutrRecipeMode page-local state + LUXURY_FACTOR demand cap +
@@ -608,7 +608,7 @@ const ACCEPTED_EXCESSES = [
 <!-- @include nutrition/lettuce/app/logic.js -->
 
 <!-- @include yield-range/app/logic.js -->
-<!-- @include yield-range/light/operator/logic.js -->
+<!-- @include yield-range/app/light/operator/logic.js -->
 
 <!-- @include nutrition/nursery/app/logic.js -->
 

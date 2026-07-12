@@ -1,7 +1,7 @@
 # Yield Range — app UI specs
 
 UI contract for the Rendement admin page. Yield model:
-`yield-range/spec.md` (carbon-balance `predictYield`).
+`yield-range/domain/spec.md` (carbon-balance `predictYield`).
 
 Admin page. Salanova. French UI text.
 
@@ -73,5 +73,5 @@ nursery phase). Cell shade tracks weight; ▲ marks a canopy-cap hit.
 Cross-app conventions (`spec — ui-language-ce-not-ec`,
 `spec — url-hash-routing`, `spec — ui-language-plain-french`) apply per the
 root `CLAUDE.md`. This page does not deviate. All math-model rules in
-`yield-range/spec.md` must hold in the underlying functions before the page
+`yield-range/domain/spec.md` must hold in the underlying functions before the page
 renders meaningful predictions.

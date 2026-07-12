@@ -1,7 +1,7 @@
 # Seedling expolinear Rm ≈ 0.20 — day-10 open canopy refutes 0.30
 
-Concerns `SEEDLING_RGR` in `yield-range/seedling-thinning.js` (the merged
-expolinear + cap seedling model, `yield-range/domain.md`). This is the
+Concerns `SEEDLING_RGR` in `yield-range/domain/seedling-thinning.js` (the merged
+expolinear + cap seedling model, `yield-range/domain/domain.md`). This is the
 **unthrottled** exponential rate in `dW/dt = min(Rm·W, ε·DLI·A)` — NOT the
 logistic `RGR_MAXIMUM_LETTUCE_NURSERY = 0.30` in `data.js`, which is throttled
 every step by `(1−W/cap)·f_light`. The two are different parameters; a

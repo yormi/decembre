@@ -23,9 +23,9 @@ code under `nutrition/**/spec.md` and `yield-range/**/spec.md`.
 | `nutrition/lettuce/app/user-stories.md` | Salanova admin subpage UI |
 | `nutrition/nursery/spec.md` | Semis laitue nutrition (seedling DW%, cell volume cap) |
 | `nutrition/nursery/app/user-stories.md` | Semis admin subpage UI |
-| `yield-range/spec.md` | Salanova nursery time-to-canopy-cap model |
+| `yield-range/domain/spec.md` | Salanova nursery time-to-canopy-cap model |
 | `yield-range/app/user-stories.md` | Yield Range admin page UI |
-| `yield-range/doc/yield-range-calibration-2026-spring.md` | Empirical cohort observations anchoring the yield-range model |
+| `yield-range/domain/doc/yield-range-calibration-2026-spring.md` | Empirical cohort observations anchoring the yield-range model |
 
 REQ-NNN ids are drawn from a single global pool — claim via
 `scripts/claim-req.sh <target-spec-path> <persona>` from the repo root.

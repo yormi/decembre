@@ -11,7 +11,7 @@ Two Salanova 50-cell nursery batches. **2026 spring** (Tray 50 test 1, packed, t
 - Anchoring / sanity-checking the yield-range nursery weight scale — 5 g @ d25 is the stress-reduced anchor (drought+heat); reproduced at DLI 17 by stressed ε ≈0.85 × plug DM 0.07 (see derivation `carbon-balance-growth`).
 - Back-testing refits against real cohort data; the clean-condition ε is still unanchored (no well-watered 50-cell weighed).
 
-Both batches are stressed (tomato-zone heat; drought). Clean-condition weight would run larger. See `yield-range/learnings/5g-day25-drought-heat-primary-anchor.md`.
+Both batches are stressed (tomato-zone heat; drought). Clean-condition weight would run larger. See `yield-range/domain/learnings/5g-day25-drought-heat-primary-anchor.md`.
 
 ---
 
@@ -19,10 +19,10 @@ Both batches are stressed (tomato-zone heat; drought). Clean-condition weight wo
 Salanova 50-cell nursery, 2026-07-04, two photos: (1) bench overview — day-21 tray (left) beside day-10 trays (right); (2) top-down of the day-10 50-cell trays, canopy ~25% covered, bare substrate between 2–4-leaf seedlings. Same stressed cohort as the 2026-spring calibration.
 
 **Reach for:**
-- Pinning the seedling exponential rate `SEEDLING_RGR` in `yield-range/seedling-thinning.js` — day-10 open canopy → closure after day 10 → Rm≈0.20; refutes Rm=0.30 (which predicts day-8 closure).
+- Pinning the seedling exponential rate `SEEDLING_RGR` in `yield-range/domain/seedling-thinning.js` — day-10 open canopy → closure after day 10 → Rm≈0.20; refutes Rm=0.30 (which predicts day-8 closure).
 - Any argument about how fast a 50-cell canopy closes (observed ~day 15–17 here, stressed).
 
-Reads *canopy coverage*, not grams — resolution/angle limit precision. Stressed trays (bad soil); clean would close marginally sooner. See `yield-range/learnings/day10-open-canopy-refutes-rm-030.md`.
+Reads *canopy coverage*, not grams — resolution/angle limit precision. Stressed trays (bad soil); clean would close marginally sooner. See `yield-range/domain/learnings/day10-open-canopy-refutes-rm-030.md`.
 
 ---
 

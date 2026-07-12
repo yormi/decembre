@@ -1,7 +1,7 @@
 // ─── yield-range/app/logic.js — Rendement admin page ─
 //
 // Spec: yield-range/app/user-stories.md. Yield model:
-// window.YieldRange.predictYield (yield-range/spec.md, carbon-balance) — all
+// window.YieldRange.predictYield (yield-range/domain/spec.md, carbon-balance) — all
 // numbers come from the engine; this file only wires inputs and maps outputs
 // to markup. Nursery heatmap: window.YieldRange.seedlingThinningGrid().
 //
@@ -16,7 +16,7 @@ function buildYieldRange() {
 
 // Seedling-thinning heatmap. Fresh weight (g/plant) for each plateau ×
 // checker-thin day × sample day, from window.YieldRange.seedlingThinningGrid()
-// (merged expolinear + cap model, yield-range/domain.md). Static — renders
+// (merged expolinear + cap model, yield-range/domain/domain.md). Static — renders
 // once from buildYieldRange. Cell shade tracks weight; ▲ marks a plant that
 // hit its canopy-volume cap. No numeric values hardcoded in the renderer.
 function renderSeedlingThinningTable(stressed = false) {

@@ -1,7 +1,7 @@
-// ─── yield-range/calc.js — carbon-balance yield model ─
+// ─── yield-range/domain/calc.js — carbon-balance yield model ─
 //
-// Spec: yield-range/spec.md.
-// Constants: yield-range/data.js. Public API: yield-range/model.js.
+// Spec: yield-range/domain/spec.md.
+// Constants: yield-range/domain/data.js. Public API: yield-range/domain/model.js.
 
 // ── Supplemental-lighting feasibility (Lumière page) ─────────────────
 
