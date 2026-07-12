@@ -1,6 +1,6 @@
 # Diagnostic reference images — sources
 
-Reference images for `app/diagnostic/` symptom entries, sourced from Wikimedia
+Reference images for `app/admin/diagnostic/` symptom entries, sourced from Wikimedia
 Commons. **Internal use only — this app is not distributed** (Guillaume,
 2026-05-28). If that ever changes, re-check each file's licence + attribution on
 its Commons page before publishing.

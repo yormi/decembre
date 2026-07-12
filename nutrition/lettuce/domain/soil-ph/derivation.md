@@ -11,8 +11,8 @@ How the model is built. Spec is in `spec.md`. This file: lettuce soil state, the
 | Mehlich-3 Ca (exchangeable) | 10 612 kg/ha | 4 | Berger 39088 |
 | Free carbonate (CaCO₃) | **unmeasured** | 0 | — (calcimeter pending) |
 | Soil mass basis | 200 kg/m² (20 cm × 1.0 g/cm³) | 3 | `soil-contribution/data.js` |
-| Lettuce bed area | 30.4 m² | 4 | `app/operator/state.js` (`LETTUCE_BED_AREA`) |
-| Lettuce number of beds | 4.5 | 4 | `app/operator/state.js` (`LETTUCE_NUMBER_BEDS`) |
+| Lettuce bed area | 30.4 m² | 4 | `app/core/state.js` (`LETTUCE_BED_AREA`) |
+| Lettuce number of beds | 4.5 | 4 | `app/core/state.js` (`LETTUCE_NUMBER_BEDS`) |
 
 Whole lettuce block = 4.5 × 30.4 = **136.8 m²**. Total topsoil mass = 200 × 136.8 = **27 360 kg**.
 

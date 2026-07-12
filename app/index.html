@@ -11,13 +11,13 @@
 <style>
 <!-- @include lib/global.css -->
 <!-- @include lib/admin.css -->
-<!-- @include app/operator/page.css -->
+<!-- @include app/core/page.css -->
 <!-- @include nutrition/lib/styles.css -->
-<!-- @include nutrition/tomato/app/lib/styles.css -->
-<!-- @include nutrition/tomato/app/shell/sol/page.css -->
-<!-- @include nutrition/tomato/app/fertigation/operator/page.css -->
-<!-- @include app/week/page.css -->
-<!-- @include app/diagnostic/page.css -->
+<!-- @include app/lib/tomato.css -->
+<!-- @include app/operator/nutrition/sol/tomato/page.css -->
+<!-- @include app/operator/nutrition/fertigation/tomato/page.css -->
+<!-- @include app/admin/week/page.css -->
+<!-- @include app/admin/diagnostic/page.css -->
 </style>
 </head>
 <body>
@@ -26,7 +26,7 @@
     <div class="header-label">Ferme Décembre</div>
   </div>
 
-  <!-- @include app/operator/page.html -->
+  <!-- @include app/core/page.html -->
 
   <!-- Bed info (kept for reference):
        Tomato: 7 planches × 54.7 m² = 382.9 m²
@@ -35,7 +35,7 @@
        CEC: 28-33 meq/100g (high due to compost organic matter)
   -->
 
-  <!-- @include app/week/page.html -->
+  <!-- @include app/admin/week/page.html -->
 
   <!-- ═══════════════ IRRIGATION PAGE ═══════════════ -->
   <div id="page-irrigation-content" style="display:none;">
@@ -54,10 +54,10 @@
     </div>
 
     <!-- Field-crop irrigation content (tomato + lettuce) -->
-    <!-- @include nutrition/tomato/app/shell/irrigation/page.html -->
+    <!-- @include app/admin/irrigation/tomato/page.html -->
 
     <!-- Semis laitue irrigation content -->
-    <!-- @include nutrition/lettuce/app/irrigation/page.html -->
+    <!-- @include app/admin/irrigation/lettuce/page.html -->
   </div><!-- end page-irrigation-content -->
 
   <!-- ═══════════════ SOL PAGE (team-facing) ═══════════════ -->
@@ -83,19 +83,19 @@
       </button>
     </div>
 
-    <!-- @include nutrition/tomato/app/shell/sol/page.html -->
+    <!-- @include app/operator/nutrition/sol/tomato/page.html -->
 
   </div><!-- end page-sol-content -->
 
-  <!-- @include nutrition/tomato/app/fertigation/operator/page.html -->
+  <!-- @include app/operator/nutrition/fertigation/tomato/page.html -->
 
-  <!-- @include nutrition/tomato/app/foliar/operator/page.html -->
+  <!-- @include app/operator/nutrition/foliar/tomato/page.html -->
 
-  <!-- @include nutrition/lettuce/app/effeuillage/page.html -->
+  <!-- @include app/operator/effeuillage/lettuce/page.html -->
 
-  <!-- @include app/diagnostic/page.html -->
+  <!-- @include app/admin/diagnostic/page.html -->
 
-  <!-- @include app/diagnostic/practice-page.html -->
+  <!-- @include app/admin/diagnostic/practice-page.html -->
 
   <!-- ═══════════════ NUTRIMENT PAGE (admin) ═══════════════ -->
   <!-- Mass-balance bilan for tomato production: demand (driven by yield target)
@@ -120,29 +120,29 @@
     </div>
 
     <!-- ═════════ TOMATO BILAN (existing) ═════════ -->
-    <!-- @include nutrition/tomato/app/shell/page.html -->
+    <!-- @include app/admin/nutrition/bilan/tomato/page.html -->
 
     <!-- ═════════ SALANOVA POST-TRANSPLANT NUTRITION ═════════ -->
-    <!-- @include nutrition/lettuce/app/page.html -->
+    <!-- @include app/admin/nutrition/bilan/lettuce/page.html -->
 
     <!-- ═════════ SEMIS LAITUE — NURSERY (50-cell trays) ═════════ -->
-    <!-- @include nutrition/nursery/app/page.html -->
+    <!-- @include app/admin/nutrition/bilan/nursery/page.html -->
 
   </div>
 
-  <!-- @include app/historique-nutriments/page.html -->
+  <!-- @include app/admin/nutrition/historique/page.html -->
 
   <!-- ═══════════════ RENDEMENT SEMIS PAGE (admin) ═══════════════ -->
   <!-- Time-to-canopy-cap predictor for Salanova nursery. Defined in
-       yield-range/app/page.html; wired via setPage('rendement') →
-       buildYieldRange() in yield-range/app/logic.js. -->
-  <!-- @include yield-range/app/page.html -->
+       app/admin/rendement/page.html; wired via setPage('rendement') →
+       buildYieldRange() in app/admin/rendement/logic.js. -->
+  <!-- @include app/admin/rendement/page.html -->
 
   <!-- ═══════════════ LUMIÈRE PAGE (operator) ═══════════════ -->
   <!-- Supplemental-LED-hours guide (lettuce-only). Defined in
-       yield-range/app/light/operator/page.html; wired via setPage('lumiere') →
-       buildLight() in yield-range/app/light/operator/logic.js. -->
-  <!-- @include yield-range/app/light/operator/page.html -->
+       app/operator/lumiere/lettuce/page.html; wired via setPage('lumiere') →
+       buildLight() in app/operator/lumiere/lettuce/logic.js. -->
+  <!-- @include app/operator/lumiere/lettuce/page.html -->
 
   <div class="footer">
     <span id="last-update"></span>Ferme Décembre · Système d'opération 2026 · <a href="historique.html" style="color:inherit;text-decoration:underline;">Historique</a>
@@ -159,8 +159,8 @@
 // Décembre — Système d'opération · main script chain
 //
 // Authoring source = @include directives only. Every function definition,
-// constant, and state binding lives in a subproject partial under
-// app/operator/, nutrition/, yield-range/, or lib/. Build pipeline
+// constant, and state binding lives in a partial under app/ (UI:
+// core/, operator/, admin/), nutrition/, yield-range/, or lib/. Build pipeline
 // (scripts/build.mjs) inlines partials into dist/index.html in the order
 // below; classic-script function hoisting + textual ordering preserves the
 // pre-carve runtime behavior.
@@ -187,19 +187,19 @@
 //       setter/handler defined above
 
 // ── 1. State (TDZ-mandatory FIRST) ────────────────────────────────────────
-<!-- @include app/operator/state.js -->
+<!-- @include app/core/state.js -->
 
 // ── 2. Independent libs ───────────────────────────────────────────────────
 // Sun-time helpers (getSunTimes / addHours / getCurrentTimeString / SUN_TABLE)
 // live in lib/sun.js — Quebec City mid-month sunrise/sunset table + interp +
-// formatting. Consumers: buildTensio below, app/week/logic.js,
+// formatting. Consumers: buildTensio below, app/admin/week/logic.js,
 // nutrition/tomato/foliar-strategy/app/logic.js.
 <!-- @include lib/sun.js -->
 
-<!-- @include app/week/logic.js -->
+<!-- @include app/admin/week/logic.js -->
 
 // ── 3. Page-recalc helpers + per-crop accessors ───────────────────────────
-<!-- @include app/operator/recalc.js -->
+<!-- @include app/core/recalc.js -->
 
 // ── 4. Per-page operator renderers ────────────────────────────────────────
 // Tensiometer config + buildTensio renderer live in
@@ -207,34 +207,34 @@
 // #tensio-success / #vigor-note) are declared in the tomato irrigation
 // page partial. Reads `currentCrop` / `currentVigor` plus
 // lib/sun.js helpers (getSunTimes / addHours / getCurrentTimeString).
-<!-- @include nutrition/tomato/app/shell/irrigation/logic.js -->
+<!-- @include app/admin/irrigation/tomato/logic.js -->
 
 // Fertigation page renderer (getStockVol, getNutrients, buildSteps) lives in
 // the fertigation-recipe subproject. Reads STORED_RECIPE.tomato.fertigation
 // + shared helpers (getSolarRad, getTotalArea, getMult*, currentCrop,
 // currentStage, LETTUCE).
-<!-- @include nutrition/tomato/app/fertigation/operator/logic.js -->
+<!-- @include app/operator/nutrition/fertigation/tomato/logic.js -->
 
 // Foliar page renderer (buildFoliar, toggleMissedWindow) lives in
 // nutrition/tomato/foliar-strategy/app/logic.js. Recipe data lives in
 // STORED_RECIPE.tomato.foliaire (window-global, defined in that subproject's
 // stored.js). Single weekly spray since 2026-05-06.
-<!-- @include nutrition/tomato/app/foliar/operator/logic.js -->
+<!-- @include app/operator/nutrition/foliar/tomato/logic.js -->
 
 // Effeuillage — dynamic "feuilles à hauteur des épaules" call (setLeafReach).
-<!-- @include nutrition/lettuce/app/effeuillage/logic.js -->
+<!-- @include app/operator/effeuillage/lettuce/logic.js -->
 
 // Racines (AMF) week-card renderer (buildAmf) — renders into the Fertilisation
 // (sol) page's #amf-week-card during a drench-pass week. Protocol data + pure schedule
 // expander live in nutrition/tomato/protocol/amf/data.js (AMF_DRENCH,
 // computeAmfPasses); both included before this so buildAmf can read them.
 <!-- @include nutrition/tomato/protocol/amf/data.js -->
-<!-- @include nutrition/tomato/app/amf/logic.js -->
+<!-- @include app/operator/nutrition/sol/tomato/amf.js -->
 
 // ── 5. Diagnostic page logic ──────────────────────────────────────────────
-<!-- @include app/diagnostic/logic.js -->
-<!-- @include app/diagnostic/practice-data.js -->
-<!-- @include app/diagnostic/practice-logic.js -->
+<!-- @include app/admin/diagnostic/logic.js -->
+<!-- @include app/admin/diagnostic/practice-data.js -->
+<!-- @include app/admin/diagnostic/practice-logic.js -->
 
 // ── 6. Model layer (data / calc / model partials) ─────────────────────────
 //
@@ -389,7 +389,7 @@ const FP_RECIPE_T5 = {
 
 // Soil-contribution integrator-side mass-flow helpers — SME_TOMATO_PPM,
 // weeklyMassFlowL, transpirationFactor, nMineralizationFactor,
-// soilWeeklyAvailable. Reads getSolarRad from app/operator/recalc.js.
+// soilWeeklyAvailable. Reads getSolarRad from app/core/recalc.js.
 <!-- @include nutrition/soil-contribution/integrator.js -->
 
 <!-- @include nutrition/render.js -->
@@ -543,7 +543,7 @@ const ACCEPTED_EXCESSES = [
 <!-- @include nutrition/tomato/domain/foliar/model/contribution.js -->
 <!-- @include nutrition/tomato/protocol/foliar/steps.js -->
 
-<!-- @include app/historique-nutriments/history.js -->
+<!-- @include app/admin/nutrition/historique/history.js -->
 
 // ── 7. Chemistry library + tomato channel-role ───────────────────────────
 // Pulled up from nutrition/tomato/app/lib/recipe-math.js 2026-05-23 (Phase 2):
@@ -576,13 +576,13 @@ const ACCEPTED_EXCESSES = [
 // statusFor. Consumes the pure per-channel contribution functions loaded
 // in section 7 (computeFertigationContribution, computeSidedressContribution,
 // computeFoliarContribution, deriveFoliarRecipeFromGap). Consumers:
-// nutrition/tomato/app/shell/logic.js → buildNutrimentTomato.
-<!-- @include nutrition/tomato/app/shell/contribution-orchestrator.js -->
+// app/admin/nutrition/bilan/tomato/logic.js → buildNutrimentTomato.
+<!-- @include app/admin/nutrition/bilan/tomato/contribution-orchestrator.js -->
 
 // renderPhase1Comparison — stored-vs-FP drift table renderer for the Bilan's
 // Block 7 admin panel. Reads nutrStage + STORED_RECIPE + FP_RECIPE_T5 +
-// computeStageRecipe. Consumer: nutrition/tomato/app/shell/logic.js.
-<!-- @include nutrition/tomato/app/fertigation/operator/drift.js -->
+// computeStageRecipe. Consumer: app/admin/nutrition/bilan/tomato/logic.js.
+<!-- @include app/operator/nutrition/fertigation/tomato/drift.js -->
 
 // ── 10. UI helpers (modal, format, gap-grid) ──────────────────────────────
 // "Pourquoi cette dose" modal + expander + cell/cap modal helpers live in
@@ -591,7 +591,7 @@ const ACCEPTED_EXCESSES = [
 <!-- @include nutrition/lib/pourquoi.js -->
 
 // formatValue + formatMg live in nutrition/lib/format.js — consumed by
-// renderGapGrid below, nutrition/tomato/app/shell/logic.js, and
+// renderGapGrid below, app/admin/nutrition/bilan/tomato/logic.js, and
 // nutrition/soil-contribution/render.js.
 <!-- @include nutrition/lib/format.js -->
 
@@ -601,30 +601,30 @@ const ACCEPTED_EXCESSES = [
 <!-- @include nutrition/lib/render-gap-grid.js -->
 
 // ── 11. Per-crop nutriment builders ───────────────────────────────────────
-<!-- @include nutrition/tomato/app/shell/logic.js -->
-<!-- @include nutrition/tomato/app/sidedress/builder/app/logic.js -->
-<!-- @include nutrition/tomato/app/fertigation/builder/app/logic.js -->
+<!-- @include app/admin/nutrition/bilan/tomato/logic.js -->
+<!-- @include app/admin/nutrition/builder/sidedress/tomato/logic.js -->
+<!-- @include app/admin/nutrition/builder/fertigation/tomato/logic.js -->
 
-<!-- @include nutrition/lettuce/app/logic.js -->
+<!-- @include app/admin/nutrition/bilan/lettuce/logic.js -->
 
-<!-- @include yield-range/app/logic.js -->
-<!-- @include yield-range/app/light/operator/logic.js -->
+<!-- @include app/admin/rendement/logic.js -->
+<!-- @include app/operator/lumiere/lettuce/logic.js -->
 
-<!-- @include nutrition/nursery/app/logic.js -->
+<!-- @include app/admin/nutrition/bilan/nursery/logic.js -->
 
-<!-- @include app/historique-nutriments/logic.js -->
+<!-- @include app/admin/nutrition/historique/logic.js -->
 
 // ── 12. Cross-crop dispatcher + listener wiring + footer + snapshot helper ─
 // nutrCrop state + buildNutriment dispatcher + setNutrCrop handler +
 // captureCurrentSnapshot (browser-console helper for /retire-recipe) +
 // listener wiring on Bilan inputs + footer history.json fetch.
-<!-- @include app/operator/nutriment.js -->
+<!-- @include app/core/nutriment.js -->
 
 // ── 13. Operator chrome — top-nav routing, page-toggle, hash sync, admin, init ─
 // MUST be last. Reads every setter/handler defined above (setNutrCrop,
 // setNutrRecipeMode, setDiagCrop, buildNutriment, buildWeek, buildFoliar,
 // buildHistoriqueNutriments, buildYieldRange, renderDiag, etc.).
-<!-- @include app/operator/logic.js -->
+<!-- @include app/core/logic.js -->
 </script>
 
 <!-- "Pourquoi cette dose" modal — opened by clicking a row in Bilan tables.

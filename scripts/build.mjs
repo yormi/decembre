@@ -44,17 +44,17 @@ const STATIC_ASSETS = [
   'history.json',
 ];
 // Static asset directories copied recursively into dist/, preserving the
-// subpath. `app/diagnostic/images/` ships the symptom-guide reference photos
+// subpath. `app/admin/diagnostic/images/` ships the symptom-guide reference photos
 // referenced via <img src="diagnostic/images/...">.
 const STATIC_ASSET_DIRS = [
-  ['app/diagnostic/images', 'diagnostic/images'],
-  ['nutrition/lettuce/app/effeuillage/images', 'effeuillage/images'],
+  ['app/admin/diagnostic/images', 'diagnostic/images'],
+  ['app/operator/effeuillage/lettuce/images', 'effeuillage/images'],
 ];
 // Diagnosis-practice field photos (~400 MB, gitignored at source). Copied
 // image-only into dist/ so the practice gallery loads them via
 // <img src="diagnostic/practice-images/...">. Source stays gitignored — the
 // photos never enter the repo; only the small diagnosis-data.json (and its
-// generated app/diagnostic/practice-data.js) are committed. If the source dir
+// generated app/admin/diagnostic/practice-data.js) are committed. If the source dir
 // is absent (fresh clone without the photos), the copy is skipped silently and
 // the gallery renders with broken-image placeholders.
 const PRACTICE_PHOTO_SOURCE = 'nutrition/tomato/domain/doc/symptoms-2026-06-03';

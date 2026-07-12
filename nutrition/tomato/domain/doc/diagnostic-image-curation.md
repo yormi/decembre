@@ -1,7 +1,7 @@
 # Diagnostic-page image curation — tomato
 
 **Date:** 2026-05-28
-**Target:** `app/diagnostic/` symptom guide (13 tomato entries, `DIAG_DATA.tomato`).
+**Target:** `app/admin/diagnostic/` symptom guide (13 tomato entries, `DIAG_DATA.tomato`).
 **Goal:** attach one reference image per symptom so an operator can match what they see.
 **Decision (Guillaume, 2026-05-28):** hybrid source, tomato first.
 
@@ -64,6 +64,6 @@ extension link-out · GAP = no good image yet. **Cert** = match confidence 0–5
 
 ## Lane / next step
 
-Image *wiring* into `app/diagnostic/page.html` + `logic.js` (e.g. an optional
+Image *wiring* into `app/admin/diagnostic/page.html` + `logic.js` (e.g. an optional
 `image` field per symptom + render block) is **coder lane**, routed via
 team-leader. This manifest is the sourcing + cert input for that cascade.

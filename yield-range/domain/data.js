@@ -6,7 +6,7 @@
 // Two concerns share this file:
 //   1. Growth engine (carbon-balance) + operation geometry → predictYield.
 //   2. Supplemental-lighting feasibility (sun + LED to hit DLI_TARGET) →
-//      the Lumière page (yield-range/app/light/operator/).
+//      the Lumière page (app/operator/lumiere/lettuce/).
 
 // ── Carbon-balance growth engine ─────────────────────────────────────
 // dW_dry/dt = ε·DLI·A_ground·(1 − exp(−k·LAI)), LAI = W_dry·SLA/A_ground,

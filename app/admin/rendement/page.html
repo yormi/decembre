@@ -1,0 +1,45 @@
+  <!-- ═══════════════ RENDEMENT PAGE (admin) ═══════════════ -->
+  <!-- Salanova full-cycle yield model. Spec: app/admin/rendement/user-stories.md.
+       Four operator inputs (field spacing · labor routine · nursery tray ·
+       thinning) → yearly sales, kg/month, trays in nursery, harvest weight,
+       + full-cycle growth chart. Engine: window.YieldRange.predictYield
+       (yield-range/domain/spec.md, carbon-balance). Inputs auto-derived from
+       FIELD_SPACING_CONFIGS / LABOR_ROUTINES / NURSERY_TRAY_CELLS — no
+       option text hardcoded here. Wired via setPage('rendement') →
+       buildYieldRange() in app/admin/rendement/logic.js. -->
+  <div id="page-rendement-content" class="page-content" style="display:none;">
+
+    <!-- Four input toggle groups, rendered from data by renderYieldRangeInputs. -->
+    <div class="card">
+      <div class="card-title">Configuration</div>
+      <div id="yr-inputs"></div>
+    </div>
+
+    <!-- Headline outputs: yearly sales · kg/month · trays in nursery, plus a
+         secondary row (harvest weight + senescence badge, density, heads/bed,
+         beds/week). Rendered by renderYieldRange. No values hardcoded. -->
+    <div class="card">
+      <div class="card-title">Rendement</div>
+      <div id="yr-results"></div>
+    </div>
+
+    <!-- Growth chart with a two-view toggle (default full cycle):
+         · Plein cycle — full-cycle nursery→field trajectory, four thin timings
+           overlaid (no thin · 2/3/4 weeks), transplant marker, field-cap line.
+           From window.YieldRange.predictYield.
+         · Éclaircissage — four checker-thin timings overlaid (no thin · 2/3/4
+           weeks), packed-cap plateau. From window.YieldRange.seedlingTrajectory. -->
+    <div class="card">
+      <div class="card-title">Trajectoire de croissance</div>
+      <div id="yr-chart-container" style="width:100%; overflow:hidden;"></div>
+    </div>
+
+    <!-- Nursery-detail heatmap: fresh weight (g) per plateau × checker-thin day
+         × sample day, from window.YieldRange.seedlingThinningGrid() (same
+         carbon-balance law, nursery only). -->
+    <div class="card">
+      <div class="card-title">Poids semis — éclaircissage échiquier</div>
+      <div id="yr-thinning-table"></div>
+    </div>
+
+  </div><!-- end page-rendement-content -->

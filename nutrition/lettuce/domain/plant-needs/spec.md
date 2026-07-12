@@ -141,7 +141,7 @@ peer-reviewed; refinement triggers in derivation.md).
 Per-element demand inherits cert from `LETTUCE_TISSUE_DW`. Macros (N, P, K,
 Ca, Mg): cert 4. Micros (Fe, Mn, Zn, B, Cu, Mo): cert 3. Surfaced per element
 on click via the `lettuce-demand.<element>` pourquoi entries built by the
-integrator (`nutrition/lettuce/app/logic.js` once carved out).
+integrator (`app/admin/nutrition/bilan/lettuce/logic.js` once carved out).
 
 **Cert:** 4 (macros) / 3 (micros) — see derivation.md cert table.
 
@@ -175,5 +175,5 @@ supply lockout discounts.
 
 Specs that *consume* demand/supply output:
 
-- `nutrition/lettuce/app/user-stories.md` — Salanova subpage block layout, gap-chain
+- `app/admin/nutrition/bilan/lettuce/user-stories.md` — Salanova subpage block layout, gap-chain
   cascade (demand → compost → front-load → fertigation → leviers).

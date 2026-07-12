@@ -207,5 +207,5 @@ modal built by the integrator.
 
 Build order in `app/index.html`: `data.js` → `calc.js` → `model.js`.
 Consumers reach for `window.PlantNeedsLettuce`. The Salanova subpage
-builder (`buildNutrimentLettuce` in `nutrition/lettuce/app/logic.js`)
+builder (`buildNutrimentLettuce` in `app/admin/nutrition/bilan/lettuce/logic.js`)
 supplies the dependency bag for `calculateLettuceNutritionSupply`.

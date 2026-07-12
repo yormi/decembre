@@ -1750,7 +1750,7 @@ if (!PRODUCT) {
 // zero stored value — B (borax → Solubore) stays at 10 g, exercising the same
 // FP/Stored direction without a zero denominator.
 //
-// Spec: nutrition/tomato/app/shell/spec.md → stored-vs-computed-drift-block.
+// Spec: app/admin/nutrition/bilan/tomato/spec.md → stored-vs-computed-drift-block.
 
 header('stored-vs-computed-drift-block — Block 8 drift gauge renders FP ÷ Stored (≥100 % = under-supply)');
 
@@ -3382,7 +3382,7 @@ header('fp-strategy-live-derived — FP foliar recipe live-derived from pre-foli
 //
 // Section 1 of the Bilan UI specs. Asserts header inputs, light ceiling
 // formula, recipe-mode toggle behaviour. Spec:
-// nutrition/tomato/app/shell/spec.md → header-inputs-four-scalars..107.
+// app/admin/nutrition/bilan/tomato/spec.md → header-inputs-four-scalars..107.
 
 header('header-inputs-four-scalars — Header inputs are exactly four scalars (no nutr-current)');
 
@@ -3413,7 +3413,7 @@ header('light-ceiling-from-operator-j-per-g — Light ceiling reactive to solarP
   let logicJsBody = '';
   try {
     logicJsBody = readFileSync(
-      join(REPO_ROOT, 'nutrition', 'tomato', 'app', 'shell', 'logic.js'),
+      join(REPO_ROOT, 'app', 'admin', 'nutrition', 'bilan', 'tomato', 'logic.js'),
       'utf8'
     );
   } catch (e) { /* swallow — fail below */ }
@@ -3464,7 +3464,7 @@ header('fp-recipe-mode-locks-t5 — FP mode locks stage to T5 (auto-revert + def
   let logicJsBody = '';
   try {
     logicJsBody = readFileSync(
-      join(REPO_ROOT, 'nutrition', 'tomato', 'app', 'shell', 'logic.js'),
+      join(REPO_ROOT, 'app', 'admin', 'nutrition', 'bilan', 'tomato', 'logic.js'),
       'utf8'
     );
   } catch (e) { /* */ }
@@ -3538,7 +3538,7 @@ header('recipe-mode-toggle-fp-left-default-right — Recipe toggle: First princi
 // ─── tomato Nutrition page Block 1 (Besoin du plant) ────
 //
 // Section 2 of the Bilan UI specs. Spec:
-// nutrition/tomato/app/plant-needs/builder/user-stories.md.
+// app/admin/nutrition/builder/plant-needs/tomato/user-stories.md.
 
 header('Block 1 calls PN.calculateNutritionDemand (no bare-global lookups in render)');
 
@@ -3546,7 +3546,7 @@ header('Block 1 calls PN.calculateNutritionDemand (no bare-global lookups in ren
   let logicJsBody = '';
   try {
     logicJsBody = readFileSync(
-      join(REPO_ROOT, 'nutrition', 'tomato', 'app', 'shell', 'logic.js'),
+      join(REPO_ROOT, 'app', 'admin', 'nutrition', 'bilan', 'tomato', 'logic.js'),
       'utf8'
     );
   } catch (e) { /* */ }
@@ -3873,7 +3873,7 @@ header('applications-per-week-positive-integer — applicationsPerWeek coerced t
 
 // ─── semis subpage Blocks 2/3 layout + gap chain ─────────
 //
-// Specs: nutrition/nursery/app/user-stories.md → Block 2 layout,
+// Specs: app/admin/nutrition/bilan/nursery/user-stories.md → Block 2 layout,
 // Block 3 layout, gap chain demand → substrate → fert.
 //
 // Need to flip the page to the Semis subpage so the render lands. setNutrCrop
@@ -5117,7 +5117,7 @@ header('pourquoi-modal-strings-owned-here — Pourquoi modal interpretation stri
     // assert each <key> is in expectedKeys.
     const consumers = [
       join(REPO_ROOT, 'app', 'index.html'),
-      join(REPO_ROOT, 'nutrition', 'tomato', 'app', 'shell', 'logic.js'),
+      join(REPO_ROOT, 'app', 'admin', 'nutrition', 'bilan', 'tomato', 'logic.js'),
     ];
     const callRe = /renderSpec\(\s*['"]pourquoi-modal-strings-owned-here['"]\s*,\s*['"]([^'"]+)['"]/g;
     let callsFound = 0;
@@ -5150,7 +5150,7 @@ header('pourquoi-modal-strings-owned-here — Pourquoi modal interpretation stri
     }
 
     if (callsFound === 0) {
-      offenders.push('no consumer found for pourquoi-modal-strings-owned-here — renderSpec(\'pourquoi-modal-strings-owned-here\', …) absent in app/index.html or nutrition/tomato/app/shell/logic.js');
+      offenders.push('no consumer found for pourquoi-modal-strings-owned-here — renderSpec(\'pourquoi-modal-strings-owned-here\', …) absent in app/index.html or app/admin/nutrition/bilan/tomato/logic.js');
     }
   }
 
@@ -5487,7 +5487,7 @@ header('identifiers-unabbreviated — Function/variable/property names in JS sou
 // Specs: nutrition/spec.md → elemental-mass-in-mg (elemental-mass columns in mg),
 // column-header-unit-declaration (unit suffix in header not in cells), manque-sortant-zero-bare (bare 0, no
 // `(couvert)`), mois-depuisement-sme-runway (Mois d'épuisement every row with reservoir data).
-// nutrition/tomato/app/foliar/builder/user-stories.md → foliar Block 5 (foliar Efficacité reacts to
+// app/admin/nutrition/builder/foliar/tomato/user-stories.md → foliar Block 5 (foliar Efficacité reacts to
 // surfactant lever).
 //
 // elemental-mass-in-mg / column-header-unit-declaration / manque-sortant-zero-bare are designed-to-fail at first run — the
@@ -5958,7 +5958,7 @@ header('mois-depuisement-sme-runway — Mois d\'épuisement rendered for every r
 
 // ─── Foliar Efficacité is surfactant-aware ───────────────────
 //
-// Spec: nutrition/tomato/app/foliar/builder/user-stories.md → foliar Block 5. Two assertions:
+// Spec: app/admin/nutrition/builder/foliar/tomato/user-stories.md → foliar Block 5. Two assertions:
 //   (a) Reactive render — toggling #nutr-foliar-surfactant re-renders
 //       Block 5's Efficacité column (column index 2 in the 6-col gap-grid
 //       per contribution-block-gap-grid: Él. | Manque entrant | Efficacité | Apport ici |

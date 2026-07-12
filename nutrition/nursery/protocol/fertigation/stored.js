@@ -7,7 +7,7 @@
 // keeping the organic-cert audit trail intact.
 //
 // Changing the nursery feed: go through /retire-recipe — snapshot the OLD
-// values into RECIPE_HISTORY (app/historique-nutriments/history.js) BEFORE
+// values into RECIPE_HISTORY (app/admin/nutrition/historique/history.js) BEFORE
 // editing here, then keep this in step with NURSERY_RECIPE_DEFAULT.
 (function () {
   'use strict';

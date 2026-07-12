@@ -6,12 +6,12 @@ organic certification rules, anything not crop-specific).
 Crop-specific nutrition specs live in:
 
 - `nutrition/tomato/domain/spec.md` — tomato model/recipe/biology
-- `nutrition/tomato/app/shell/spec.md` — Tomato Nutrition page shell (orchestration, layout)
+- `app/admin/nutrition/bilan/tomato/spec.md` — Tomato Nutrition page shell (orchestration, layout)
 - `nutrition/tomato/{plant-needs,fertigation-recipe,sidedress-recipe,foliar-strategy}/builder/user-stories.md` — per-block page surface
 - `nutrition/lettuce/domain/spec.md` — Salanova post-transplant nutrition
-- `nutrition/lettuce/app/user-stories.md` — Salanova subpage UI
+- `app/admin/nutrition/bilan/lettuce/user-stories.md` — Salanova subpage UI
 - `nutrition/nursery/spec.md` — Semis laitue nutrition
-- `nutrition/nursery/app/user-stories.md` — Semis subpage UI
+- `app/admin/nutrition/bilan/nursery/user-stories.md` — Semis subpage UI
 
 Cross-crop subprojects:
 

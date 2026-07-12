@@ -53,6 +53,6 @@ switched over). **Retired bench recipe** (what was poured before, per 1.25 L/tra
 
 The organic-cert audit record now lives in the retired-recipe scheme:
 `STORED_RECIPE.nursery.fertigation` (live) + a `RECIPE_HISTORY` entry
-(`app/historique-nutriments/history.js`, retired 2026-06-20) rendered on the
+(`app/admin/nutrition/historique/history.js`, retired 2026-06-20) rendered on the
 Historique des nutriments page. Future feed changes go through /retire-recipe.
 This table is kept as engineering context.

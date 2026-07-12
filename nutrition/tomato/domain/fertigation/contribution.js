@@ -1,6 +1,6 @@
 // Per-channel contribution function for fertigation, extracted from
 // the inline FP/stored slice of calculateNutritionSupply in
-// nutrition/tomato/app/shell/contribution-orchestrator.js. Pure: no DOM reads, no window.* reads,
+// app/admin/nutrition/bilan/tomato/contribution-orchestrator.js. Pure: no DOM reads, no window.* reads,
 // no Date.now(). Caller resolves recipeMode + storedFert + fpFertigation
 // + multipliers and passes everything explicit.
 //

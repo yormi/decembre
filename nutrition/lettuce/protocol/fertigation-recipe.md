@@ -127,7 +127,7 @@ to *flux over a year of harvest* (100 kg fresh/wk). Decision: fertigate
   margin.
 
 Standing sheet: `fertigation-recipe-standing.md`. Live recipe:
-`LETTUCE_FERTIGATION_RECIPE` in `app/operator/state.js`.
+`LETTUCE_FERTIGATION_RECIPE` in `app/core/state.js`.
 
 
 ## Status + caveats

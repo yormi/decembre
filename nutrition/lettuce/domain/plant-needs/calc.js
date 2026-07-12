@@ -6,7 +6,7 @@
 //
 // Both functions are pure: they accept every input explicitly and read no
 // globals, no `window`, no `Date.now()`. Callers (today: the Salanova subpage
-// builder in `nutrition/lettuce/app/logic.js`) resolve every dependency at
+// builder in `app/admin/nutrition/bilan/lettuce/logic.js`) resolve every dependency at
 // the integrator boundary and pass them through the `dependencies` bag.
 //
 // Formula provenance, certainty, and refinement triggers live in

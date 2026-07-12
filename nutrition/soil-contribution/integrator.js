@@ -4,7 +4,7 @@
 // SME-throttled depletion runway). This file owns the SME × transpiration
 // mass-flow path that the Bilan supply orchestrator consumes — it reads the
 // session state (currentCrop) + solar lookup (getSolarRad) declared in
-// app/operator/state.js + app/operator/recalc.js, so it sits at the
+// app/core/state.js + app/core/recalc.js, so it sits at the
 // integrator boundary rather than in the pure calc.js layer.
 //
 // SME source-of-truth: the per-crop SME_SOIL_SOLUTION_PPM table in data.js.

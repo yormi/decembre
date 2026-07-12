@@ -12,7 +12,7 @@ How the model is built. Spec is in `spec.md`. This file: carbonate stoichiometry
 | Mehlich-3 Ca (exchangeable) | ~10 989 kg/ha | 4 | Berger Apr 2026 |
 | Free carbonate (CaCO₃) | **unmeasured** | 0 | — (calcimeter pending) |
 | Soil mass basis | 200 kg/m² (20 cm × 1.0 g/cm³) | 3 | `soil-contribution/data.js` |
-| Tomato bed area | 382.9 m² (7 × 54.7) | 4 | `app/operator/state.js` |
+| Tomato bed area | 382.9 m² (7 × 54.7) | 4 | `app/core/state.js` |
 
 Total topsoil mass = 200 × 382.9 = **76 580 kg**.
 
@@ -52,7 +52,7 @@ Carbonate mass = (calcimeter % / 100) × 76 580 kg (whole tomato block, all 7 be
 
 ### Per-pass safety cap — two tiers (the agronomic ceiling per application, NOT a target)
 
-Cap is per-unit-area. **One bed = 54.7 m²; whole tomato block = 7 × 54.7 = 382.9 m²** (`app/operator/state.js`). Tier depends on whether sulphur can be incorporated:
+Cap is per-unit-area. **One bed = 54.7 m²; whole tomato block = 7 × 54.7 = 382.9 m²** (`app/core/state.js`). Tier depends on whether sulphur can be incorporated:
 
 | Tier | When | Rate | Per bed (54.7 m²) | Whole block (382.9 m²) |
 |---|---|---|---|---|

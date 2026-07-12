@@ -11,7 +11,7 @@ Every edit to `STORED_RECIPE.tomato.{fertigation, sidedress, foliaire}` must cap
 
 | Channel | Live-constant source file | RECIPE_HISTORY |
 |---|---|---|
-| fertigation | `nutrition/tomato/protocol/fertigation/stored.js` | `app/historique-nutriments/history.js` |
+| fertigation | `nutrition/tomato/protocol/fertigation/stored.js` | `app/admin/nutrition/historique/history.js` |
 | sidedress | `nutrition/tomato/protocol/sidedress/stored.js` | (same) |
 | foliaire | `nutrition/tomato/protocol/foliar/stored.js` | (same) |
 | nursery (semis feed) | `nutrition/nursery/protocol/fertigation/stored.js` | (same) |
@@ -37,7 +37,7 @@ Read the THREE `procedure/stored.js` source files (table above) and copy their c
 
 ## Step 2 — append the new RECIPE_HISTORY entry
 
-Edit `app/historique-nutriments/history.js` at `const RECIPE_HISTORY = [`. Insert at TOP (most-recent-first):
+Edit `app/admin/nutrition/historique/history.js` at `const RECIPE_HISTORY = [`. Insert at TOP (most-recent-first):
 
 ```js
 {
@@ -89,7 +89,7 @@ Append one line at the top of the most-recent date section in `working files/cha
   - `nutrition/tomato/protocol/fertigation/stored.js`
   - `nutrition/tomato/protocol/sidedress/stored.js`
   - `nutrition/tomato/protocol/foliar/stored.js`
-- `app/historique-nutriments/history.js`: `RECIPE_HISTORY` array + entry-shape doc.
-- `app/index.html`: `window.STORED_RECIPE = { tomato: {} }` boot stub (channels assigned by the `stored.js` files above); `captureCurrentSnapshot()` browser helper still exists in `app/operator/nutriment.js` but is NOT used by this skill.
+- `app/admin/nutrition/historique/history.js`: `RECIPE_HISTORY` array + entry-shape doc.
+- `app/index.html`: `window.STORED_RECIPE = { tomato: {} }` boot stub (channels assigned by the `stored.js` files above); `captureCurrentSnapshot()` browser helper still exists in `app/core/nutriment.js` but is NOT used by this skill.
 - `working files/changelog.md`: append-only (separate from the audit trail).
 - CLAUDE.md: parallel-session staleness, organic-cert flagging.

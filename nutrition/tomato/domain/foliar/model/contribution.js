@@ -1,5 +1,5 @@
 // Per-channel contribution function for foliar, extracted from the inline
-// foliar slice of calculateNutritionSupply in nutrition/tomato/app/shell/contribution-orchestrator.js.
+// foliar slice of calculateNutritionSupply in app/admin/nutrition/bilan/tomato/contribution-orchestrator.js.
 // Pure: no DOM reads, no window.* reads.
 //
 // Returns the per-element supply vector (mg/m²/wk) the foliar channel
