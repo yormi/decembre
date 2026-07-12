@@ -41,7 +41,7 @@ Element coverage fixed at the 11 elements declared in
 
 ## Cert scale
 
-Same single-cert transferability scale as `nutrition/tomato/plant-needs/spec.md`
+Same single-cert transferability scale as `nutrition/tomato/domain/plant-needs/spec.md`
 ("Cert scale" — canonical).
 
 ---

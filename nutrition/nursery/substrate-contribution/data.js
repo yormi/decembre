@@ -11,7 +11,7 @@
 //   release = (OM2 starter charge × release curve) + (feather meal × N % × mineralization × release curve)
 //
 // Cert annotations per field reflect transferability, not source quality.
-// Scale defined canonically in nutrition/tomato/plant-needs/spec.md.
+// Scale defined canonically in nutrition/tomato/domain/plant-needs/spec.md.
 
 // ─── OM2 starter charge ────────────────────────────────────────────────
 //

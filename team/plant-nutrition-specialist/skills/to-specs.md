@@ -13,7 +13,7 @@ Philosophy in `team/everyone/principles.md § spec-is-statement-only`. PO-side s
 | Model layer (`*/model/`) | `spec.md` + `derivation.md` (mandatory) |
 | Algorithmic subproject (`fertigation-recipe/`, `foliar-strategy/`, `sidedress-recipe/`, `plant-needs/`, `nursery/*`, `chemistry/`, etc.) | `spec.md` + `derivation.md` (mandatory when math present) |
 
-PO-level REQs (`nutrition/spec.md`, `nutrition/tomato/spec.md`, `nutrition/lettuce/domain/spec.md`, root `spec.md`) are **fixed contracts** — read, do not edit. Unsatisfiable → flag in spec, don't rewrite.
+PO-level REQs (`nutrition/spec.md`, `nutrition/tomato/domain/spec.md`, `nutrition/lettuce/domain/spec.md`, root `spec.md`) are **fixed contracts** — read, do not edit. Unsatisfiable → flag in spec, don't rewrite.
 
 ## Procedure
 
@@ -21,7 +21,7 @@ PO-level REQs (`nutrition/spec.md`, `nutrition/tomato/spec.md`, `nutrition/lettu
 2. **Pick slug.** Kebab-case, unique in file, describes claim not implementation (`solubore-routed-fertigation`, not `compute-fert-fn`).
 3. **Write `## <slug>` + one normative paragraph.** Atomic (two paragraphs = two entries). Statement-only — WHAT, not HOW, not WHY. Ruthless word density; every word load-bears. Plain English; no code identifiers unless load-bearing contract symbols.
 4. **Editing a legacy `REQ-NNN` heading? Rename to slug** and fix in-file references. No repo-wide sweep; untouched legacy entries stay until next edit.
-5. **Cross-references carry ancestor namespace:** `nutrition/tomato/foliar-strategy/model — sprays-spread-across-farm-working-days`, not bare. Slugs unique per file.
+5. **Cross-references carry ancestor namespace:** `nutrition/tomato/domain/foliar/model — sprays-spread-across-farm-working-days`, not bare. Slugs unique per file.
 6. **Formulas / source tables / per-element data → split** to sibling `derivation.md`. Rejected alternatives → `learnings/<slug>.md`. Spec ≤ 5-min read.
 7. **Superseding? Edit in place.** Git holds history. No `~~strikethrough~~`, no "still technically holds" branches.
 
@@ -65,6 +65,6 @@ Every contribution channel exposes per-element supply in mg/m²/wk. The plant-ne
 ## See also
 
 - `team/product-owner/skills/to-specs.md` — PO-surface counterpart
-- `nutrition/tomato/plant-needs/spec.md` — canonical model-layer spec
+- `nutrition/tomato/domain/plant-needs/spec.md` — canonical model-layer spec
 
 This skill's **Derivation discipline** section IS the faithful-blueprint contract. The persona file carries only a pointer here.

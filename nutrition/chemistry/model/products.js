@@ -1,9 +1,9 @@
 // Chemistry — PRODUCT catalog (mineral salts + organic fertilizers + amendments).
 //
-// Pure data. No functions. Carved out of nutrition/tomato/lib/recipe-math.js
+// Pure data. No functions. Carved out of nutrition/tomato/app/lib/recipe-math.js
 // 2026-05-23 (Phase 2 chemistry pull-up): catalog applies to every crop, not
 // just tomato. Channel-routing decisions (tomato CHANNEL_ROLE) stayed on the
-// tomato side at nutrition/tomato/channel-role.js.
+// tomato side at nutrition/tomato/domain/channel-role.js.
 //
 // Cert legend: each numeric carries an inline cert 0-5. cert 3 = engineered
 // estimate from product class / Sonneveld / Yara / Hoagland conventions

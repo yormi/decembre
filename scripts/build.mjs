@@ -57,7 +57,7 @@ const STATIC_ASSET_DIRS = [
 // generated app/diagnostic/practice-data.js) are committed. If the source dir
 // is absent (fresh clone without the photos), the copy is skipped silently and
 // the gallery renders with broken-image placeholders.
-const PRACTICE_PHOTO_SOURCE = 'nutrition/tomato/doc/symptoms-2026-06-03';
+const PRACTICE_PHOTO_SOURCE = 'nutrition/tomato/domain/doc/symptoms-2026-06-03';
 const PRACTICE_PHOTO_DEST   = 'diagnostic/practice-images';
 // Match a whole-line @include directive: leading hspace + marker + trailing
 // hspace + optional newline. Consuming the newline avoids a stray blank line

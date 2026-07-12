@@ -1,7 +1,7 @@
 // Chemistry — predicted-CE + predicted tank-pH at the dripper / mix tank.
 //
 // Pure functions over PRODUCT (declared in sibling products.js). Carved out
-// of nutrition/tomato/lib/recipe-math.js 2026-05-23 (Phase 2 chemistry
+// of nutrition/tomato/app/lib/recipe-math.js 2026-05-23 (Phase 2 chemistry
 // pull-up).
 
 // predicted-ce-within-crop-stage-band — Predicted irrigation CE at the dripper.

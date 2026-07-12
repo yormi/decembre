@@ -1,7 +1,7 @@
 // Chemistry — precipitation pairs, tag incompatibilities, mix order, plus the
 // load-time coverage-validation IIFE (product-declares-ions-and-chemistry-tags /
 // every-cation-anion-pair-classified / every-chemistry-tag-classified). Reads PRODUCT from sibling
-// products.js. Carved out of nutrition/tomato/lib/recipe-math.js 2026-05-23
+// products.js. Carved out of nutrition/tomato/app/lib/recipe-math.js 2026-05-23
 // (Phase 2 chemistry pull-up).
 
 // in-tank-ksp-precipitation-guard — Cation × anion precipitation pairs.

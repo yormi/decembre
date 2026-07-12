@@ -1,6 +1,6 @@
 # Lettuce — soil pH correction · derivation
 
-How the model is built. Spec is in `spec.md`. This file: lettuce soil state, the shared sulphur chemistry re-anchored on lettuce numbers, two-tier cap, cadence + guardrails, refinement triggers. Crop-agnostic chemistry is owned by `nutrition/tomato/soil-ph/model/derivation.md`; here it is applied to lettuce. Decision history (rejected alternatives) lives in `learnings/`.
+How the model is built. Spec is in `spec.md`. This file: lettuce soil state, the shared sulphur chemistry re-anchored on lettuce numbers, two-tier cap, cadence + guardrails, refinement triggers. Crop-agnostic chemistry is owned by `nutrition/tomato/domain/soil-ph/derivation.md`; here it is applied to lettuce. Decision history (rejected alternatives) lives in `learnings/`.
 
 ## Soil state (anchors)
 

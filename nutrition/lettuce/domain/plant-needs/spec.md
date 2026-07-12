@@ -68,7 +68,7 @@ Element coverage fixed at the 11 elements in `LETTUCE_TISSUE_DW`
 
 Every cert value in the plant-needs subproject is a **transferability
 cert** (0-5). Same shape as the tomato subproject (see
-`nutrition/tomato/plant-needs/spec.md` → "Cert scale").
+`nutrition/tomato/domain/plant-needs/spec.md` → "Cert scale").
 
 | Cert | Meaning |
 |------|---------|

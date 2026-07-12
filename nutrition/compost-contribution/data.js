@@ -9,7 +9,7 @@
 // is not declared on the label.
 //
 // Cert annotations per field reflect transferability, not source quality.
-// Scale defined canonically in nutrition/tomato/plant-needs/spec.md.
+// Scale defined canonically in nutrition/tomato/domain/plant-needs/spec.md.
 
 const COMPOST_AMENDMENT = {
   product:                 'Savaria ORGANIMIX marin',  // CAN/CGSB-32.311 §4.2 (organic shrimp + lime)

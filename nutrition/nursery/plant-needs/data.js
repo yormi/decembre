@@ -20,7 +20,7 @@
 // Sonneveld & Voogt 2009 Ch. 6 (greenhouse leafy crops nutrient
 // composition), seedling-stage adjustments from Décembre tissue notes.
 // Cert annotations per field reflect transferability, not source quality
-// alone (scale defined in nutrition/tomato/plant-needs/spec.md).
+// alone (scale defined in nutrition/tomato/domain/plant-needs/spec.md).
 
 // Tissue concentration on DW basis (mass fraction; micros via 1e-6).
 // Used in the formula:

@@ -1,11 +1,11 @@
 ---
 name: new-subproject
-description: Use when carving out a new subproject under the spec tree (e.g. `nutrition/<crop>/<topic>/`, `yield-range/<topic>/`, a new top-level domain). Scaffolds the conventional file layout (`spec.md` + optional `derivation.md` / `data.js` / `calc.js` / `model.js`) and either starts blank ("from scratch") or extracts existing work (spec entries, sections, code) out of a parent file into the new home. Mirrors the conventions established by `nutrition/tomato/plant-needs/`, `nutrition/tomato/sidedress-recipe/`, `nutrition/compost-contribution/`, `yield-range/`. Does NOT cover spec-entry writing itself — see the `to-specs` skill for slug naming + entry shape.
+description: Use when carving out a new subproject under the spec tree (e.g. `nutrition/<crop>/<topic>/`, `yield-range/<topic>/`, a new top-level domain). Scaffolds the conventional file layout (`spec.md` + optional `derivation.md` / `data.js` / `calc.js` / `model.js`) and either starts blank ("from scratch") or extracts existing work (spec entries, sections, code) out of a parent file into the new home. Mirrors the conventions established by `nutrition/tomato/domain/plant-needs/`, `nutrition/tomato/sidedress-recipe/`, `nutrition/compost-contribution/`, `yield-range/`. Does NOT cover spec-entry writing itself — see the `to-specs` skill for slug naming + entry shape.
 ---
 
 # Carve out a subproject
 
-Self-contained slice: `spec.md` (normative claims) + optional `derivation.md` (formulas/rationale) + optional code triplet `data.js` / `calc.js` / `model.js` (constants → pure functions → `window.*` namespace). Canonical examples: `nutrition/tomato/plant-needs/`, `nutrition/tomato/sidedress-recipe/`, `nutrition/compost-contribution/`, `yield-range/`.
+Self-contained slice: `spec.md` (normative claims) + optional `derivation.md` (formulas/rationale) + optional code triplet `data.js` / `calc.js` / `model.js` (constants → pure functions → `window.*` namespace). Canonical examples: `nutrition/tomato/domain/plant-needs/`, `nutrition/tomato/sidedress-recipe/`, `nutrition/compost-contribution/`, `yield-range/`.
 
 ## Pre-flight — ask the user, in order
 
@@ -56,7 +56,7 @@ It does NOT answer:
 
 ## Cert scale
 
-Same scale as `nutrition/tomato/plant-needs/spec.md`.
+Same scale as `nutrition/tomato/domain/plant-needs/spec.md`.
 
 ---
 
@@ -139,7 +139,7 @@ Search the changelog for `subproject created` to match established verbosity (sh
 ## Cross-references
 
 - CLAUDE.md "Specs" section — what is/isn't a spec; verifier model.
-- `nutrition/tomato/plant-needs/` — canonical spec + derivation + code-triplet split.
+- `nutrition/tomato/domain/plant-needs/` — canonical spec + derivation + code-triplet split.
 - `nutrition/tomato/sidedress-recipe/` — most recent extraction.
 - `nutrition/compost-contribution/` — cross-crop subproject at `nutrition/<topic>/`.
 - `yield-range/` — standalone top-level domain.

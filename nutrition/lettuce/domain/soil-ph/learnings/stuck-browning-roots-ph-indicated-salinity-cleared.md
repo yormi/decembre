@@ -38,7 +38,7 @@ salt-sensitive crop. cert 4 (direct SME reading).
 
 **Lettuce is the best-justified, most-direct pH target in the whole
 soil-pH plan** — more direct than tomato, where the pH→benefit
-chains are indirect (see `nutrition/tomato/soil-ph/model/learnings/
+chains are indirect (see `nutrition/tomato/domain/soil-ph/learnings/
 0002`). Bicarbonate + P-lockout directly throttle lettuce rooting;
 sulphur attacks both. cert 3 (bicarbonate root-elongation
 inhibition + P→root-architecture are textbook; the post-pH rooting

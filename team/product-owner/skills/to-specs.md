@@ -24,7 +24,7 @@ Decision rule: cross-cutting invariant or domain rule → spec. Grower-facing UI
 2. **Pick slug.** Kebab-case, unique in file, describes claim not implementation (`weekly-calendar-rendered`, not `render-weekly-cal-fn`).
 3. **Write `## <slug>` + one normative paragraph.** Atomic (two paragraphs = two entries). Statement-only — WHAT, not HOW, not WHY. Ruthless word density; every word load-bears. Plain English; no code identifiers unless load-bearing contract symbols. Same shape for both artifacts.
 4. **Editing a legacy numeric id? Rename to slug** and fix in-file references. No repo-wide sweep; untouched legacy entries stay until next edit.
-5. **Cross-references carry ancestor namespace:** `nutrition/tomato/foliar-strategy/operator — weekly-calendar-rendered`, not bare. Slugs unique per file.
+5. **Cross-references carry ancestor namespace:** `nutrition/tomato/app/foliar/operator — weekly-calendar-rendered`, not bare. Slugs unique per file.
 6. **Superseding? Edit in place.** Git holds history. No `~~strikethrough~~`, no "still technically holds" branches.
 
 ## PO-surface extras (user-stories.md)

@@ -9,14 +9,14 @@ The model answers exactly one question: **"What elemental-sulphur programme, if 
 It does NOT answer:
 - Soil nutrient banks / weekly supply — `nutrition/soil-contribution/spec.md`.
 - Fertigation tank/dripper pH bands — `nutrition/chemistry/spec.md`.
-- The lettuce root-zone target pH band itself — a **specialist decision, pending** (the tomato sibling defined its band 6.4–6.8 in `nutrition/tomato/soil-ph/model/`; lettuce needs its own — tighter, salt-sensitive, floor 6.0 — not yet written). This model consumes the band once defined.
-- The crop-agnostic sulphur chemistry — shared with `nutrition/tomato/soil-ph/`; this file re-anchors only the lettuce-specific soil state, geometry, salt ceiling, and turnover cadence.
+- The lettuce root-zone target pH band itself — a **specialist decision, pending** (the tomato sibling defined its band 6.4–6.8 in `nutrition/tomato/domain/soil-ph/`; lettuce needs its own — tighter, salt-sensitive, floor 6.0 — not yet written). This model consumes the band once defined.
+- The crop-agnostic sulphur chemistry — shared with `nutrition/tomato/domain/soil-ph/`; this file re-anchors only the lettuce-specific soil state, geometry, salt ceiling, and turnover cadence.
 
 ---
 
 ## Cert scale
 
-Same scale as `nutrition/tomato/plant-needs/spec.md`.
+Same scale as `nutrition/tomato/domain/plant-needs/spec.md`.
 
 ---
 
@@ -29,4 +29,4 @@ Same scale as `nutrition/tomato/plant-needs/spec.md`.
 
 - **Lettuce root-zone pH band** — specialist decision, pending (not yet written). This model is blocked on it for the target endpoint.
 - **Lettuce soil bank Ca / pH data** (`nutrition/soil-contribution/data.js`) — Mehlich-3 Ca 10 612 kg/ha, SME pH 7.48, sample 596617 (Berger 39088, April 2026).
-- **Crop-agnostic sulphur chemistry + caps + cadence** (`nutrition/tomato/soil-ph/model/derivation.md`) — S:CaCO₃ stoichiometry, two-tier per-pass cap, oxidation-gated cadence, gypsum self-limit. Re-applied here with lettuce numbers.
+- **Crop-agnostic sulphur chemistry + caps + cadence** (`nutrition/tomato/domain/soil-ph/derivation.md`) — S:CaCO₃ stoichiometry, two-tier per-pass cap, oxidation-gated cadence, gypsum self-limit. Re-applied here with lettuce numbers.

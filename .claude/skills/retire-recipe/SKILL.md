@@ -11,9 +11,9 @@ Every edit to `STORED_RECIPE.tomato.{fertigation, sidedress, foliaire}` must cap
 
 | Channel | Live-constant source file | RECIPE_HISTORY |
 |---|---|---|
-| fertigation | `nutrition/tomato/fertigation-recipe/procedure/stored.js` | `app/historique-nutriments/history.js` |
-| sidedress | `nutrition/tomato/sidedress-recipe/procedure/stored.js` | (same) |
-| foliaire | `nutrition/tomato/foliar-strategy/procedure/stored.js` | (same) |
+| fertigation | `nutrition/tomato/protocol/fertigation/stored.js` | `app/historique-nutriments/history.js` |
+| sidedress | `nutrition/tomato/protocol/sidedress/stored.js` | (same) |
+| foliaire | `nutrition/tomato/protocol/foliar/stored.js` | (same) |
 | nursery (semis feed) | `nutrition/nursery/fertigation/procedure/stored.js` | (same) |
 
 Tomato `stored.js` assigns `window.STORED_RECIPE.tomato.<channel> = {...}`; nursery assigns `window.STORED_RECIPE.nursery.fertigation = {...}` (flat `{product: dose}`, per-litre — mirror `NURSERY_RECIPE_DEFAULT`). `RECIPE_HISTORY` is the array in `history.js` at `const RECIPE_HISTORY = [`.
@@ -86,9 +86,9 @@ Append one line at the top of the most-recent date section in `working files/cha
 ## Cross-references
 
 - Live STORED source files (source of truth):
-  - `nutrition/tomato/fertigation-recipe/procedure/stored.js`
-  - `nutrition/tomato/sidedress-recipe/procedure/stored.js`
-  - `nutrition/tomato/foliar-strategy/procedure/stored.js`
+  - `nutrition/tomato/protocol/fertigation/stored.js`
+  - `nutrition/tomato/protocol/sidedress/stored.js`
+  - `nutrition/tomato/protocol/foliar/stored.js`
 - `app/historique-nutriments/history.js`: `RECIPE_HISTORY` array + entry-shape doc.
 - `app/index.html`: `window.STORED_RECIPE = { tomato: {} }` boot stub (channels assigned by the `stored.js` files above); `captureCurrentSnapshot()` browser helper still exists in `app/operator/nutriment.js` but is NOT used by this skill.
 - `working files/changelog.md`: append-only (separate from the audit trail).

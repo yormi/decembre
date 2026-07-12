@@ -63,7 +63,9 @@ Mg/Ca/P cannot be fixed by adding more to soil — the bank holds
 years. Fix is foliar (bypass the lock) + lower Na + lower pH.
 
 K reserve is healthy (645 kg/ha); the low SME K (54 ppm) was
-lockout/antagonism, not a poor bank. → no reason to push K.
+lockout/antagonism, not a poor bank. → no reason to push tissue K
+*up*. But over a full year of harvest the bank itself draws down —
+see the 2026-07-11 revision below for why K replacement rose to 400 g.
 
 
 ## No soil contribution — what the soil carries
@@ -95,6 +97,37 @@ maintenance, already above true demand). The soil is the **main
 nutrient bank**; fertigation is a top-up. A soilless organic feed
 would be ~6× the mass, need three hard-to-source inputs, and bring the
 Na problem back. → protect and unlock the soil; don't feed around it.
+
+
+## 2026-07-11 revision — B + K only, replace-don't-push
+
+Context change: bed pH fell 7.48 → **6.4**, relieving the lockout.
+With availability restored, the binding question flips from *lockout*
+to *flux over a year of harvest* (100 kg fresh/wk). Decision: fertigate
+**only B and K**; front-load N; let the soil carry the rest.
+
+- **K 200 → 400 g.** Not to raise tissue K (uptake ceiling stands),
+  but to slow **bank depletion**. Weekly removal ≈ 350 g K (≈ 840 g
+  K₂SO₄); at 200 g the bank runs ~17 wk, at 400 g ~48 wk. Full
+  replacement (~840 g) was held back — it adds ~+1 mS/cm on a
+  salt-stressed crop. 400 g ≈ +0,5 mS/cm is the CE-safe partial.
+  **Monitor tissue K; top up (raise tank or broadcast at bed-prep) if
+  it dips.**
+
+- **Mg / Fe / Mn / Zn / Cu dropped from the tank.** At pH 6.4 soil
+  resupply covers lettuce's modest micro demand (mass flow + fast
+  desorption). Were maintenance-only.
+
+- **B 6 → 0,7 g**, switched to Solubore (20,5 % B). Old 6 g Borax
+  over-supplied the ~150 mg weekly removal 4-8×. Soil B below
+  detection → tank is the sole source.
+
+- **N** stays out of the tank — pre-plant front-load (alfalfa +
+  actisol + feather meal) covers the ~260 g/bed weekly export with
+  margin.
+
+Standing sheet: `fertigation-recipe-standing.md`. Live recipe:
+`LETTUCE_FERTIGATION_RECIPE` in `app/operator/state.js`.
 
 
 ## Status + caveats

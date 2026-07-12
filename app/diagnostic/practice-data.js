@@ -1,5 +1,5 @@
 // Diagnosis-practice card data — 89 field photos (2026-06-03 tomato symptom review).
-// Canonical source: nutrition/tomato/doc/symptoms-2026-06-03/diagnosis-data.json
+// Canonical source: nutrition/tomato/domain/doc/symptoms-2026-06-03/diagnosis-data.json
 // (small, committed). Regenerate this file from that JSON when the review is
 // re-run. Photos themselves are ~400 MB, gitignored; the build copies them to
 // dist/diagnostic/practice-images/ (see scripts/build.mjs).

@@ -55,7 +55,7 @@ OM2 contributes the 5 macros; feather meal contributes ONLY N (label
 
 ## Cert scale
 
-Same single-cert transferability scale as `nutrition/tomato/plant-needs/spec.md`
+Same single-cert transferability scale as `nutrition/tomato/domain/plant-needs/spec.md`
 ("Cert scale" section — canonical).
 
 ---

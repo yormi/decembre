@@ -11,10 +11,11 @@ Rumelt kernel: **diagnosis → guiding policy → coherent action.**
   growing protocol (mix → crop-out), stage-organized. Stages 1–5 +
   8-climate decided; 6 (bed), 7 (transplant), 8-Ca/density, 9
   (targets) still open. References `../domain/domain.md` for mechanism/setpoints.
-- `../protocol/fertigation-recipe.md` — field-feed coherent action: the
-  tissue-led recipe revision (before vs corrected + reason +
-  soil-reserve runway). Why K was cut, Mg moved to foliar, Cu kept,
-  Mo + citric dropped. Shows depletion ≠ the constraint; lockout is.
+- `../protocol/fertigation-recipe.md` — field-feed coherent action:
+  the tissue-led recipe revision + the 2026-07-11 **B + K only**
+  revision (pH now 6.4 → soil carries the rest; K raised to 400 g to
+  slow bank depletion over a year; micros dropped). Standing sheet:
+  `../protocol/fertigation-recipe-standing.md`.
 
 - `learnings/` — strategy forks (crowding=over-aging → 3″-pot vehicle).
 - Salinity procedures live in the shared `../../protocol/`:

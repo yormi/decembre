@@ -1,6 +1,6 @@
 // Test helpers for yield-range.
 //
-// Mirrors nutrition/tomato/plant-needs/test-helpers.mjs: load data.js +
+// Mirrors nutrition/tomato/domain/plant-needs/test-helpers.mjs: load data.js +
 // calc.js + model.js into a node:vm sandbox with `window` as host, return
 // the namespace plus the raw window so tests can inspect read-only
 // constants (spacing configs, canopy geometry, etc.) without committing to

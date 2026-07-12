@@ -35,5 +35,5 @@ over-trusts Fe and slightly over-trusts sprayed micros. Easy to
 re-derive wrong each panel; cross-crop (tomato + lettuce), so it lives
 here, not in one tomato doc.
 
-Source panel: `nutrition/tomato/doc/tomato-t5-tissue-analysis-2026-05-23.md`
+Source panel: `nutrition/tomato/domain/doc/tomato-t5-tissue-analysis-2026-05-23.md`
 § 4.3.

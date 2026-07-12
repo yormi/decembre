@@ -3,7 +3,7 @@
 **Date:** 2026-05-29
 **Status:** accepted
 
-Lettuce beds are Ca-saturated from the same calcitic-lime (CaCO₃) compost as tomato and read **SME pH 7.48 — more alkaline than tomato (SME 6.99 / water 7.28)** (Berger 39088, sample 596617, Apr 2026). So sulphur acidification applies to lettuce too, and likely harder. Carved `nutrition/lettuce/domain/soil-ph/` mirroring `nutrition/tomato/soil-ph/model/`; the sulphur chemistry is shared (owned by the tomato sibling), only lettuce-specific numbers re-anchored.
+Lettuce beds are Ca-saturated from the same calcitic-lime (CaCO₃) compost as tomato and read **SME pH 7.48 — more alkaline than tomato (SME 6.99 / water 7.28)** (Berger 39088, sample 596617, Apr 2026). So sulphur acidification applies to lettuce too, and likely harder. Carved `nutrition/lettuce/domain/soil-ph/` mirroring `nutrition/tomato/domain/soil-ph/`; the sulphur chemistry is shared (owned by the tomato sibling), only lettuce-specific numbers re-anchored.
 
 ## What changed vs the tomato sibling
 

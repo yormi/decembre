@@ -1,6 +1,6 @@
 # Supply belongs in plant-needs? — accepted with watch
 
-Strict mirror of `nutrition/tomato/plant-needs/` would keep plant-needs to
+Strict mirror of `nutrition/tomato/domain/plant-needs/` would keep plant-needs to
 the demand side only and split supply into a sibling subproject (e.g.
 `nutrition/lettuce/fertigation-recipe/` or `nutrition/lettuce/supply/`).
 

@@ -51,7 +51,7 @@ function weeklyMassFlowL() {
 //
 // Previous formula: `current_yield / target_yield` (floor 0.4, cap 1.0). Retired
 // 2026-05-24 — operator-anchored (denominator was the operator's target), not
-// first-principles. See `nutrition/tomato/doc/ca-ber-investigation-tests-
+// first-principles. See `nutrition/tomato/domain/doc/ca-ber-investigation-tests-
 // 2026-05-24.md` Test 6 for the physics-anchored replacements:
 //   - Variant 6a — sunlight × RUE → theoretical yield; ratio = currentYield /
 //     theoreticalYield, paired with canopy-state visual override.

@@ -89,7 +89,7 @@ const TURNOVER_BOUND_ELEMENTS = ['N'];
 // version. Spec months-to-depletion-clamped-by-peak-demand.
 //
 // Sources:
-//   - Tomato: nutrition/tomato/plant-needs/data.js TOMATO_REMOVAL × yield
+//   - Tomato: nutrition/tomato/domain/plant-needs/data.js TOMATO_REMOVAL × yield
 //     1.5 kg/m²/wk (whole-plant Koller-aligned ratio at T5 production peak;
 //     cert 3 for macros, cert 1-2 for micros — inherits per-element from
 //     plant-needs).

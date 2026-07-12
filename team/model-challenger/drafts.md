@@ -20,7 +20,7 @@ Two doc-hygiene flags (not model critiques, flag-don't-fix):
 - **Stray `(placeholder)` line** inserted under §6 refinement trigger 5 — accidental leftover, no content. · `PENDING`
 - **Dangling slug refs.** Derivation now cites slugs (`predicted-ce-under-nursery-cap`, `predicted-tank-ph-in-nursery-envelope`, `default-recipe-p-supply-half-demand`) but sibling `spec.md` headings are still the old numbered form — spec side wasn't migrated, so these point at headings that don't exist yet. Also §6 trigger 5 still reads un-migrated. · `PENDING`
 
-## 2026-05-30 — review of nutrition/tomato/soil-ph/model/derivation.md (HEAD working-tree diff)
+## 2026-05-30 — review of nutrition/tomato/domain/soil-ph/derivation.md (HEAD working-tree diff)
 
 Scope: new subsection "What the cap governs — total acid, NOT oxidation rate (cert 4)" under the per-pass safety cap. No spec entries (sibling `spec.md` still has zero slugs — blocked on PO band + calcimeter). Adds reasoning claims, no new numbers/doses.
 
@@ -44,7 +44,7 @@ No challenge. cert 4 on "total acid = f(mass), not f(rate)" is if anything conse
 ### Verdict
 Ship after addressing C1 framing (flag the fast-product branch as conditional) + B1 (Microthiol cert status). Both low-cost doc fixes; no rework, no number moved.
 
-## 2026-05-30 — review of nutrition/tomato/soil-ph/model/derivation.md (HEAD working-tree diff, peak-hazard expansion)
+## 2026-05-30 — review of nutrition/tomato/domain/soil-ph/derivation.md (HEAD working-tree diff, peak-hazard expansion)
 
 Scope: per-pass-cap subsection "What the cap governs". Prior 2-line "rate hazard, flatten the peak" paragraph expanded into (a) a 30× instantaneous-acid-flux figure (9 µm wettable vs micronized) and (b) a two-regime split — buffered (carbonate present) vs unbuffered (carbonate exhausted) acid-microzone hazard. No spec entries (sibling still zero-slug). No dose number moved. Builds directly on the prior entry's B1/C1 (lines 23-45) — read those first; not re-raising the Microthiol-cert / product-not-on-hand points.
 
@@ -68,22 +68,22 @@ No new cert challenge beyond B1. The regime-dependent claim (cert 3) is mechanis
 ### Verdict
 Ship after addressing B1 (fix or drop the 30×) + C1 (move the unbuffered-state mechanism to learnings, keep the pH-cue trigger). No rework, no dose moved; both are altitude/arithmetic hygiene on a not-yet-built, not-current-crop lever.
 
-## 2026-05-30 — review of nutrition/tomato/fertigation-recipe/model/derivation.md (HEAD working-tree diff)
+## 2026-05-30 — review of nutrition/tomato/domain/fertigation/derivation.md (HEAD working-tree diff)
 
 No-op pass — diff is slug reference migration only (→`mass-balance-derivation`, →`uptake-efficiency-factor`, →`fp-target-mirrors-sizer`, →`ca-aware-product-gate`, →`only-ca-p-participate-in-gap-chain`). No claim, number, or derivation logic moved. Nothing to critique.
-## 2026-05-30 — review of nutrition/tomato/foliar-strategy/model/derivation.md (HEAD working-tree diff)
+## 2026-05-30 — review of nutrition/tomato/domain/foliar/model/derivation.md (HEAD working-tree diff)
 
 No-op pass — diff is slug/namespace reference migration only (→`nutrition/chemistry — foliar-ce-under-burn-cap`, →`coverage-discount-on-delivery`, →`weekly-leaf-tolerance-cap`, →`gap-maximizing-recipe`). No dose, cert, or derivation logic moved. Nothing to critique.
 
-## 2026-05-30 — review of nutrition/tomato/foliar-strategy/model/derivation.md (working-tree diff)
+## 2026-05-30 — review of nutrition/tomato/domain/foliar/model/derivation.md (working-tree diff)
 
 No-op pass. Diff is a pure slug citation migration (→ `foliar-ce-under-burn-cap`, → `coverage-discount-on-delivery`, → `weekly-leaf-tolerance-cap`, → `gap-maximizing-recipe`). No claim, constant, cert, or number moved. Nothing to critique.
 
-## 2026-05-30 — review of nutrition/tomato/foliar-strategy/model/derivation.md (HEAD working-tree diff)
+## 2026-05-30 — review of nutrition/tomato/domain/foliar/model/derivation.md (HEAD working-tree diff)
 
 No-op pass — diff is slug reference migration only (→`nutrition/chemistry — foliar-ce-under-burn-cap`, →`coverage-discount-on-delivery`, →`weekly-leaf-tolerance-cap`, →`gap-maximizing-recipe`). No constant, cap, cert, or claim moved. Nothing to critique.
 
-## 2026-05-30 — review of nutrition/tomato/foliar-strategy/model/derivation.md (HEAD working-tree diff)
+## 2026-05-30 — review of nutrition/tomato/domain/foliar/model/derivation.md (HEAD working-tree diff)
 
 No-op pass — same slug citation migration as the four entries above (→`foliar-ce-under-burn-cap`, →`coverage-discount-on-delivery`, →`weekly-leaf-tolerance-cap`, →`gap-maximizing-recipe`, →`surfactant-aware-efficiency-map`, →`foliar-uptake-ph-curve`, →`in-tank-ksp-precipitation-guard`). No dose, cap, cert, or derivation logic moved. Nothing to critique.
 
@@ -91,27 +91,27 @@ No-op pass — same slug citation migration as the four entries above (→`folia
 
 No-op pass — slug citation migration only (→`default-recipe-p-supply-half-demand`, →`predicted-ce-under-nursery-cap`, →`predicted-tank-ph-in-nursery-envelope`). No constant, cap, cert, or claim moved. Nothing to critique.
 
-## 2026-05-30 — review of nutrition/tomato/fertigation-recipe/model/derivation.md HEAD
+## 2026-05-30 — review of nutrition/tomato/domain/fertigation/derivation.md HEAD
 
 No-op pass. Diff is citation-format migration only (→ slug names `under-fert-guard` / `luxury-feeding-guard` / `replenishment-cascade-earliest-first`). No constant, factor, stage, or claim moved. Nothing to critique.
 
-## 2026-05-30 — review of nutrition/tomato/fertigation-recipe/model/derivation.md (HEAD working-tree diff)
+## 2026-05-30 — review of nutrition/tomato/domain/fertigation/derivation.md (HEAD working-tree diff)
 
 No-op pass — continuation of the same slug citation migration, now covering the channel-efficiency-map + Mo sections (→`nutrition — channel-efficiency-capability-map`, →`ph-aware-effective-efficiency`, →`no-decorative-products-at-current-ph`, →`replenishment-cascade-earliest-first`). No constant, ratio, cert, or derivation logic moved. Nothing to critique.
 
-## 2026-05-30 — review of nutrition/tomato/fertigation-recipe/model/derivation.md (HEAD working-tree diff)
+## 2026-05-30 — review of nutrition/tomato/domain/fertigation/derivation.md (HEAD working-tree diff)
 
 No-op pass — same slug citation migration already logged above (active-channels-sum + Solubore + channel-efficiency-map + Mo + no-pH-gate + flat-return sections; →`under-fert-guard`/`luxury-feeding-guard`, →`replenishment-cascade-earliest-first`, →`channel-efficiency-capability-map`, →`ph-aware-effective-efficiency`, →`no-decorative-products-at-current-ph`, →`contribution-channel-details-payload`). No constant, factor, ratio, cert, or derivation logic moved. Nothing to critique. · `PENDING`
 
-## 2026-05-30 — review of nutrition/tomato/foliar-strategy/model/derivation.md (HEAD working-tree diff)
+## 2026-05-30 — review of nutrition/tomato/domain/foliar/model/derivation.md (HEAD working-tree diff)
 
 No-op pass — same slug citation migration (→`under-fert-guard`/`luxury-feeding-guard`, →`replenishment-cascade-earliest-first` ×2). No constant, factor, floor, cert, or band moved. Nothing to critique.
 
-## 2026-05-30 — review of nutrition/tomato/sidedress-recipe/model/derivation.md (HEAD working-tree diff)
+## 2026-05-30 — review of nutrition/tomato/domain/sidedress/derivation.md (HEAD working-tree diff)
 
 No-op pass — same slug citation migration (→`channel-efficiency-capability-map`, →`luxury-feeding-guard`, →`release-values-within-mass-balance-band`). No constant, factor, eff, cert, or derivation logic moved. Nothing to critique.
 
-## 2026-05-30 — review of nutrition/tomato/plant-needs/model/derivation.md HEAD
+## 2026-05-30 — review of nutrition/tomato/domain/plant-needs/derivation.md HEAD
 
 No-op pass — trivial diff: lone reference-label migration (→ slug `nutrition/tomato — tomato-removal-biased-high`) in the macro back-test refinement trigger. No claim, number, or cert moved. · `PENDING`
 
@@ -119,7 +119,7 @@ No-op pass — trivial diff: lone reference-label migration (→ slug `nutrition
 
 No-op pass. Diff deletes a single bare reference in the channel-efficiency-map section ("Block 5 toggle that the page-side reads") — bare-reference elimination migration. No constant, dose, cert, stage, branch, or mechanism moved. Sibling clause already names the slug (`surfactant-aware-efficiency-map`), so the removal leaves no dangling reference. · `PENDING`
 
-## 2026-05-31 — review of nutrition/tomato/soil-ph/model/derivation.md (HEAD working-tree diff)
+## 2026-05-31 — review of nutrition/tomato/domain/soil-ph/derivation.md (HEAD working-tree diff)
 
 Scope: new subsection "Target band (the correction endpoint)" added above the feasibility gate. Cert-3 endpoint band (Mehlich-3 water pH 6.4–6.8, aim 6.5, hard floor 6.2) lifted from the new `learnings/define-soil-root-zone-ph-target-band.md` into the live derivation. No dose number moved; the band was already the implicit endpoint the dose tables drive toward. Sibling `spec.md` still zero-slug.
 
@@ -132,7 +132,7 @@ Scope: new subsection "Target band (the correction endpoint)" added above the fe
 
 ### Complexity
 **C1 — target band now stated in three places, one of them stale and contradicting** · `PENDING`
-- **Specialist added:** the band as a full subsection in `derivation.md`, duplicating `learnings/define-soil-root-zone-ph-target-band.md` (canonical rationale) and overlapping the older specialist note in `nutrition/tomato/spec.md` (lines 41–59).
+- **Specialist added:** the band as a full subsection in `derivation.md`, duplicating `learnings/define-soil-root-zone-ph-target-band.md` (canonical rationale) and overlapping the older specialist note in `nutrition/tomato/domain/spec.md` (lines 41–59).
 - **Test:** changes a team action? The duplication itself doesn't — but the **parent spec.md note still frames the band as an unwritten PO gap** ("`soil-root-zone-ph-band` does not yet exist… Recommend the PO write the entry") and quotes **operational midpoint ~6.6**, which the new decision reverses (specialist-owned, aim **6.5**). A reader landing on the parent spec gets the superseded ownership + a different number.
 - **MVP version:** keep the band in `learnings/` (rationale) + a one-line pointer from `derivation.md`; flag the parent `spec.md` note (lines 41–59) for the specialist to prune/reverse-in-place per the no-vestigial rule. Challenger doesn't edit spec — flag only.
 - **Why it might stay:** a short endpoint table in the derivation is reasonable (the dose tables sit right below it and reference 6.5/6.2). The defect is the un-reversed parent note, not the derivation copy.
@@ -147,7 +147,7 @@ Ship the derivation subsection after addressing C1 (reverse/prune the stale pare
 
 Hook re-fired on the unchanged target-band diff. Already reviewed above (2026-05-31, lines 122–144: B1 Mn-knee aim · C1 stale parent note). No new claim moved → no-op pass. · `PENDING`
 
-## 2026-05-31 — review of nutrition/tomato/soil-ph/model/derivation.md (band-lowered diff)
+## 2026-05-31 — review of nutrition/tomato/domain/soil-ph/derivation.md (band-lowered diff)
 
 Scope: **distinct from the prior entries** — the band was *lowered* this edit (6.4–6.8/aim 6.5/floor 6.2 → **6.0–6.5/aim 6.3/floor 5.8**), per a same-day Guillaume call ("we control the foliar Mn source"). Diff adds the new Target-band table, rewires the pH guardrail bullet (stop 6.3, floor 5.8), and edits the refinement-trigger line. The band *value* is Guillaume's decision — not challenged. Two correctness/coherence defects + one cert ask below.
 
@@ -177,7 +177,7 @@ No new complexity finding. The guardrail bullet now carries "zero foliar Mn thro
 The lowered band did not propagate. Four surfaces still carry 6.4–6.8 / aim 6.5 / floor 6.2:
 - `learnings/define-soil-root-zone-ph-target-band.md` § "Practical note — undershoot" ("landing anywhere in 6.4–6.8 is a win… floor 6.2") and § "Why 6.0–6.5… not 6.0–6.4" header still says 6.0–6.4 in the heading — the *canonical* rationale file self-contradicts its own new table.
 - sibling `soil-ph/model/spec.md` (lines 12, 23) — old band.
-- parent `nutrition/tomato/spec.md` (lines 43–48) — old band.
+- parent `nutrition/tomato/domain/spec.md` (lines 43–48) — old band.
 Per the no-vestigial rule these are the specialist's to reverse-in-place. The learning's own internal contradiction (new table vs stale Practical-note) is the most urgent — that file is cited as the source of truth from three places.
 
 ### Verdict
@@ -191,7 +191,7 @@ Hook re-fired on the band-lowering diff already reviewed above (lines 150–184:
 
 Hook re-fired again on the same band-lowering diff (6.0–6.5 / aim 6.3 / floor 5.8). Ran the full three-angle pass independently; landed on the identical findings already captured at lines 150–184. No new claim moved → no-op pass, no duplicate entry. · `PENDING`
 
-## 2026-06-02 — review of nutrition/tomato/soil-ph/model/derivation.md (HEAD working-tree diff)
+## 2026-06-02 — review of nutrition/tomato/domain/soil-ph/derivation.md (HEAD working-tree diff)
 
 Scope: **two genuinely new claims beyond the band-lowering already reviewed at lines 150–184.** (1) Tiger 90CR cert flipped **0 → 4** ("Ecocert certified, allowed") in both the § product block and the refinement-trigger line. (2) Stage-2 dose bumped to **~12 kg S/bed** for the deeper 6.3 aim (vs ~10 kg for 6.5). The band-lowering's prior B1 (trigger line stuck on old numbers) is now **resolved** — trigger line reads 6.0–6.5 / 6.3 / 5.8. Band value itself remains Guillaume's call, unchallenged.
 
@@ -211,7 +211,7 @@ No new finding beyond the band-lowering's B2 (floor-drop on unquantified Mn offs
 ### Verdict
 Land the dose bump (cert-2, proportional, fine). **Block the Tiger 90CR cert flip** (D1) until the Ecocert certificate is on file or cited — revert to cert-0/UNKNOWN otherwise. This is an organic-cert claim with no document behind it; the on-file label is disclaimed as proof by its own index. · `PENDING`
 
-## 2026-06-02 — review of nutrition/tomato/soil-ph/model/derivation.md (HEAD working-tree diff)
+## 2026-06-02 — review of nutrition/tomato/domain/soil-ph/derivation.md (HEAD working-tree diff)
 
 Scope: new "Target band" subsection (6.0–6.5 / aim 6.3 / floor 5.8); dose-stop guardrail 6.5/6.2 → 6.3/5.8; Tiger 90CR cert 0 → 4 (Ecocert); new "Field application log" with first empirical pH titration (5 reads, cert 2); stage-table endpoint 6.5 → 6.3 (~12 kg S); two refinement triggers resolved. No sibling `spec.md` slugs (still blocked on calcimeter).
 

@@ -7,7 +7,7 @@ tomato bed wired; lettuce bed measured but not wired).
 Answers: **"how much of element X does the plant tap from the soil bank
 this week, and how many months until depletion if the bank were the sole
 supply?"** Does NOT answer bank refill (see `nutrition/compost-contribution/`,
-`nutrition/tomato/sidedress-recipe/`) or root-surface availability
+`nutrition/tomato/domain/sidedress/`) or root-surface availability
 (`calculateNutritionSupply` → `supply.soil`). Source values, kg/ha → mg/m²
 conversion, and refinement triggers live in `data.js` comments (or
 `derivation.md` if they grow). Crop-keyed structure so lettuce can wire with
@@ -83,7 +83,7 @@ Constants (declared in `data.js`):
 
 ## Cert scale
 
-Same single-cert transferability scale as `nutrition/tomato/plant-needs/spec.md`
+Same single-cert transferability scale as `nutrition/tomato/domain/plant-needs/spec.md`
 ("Cert scale" section — canonical).
 
 ---
@@ -189,7 +189,7 @@ not bare module-scope constants/functions, so internals can be reshaped
 (per-bed scaling, seasonal factor, depth-resolved bank) without breaking
 call sites. Same discipline as `nutrition/compost-contribution — public-api-namespace` /
 `nutrition/nursery/substrate-contribution — public-api-namespace` /
-`nutrition/tomato/foliar-strategy/model — public-api-namespace`; `spec — subproject-namespace-sole-source` enforces
+`nutrition/tomato/domain/foliar/model — public-api-namespace`; `spec — subproject-namespace-sole-source` enforces
 no-inline-reimplementation at verifier level.
 
 **Cert:** 5 (structural).
@@ -220,7 +220,7 @@ those elements climb back into measurable range).
 Block 2) is **owned by this spec entry**. Code calls
 `renderSpec('pourquoi-modal-strings-owned-here', '<key>', { el })`; MUST NOT inline prose at call
 site. Seven keys below, one per branch of per-element interpretation
-logic in `nutrition/tomato/shell/logic.js` `buildNutrimentTomato` ↔ soil
+logic in `nutrition/tomato/app/shell/logic.js` `buildNutrimentTomato` ↔ soil
 block. `spec — operator-prose-is-deterministic-render` forbids hand-written stable strings; bytes injected via
 `window.SPEC_STRINGS`.
 
@@ -234,7 +234,7 @@ spec stands alone without grepping `logic.js`):
 | K  | `K-fert-routed`  | measured bank; active channel = fertigation K₂SO₄ |
 | Mg | `Mg-fert-routed` | measured bank; active channel = fertigation MgSO₄ |
 | N  | `N-not-mehlich`  | turnover-bound; runway null (`months-to-depletion-clamped-by-peak-demand`) |
-| Fe, Mn, Zn, B, Cu | `micros-foliar-routed` | measured bank, plant-available fraction throttled by pH 7.4; active channel = foliar (`nutrition — replenishment-cascade-earliest-first` cascade; CHANNEL_ROLE in `nutrition/tomato/channel-role.js` routes Fe/Mn/Zn/Cu = `{foliar:1.0}` and B = `{foliar:0.5, passive:0.5}`) |
+| Fe, Mn, Zn, B, Cu | `micros-foliar-routed` | measured bank, plant-available fraction throttled by pH 7.4; active channel = foliar (`nutrition — replenishment-cascade-earliest-first` cascade; CHANNEL_ROLE in `nutrition/tomato/domain/channel-role.js` routes Fe/Mn/Zn/Cu = `{foliar:1.0}` and B = `{foliar:0.5, passive:0.5}`) |
 | Mo | `default-not-mehlich` | not on Mehlich-3 panel; active channel = fertigation Na molybdate (`nutrition — replenishment-cascade-earliest-first` anion carve-out) |
 
 **Cert:** 5 — bytes are spec-declared; render is deterministic.

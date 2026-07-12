@@ -5,8 +5,8 @@ organic certification rules, anything not crop-specific).
 
 Crop-specific nutrition specs live in:
 
-- `nutrition/tomato/spec.md` — tomato model/recipe/biology
-- `nutrition/tomato/shell/spec.md` — Tomato Nutrition page shell (orchestration, layout)
+- `nutrition/tomato/domain/spec.md` — tomato model/recipe/biology
+- `nutrition/tomato/app/shell/spec.md` — Tomato Nutrition page shell (orchestration, layout)
 - `nutrition/tomato/{plant-needs,fertigation-recipe,sidedress-recipe,foliar-strategy}/builder/user-stories.md` — per-block page surface
 - `nutrition/lettuce/domain/spec.md` — Salanova post-transplant nutrition
 - `nutrition/lettuce/app/user-stories.md` — Salanova subpage UI
@@ -171,7 +171,7 @@ The previous "single foliar spray per week" clause retired 2026-05-17
 table; useful on Mn / Zn lockout-regime weeks where foliar is the only
 channel and a single weekly spray clips the gap. Foliar-frequency is
 governed by the foliar-strategy subproject
-(`nutrition/tomato/foliar-strategy — frequency-is-model-output`) — model
+(`nutrition/tomato/domain/foliar — frequency-is-model-output`) — model
 picks per-recipe weekly count bounded by per-recipe leaf-tolerance cap;
 operator does not enter sprayCount. Not governed by this cross-crop
 workflow rule.
@@ -183,7 +183,7 @@ workflow rule.
 The set of weekdays Décembre's operator is on-farm and may execute
 recipe sprays. Currently `{Mon, Tue, Wed, Thu, Fri}`. Procedure-layer
 specs that schedule operator actions across the week (e.g.
-`nutrition/tomato/foliar-strategy/procedure — sprays-spread-across-farm-working-days`)
+`nutrition/tomato/protocol/foliar — sprays-spread-across-farm-working-days`)
 draw their day-of-week pool from this set. Not a per-crop value;
 shared by every nutrition procedure that places operator-executed
 actions on specific days.

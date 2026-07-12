@@ -134,7 +134,7 @@ test('every crop with a demand table ships channel-role.js with full coverage + 
 //      no parallel sub-tanks (no nested {A,B}, no array shape).
 //   3. The previous "single foliar spray per week" clause is RETIRED;
 //      foliar frequency is governed by
-//      nutrition/tomato/foliar-strategy — frequency-is-model-output.
+//      nutrition/tomato/domain/foliar — frequency-is-model-output.
 //      Covered structurally: nutrition/spec.md single-fertigation-tank-per-week must NOT pin any
 //      foliar sprayCount ceiling. (Asserting that here would require
 //      parsing spec.md prose; the cross-ref is captured by tests in

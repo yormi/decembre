@@ -57,7 +57,7 @@ Adding a sixth element requires entries in **all** of `COMPOST_LABEL_PCT`,
 
 ## Cert scale
 
-Same single-cert transferability scale as `nutrition/tomato/plant-needs/spec.md`
+Same single-cert transferability scale as `nutrition/tomato/domain/plant-needs/spec.md`
 ("Cert scale" section — canonical).
 
 ---

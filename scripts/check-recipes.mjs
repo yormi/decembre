@@ -527,7 +527,7 @@ if (!CHANNEL_ROLE || !BIOMASS_DEMAND || !TOMATO_FRUIT_EXPORT) {
 // biomass term for Ca and Mg only. Verified by calling at tf=1.0 vs tf=0.5
 // and asserting Ca/Mg biomass term halves while N/P/K/micros are unchanged.
 //
-// Spec: nutrition/tomato/plant-needs/spec.md → ca-mg-biomass-transpiration-coupled.
+// Spec: nutrition/tomato/domain/plant-needs/spec.md → ca-mg-biomass-transpiration-coupled.
 
 header('ca-mg-biomass-transpiration-coupled — Ca/Mg biomass demand × transpFactor');
 
@@ -573,7 +573,7 @@ if (!calculateNutritionDemand) {
 // flagging anything in the 250%+ range as suspicious. Stage order is
 // taken from `Object.keys(BIOMASS_DEMAND)` in declaration order.
 //
-// Spec: nutrition/tomato/plant-needs/spec.md → stage-transition-continuity.
+// Spec: nutrition/tomato/domain/plant-needs/spec.md → stage-transition-continuity.
 
 header('stage-transition-continuity — BIOMASS_DEMAND stage-transition continuity (≤ 250 %)');
 
@@ -613,7 +613,7 @@ if (!BIOMASS_DEMAND) {
 // expected public API. Renames or removals fail loudly here, before
 // they break consumers (Bilan UI, recipe calculators).
 //
-// Spec: nutrition/tomato/plant-needs/spec.md → plant-needs-tomato-namespace.
+// Spec: nutrition/tomato/domain/plant-needs/spec.md → plant-needs-tomato-namespace.
 
 header('plant-needs-tomato-namespace — window.PlantNeedsTomato public API surface');
 
@@ -947,7 +947,7 @@ header('sme-soil-solution-wired-per-crop-element — SME soil-solution + transpi
 // computeStageSidedress(stage) must return numeric, non-negative actisol_g,
 // farine_g, alfalfa_g, and g_per_planche for every stage in RECIPE_INPUTS.stageYield.
 //
-// Spec: nutrition/tomato/sidedress-recipe/spec.md → INV-1.
+// Spec: nutrition/tomato/domain/sidedress/spec.md → INV-1.
 
 header('Sidedress INV-1 — Stage coverage closed + numeric output');
 
@@ -991,7 +991,7 @@ if (!computeStageSidedress) {
 //   n_needed  = max(0, offtake − compost)
 //   g/planche = round(n_needed / (p.n_pct × p.efficiency) / 1000 × area)
 //
-// Spec: nutrition/tomato/sidedress-recipe/spec.md → mass-balance-sizes-product-to-n-gap.
+// Spec: nutrition/tomato/domain/sidedress/spec.md → mass-balance-sizes-product-to-n-gap.
 
 header('mass-balance-sizes-product-to-n-gap — Sidedress g_per_planche matches mass-balance formula');
 
@@ -1045,7 +1045,7 @@ if (!computeStageSidedress || !SIDEDRESS_PRODUCTS || !SIDEDRESS_AREA_PER_PLANCHE
 
 // ─── public-api-namespace — SidedressRecipeTomato public API namespace ───────────────
 //
-// Spec: nutrition/tomato/sidedress-recipe/spec.md → public-api-namespace.
+// Spec: nutrition/tomato/domain/sidedress/spec.md → public-api-namespace.
 
 header('public-api-namespace — window.SidedressRecipeTomato public API surface');
 
@@ -1086,7 +1086,7 @@ if (!SR) {
 //       the gate. Future Ca-bearing products (Selectus, frass, etc.) get
 //       rejected automatically without code changes.
 //
-// Spec: nutrition/tomato/sidedress-recipe/spec.md → ca-aware-product-gate.
+// Spec: nutrition/tomato/domain/sidedress/spec.md → ca-aware-product-gate.
 
 header('ca-aware-product-gate — Ca-aware product gate (chosen product ca_pct === 0)');
 
@@ -1150,7 +1150,7 @@ if (!computeStageSidedress || !SIDEDRESS_PRODUCTS) {
 //   kSulfate_g    = round(k_needed / 1000 / K2SO4_K × total_area)
 //   (Mg analogous, no sidedress; B analogous, no sidedress, compost B = 0.)
 //
-// Spec: nutrition/tomato/fertigation-recipe/spec.md → mass-balance-derivation + uptake-efficiency-factor.
+// Spec: nutrition/tomato/domain/fertigation/spec.md → mass-balance-derivation + uptake-efficiency-factor.
 
 header('mass-balance-derivation — computeStageRecipe matches mass-balance formula');
 
@@ -1214,7 +1214,7 @@ if (!computeStageRecipe || !TOMATO_FRUIT_EXPORT || !BIOMASS_DEMAND
 
 // ─── public-api-namespace — FertigationRecipeTomato public API namespace ─────────────
 //
-// Spec: nutrition/tomato/fertigation-recipe/spec.md → public-api-namespace.
+// Spec: nutrition/tomato/domain/fertigation/spec.md → public-api-namespace.
 
 header('public-api-namespace — window.FertigationRecipeTomato public API surface');
 
@@ -1247,7 +1247,7 @@ if (!FR) {
 
 // ─── fp-target-mirrors-sizer — FIRST_PRINCIPLES_T5_FERTIGATION pinned to computeStageRecipe('T5')
 //
-// Spec: nutrition/tomato/fertigation-recipe/spec.md → fp-target-mirrors-sizer.
+// Spec: nutrition/tomato/domain/fertigation/spec.md → fp-target-mirrors-sizer.
 // The FP T5 fertigation target equals the mass-balance derivation output
 // by construction (wireFpFertigation mutates the constant values at boot
 // from computeStageRecipe('T5')). PA Taillon legacy anchor preserved in
@@ -1290,7 +1290,7 @@ if (!FIRST_PRINCIPLES_T5_FERTIGATION || !computeStageRecipe || !FP_RECIPE_T5) {
 
 // ─── uptake-efficiency-factor — PH_UPTAKE_FACTOR_AT_CURRENT_SOIL applied to fertigation sizing
 //
-// Spec: nutrition/tomato/fertigation-recipe/spec.md → uptake-efficiency-factor.
+// Spec: nutrition/tomato/domain/fertigation/spec.md → uptake-efficiency-factor.
 // Asserts the constant exists with K/Mg/B keys at the expected cert-2
 // mid-band values (B2-REV defaults), each in (0, 1]. The function-output
 // correlation is covered by mass-balance-derivation (which now applies the factor in the
@@ -1750,7 +1750,7 @@ if (!PRODUCT) {
 // zero stored value — B (borax → Solubore) stays at 10 g, exercising the same
 // FP/Stored direction without a zero denominator.
 //
-// Spec: nutrition/tomato/shell/spec.md → stored-vs-computed-drift-block.
+// Spec: nutrition/tomato/app/shell/spec.md → stored-vs-computed-drift-block.
 
 header('stored-vs-computed-drift-block — Block 8 drift gauge renders FP ÷ Stored (≥100 % = under-supply)');
 
@@ -2980,7 +2980,7 @@ if (!SCN) {
 // N, P, K, Ca, Mg, Fe, Mn, Zn, B, Cu, Mo) at every stage in
 // RECIPE_INPUTS.stageYield.
 //
-// Spec: nutrition/tomato/foliar-strategy/spec.md → INV-1.
+// Spec: nutrition/tomato/domain/foliar/spec.md → INV-1.
 
 header('Foliar INV-1 — Element coverage closed + numeric output');
 
@@ -3024,7 +3024,7 @@ header('Foliar INV-1 — Element coverage closed + numeric output');
 // computeFoliarSupply('T5').{Mn, Fe} matches within 1 % tolerance. Mn pins
 // the surfactant-coverage logic; Fe pins the FeSO₄·7H₂O 20 % Fe path.
 //
-// Spec: nutrition/tomato/foliar-strategy/spec.md → coverage-discount-on-delivery.
+// Spec: nutrition/tomato/domain/foliar/spec.md → coverage-discount-on-delivery.
 
 header('coverage-discount-on-delivery — Foliar delivery applies FOLIAR_COVERAGE_DEFAULT (Mn, Fe)');
 
@@ -3068,7 +3068,7 @@ header('coverage-discount-on-delivery — Foliar delivery applies FOLIAR_COVERAG
 
 // ─── public-api-namespace — FoliarRecipeTomato public API namespace ──────────────────
 //
-// Spec: nutrition/tomato/foliar-strategy/spec.md → public-api-namespace.
+// Spec: nutrition/tomato/domain/foliar/spec.md → public-api-namespace.
 
 header('public-api-namespace — window.FoliarRecipeTomato public API surface');
 
@@ -3112,7 +3112,7 @@ header('public-api-namespace — window.FoliarRecipeTomato public API surface');
 // Defaults match prior single-arg behavior; sprayCount=2 doubles every
 // element; surfactant=true scales by FOLIAR_COVERAGE_WITH_YUCCA / DEFAULT.
 //
-// Spec: nutrition/tomato/foliar-strategy/spec.md → supply-accepts-spray-count-surfactant.
+// Spec: nutrition/tomato/domain/foliar/spec.md → supply-accepts-spray-count-surfactant.
 
 header('supply-accepts-spray-count-surfactant — computeFoliarSupply(stage, opts) — sprayCount + surfactant levers');
 
@@ -3186,7 +3186,7 @@ header('supply-accepts-spray-count-surfactant — computeFoliarSupply(stage, opt
 
 // ─── gap-maximizing-recipe — computeFoliarRecipeForGap derives gap-maximizing recipe
 //
-// Spec: nutrition/tomato/foliar-strategy/spec.md → gap-maximizing-recipe.
+// Spec: nutrition/tomato/domain/foliar/spec.md → gap-maximizing-recipe.
 
 header('gap-maximizing-recipe — computeFoliarRecipeForGap (min-dose clamp + surfactant + burn cap + CE scale)');
 
@@ -3314,7 +3314,7 @@ header('gap-maximizing-recipe — computeFoliarRecipeForGap (min-dose clamp + su
 
 // ─── fp-strategy-live-derived — FP foliar recipe live-derived from pre-foliar gap chain ──
 //
-// Spec: nutrition/tomato/foliar-strategy/spec.md → fp-strategy-live-derived.
+// Spec: nutrition/tomato/domain/foliar/spec.md → fp-strategy-live-derived.
 //
 // Integration test: call calculateNutritionSupply twice in FP mode at T5. Between
 // calls, bump COMPOST_RELEASE_PER_WEEK.Mn so the pre-foliar gap drops
@@ -3382,7 +3382,7 @@ header('fp-strategy-live-derived — FP foliar recipe live-derived from pre-foli
 //
 // Section 1 of the Bilan UI specs. Asserts header inputs, light ceiling
 // formula, recipe-mode toggle behaviour. Spec:
-// nutrition/tomato/shell/spec.md → header-inputs-four-scalars..107.
+// nutrition/tomato/app/shell/spec.md → header-inputs-four-scalars..107.
 
 header('header-inputs-four-scalars — Header inputs are exactly four scalars (no nutr-current)');
 
@@ -3413,7 +3413,7 @@ header('light-ceiling-from-operator-j-per-g — Light ceiling reactive to solarP
   let logicJsBody = '';
   try {
     logicJsBody = readFileSync(
-      join(REPO_ROOT, 'nutrition', 'tomato', 'shell', 'logic.js'),
+      join(REPO_ROOT, 'nutrition', 'tomato', 'app', 'shell', 'logic.js'),
       'utf8'
     );
   } catch (e) { /* swallow — fail below */ }
@@ -3464,7 +3464,7 @@ header('fp-recipe-mode-locks-t5 — FP mode locks stage to T5 (auto-revert + def
   let logicJsBody = '';
   try {
     logicJsBody = readFileSync(
-      join(REPO_ROOT, 'nutrition', 'tomato', 'shell', 'logic.js'),
+      join(REPO_ROOT, 'nutrition', 'tomato', 'app', 'shell', 'logic.js'),
       'utf8'
     );
   } catch (e) { /* */ }
@@ -3538,7 +3538,7 @@ header('recipe-mode-toggle-fp-left-default-right — Recipe toggle: First princi
 // ─── tomato Nutrition page Block 1 (Besoin du plant) ────
 //
 // Section 2 of the Bilan UI specs. Spec:
-// nutrition/tomato/plant-needs/builder/user-stories.md.
+// nutrition/tomato/app/plant-needs/builder/user-stories.md.
 
 header('Block 1 calls PN.calculateNutritionDemand (no bare-global lookups in render)');
 
@@ -3546,7 +3546,7 @@ header('Block 1 calls PN.calculateNutritionDemand (no bare-global lookups in ren
   let logicJsBody = '';
   try {
     logicJsBody = readFileSync(
-      join(REPO_ROOT, 'nutrition', 'tomato', 'shell', 'logic.js'),
+      join(REPO_ROOT, 'nutrition', 'tomato', 'app', 'shell', 'logic.js'),
       'utf8'
     );
   } catch (e) { /* */ }
@@ -4654,7 +4654,7 @@ header('channel-efficiency-capability-map — Contribution-channel efficiency ma
 
 // ─── surfactant-aware-efficiency-map — Surfactant-aware foliar efficiency map ─────────────────────
 //
-// Spec: nutrition/tomato/foliar-strategy/spec.md → surfactant-aware-efficiency-map. The foliar
+// Spec: nutrition/tomato/domain/foliar/spec.md → surfactant-aware-efficiency-map. The foliar
 // channel exposes `efficiencyFor(surfactant)` returning a per-element map
 // reactive to the surfactant lever. The page-side foliar Block 5 reads
 // this surface and updates the Efficacité column when the operator toggles.
@@ -5117,7 +5117,7 @@ header('pourquoi-modal-strings-owned-here — Pourquoi modal interpretation stri
     // assert each <key> is in expectedKeys.
     const consumers = [
       join(REPO_ROOT, 'app', 'index.html'),
-      join(REPO_ROOT, 'nutrition', 'tomato', 'shell', 'logic.js'),
+      join(REPO_ROOT, 'nutrition', 'tomato', 'app', 'shell', 'logic.js'),
     ];
     const callRe = /renderSpec\(\s*['"]pourquoi-modal-strings-owned-here['"]\s*,\s*['"]([^'"]+)['"]/g;
     let callsFound = 0;
@@ -5150,7 +5150,7 @@ header('pourquoi-modal-strings-owned-here — Pourquoi modal interpretation stri
     }
 
     if (callsFound === 0) {
-      offenders.push('no consumer found for pourquoi-modal-strings-owned-here — renderSpec(\'pourquoi-modal-strings-owned-here\', …) absent in app/index.html or nutrition/tomato/shell/logic.js');
+      offenders.push('no consumer found for pourquoi-modal-strings-owned-here — renderSpec(\'pourquoi-modal-strings-owned-here\', …) absent in app/index.html or nutrition/tomato/app/shell/logic.js');
     }
   }
 
@@ -5487,7 +5487,7 @@ header('identifiers-unabbreviated — Function/variable/property names in JS sou
 // Specs: nutrition/spec.md → elemental-mass-in-mg (elemental-mass columns in mg),
 // column-header-unit-declaration (unit suffix in header not in cells), manque-sortant-zero-bare (bare 0, no
 // `(couvert)`), mois-depuisement-sme-runway (Mois d'épuisement every row with reservoir data).
-// nutrition/tomato/foliar-strategy/builder/user-stories.md → foliar Block 5 (foliar Efficacité reacts to
+// nutrition/tomato/app/foliar/builder/user-stories.md → foliar Block 5 (foliar Efficacité reacts to
 // surfactant lever).
 //
 // elemental-mass-in-mg / column-header-unit-declaration / manque-sortant-zero-bare are designed-to-fail at first run — the
@@ -5958,7 +5958,7 @@ header('mois-depuisement-sme-runway — Mois d\'épuisement rendered for every r
 
 // ─── Foliar Efficacité is surfactant-aware ───────────────────
 //
-// Spec: nutrition/tomato/foliar-strategy/builder/user-stories.md → foliar Block 5. Two assertions:
+// Spec: nutrition/tomato/app/foliar/builder/user-stories.md → foliar Block 5. Two assertions:
 //   (a) Reactive render — toggling #nutr-foliar-surfactant re-renders
 //       Block 5's Efficacité column (column index 2 in the 6-col gap-grid
 //       per contribution-block-gap-grid: Él. | Manque entrant | Efficacité | Apport ici |

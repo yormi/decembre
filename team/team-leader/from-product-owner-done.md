@@ -80,22 +80,22 @@ All 21 entries below resolved by the Phase 1-4 nutrition reorg run on 2026-05-23
 ## 2026-05-23 23:30 — nutrition (Phase 2 — channel-role-coverage lift + generalization)
 
 **Change type:** added
-**REQs affected:** channel-role-coverage (lifted from `nutrition/tomato/spec.md`, generalized to apply to every crop with a biomass-demand table)
+**REQs affected:** channel-role-coverage (lifted from `nutrition/tomato/domain/spec.md`, generalized to apply to every crop with a biomass-demand table)
 **Summary:** channel-role-coverage now sits in `nutrition/spec.md` as a cross-crop rule: every crop with a `nutrition/<crop>/plant-needs/model/data.js` demand table MUST ship a `nutrition/<crop>/channel-role.js` exporting `CHANNEL_ROLE` covering every demand element with channel fractions that sum to 1.0 ± 0.05. Architecture banner reframed — chemistry-domain rules moved out to `nutrition/chemistry/spec.md` (see sibling entry). Note: the flux-fraction-sum entry ("flux fractions sum to 1.0 ± 0.05") is now subsumed by the new channel-role-coverage wording — flagged for pruner.
-**Suggested waves:** test-writer (verifier check for `channel-role.js` presence + sum-to-1.0 across crops) · coder (specialist's parallel lane extracting `nutrition/tomato/channel-role.js`) · pruner (redundancy check vs new channel-role-coverage)
+**Suggested waves:** test-writer (verifier check for `channel-role.js` presence + sum-to-1.0 across crops) · coder (specialist's parallel lane extracting `nutrition/tomato/domain/channel-role.js`) · pruner (redundancy check vs new channel-role-coverage)
 
 ## 2026-05-23 23:30 — nutrition/chemistry (Phase 2 — new chemistry-domain spec)
 
 **Change type:** added
 **REQs affected:** recipe-mode-per-product, concentration-dose-within-band, phclass-covers-every-element, solubility-cap-per-product, every-product-ecocert-allowed, ec-factor-covers-every-product, predicted-ce-within-crop-stage-band, foliar-ce-under-burn-cap, in-tank-ksp-precipitation-guard, product-declares-ions-and-chemistry-tags, every-cation-anion-pair-classified, every-chemistry-tag-classified, incompatible-recipes-declared, mix-order-per-multi-product-recipe, stock-barrel-time-stability, predicted-tank-ph-within-envelope, chelate-stability-ph-range-respected, foliar-uptake-ph-curve (all migrated from `nutrition/spec.md`, content byte-identical apart from being grouped under one framing paragraph)
 **Summary:** New `nutrition/chemistry/spec.md` consolidates the cross-crop chemistry layer: `PRODUCT` catalog fields (mode, phClass, organic cert, EC factor, ions, chemistryTags, phContribution, stablePhRange), in-tank prediction envelopes (CE per crop-stage, pH per compartment, concentration band, foliar burn cap), and mixing-compatibility tables (Ksp pairs, tag incompatibilities, mix order, incompatible recipes, stock barrel time-stability, chelate stability, foliar pH multiplier). 17 REQs total. Cross-crop nutrition rules (mass-balance, channel cascade, lockout gates, pH-aware efficiency framing) stayed in `nutrition/spec.md`. Code split into `nutrition/chemistry/model/{products,ph-response,compatibility,predicted}.js` is specialist's parallel lane.
-**Suggested waves:** test-writer (verifier path updates: chemistry checks now anchored to `nutrition/chemistry/spec.md`) · coder (chemistry pull-up from `nutrition/tomato/lib/recipe-math.js` — specialist's parallel scope) · pruner
+**Suggested waves:** test-writer (verifier path updates: chemistry checks now anchored to `nutrition/chemistry/spec.md`) · coder (chemistry pull-up from `nutrition/tomato/app/lib/recipe-math.js` — specialist's parallel scope) · pruner
 
 ## 2026-05-23 23:30 — nutrition/tomato (Phase 2 — channel-role-coverage removal)
 
 **Change type:** deleted
 **REQs affected:** channel-role-coverage (removed; lifted to `nutrition/spec.md` with generalized cross-crop wording — same rule, new home)
-**Summary:** channel-role-coverage entry deleted from `nutrition/tomato/spec.md`. Framing paragraph reworded to drop it from the coupling list and point at `nutrition/spec.md` for the cross-crop channel-role rule. No replacement entry; the claim now applies to tomato via the new cross-crop channel-role-coverage in `nutrition/spec.md`.
+**Summary:** channel-role-coverage entry deleted from `nutrition/tomato/domain/spec.md`. Framing paragraph reworded to drop it from the coupling list and point at `nutrition/spec.md` for the cross-crop channel-role rule. No replacement entry; the claim now applies to tomato via the new cross-crop channel-role-coverage in `nutrition/spec.md`.
 **Suggested waves:** test-writer (any tomato-scoped channel-role test should rebase its REQ reference) · pruner
 
 ## 2026-05-23 22:00 — nutrition/tomato (Phase 1 spec reorg, multi-subproject)
@@ -126,7 +126,7 @@ All 21 entries below resolved by the Phase 1-4 nutrition reorg run on 2026-05-23
 **Summary:** Spec moved from `foliar-strategy/spec.md` → `foliar-strategy/model/spec.md`.
 **Suggested waves:** test-writer (path updates only)
 
-## 2026-05-23 22:00 — nutrition/tomato/plant-needs/model
+## 2026-05-23 22:00 — nutrition/tomato/domain/plant-needs/model
 
 **Change type:** moved
 **REQs affected:** ca-mg-biomass-transpiration-coupled, stage-transition-continuity, plant-needs-tomato-namespace (content byte-identical)
@@ -140,7 +140,7 @@ All 21 entries below resolved by the Phase 1-4 nutrition reorg run on 2026-05-23
 **Summary:** New page-chrome spec for the Tomato Nutrition admin page (header inputs, light ceiling, recipe-mode toggle, source-of-truth read, drift block). Block-specific UI specs broken out into per-block builder specs.
 **Suggested waves:** test-writer · pruner
 
-## 2026-05-23 22:00 — nutrition/tomato/plant-needs/builder
+## 2026-05-23 22:00 — nutrition/tomato/domain/plant-needs/builder
 
 **Change type:** added (extracted from `nutrition/tomato/app/user-stories.md`)
 **REQs affected:** Block 1 plant-needs builder claims

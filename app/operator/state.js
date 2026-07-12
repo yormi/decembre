@@ -30,22 +30,26 @@ const LETTUCE_NUMBER_BEDS = 4.5;
 const LETTUCE = { mgSulfate: 467, kSulfate: 2996, feSulfate: 7.5 };
 
 // LETTUCE production fertigation — operator weighing recipe shown on the
-// Fertigation > Laitue view. Fixed weekly grams for the whole Salanova block,
-// dissolved in a ~24 L stock barrel, injected at 2 % (Dosatron). Hand-set
-// 2026-06-17 ("same weekly grams as before, less water"). Order = weighing
-// order. NOTE: these totals are independent of the per-100 m² `LETTUCE`
-// constant above (which feeds the Nutrition bilan) — not yet reconciled.
+// Fertigation > Laitue view. Fixed weekly grams for the whole Salanova block
+// (136.8 m² = 4.5 × 30.4), dissolved in a ~24 L stock barrel, injected at 2 %
+// (Dosatron). Order = weighing order.
+//   2026-07-11 re-derivation ("fertigate only B + K, front-load N"): at bed pH
+//   6.4 the old lockout is relieved, so the soil resupplies Mg/Fe/Mn/Zn/Cu fast
+//   enough — dropped from the tank (were maintenance-only). Tank now carries:
+//     Potassium — 400 g K₂SO₄ = CE-safe partial replacement (~+0.5 mS/cm on a
+//       salt-stressed crop; full weekly removal is ~840 g). The soil K bank
+//       (645 kg/ha) covers the gap ~48 wk → monitor tissue K, top up if it dips.
+//     Bore — 0,7 g Solubore (20,5 % B) = weekly removal (~150 mg B). Soil B is
+//       below detection, so the tank is the sole B source. Weigh on a 0,1 g scale.
+//   N is not fertigated — supplied by the pre-plant front-load (alfalfa +
+//   actisol + feather meal). NOTE: still independent of the per-100 m² `LETTUCE`
+//   bilan constant above — not yet reconciled.
 const LETTUCE_FERTIGATION_RECIPE = {
   stockL: 24,
   ratioPct: 2,
   products: [
-    { name: 'Potassium', grams: 200, emoji: '🍌' },   // Sulfate de potassium 0-0-50
-    { name: 'Magnésium', grams: 50,  emoji: '🧊' },    // Sulfate de magnésium 7H₂O
-    { name: 'Fer',       grams: 15,  emoji: '🩶' },    // Sulfate de fer 20 %
-    { name: 'Manganèse', grams: 5,   emoji: '🟤' },    // Sulfate de manganèse 32 %
-    { name: 'Zinc',      grams: 2.7, emoji: '🔩' },    // Sulfate de zinc 35 %
-    { name: 'Bore',      grams: 6,   emoji: '🔷' },    // Borax 15 %
-    { name: 'Cuivre',    grams: 1,   emoji: '🟠' },    // Sulfate de cuivre 25 %
+    { name: 'Potassium', grams: 400, emoji: '🍌' },   // Sulfate de potassium 0-0-50
+    { name: 'Bore',      grams: 0.7, emoji: '🔷' },    // Solubore 20,5 %
   ],
 };
 
