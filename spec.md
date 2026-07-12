@@ -17,7 +17,7 @@ code under `nutrition/**/spec.md` and `yield-range/**/spec.md`.
 | `app/admin/nutrition/builder/foliar/tomato/user-stories.md` | Foliar builder block on the admin page (Block 5/6) |
 | `app/admin/nutrition/builder/fertigation/tomato/user-stories.md` | Fertigation builder block on the admin page (supply vs demand + drift sub-block) |
 | `app/admin/nutrition/builder/sidedress/tomato/user-stories.md` | Sidedress builder block on the admin page (supply vs demand + drift sub-block) |
-| `app/operator/nutrition/fertigation/tomato/user-stories.md` | Operator-facing tomato fertigation page UI |
+| `app/operator/nutrition/fertigation/user-stories.md` | Operator-facing tomato fertigation page UI |
 | `nutrition/tomato/protocol/fertigation/user-stories.md` | Procedural data layer behind the operator fertigation page (stage, steps, calc) |
 | `nutrition/lettuce/domain/spec.md` | Salanova post-transplant nutrition (model/recipe) |
 | `app/admin/nutrition/bilan/lettuce/user-stories.md` | Salanova admin subpage UI |

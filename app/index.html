@@ -15,7 +15,7 @@
 <!-- @include nutrition/lib/styles.css -->
 <!-- @include app/lib/tomato.css -->
 <!-- @include app/operator/nutrition/sol/tomato/page.css -->
-<!-- @include app/operator/nutrition/fertigation/tomato/page.css -->
+<!-- @include app/operator/nutrition/fertigation/page.css -->
 <!-- @include app/admin/week/page.css -->
 <!-- @include app/admin/diagnostic/page.css -->
 </style>
@@ -87,7 +87,7 @@
 
   </div><!-- end page-sol-content -->
 
-  <!-- @include app/operator/nutrition/fertigation/tomato/page.html -->
+  <!-- @include app/operator/nutrition/fertigation/page.html -->
 
   <!-- @include app/operator/nutrition/foliar/tomato/page.html -->
 
@@ -213,7 +213,7 @@
 // the fertigation-recipe subproject. Reads STORED_RECIPE.tomato.fertigation
 // + shared helpers (getSolarRad, getTotalArea, getMult*, currentCrop,
 // currentStage, LETTUCE).
-<!-- @include app/operator/nutrition/fertigation/tomato/logic.js -->
+<!-- @include app/operator/nutrition/fertigation/logic.js -->
 
 // Foliar page renderer (buildFoliar, toggleMissedWindow) lives in
 // nutrition/tomato/foliar-strategy/app/logic.js. Recipe data lives in
@@ -582,7 +582,7 @@ const ACCEPTED_EXCESSES = [
 // renderPhase1Comparison — stored-vs-FP drift table renderer for the Bilan's
 // Block 7 admin panel. Reads nutrStage + STORED_RECIPE + FP_RECIPE_T5 +
 // computeStageRecipe. Consumer: app/admin/nutrition/bilan/tomato/logic.js.
-<!-- @include app/operator/nutrition/fertigation/tomato/drift.js -->
+<!-- @include app/operator/nutrition/fertigation/drift.js -->
 
 // ── 10. UI helpers (modal, format, gap-grid) ──────────────────────────────
 // "Pourquoi cette dose" modal + expander + cell/cap modal helpers live in

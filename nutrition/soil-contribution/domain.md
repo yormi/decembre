@@ -36,3 +36,5 @@ instead.
 | Mg | semi-mobile — held on the CEC but leaches faster than Ca / K |
 
 Pool-forming, steerable by the M3 law: **K, Ca, P, Fe, Mn, Zn, Cu**.
+
+The dosing method that uses this split → `/domain/fertigation.md`.

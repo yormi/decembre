@@ -177,7 +177,7 @@ window.
 - Site light climate (clear-day-max DLI, cloud attenuation, annual mean) → root `domain.md`.
 
 
-- Film transmission and LED fixture → `greenhouses/domain.md`.
+- Film transmission and LED fixture → `domain/greenhouse.md`.
 
 
 - Seedling growth-weight engine (radiation use efficiency ε, expolinear curve, canopy-volume cap) → yield-range · seedling weight (`yield-range/domain/domain.md`).
