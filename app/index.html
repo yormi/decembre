@@ -9,8 +9,8 @@
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
-<!-- @include lib/global.css -->
-<!-- @include lib/admin.css -->
+<!-- @include app/lib/global.css -->
+<!-- @include app/lib/admin.css -->
 <!-- @include app/core/page.css -->
 <!-- @include nutrition/lib/styles.css -->
 <!-- @include app/lib/tomato.css -->
@@ -152,7 +152,7 @@
 
 <!-- @spec-strings -->
 <script>
-<!-- @include lib/spec-strings.js -->
+<!-- @include app/lib/spec-strings.js -->
 </script>
 <script>
 // ─────────────────────────────────────────────────────────────────────────
@@ -160,7 +160,7 @@
 //
 // Authoring source = @include directives only. Every function definition,
 // constant, and state binding lives in a partial under app/ (UI:
-// core/, operator/, admin/), nutrition/, yield-range/, or lib/. Build pipeline
+// core/, operator/, admin/, lib/), nutrition/, or yield-range/. Build pipeline
 // (scripts/build.mjs) inlines partials into dist/index.html in the order
 // below; classic-script function hoisting + textual ordering preserves the
 // pre-carve runtime behavior.
@@ -191,10 +191,10 @@
 
 // ── 2. Independent libs ───────────────────────────────────────────────────
 // Sun-time helpers (getSunTimes / addHours / getCurrentTimeString / SUN_TABLE)
-// live in lib/sun.js — Quebec City mid-month sunrise/sunset table + interp +
+// live in app/lib/sun.js — Quebec City mid-month sunrise/sunset table + interp +
 // formatting. Consumers: buildTensio below, app/admin/week/logic.js,
 // nutrition/tomato/foliar-strategy/app/logic.js.
-<!-- @include lib/sun.js -->
+<!-- @include app/lib/sun.js -->
 
 <!-- @include app/admin/week/logic.js -->
 
@@ -206,7 +206,7 @@
 // nutrition/tomato/app/irrigation/logic.js — DOM targets (#tensio-params /
 // #tensio-success / #vigor-note) are declared in the tomato irrigation
 // page partial. Reads `currentCrop` / `currentVigor` plus
-// lib/sun.js helpers (getSunTimes / addHours / getCurrentTimeString).
+// app/lib/sun.js helpers (getSunTimes / addHours / getCurrentTimeString).
 <!-- @include app/admin/irrigation/tomato/logic.js -->
 
 // Fertigation page renderer (getStockVol, getNutrients, buildSteps) lives in
