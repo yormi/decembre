@@ -78,7 +78,7 @@ EZ-Gro Océan fish-protein hydrolysate — 15-1-1, 80 % amino acids, 65 % peptid
 **Reach for:** N-foliar/soil sourcing, comparison rates (1-2 kg/ha every 10-14 days), evaluating swap from Acadie Poisson Hydrolysé.
 
 ### `Acadie Fresh Seaweed Concentrate.pdf`
-Acti-Sol datasheet, *Ascophyllum nodosum* from Nova Scotia. English-labelled version of "Acadie Algues liquides" wired into nursery fertigation as **AcadieKelp** (`nutrition/nursery/fertigation/data.js:81`). 0.6-<0.2-6.0 NPK; OM 13-16 %; Ca/Mg 0.05-0.15 %, S 0.3-0.6 %; **micros: B 20-40, Cu <4, Fe 30-90, Mn 3-11, Zn 4-17 ppm**; pH 7.4-8.2.
+Acti-Sol datasheet, *Ascophyllum nodosum* from Nova Scotia. English-labelled version of "Acadie Algues liquides" wired into nursery fertigation as **AcadieKelp** (`nutrition/nursery/domain/fertigation/data.js:81`). 0.6-<0.2-6.0 NPK; OM 13-16 %; Ca/Mg 0.05-0.15 %, S 0.3-0.6 %; **micros: B 20-40, Cu <4, Fe 30-90, Mn 3-11, Zn 4-17 ppm**; pH 7.4-8.2.
 **Reach for:** populating missing `NURSERY_PRODUCTS.AcadieKelp.ions` micro values (Fe/Mn/Zn gap flagged 2026-05-09 15:50 changelog), validating 2 mL/L dose, evaluating kelp-only biostimulants.
 ⚠️ Ca 0.05-0.15 % — safe under current saturation. pH 7.4-8.2 alkaline; tank contribution negligible at 2 mL/L; flag if rate bumped. **Cert status**: `data.js` tags cert 4 ("Acadie Ecocert listed") but datasheet shows no badge — verify on Acadian Seaplants' Ecocert sheet before audit claims.
 

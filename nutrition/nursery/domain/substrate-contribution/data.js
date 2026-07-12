@@ -1,7 +1,7 @@
 // Substrate-contribution (nursery) — source data.
 //
-// Spec:        nutrition/nursery/substrate-contribution/spec.md
-// Derivation:  nutrition/nursery/substrate-contribution/derivation.md
+// Spec:        nutrition/nursery/domain/substrate-contribution/spec.md
+// Derivation:  nutrition/nursery/domain/substrate-contribution/derivation.md
 //
 // Salanova nursery — 50-cell trays in Berger OM2 peat-based organic mix
 // front-loaded with feather meal at potting (current convention: 2 cups
@@ -18,7 +18,7 @@
 // Berger OM2 = peat-based organic potting mix. Starter charge = soluble
 // nutrients pre-mixed into the substrate at the bag fill (limestone +
 // organic fertilizer pre-charge). No OM2 datasheet is in
-// nutrition/nursery/doc/ as of 2026-05-09 — values below are conservative
+// nutrition/nursery/domain/doc/ as of 2026-05-09 — values below are conservative
 // estimates derived from typical peat-based organic mix specs (e.g.,
 // Berger SkyMix-organic family). Refinement trigger: pull the OM2
 // technical sheet from Berger and replace these.

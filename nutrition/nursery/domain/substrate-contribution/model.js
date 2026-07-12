@@ -1,6 +1,6 @@
 // Public API for the nursery substrate-contribution model.
 //
-// Spec:    nutrition/nursery/substrate-contribution/spec.md
+// Spec:    nutrition/nursery/domain/substrate-contribution/spec.md
 // Spec public-api-namespace: this namespace exists at runtime with the keys below.
 //
 // Consumers (Semis laitue Bilan card "Réserve substrat", future per-tray

@@ -14,7 +14,7 @@ Every edit to `STORED_RECIPE.tomato.{fertigation, sidedress, foliaire}` must cap
 | fertigation | `nutrition/tomato/protocol/fertigation/stored.js` | `app/historique-nutriments/history.js` |
 | sidedress | `nutrition/tomato/protocol/sidedress/stored.js` | (same) |
 | foliaire | `nutrition/tomato/protocol/foliar/stored.js` | (same) |
-| nursery (semis feed) | `nutrition/nursery/fertigation/procedure/stored.js` | (same) |
+| nursery (semis feed) | `nutrition/nursery/protocol/fertigation/stored.js` | (same) |
 
 Tomato `stored.js` assigns `window.STORED_RECIPE.tomato.<channel> = {...}`; nursery assigns `window.STORED_RECIPE.nursery.fertigation = {...}` (flat `{product: dose}`, per-litre — mirror `NURSERY_RECIPE_DEFAULT`). `RECIPE_HISTORY` is the array in `history.js` at `const RECIPE_HISTORY = [`.
 

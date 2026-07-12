@@ -2397,7 +2397,7 @@ header('ecocert-only-products — Pas de produits non-Ecocert dans le copy de l\
 // ─── nursery plant-needs subproject ─────────────────────
 //
 // The nursery/plant-needs subproject (data + calc + model) lives at
-// nutrition/nursery/plant-needs/{data.js,calc.js,model.js}. Until
+// nutrition/nursery/domain/plant-needs/{data.js,calc.js,model.js}. Until
 // app/index.html @includes the partials, window.PlantNeedsNursery /
 // NURSERY_TARGETS / calculateNurseryDemand are absent from the dist/index.html
 // artifact. To avoid a chicken-and-egg between source-of-truth (the partials)
@@ -2406,16 +2406,16 @@ header('ecocert-only-products — Pas de produits non-Ecocert dans le copy de l\
 // integration, the same code path still works — the partials remain the
 // canonical definitions.
 //
-// Spec: nutrition/nursery/plant-needs/spec.md → nursery plant-needs + INV-1.
+// Spec: nutrition/nursery/domain/plant-needs/spec.md → nursery plant-needs + INV-1.
 
 import vm from 'node:vm';
 
 let nurseryNs = null;
 let nurseryLoadError = null;
 try {
-  const dataSrc  = readFileSync(join(REPO_ROOT, 'nutrition/nursery/plant-needs/data.js'),  'utf8');
-  const pureFunctionSource  = readFileSync(join(REPO_ROOT, 'nutrition/nursery/plant-needs/calc.js'),  'utf8');
-  const modelSrc = readFileSync(join(REPO_ROOT, 'nutrition/nursery/plant-needs/model.js'), 'utf8');
+  const dataSrc  = readFileSync(join(REPO_ROOT, 'nutrition/nursery/domain/plant-needs/data.js'),  'utf8');
+  const pureFunctionSource  = readFileSync(join(REPO_ROOT, 'nutrition/nursery/domain/plant-needs/calc.js'),  'utf8');
+  const modelSrc = readFileSync(join(REPO_ROOT, 'nutrition/nursery/domain/plant-needs/model.js'), 'utf8');
   // The partials use bare `const` declarations and `window.PlantNeedsNursery
   // = {…}`. A shared sandbox with a `window` host lets all three modules see
   // one another's bindings (data → calc → model) the same way they do in the
@@ -2456,7 +2456,7 @@ if (!nurseryNs) {
 // calculateNurseryDemand(1g, days, cells), per element, on perTray_mg. Asserted
 // within ±0.1 %.
 //
-// Spec: nutrition/nursery/plant-needs/spec.md → demand-linear-in-target-weight.
+// Spec: nutrition/nursery/domain/plant-needs/spec.md → demand-linear-in-target-weight.
 
 header('demand-linear-in-target-weight — Nursery demand linear in targetG (±0.1 %)');
 
@@ -2487,7 +2487,7 @@ if (!nurseryNs || typeof nurseryNs.calculateNurseryDemand !== 'function') {
 // calculateNurseryDemand(g, 70, cells).perTray_mg is exactly half of
 // calculateNurseryDemand(g, 35, cells).perTray_mg, per element. ±0.1 %.
 //
-// Spec: nutrition/nursery/plant-needs/spec.md → demand-inverse-linear-in-cycle-length.
+// Spec: nutrition/nursery/domain/plant-needs/spec.md → demand-inverse-linear-in-cycle-length.
 
 header('demand-inverse-linear-in-cycle-length — Nursery demand inverse-linear in cycleDays (±0.1 %)');
 
@@ -2518,7 +2518,7 @@ if (!nurseryNs || typeof nurseryNs.calculateNurseryDemand !== 'function') {
 // At defaults (90 g, 35 d, 50 cells), N perPlant_mg ∈ [50, 70]. Catches
 // order-of-magnitude typos in DM, tissue concentration, or cycle length.
 //
-// Spec: nutrition/nursery/plant-needs/spec.md → nitrogen-demand-in-band-at-defaults.
+// Spec: nutrition/nursery/domain/plant-needs/spec.md → nitrogen-demand-in-band-at-defaults.
 
 header('nitrogen-demand-in-band-at-defaults — Nursery N demand ∈ [50, 70] mg/plant/wk au défaut');
 
@@ -2544,7 +2544,7 @@ if (!nurseryNs || typeof nurseryNs.calculateNurseryDemand !== 'function') {
 // that calculateNurseryDemand returns shape `{ perPlant_mg, perTray_mg }` per
 // element and demandPerTray returns a number.
 //
-// Spec: nutrition/nursery/plant-needs/spec.md → public-api-namespace.
+// Spec: nutrition/nursery/domain/plant-needs/spec.md → public-api-namespace.
 
 header('public-api-namespace — window.PlantNeedsNursery public API surface');
 
@@ -2782,22 +2782,22 @@ if (!lettucePlantNeedsNs) {
 // ─── nursery substrate-contribution subproject ──────────
 //
 // The nursery/substrate-contribution subproject (data + calc + model)
-// lives at nutrition/nursery/substrate-contribution/{data.js,calc.js,model.js}.
+// lives at nutrition/nursery/domain/substrate-contribution/{data.js,calc.js,model.js}.
 // Same vm-loaded pattern as nursery plant-needs above: load the partials in a
 // shared sandbox, run feather-meal-front-load-cap..097 against the produced namespace. Once
 // app/index.html @includes the partials, window.SubstrateContributionNursery
 // will also exist on the real jsdom window — we prefer that when present,
 // otherwise fall back to the vm-loaded copy.
 //
-// Spec: nutrition/nursery/substrate-contribution/spec.md → feather-meal-front-load-cap..097.
+// Spec: nutrition/nursery/domain/substrate-contribution/spec.md → feather-meal-front-load-cap..097.
 
 let SCN = window.SubstrateContributionNursery;
 let substrateLoadError = null;
 if (!SCN) {
   try {
-    const dataSrc  = readFileSync(join(REPO_ROOT, 'nutrition/nursery/substrate-contribution/data.js'),  'utf8');
-    const pureFunctionSource  = readFileSync(join(REPO_ROOT, 'nutrition/nursery/substrate-contribution/calc.js'),  'utf8');
-    const modelSrc = readFileSync(join(REPO_ROOT, 'nutrition/nursery/substrate-contribution/model.js'), 'utf8');
+    const dataSrc  = readFileSync(join(REPO_ROOT, 'nutrition/nursery/domain/substrate-contribution/data.js'),  'utf8');
+    const pureFunctionSource  = readFileSync(join(REPO_ROOT, 'nutrition/nursery/domain/substrate-contribution/calc.js'),  'utf8');
+    const modelSrc = readFileSync(join(REPO_ROOT, 'nutrition/nursery/domain/substrate-contribution/model.js'), 'utf8');
     const sandbox = { window: {} };
     vm.createContext(sandbox);
     vm.runInContext(dataSrc + '\n' + pureFunctionSource + '\n' + modelSrc, sandbox, {
@@ -3682,8 +3682,8 @@ header('Block 1 row layout: 4 columns (Él. / Fruit / Biomasse / Total)');
 
 // ─── multi-fertigation degree of freedom ────────────────
 //
-// Spec: nutrition/nursery/fertigation/spec.md → supply-scales-linearly-with-applications..126.
-// Implementation: nutrition/nursery/fertigation/calc.js.
+// Spec: nutrition/nursery/domain/fertigation/spec.md → supply-scales-linearly-with-applications..126.
+// Implementation: nutrition/nursery/domain/fertigation/calc.js.
 // All five checks read the live `window.FertigationNursery` namespace,
 // which is mounted by the @included data.js + calc.js + model.js trio.
 

@@ -1,7 +1,7 @@
 // Substrate-contribution (nursery) — derivation functions.
 //
-// Spec:        nutrition/nursery/substrate-contribution/spec.md
-// Derivation:  nutrition/nursery/substrate-contribution/derivation.md
+// Spec:        nutrition/nursery/domain/substrate-contribution/spec.md
+// Derivation:  nutrition/nursery/domain/substrate-contribution/derivation.md
 //
 // Pure functions — same inputs (OM2 starter charge, feather meal g/tray,
 // release curves, tray volume) → same output. Returns mg of element

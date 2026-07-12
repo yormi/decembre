@@ -133,7 +133,7 @@ Efficacité column (nutrition — efficacite-column-capability).
 ## Pending
 
 - **OM2 datasheet pull** — `OM2_STARTER_CHARGE_PPM` is cert 2 placeholder
-  until Berger OM2 technical sheet lands in `nutrition/nursery/doc/`;
+  until Berger OM2 technical sheet lands in `nutrition/nursery/domain/doc/`;
   vendor values then raise cert to 4.
 - **Tissue-test calibration** — feather meal mineralization (75 %) and
   per-week curve shape are textbook-derived (Sonneveld & Voogt); first

@@ -1,7 +1,7 @@
 // Nursery plant-needs — derivation function.
 //
-// Spec:        nutrition/nursery/plant-needs/spec.md
-// Derivation:  nutrition/nursery/plant-needs/derivation.md
+// Spec:        nutrition/nursery/domain/plant-needs/spec.md
+// Derivation:  nutrition/nursery/domain/plant-needs/derivation.md
 //
 // Pure function: same inputs (targetG, cycleDays, cellsPerTray) → same
 // output. No DOM access, no side effects. Cycle is treated as flat —

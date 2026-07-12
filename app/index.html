@@ -285,7 +285,7 @@ window.STORED_RECIPE = { tomato: {}, nursery: {} };
 <!-- @include nutrition/tomato/protocol/fertigation/stored.js -->
 <!-- @include nutrition/tomato/protocol/sidedress/stored.js -->
 <!-- @include nutrition/tomato/protocol/foliar/stored.js -->
-<!-- @include nutrition/nursery/fertigation/procedure/stored.js -->
+<!-- @include nutrition/nursery/protocol/fertigation/stored.js -->
 
 // FP recipe (T5 only — refined 2026-05-08 to mass-balance pure, no soil credit).
 // Single source of truth for the Phase 1 comparison (Block 6) and the bank-
@@ -368,15 +368,15 @@ const FP_RECIPE_T5 = {
 //   window.SubstrateContributionNursery — OM2 + feather meal release
 //   window.FertigationNursery           — Ocean + Acadie + kelp recipe + EC/pH
 
-<!-- @include nutrition/nursery/plant-needs/data.js -->
-<!-- @include nutrition/nursery/plant-needs/calc.js -->
-<!-- @include nutrition/nursery/plant-needs/model.js -->
-<!-- @include nutrition/nursery/substrate-contribution/data.js -->
-<!-- @include nutrition/nursery/substrate-contribution/calc.js -->
-<!-- @include nutrition/nursery/substrate-contribution/model.js -->
-<!-- @include nutrition/nursery/fertigation/data.js -->
-<!-- @include nutrition/nursery/fertigation/calc.js -->
-<!-- @include nutrition/nursery/fertigation/model.js -->
+<!-- @include nutrition/nursery/domain/plant-needs/data.js -->
+<!-- @include nutrition/nursery/domain/plant-needs/calc.js -->
+<!-- @include nutrition/nursery/domain/plant-needs/model.js -->
+<!-- @include nutrition/nursery/domain/substrate-contribution/data.js -->
+<!-- @include nutrition/nursery/domain/substrate-contribution/calc.js -->
+<!-- @include nutrition/nursery/domain/substrate-contribution/model.js -->
+<!-- @include nutrition/nursery/domain/fertigation/data.js -->
+<!-- @include nutrition/nursery/domain/fertigation/calc.js -->
+<!-- @include nutrition/nursery/domain/fertigation/model.js -->
 
 <!-- @include nutrition/compost-contribution/data.js -->
 <!-- @include nutrition/compost-contribution/calc.js -->

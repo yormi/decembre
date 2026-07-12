@@ -1,4 +1,4 @@
-// nutrition/nursery/fertigation/model.js
+// nutrition/nursery/domain/fertigation/model.js
 //
 // Public namespace for the nursery weekly fertigation subproject. Wires
 // data.js (constants) + calc.js (pure functions) onto window.FertigationNursery

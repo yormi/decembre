@@ -1,6 +1,6 @@
 // Public API for the nursery plant-needs model.
 //
-// Spec:    nutrition/nursery/plant-needs/spec.md
+// Spec:    nutrition/nursery/domain/plant-needs/spec.md
 // public-api-namespace: this namespace exists at runtime with the keys below.
 //
 // Consumers (Semis subpage UI, future nursery recipe calculators) should

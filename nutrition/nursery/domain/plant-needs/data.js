@@ -1,7 +1,7 @@
 // Nursery plant-needs — source data.
 //
-// Spec:        nutrition/nursery/plant-needs/spec.md
-// Derivation:  nutrition/nursery/plant-needs/derivation.md
+// Spec:        nutrition/nursery/domain/plant-needs/spec.md
+// Derivation:  nutrition/nursery/domain/plant-needs/derivation.md
 //
 // Salanova lettuce nursery seedlings raised in 50-cell trays in a Berger
 // OM2 + feather meal substrate. Seed → target weight over the cycle

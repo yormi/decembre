@@ -1,4 +1,4 @@
-// nutrition/nursery/fertigation/calc.js
+// nutrition/nursery/domain/fertigation/calc.js
 //
 // Pure functions for nursery weekly fertigation. No DOM, no globals.
 // Reads NURSERY_PRODUCTS from window.__NURSERY_FERT_DATA__ (set by data.js).

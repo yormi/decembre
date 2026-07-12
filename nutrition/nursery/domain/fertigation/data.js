@@ -1,4 +1,4 @@
-// nutrition/nursery/fertigation/data.js
+// nutrition/nursery/domain/fertigation/data.js
 //
 // Nursery weekly fertigation — product list, defaults, default recipe, caps.
 //

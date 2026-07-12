@@ -109,9 +109,9 @@ seedling adjustment adds one translation; macros land at cert 3.
 
 | File                                          | Owns                                                              |
 |-----------------------------------------------|-------------------------------------------------------------------|
-| `nutrition/nursery/plant-needs/data.js`       | `LETTUCE_NURSERY_TISSUE_DW`, `LETTUCE_NURSERY_DM_FRACTION`, `NURSERY_TARGETS` |
-| `nutrition/nursery/plant-needs/calc.js`       | `calcNurseryDemand`                                               |
-| `nutrition/nursery/plant-needs/model.js`      | `window.PlantNeedsNursery` namespace                              |
+| `nutrition/nursery/domain/plant-needs/data.js`       | `LETTUCE_NURSERY_TISSUE_DW`, `LETTUCE_NURSERY_DM_FRACTION`, `NURSERY_TARGETS` |
+| `nutrition/nursery/domain/plant-needs/calc.js`       | `calcNurseryDemand`                                               |
+| `nutrition/nursery/domain/plant-needs/model.js`      | `window.PlantNeedsNursery` namespace                              |
 
 Load order in `app/index.html`: `data.js` → `calc.js` → `model.js`,
 before consumers. Consumers reach for

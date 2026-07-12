@@ -11,7 +11,7 @@ Rationale for each constant in `spec.md`. Rejected alternatives in
 |-------------------------------|----------------------------------------------------------------------|
 | Substrate                     | Berger OM2 (peat-based organic mix, 50 L sac)                         |
 | OM2 organic-cert listing      | CAN/CGSB-32.311 (Berger organic substrate line)                       |
-| OM2 datasheet                 | NOT yet in `nutrition/nursery/doc/` — refinement trigger pending      |
+| OM2 datasheet                 | NOT yet in `nutrition/nursery/domain/doc/` — refinement trigger pending      |
 | Front-load product            | Feather meal (farine de plumes), 13-0-0                               |
 | Feather meal cert listing     | CAN/CGSB-32.311 (animal by-product, allowed organic input)            |
 | Front-load convention         | 2 cups feather meal per OM2 sac, mixed in at potting                  |
@@ -179,7 +179,7 @@ peat plug; < 10 % leaching loss absorbed within cert-2 band.
 
 ## Refinement triggers
 
-- **Berger OM2 datasheet pulled.** Drop PDF in `nutrition/nursery/doc/`,
+- **Berger OM2 datasheet pulled.** Drop PDF in `nutrition/nursery/domain/doc/`,
   update CLAUDE.md index, replace `OM2_STARTER_CHARGE_PPM` with vendor
   values. Cert macros 2 → 4, Ca/Mg 3 → 4.
 - **First seedling tissue tests.** Refit
@@ -202,12 +202,12 @@ peat plug; < 10 % leaching loss absorbed within cert-2 band.
 
 | File                                                          | Owns                                                                                        |
 |---------------------------------------------------------------|---------------------------------------------------------------------------------------------|
-| `nutrition/nursery/substrate-contribution/data.js`            | OM2 + feather meal constants, tray geometry, `LIMITS`                                       |
-| `nutrition/nursery/substrate-contribution/calc.js`            | `theoreticalSubstrateReleasePerWeek(w, fmG)`, `cycleAverageReleasePerTray(fmG)`             |
-| `nutrition/nursery/substrate-contribution/model.js`           | `window.SubstrateContributionNursery` namespace wrapper                                     |
-| `nutrition/nursery/substrate-contribution/spec.md`            | Spec — what the model must do or be                                                         |
-| `nutrition/nursery/substrate-contribution/derivation.md`      | This file                                                                                    |
-| `nutrition/nursery/substrate-contribution/learnings.md`       | Rejected alternatives, historical decisions                                                  |
+| `nutrition/nursery/domain/substrate-contribution/data.js`            | OM2 + feather meal constants, tray geometry, `LIMITS`                                       |
+| `nutrition/nursery/domain/substrate-contribution/calc.js`            | `theoreticalSubstrateReleasePerWeek(w, fmG)`, `cycleAverageReleasePerTray(fmG)`             |
+| `nutrition/nursery/domain/substrate-contribution/model.js`           | `window.SubstrateContributionNursery` namespace wrapper                                     |
+| `nutrition/nursery/domain/substrate-contribution/spec.md`            | Spec — what the model must do or be                                                         |
+| `nutrition/nursery/domain/substrate-contribution/derivation.md`      | This file                                                                                    |
+| `nutrition/nursery/domain/substrate-contribution/learnings.md`       | Rejected alternatives, historical decisions                                                  |
 
 Integrator wires three `@include` markers into `app/index.html`
 (data → calc → model, before Semis block 2 consumer). Bilan card
