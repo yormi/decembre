@@ -1,7 +1,7 @@
-# Tomate — foliar-strategy · derivation
+# Tomate — foliar · derivation
 
 How the model is built. Spec in `spec.md`. Rejected alternatives and
-historical hold/decision detail in `learnings.md`.
+historical hold/decision detail in `learnings/`.
 
 ---
 
@@ -49,7 +49,7 @@ no tissue test correlates predicted to measured uptake yet.
 Two uncertainty bands. Confidence axis: 25-40 % literature range is
 ~1.6× wide; cert 3 reflects working assumption inside it. Value axis:
 ~10× wide — if Sentís ceiling governs, `FOLIAR_COVERAGE_DEFAULT` refits
-to ~0.03. Hold at 0.30 per `learnings.md` (single-cultivar study;
+to ~0.03. Hold at 0.30 per `learnings/` (single-cultivar study;
 25-40 % mid-band defensible without contrary measurement). Downward
 trigger named in refinement triggers below.
 
@@ -171,7 +171,7 @@ and re-source. Fe / Mo / B stay at cert 3 unless tissue panel surfaces
 drift outside the extension mid-band.
 
 Surfactant has no published effect on the burn-cap axis — yucca acts on
-coverage, not on max safe tank concentration. See `learnings.md` for
+coverage, not on max safe tank concentration. See `learnings/` for
 the rejected surfactant-multiplier on burn cap.
 
 ---
@@ -326,7 +326,7 @@ across both regimes. Refinement triggers:
   3 → 4 for the with-surfactant value (0.72). Separate trigger — the
   with-surfactant value 0.80 isn't measured at Décembre, so its cert
   bump needs its own correlation period under that regime (independent
-  of whether yucca specifically is the surfactant; see `learnings.md`
+  of whether yucca specifically is the surfactant; see `learnings/`
   § "Yucca return as a refinement trigger" for why yucca-return is not
   itself the trigger).
 - **Sentís ceiling regime** (downward, ×0.10 ratio in tissue) — see §
@@ -370,7 +370,7 @@ The cap values (`BURN_CAP_BASE_G`) were set at extension mid-band
 18 / 16 in the model layer while STORED ran 22 / 22 in the field — a
 cap-vs-empirical gap reconciled 2026-05-17 by raising the cap to match
 empirical reality and dropping the cert from 3 to 2 (per § "Mn / Zn
-certainty exception" above). See `learnings.md` § "Mn / Zn burn caps
+certainty exception" above). See `learnings/` § "Mn / Zn burn caps
 held at extension mid-band 18 / 16 (pre-2026-05-17)".
 
 ---
@@ -396,7 +396,7 @@ Mn + Cu + Fe are the standing under-fert calls (foliar is the only
 channel for these four cation micros under current pH 7.4 lockout per
 `nutrition — replenishment-cascade-earliest-first`). Coverage 0.30 (no yucca) is the steady-state delivery regime;
 yucca is not on order and is not tracked as a refinement-trigger return
-path (see `learnings.md` § "Yucca return as a refinement trigger" for
+path (see `learnings/` § "Yucca return as a refinement trigger" for
 the rejected dose-restoration projection).
 
 **Zn over-luxury (136 % of demand)** is over `nutrition/tomato — luxury-feeding-guard`'s 1.3× cap on the
@@ -445,7 +445,7 @@ Schema carries N / P / K / Ca / Mg as explicit zeros:
   schema-wiring shape (cuticle-coverage axis becoming per-element vs
   staying global). **Ecocert:** CaCl₂·2H₂O food-grade vendor + product
   certified 2026-05-24 (resolves the 2026-05-06 retirement caveat, see
-  `learnings.md`). Surfactant — Ecocert-allowed yucca / quillaja /
+  `learnings/`). Surfactant — Ecocert-allowed yucca / quillaja /
   equivalent, vendor in operator lane.
 - **Mg**: cuticle ~10 %; competes with Ca/K; burn-cap headroom too
   costly. Fertigation MgSO₄ + compost residual cover demand.
@@ -498,7 +498,7 @@ chain stays uniform.
     `effectiveEff` gate).
 
   Until tissue data lands, `coverage-discount-on-delivery` stays cert 3 (no Décembre tissue
-  correlation yet); hold rationale in `learnings.md`.
+  correlation yet); hold rationale in `learnings/`.
 - **Solubor moved fully to fertigation.** Already conceptual
   (`FP_RECIPE_T5.foliar.Solubore = 0`); STORED still carries 7 g. Next
   `/retire-recipe` zeros it — delivers ~1.1 mg B/m²/wk today; fertigation
@@ -526,17 +526,17 @@ chain stays uniform.
 
 | File                                                | Owns                                                               |
 |-----------------------------------------------------|--------------------------------------------------------------------|
-| `nutrition/tomato/foliar-strategy/data.js`            | `FOLIAR_COVERAGE_DEFAULT`, `FOLIAR_COVERAGE_WITH_YUCCA`, `BURN_CAP_BASE_G`, `burnCapG(el)` (area = `TOMATO_NUM_BEDS × TOMATO_BED_AREA`, computed inline in `calc.js`) |
-| `nutrition/tomato/foliar-strategy/calc.js`            | `computeFoliarSupply(stage)`                                       |
-| `nutrition/tomato/foliar-strategy/model.js`           | `window.FoliarRecipeTomato` namespace wrapper                      |
-| `nutrition/tomato/domain/foliar/spec.md`            | Spec — what the model must do or be                                |
-| `nutrition/tomato/foliar-strategy/derivation.md`      | This file                                                          |
+| `nutrition/tomato/domain/foliar/model/data.js`         | `FOLIAR_COVERAGE_DEFAULT`, `FOLIAR_COVERAGE_WITH_YUCCA`, `BURN_CAP_BASE_G`, `burnCapG(el)` (area = `TOMATO_NUM_BEDS × TOMATO_BED_AREA`, computed inline in `recipe.js`) |
+| `nutrition/tomato/domain/foliar/model/recipe.js`       | `computeFoliarSupply(stage, opts, recipe)`, `computeFoliarRecipeForGap(gap, opts)`, `computeFoliarStrategy(stage, gap, opts)`, `window.FoliarRecipeTomato` namespace |
+| `nutrition/tomato/domain/foliar/model/contribution.js` | `computeFoliarContribution`                                       |
+| `nutrition/tomato/domain/foliar/model/spec.md`         | Spec — what the model must do or be                                |
+| `nutrition/tomato/domain/foliar/model/derivation.md`   | This file                                                          |
 
 `app/index.html` include order: AFTER plant-needs (`BIOMASS_DEMAND`,
 `TOMATO_FRUIT_EXPORT` for cross-ref), AFTER `STORED_RECIPE`
 (`STORED_RECIPE.tomato.foliaire.A`), AFTER `PRODUCT_PCT` (`MnSO4_Mn`,
 `ZnSO4_Zn`, `FeSO4_Fe`, …), AFTER `TOMATO_NUM_BEDS` / `TOMATO_BED_AREA`.
-Order: `data.js` → `calc.js` → `model.js`. Consumers (`calcNutrSupply`)
+Order: `data.js` → `recipe.js` → `contribution.js`. Consumers (`calcNutrSupply`)
 read `window.FoliarRecipeTomato.computeFoliarSupply(stage)`.
 
 `calcNutrSupply` foliar block in `app/index.html` (~line 4604-4645)

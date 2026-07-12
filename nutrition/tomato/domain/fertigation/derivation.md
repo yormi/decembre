@@ -1,6 +1,6 @@
-# Tomate — fertigation-recipe · derivation
+# Tomate — fertigation · derivation
 
-Why each number is what it is, for the live REQs in `spec.md`. Rejected alternatives and historical decisions live in `learnings.md`.
+Why each number is what it is, for the live REQs in `spec.md`. Rejected alternatives and historical decisions live in `learnings/`.
 
 ---
 
@@ -10,7 +10,7 @@ For each stage `T1..T5`, fertigation = plant demand inflated by per-element upta
 
 Two corrections on top of pure offtake:
 
-1. **Compost release is current-week supply, not a bank.** Subtract it (`mass-balance-derivation`). 2026-05-12 amendment that dropped this term was a category error, reverted 2026-05-15 per B1-REV (see `learnings.md`).
+1. **Compost release is current-week supply, not a bank.** Subtract it (`mass-balance-derivation`). 2026-05-12 amendment that dropped this term was a category error, reverted 2026-05-15 per B1-REV (see `learnings/`).
 2. **Bed → plant transfer < 100 %** at Décembre soil (pH 7.28, Ca 10 989 kg/ha). `PH_UPTAKE_FACTOR_AT_CURRENT_SOIL` inflates demand so plant uptake equals demand after the discount. Factor applies uniformly to all bed sources, so it pulls out as a single division on the demand term (`uptake-efficiency-factor`, added 2026-05-15 per B2-REV).
 
 ```
@@ -41,7 +41,7 @@ b_needed_mg/m²/wk     = max(0, b_demand_to_bed − b_compost)
 solubore_g_total      = round(b_needed / 1000 / PRODUCT_PCT.Solubore_B × totalArea_m2)
 ```
 
-Implemented in `calc.js` — `computeStageRecipe(stage)` returns `{ kSulfate, mgSulfate, solubore }` in grams (× 382.9 m²).
+Implemented in `recipe.js` — `computeStageRecipe(stage)` returns `{ kSulfate, mgSulfate, solubore }` in grams (× 382.9 m²).
 
 ---
 
@@ -111,7 +111,7 @@ Supply formula prior to 2026-05-15 implicitly assumed `delivered_to_bed = taken_
 | Mg      | 0.85   | Same competition, sharper (Mg²⁺ smaller divalent) + dripper-bed equilibration time. Literature 10-25 %; mid 15 %.        |
 | B       | 0.80   | Ca-rich pH>7 soil B adsorption to Fe/Al oxides + Ca-borate complexes. Literature 15-25 %; mid 20 %. Molecular-form pKa discount at pH 7.3 negligible (borate fraction ~1 %). |
 
-Full mechanism + stacked-cert caveat + refinement priority order: `learnings.md` `uptake-efficiency-factor` entry.
+Full mechanism + stacked-cert caveat + refinement priority order: `learnings/` `uptake-efficiency-factor` entry.
 
 **Refinement triggers — symmetric per P-03:**
 
@@ -124,7 +124,7 @@ Full mechanism + stacked-cert caveat + refinement priority order: `learnings.md`
 
 ## Channel efficiency map (`nutrition — channel-efficiency-capability-map`)
 
-`window.FertigationRecipeTomato.efficiency` (`nutrition — channel-efficiency-capability-map`, exposed via model.js) declares the per-element **channel → bed** delivery fraction at current soil pH 7.4 — distinct from `uptake-efficiency-factor`'s bed → plant uptake-factor.
+`window.FertigationRecipeTomato.efficiency` (`nutrition — channel-efficiency-capability-map`, exposed via `recipe.js`) declares the per-element **channel → bed** delivery fraction at current soil pH 7.4 — distinct from `uptake-efficiency-factor`'s bed → plant uptake-factor.
 
 | Element | Value | Source                                                          |
 |---------|-------|-----------------------------------------------------------------|
@@ -139,7 +139,7 @@ Elements absent from the map: N (sidedress channel), P / Ca ({P, Ca}-only bank c
 
 **Mo carve-out (`nutrition — replenishment-cascade-earliest-first` amendment 2026-05-16).** Cation micros (Mn / Zn / Cu / Fe) stay on foliar because the foliar route bypasses pH lockout at the root. Mo is an anion (molybdate, MoO₄²⁻) — at our pH 7.4 it is *more* plant-available from the soil/dripper line, not less, so the foliar-bypass argument doesn't apply. Sodium molybdate joined the fertigation barrel at the team's smallest reliable barrel weight (0.5 g/week → roughly 0.5 mg Mo/m²/sem, about 7× peak demand, well within Mo's wide tolerance band). Foliar's Mo entry retired in lockstep. Stored-recipe moves on both channels gated on `/retire-recipe` audit.
 
-**Mo algorithmic detail.** Mo is NOT mass-balance-derived like K / Mg / B. `computeStageRecipe(stage).naMolybdate` returns a **flat 0.5 g/wk** for every stage T1-T5 (pin in `calc.js`), bypassing the demand → uptake-factor → compost-subtract → product-mass chain. Rationale: peak Mo demand is ~0.07 mg/m²/wk (cert 1, micro-demand from `BIOMASS_DEMAND`); demand-driven sizing would land at fractional milligrams of sodium molybdate per week, well below the team's smallest reliable weighing increment (0.5 g). Flat 0.5 g/wk is the floor the operator can actually deliver. Even at 7× peak demand the dose stays well inside Mo's tolerance band (Mo deficiency below ~0.1 mg/kg DW tissue, toxicity above ~100 mg/kg; ~3-order-of-magnitude window). Cert 2 — operator-floor anchor, not field-measured. `uptake-efficiency-factor` uptake factor entry is absent for Mo because no demand-side division applies; for parity with the `nutrition — channel-efficiency-capability-map` channel→bed map (Mo = 1.00), if Mo were ever lifted into the mass-balance branch a default uptake factor of 1.00 is the right starting point (anion, no Ca competition argument, fully soluble at pH ≥ 7).
+**Mo algorithmic detail.** Mo is NOT mass-balance-derived like K / Mg / B. `computeStageRecipe(stage).naMolybdate` returns a **flat 0.5 g/wk** for every stage T1-T5 (pin in `recipe.js`), bypassing the demand → uptake-factor → compost-subtract → product-mass chain. Rationale: peak Mo demand is ~0.07 mg/m²/wk (cert 1, micro-demand from `BIOMASS_DEMAND`); demand-driven sizing would land at fractional milligrams of sodium molybdate per week, well below the team's smallest reliable weighing increment (0.5 g). Flat 0.5 g/wk is the floor the operator can actually deliver. Even at 7× peak demand the dose stays well inside Mo's tolerance band (Mo deficiency below ~0.1 mg/kg DW tissue, toxicity above ~100 mg/kg; ~3-order-of-magnitude window). Cert 2 — operator-floor anchor, not field-measured. `uptake-efficiency-factor` uptake factor entry is absent for Mo because no demand-side division applies; for parity with the `nutrition — channel-efficiency-capability-map` channel→bed map (Mo = 1.00), if Mo were ever lifted into the mass-balance branch a default uptake factor of 1.00 is the right starting point (anion, no Ca competition argument, fully soluble at pH ≥ 7).
 
 **Mo and the FP-pin (`fp-target-mirrors-sizer`).** `naMolybdate` propagates through `wireFpFertigation()` into `FIRST_PRINCIPLES_T5_FERTIGATION['NaMolybdate']` and `FP_RECIPE_T5.fertigation['NaMolybdate']` at boot exactly like Solubore — by construction the constants equal `computeStageRecipe('T5').naMolybdate = 0.5`. The flat-floor model is the FP target; STORED moves on operator timing via `/retire-recipe`. No "Mo FP literal" hand-coded anywhere — same pin-by-construction discipline as K / Mg.
 
@@ -170,7 +170,7 @@ Soil channels apply pH-aware effective efficiency (`nutrition — ph-aware-effec
 
 ### Caller-side reshape patterns
 
-Function accepts ONE canonical shape: `{ kSulfate_g, mgSulfate_g, solubore_g }`. Callers reshape from upstream source; function never branches on source. Shape-arg decision: `learnings.md` `per-element-supply` entry.
+Function accepts ONE canonical shape: `{ kSulfate_g, mgSulfate_g, solubore_g }`. Callers reshape from upstream source; function never branches on source. Shape-arg decision: `learnings/` `per-element-supply` entry.
 
 ```js
 // Stored mode
@@ -188,7 +188,7 @@ Omitting `recipe` defaults to the stored reshape (one-arg convenience for admin 
 
 ### Why flat return (no `details`)
 
-`nutrition — contribution-channel-details-payload` requires per-element `{cert, cap}` alongside flat `mg` map. For fertigation, cap detection depends on pH state + sourced elements (caller context, not model). Matches `computeFoliarSupply` precedent — flat return; details composed in `nutrition/tomato/app/shell/logic.js`. Unified retrofit is a separate REQ. Full options + rationale: `learnings.md` `per-element-supply` `details` entry.
+`nutrition — contribution-channel-details-payload` requires per-element `{cert, cap}` alongside flat `mg` map. For fertigation, cap detection depends on pH state + sourced elements (caller context, not model). Matches `computeFoliarSupply` precedent — flat return; details composed in `nutrition/tomato/app/shell/logic.js`. Unified retrofit is a separate REQ. Full options + rationale: `learnings/` `per-element-supply` `details` entry.
 
 ### Cert table
 
@@ -222,7 +222,7 @@ T5 values match `FP_RECIPE_T5.fertigation` by construction (`fp-target-mirrors-s
 
 ## Caveats
 
-- **Compost release IS subtracted** (`mass-balance-derivation` reverted 2026-05-15 per B1-REV). At T1-T3, compost Mg (500 mg/m²/wk) exceeds plant Mg demand → fertigation Mg = 0; surplus accumulates in bank by design. Full amendment-then-reversal cycle: `learnings.md`.
+- **Compost release IS subtracted** (`mass-balance-derivation` reverted 2026-05-15 per B1-REV). At T1-T3, compost Mg (500 mg/m²/wk) exceeds plant Mg demand → fertigation Mg = 0; surplus accumulates in bank by design. Full amendment-then-reversal cycle: `learnings/`.
 - **B is stage-aware now** (post-B2-REV) but treated as roughly flat 4-5 mg/m²/wk T1-T5; T5 row is authoritative, T1-T4 approximate. Extend `computeStageRecipe` if flowering-phase B demand spikes.
 - **FP target cannot drift from model** (`fp-target-mirrors-sizer` boot-pinning). PA Taillon's April 2026 Mg anchor (1 379 g) recovered by physics pre-B2-REV: demand 855 − compost 500 = 355 mg/m²/wk → 1 378 g MgSO₄·7H₂O. Post-B2-REV the anchor no longer matches (uptake factor inflates). Stored-vs-FP drift resolved through `/retire-recipe`, not hand-locked FP overrides.
 - **Total area hardcoded** at `TOMATO_NUM_BEDS × TOMATO_BED_AREA = 382.9 m²`. Bed reconfiguration → both constants drift in lockstep.
@@ -246,10 +246,10 @@ T5 values match `FP_RECIPE_T5.fertigation` by construction (`fp-target-mirrors-s
 | File                                                  | Owns                                                       |
 |-------------------------------------------------------|------------------------------------------------------------|
 | `nutrition/tomato/domain/fertigation/data.js`         | `FIRST_PRINCIPLES_T5_FERTIGATION`                          |
-| `nutrition/tomato/fertigation-recipe/calc.js`         | `computeStageRecipe(stage)`, `computeFertigationSupply(stage, opts, recipe)`, `wireFpFertigation` IIFE |
-| `nutrition/tomato/fertigation-recipe/model.js`        | `window.FertigationRecipeTomato` namespace wrapper         |
+| `nutrition/tomato/domain/fertigation/recipe.js`       | `computeStageRecipe(stage)`, `computeFertigationSupply(stage, opts, recipe)`, `wireFpFertigation` IIFE, `window.FertigationRecipeTomato` namespace |
+| `nutrition/tomato/domain/fertigation/contribution.js` | `computeFertigationContribution`                          |
 | `nutrition/tomato/domain/fertigation/spec.md`         | Spec — what the model must do or be                        |
-| `nutrition/tomato/fertigation-recipe/derivation.md`   | This file                                                  |
-| `nutrition/tomato/fertigation-recipe/learnings.md`    | Rejected alternatives, retired policies, extraction history |
+| `nutrition/tomato/domain/fertigation/derivation.md`   | This file                                                  |
+| `nutrition/tomato/domain/fertigation/learnings/`      | Rejected alternatives, retired policies, extraction history (one file per slug) |
 
-`app/index.html` includes in dependency order: AFTER plant-needs, compost-contribution, sidedress-recipe, `RECIPE_INPUTS`, `PRODUCT_PCT`, `STORED_RECIPE.tomato.sidedress`, and the `FP_RECIPE_T5` declaration. Within subproject: `data.js` → `calc.js` → `model.js`. `LUXURY_FACTOR` lives next to `calcNutrSupply` (supply-side, not recipe-derivation).
+`app/index.html` includes in dependency order: AFTER plant-needs, compost-contribution, sidedress, `RECIPE_INPUTS`, `PRODUCT_PCT`, `STORED_RECIPE.tomato.sidedress`, and the `FP_RECIPE_T5` declaration. Within subproject: `data.js` → `recipe.js` → `contribution.js`. `LUXURY_FACTOR` lives next to `calcNutrSupply` (supply-side, not recipe-derivation).

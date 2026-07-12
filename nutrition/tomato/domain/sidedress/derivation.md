@@ -1,7 +1,7 @@
-# Tomate — sidedress-recipe · derivation
+# Tomate — sidedress · derivation
 
 How the model is built. Spec in `spec.md`; rejected alternatives in
-`learnings.md`.
+`learnings/`.
 
 ---
 
@@ -19,7 +19,7 @@ g/planche/wk        = g/m² × SIDEDRESS_AREA_PER_PLANCHE  (rounded)
 ```
 
 Product-agnostic; only `n_pct` and `eff` change. Implemented in
-`calc.js` as `computeStageSidedress(stage, product)`.
+`recipe.js` as `computeStageSidedress(stage, product)`.
 
 ---
 
@@ -27,7 +27,7 @@ Product-agnostic; only `n_pct` and `eff` change. Implemented in
 
 Sidedress is single-element (N) — organic-N concentrates (farine de
 plumes 13-0-0, alfalfa 3-0.5-2) are the natural carrier. K / P / Ca /
-Mg / micros rejected — see `learnings.md`.
+Mg / micros rejected — see `learnings/`.
 
 Output shape carries `actisol_g`, `farine_g`, `alfalfa_g` fields;
 `actisol_g` hard-zeroed by `ca-aware-product-gate` (Ca-bearing). `farine_g` and
@@ -167,7 +167,7 @@ that policy — adding more N at T1 / T2 would deepen the same excess.
   ramp-up, by which point stack is ~6-8 weeks old.
 - **Single-product per call.** No blending in the function contract;
   run twice and sum for a 50/50 mix. Blend-optimization considered
-  and rejected — archived in `learnings.md` § "Rejected: blend
+  and rejected — archived in `learnings/` § "Rejected: blend
   optimization".
 - **Eco-luzerne organic-cert unverified at this level.** Alfalfa
   branch remains non-default until a CAN/CGSB-32.311 certificate is
@@ -218,15 +218,15 @@ that policy — adding more N at T1 / T2 would deepen the same excess.
 | File         | Owns                                                       |
 |--------------|------------------------------------------------------------|
 | `data.js`    | `SIDEDRESS_AREA_PER_PLANCHE`, `SIDEDRESS_PRODUCTS`, `SIDEDRESS_MIN_EFF` (derived view), `FIRST_PRINCIPLES_SIDEDRESS` skeleton |
-| `calc.js`    | `computeStageSidedress(stage, product)`, `wireFpSidedress` IIFE |
-| `model.js`   | `window.SidedressRecipeTomato` namespace wrapper           |
+| `recipe.js`  | `computeStageSidedress(stage, product)`, `wireFpSidedress` IIFE, `window.SidedressRecipeTomato` namespace |
+| `contribution.js` | `computeSidedressContribution`                        |
 | `spec.md`    | Spec                                                       |
 | `derivation.md` | This file                                               |
-| `learnings.md` | Rejected alternatives, historical decisions              |
+| `learnings/` | Rejected alternatives, historical decisions (one file per slug) |
 
 `app/index.html` load order: AFTER plant-needs (`BIOMASS_DEMAND`,
 `TOMATO_FRUIT_EXPORT`), AFTER compost-contribution
 (`window.CompostContribution`), AFTER `RECIPE_INPUTS` (`stageYield`),
 AFTER `PRODUCT_PCT` (`FarinePlumes_N`, `Actisol_N`). Internal order:
-`data.js` → `calc.js` → `model.js`. Consumers (`computeStageRecipe`
+`data.js` → `recipe.js` → `contribution.js`. Consumers (`computeStageRecipe`
 context, Banque sol page) come later.
