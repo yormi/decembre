@@ -1,5 +1,14 @@
 [
   {
+    "date": "2026-07-13",
+    "date_fr": "13 juillet 2026",
+    "title": "Laitue : fertigation, fertilisation, lumière + retrait sprays/pH tomate",
+    "changes": "- Sprays tomate enlevés\n- Ajustement du pH enlevé\n- Recette de fertigation de la laitue mise à jour\n- Nouvelle recette de fertilisation laitue\n- Nouvelle recette de lumière laitue selon le mois de l'année",
+    "url": "https://main--decembre-staging.netlify.app",
+    "pr": 8,
+    "sha": "8dc2e8c924a0be33d3a30a71a951e418ee8a9a5d"
+  },
+  {
     "date": "2026-06-30",
     "date_fr": "30 juin 2026",
     "title": "Nouvelle page Effeuillage tomates",
