@@ -53,6 +53,7 @@ const CHANNEL_META = {
   sidedress:   { icon: '🌱', label: 'Sol' },
   foliaire:    { icon: '🍃', label: 'Foliaire' },
   nursery:     { icon: '🌿', label: 'Semis' },
+  lettuce:     { icon: '🥬', label: 'Fertigation laitue' },
 };
 
 // ── before→after chips ──────────────────────────────────────────────
@@ -113,15 +114,15 @@ function diffFoliaire(before, after) {
   return chips ? `<div style="margin:6px 0 2px;">${chips}</div>` : '';
 }
 
-// Diff a flat product→dose recipe ({product: dose}) — the nursery feed shape.
-// Per-litre concentrations; powders g/L, liquids mL/L. Only changed products
-// get a chip.
-function diffFlatChannel(before, after) {
+// Diff a flat product→dose recipe ({product: dose}) — the nursery feed +
+// lettuce fertigation shape. Nursery = per-litre concentrations (unit '/L');
+// lettuce = grams per weekly block (unit 'g'). Only changed products get a chip.
+function diffFlatChannel(before, after, unit = '/L') {
   before = before || {}; after = after || {};
   const keys = [...new Set([...Object.keys(before), ...Object.keys(after)])];
   const chips = keys
     .filter((k) => Number(before[k] || 0) !== Number(after[k] || 0))
-    .map((k) => chip(elementLabel(k), before[k], after[k], '/L'))
+    .map((k) => chip(elementLabel(k), before[k], after[k], unit))
     .join('');
   return chips ? `<div style="margin:6px 0 2px;">${chips}</div>` : '';
 }
@@ -178,6 +179,8 @@ function renderWhatWhy(entry, afterSnapshot) {
     diffFoliaire(before.foliaire, after.foliaire), byChannel.foliaire);
   cards += channelCard('nursery',
     diffFlatChannel(before.nursery, after.nursery), byChannel.nursery);
+  cards += channelCard('lettuce',
+    diffFlatChannel(before.lettuce, after.lettuce, 'g'), byChannel.lettuce);
 
   let h = '';
   if (preamble) {
@@ -215,7 +218,8 @@ function buildHistoriqueNutriments() {
   const liveStored = Object.assign(
     {},
     SR.tomato || {},
-    (SR.nursery && SR.nursery.fertigation) ? { nursery: SR.nursery.fertigation } : {}
+    (SR.nursery && SR.nursery.fertigation) ? { nursery: SR.nursery.fertigation } : {},
+    (SR.lettuce && SR.lettuce.fertigation) ? { lettuce: SR.lettuce.fertigation } : {}
   );
   const dateStyle = `font-family:'DM Mono',monospace; font-size:12px; color:var(--text); white-space:nowrap;`;
   const cellPad = `padding:10px 12px; border-bottom:1px solid var(--border); vertical-align:top;`;

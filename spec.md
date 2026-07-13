@@ -21,7 +21,7 @@ code under `nutrition/**/spec.md` and `yield-range/**/spec.md`.
 | `nutrition/tomato/protocol/fertigation/user-stories.md` | Procedural data layer behind the operator fertigation page (stage, steps, calc) |
 | `nutrition/lettuce/domain/spec.md` | Salanova post-transplant nutrition (model/recipe) |
 | `app/admin/nutrition/bilan/lettuce/user-stories.md` | Salanova admin subpage UI |
-| `nutrition/nursery/spec.md` | Semis laitue nutrition (seedling DW%, cell volume cap) |
+| `nutrition/lettuce/domain/nursery/plant-needs/spec.md` | Semis laitue nutrition (seedling DW%, cell volume cap) |
 | `app/admin/nutrition/bilan/nursery/user-stories.md` | Semis admin subpage UI |
 | `yield-range/domain/spec.md` | Salanova nursery time-to-canopy-cap model |
 | `app/admin/rendement/user-stories.md` | Yield Range admin page UI |

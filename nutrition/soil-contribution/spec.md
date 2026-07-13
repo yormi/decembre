@@ -188,7 +188,7 @@ lettuce, cert 1-2 micros — inherits from plant-needs).
 not bare module-scope constants/functions, so internals can be reshaped
 (per-bed scaling, seasonal factor, depth-resolved bank) without breaking
 call sites. Same discipline as `nutrition/compost-contribution — public-api-namespace` /
-`nutrition/nursery/domain/substrate-contribution — public-api-namespace` /
+`nutrition/lettuce/domain/nursery/substrate-contribution — public-api-namespace` /
 `nutrition/tomato/domain/foliar/model — public-api-namespace`; `spec — subproject-namespace-sole-source` enforces
 no-inline-reimplementation at verifier level.
 

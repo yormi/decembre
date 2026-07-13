@@ -1,0 +1,71 @@
+    <div id="sol-lettuce-content" style="display:none;">
+
+      <!-- Heads transplanted this week → fraction of a full bed (800 heads).
+           The feather-meal dose (LETTUCE_SOL_RECIPE, 1500 g per full bed)
+           scales to that fraction. -->
+      <div class="card">
+        <div class="card-title">Laitues transplantées cette semaine</div>
+        <div style="display:flex; justify-content:center;">
+          <div style="width:140px;">
+            <input type="number" id="lettuce-heads" value="800" min="0" max="8000" step="50" inputmode="numeric" oninput="renderSolLettuce()" style="width:100%; padding:12px 14px; border:1.5px solid var(--border); border-radius:var(--radius-sm); font-family:'DM Mono',monospace; font-size:18px; font-weight:600; background:var(--input-bg); color:var(--text); text-align:center; -webkit-appearance:none;">
+          </div>
+        </div>
+        <div id="sol-lettuce-bed-note" style="font-size:11px; color:var(--text-muted); text-align:center; margin-top:10px;">—</div>
+      </div>
+
+      <!-- Recette — feather-meal side-dress at planting (LETTUCE_SOL_RECIPE),
+           scaled to the bed fraction. Seedling-model tiles: emoji / label /
+           big number / unit. -->
+      <div class="card">
+        <div style="display:flex; align-items:baseline; justify-content:space-between; gap:12px; margin-bottom:6px;">
+          <div class="card-title" style="margin-bottom:0;">Recette</div>
+          <span id="sol-lettuce-fraction-chip" style="background:var(--accent-active-light); border:1.5px solid var(--accent-active-border); color:var(--text); font-size:12px; font-weight:600; padding:4px 10px; border-radius:4px; white-space:nowrap;">—</span>
+        </div>
+        <div style="font-size:11.5px; color:var(--text-muted); margin-bottom:12px;">à la plantation</div>
+        <div id="sol-lettuce-doses" style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">—</div>
+      </div>
+
+    </div><!-- end sol-lettuce-content -->
+
+    <script>
+      // Seedling-model tile: emoji / label / big value / unit.
+      function solLettuceTile(emoji, label, value, unit) {
+        return '<div style="background:var(--accent-active-light); border:1.5px solid var(--accent-active-border); border-radius:var(--radius-sm); padding:14px 10px; text-align:center;">' +
+          '<div style="font-size:24px; margin-bottom:6px;">' + emoji + '</div>' +
+          '<div style="font-size:10px; font-weight:600; text-transform:uppercase; letter-spacing:1.5px; color:var(--text-muted); margin-bottom:6px;">' + label + '</div>' +
+          '<div style="font-family:\'DM Mono\',monospace; font-size:24px; font-weight:700; color:var(--text);">' + value + '</div>' +
+          '<div style="font-family:\'DM Mono\',monospace; font-size:12px; color:var(--text-muted); margin-top:2px;">' + unit + '</div>' +
+        '</div>';
+      }
+
+      // Global so the heads input's oninput can re-render.
+      function renderSolLettuce() {
+        var headsInput   = document.getElementById('lettuce-heads');
+        var chipElement  = document.getElementById('sol-lettuce-fraction-chip');
+        var dosesElement = document.getElementById('sol-lettuce-doses');
+        if (!headsInput || !chipElement || !dosesElement) return;
+        if (typeof LETTUCE_SOL_RECIPE === 'undefined' || typeof LETTUCE_HEADS_PER_BED === 'undefined') return;
+
+        var heads    = parseInt(headsInput.value, 10) || 0;
+        var fraction = heads / LETTUCE_HEADS_PER_BED;
+
+        var bedNote = document.getElementById('sol-lettuce-bed-note');
+        if (bedNote) bedNote.textContent = '1 planche = 4 rangs à 6 po (' + LETTUCE_HEADS_PER_BED + ' laitues)';
+
+        // Fraction chip: e.g. "0,5 planche" — fr-CA decimal comma, trailing
+        // zeros trimmed (1 → "1 planche", 0.75 → "0,75 planche").
+        var fractionText = fraction.toLocaleString('fr-CA', { maximumFractionDigits: 2 });
+        chipElement.textContent = fractionText + ' planche';
+
+        dosesElement.innerHTML = LETTUCE_SOL_RECIPE.products.map(function (p) {
+          var grams = Math.round(p.grams * fraction);
+          return solLettuceTile(p.emoji || '·', p.name, grams.toLocaleString('fr-CA'), 'g');
+        }).join('');
+      }
+
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', renderSolLettuce);
+      } else {
+        renderSolLettuce();
+      }
+    </script>

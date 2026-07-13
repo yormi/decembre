@@ -49,6 +49,26 @@
 // It also serves as the team-visible audit trail for organic certification.
 const RECIPE_HISTORY = [
   {
+    retired: '2026-07-12',
+    recipe: 'STORED_RECIPE.lettuce.fertigation',
+    summary: 'Bore fertigation laitue Solubore 0,7 → 1,3 g (rendement relevé)',
+    reason: 'Le bore est le seul micronutriment que la cuve laitue doit remplacer 1:1 avec l\'export (sol B sous le seuil de détection → cuve seule source). La cible de rendement passe de ~100 kg/sem sur le bloc à ~180 kg/sem (80 kg/planche toutes les 2 semaines sur 4,5 planches) ; l\'export de bore monte au prorata (~1,5 mg B/kg frais), donc la dose Solubore suit linéairement 0,7 → 1,3 g/sem. Le potassium reste à 400 g (plafond salin, pas l\'export : le remplacement plein ~840 g ajoute ~+1 mS/cm sur culture salée — surveiller le tissu K, appoint par apport au sol). Solubore vérifié Ecocert CAN/CGSB-32.311. Décision Guillaume.',
+    replacedBy: 'STORED_RECIPE.lettuce.fertigation — K₂SO₄ 400 g + Solubore 1,3 g par cuve hebdo (bloc Salanova 136,8 m²).',
+    fullSnapshot: {
+      lettuce: { Potassium: 400, Bore: 0.7 },
+    },
+  },
+  {
+    retired: '2026-07-11',
+    recipe: 'STORED_RECIPE.lettuce.fertigation',
+    summary: 'Cuve laitue réduite à B + K (7 produits → 2), azote en front-load',
+    reason: 'À pH planche redescendu à 6,4 le verrouillage racinaire est levé : le sol resupplie Mg/Fe/Mn/Zn/Cu assez vite (banques Mehlich profondes, carences = lockout et non stock) — ces 5 produits, en entretien seul, sont retirés de la cuve. Le potassium passe de 200 à 400 g de K₂SO₄ : remplacement partiel CE-safe (~+0,5 mS/cm sur culture salée ; remplacement plein ~840 g retenu) pour ralentir l\'épuisement de la banque K (645 kg/ha, ~48 sem) — surveiller le tissu K. Le bore passe de 6 g Borax (15 % B) à 0,7 g Solubore (20,5 % B) : le Borax sur-dosait ~4-8× la sortie hebdomadaire (~150 mg B) ; produit basculé vers Solubore (sans Na). L\'azote quitte la cuve — front-load pré-plant (luzerne + actisol + farine de plumes). Tous produits Ecocert CAN/CGSB-32.311. Décision Guillaume.',
+    replacedBy: 'STORED_RECIPE.lettuce.fertigation — K₂SO₄ 400 g + Solubore 0,7 g (Mg/Fe/Mn/Zn/Cu retirés ; N en front-load).',
+    fullSnapshot: {
+      lettuce: { Potassium: 200, Magnésium: 50, Fer: 15, Manganèse: 5, Zinc: 2.7, Bore: 6, Cuivre: 1 },
+    },
+  },
+  {
     retired: '2026-07-11',
     recipe: 'STORED_RECIPE.tomato.foliaire + STORED_RECIPE.tomato.fertigation',
     summary: 'pH beds 6,5 : sprays A+B retirés, oligos Fe/Mn/Zn rendus au fertigation',

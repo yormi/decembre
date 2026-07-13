@@ -42,12 +42,20 @@ maintenance_dose[el] = yield_kg_per_wk × removal_per_kg[el]
 
 Two regimes, set by mobility:
 
-- **Pool-forming** (K, Ca, P, Fe, Mn, Zn, Cu) → steered by the
-  control law below.
+- **Pool-forming** (K, Ca, Mg, P, Mn, Zn, Cu) → steered by the
+  control law below. **Mg** holds a CEC pool like K/Ca but is
+  **semi-mobile** — leaches faster, so lean on the conservative
+  drawdown prior.
 
-- **Mobile** (N, B, S, Mo; Mg semi-mobile) → excluded from the pool
-  law; leach, no stable pool. Dosed to removal + tissue. N via
-  pre-plant front-load; B via the tank.
+- **Mobile** (N, B, S, Mo) → excluded from the pool law; leach, no
+  stable pool. Dosed to removal + tissue. N via pre-plant front-
+  load; B via the tank.
+
+- **Fe** → pool-forming by mobility, but **ungoverned**: no usable
+  M3 band and M3-Fe correlates poorly with availability. Dropped
+  from the pool law → dosed to removal by broadcast (front-load /
+  side-dress), tissue-gated. FeSO₄ is cert-allowed with documented
+  need (Fe-EDTA/DTPA chelates prohibited).
 
 
 ## Control law (pool-forming nutrients)
@@ -92,31 +100,79 @@ prior, nudge with measured ΔM3 (damped update), don't chase the raw
 two-point line.
 
 
-## Bands — the missing data
+## Bands — field-calibrated numbers (coarse gate only)
 
-There are **no Mehlich-3 sufficiency bands for greenhouse in-ground**
-anywhere:
+The only M3 bands that exist are **field-calibrated**. Use them as a
+**coarse regime gate** (above / within / below → don't-build /
+maintain / build), **not** a precise setpoint.
 
-- The Quebec plein-sol guideline (`../nutrition/doc/Ligne directrice
-  - fertilisation serres plein-sol.pdf`) carries **no soil-test
-  bands** — only a removal-per-kg table (Annexe 1, tuteured crops,
-  no lettuce) — and states field grids can't be used for greenhouse
-  (yields 3-5× higher). Its method = removal + SME/CE + tissue.
 
-- The only M3 bands that exist are **field-calibrated** (CRAAQ
-  richness classes; US extension). They read this soil as
-  high-to-excessive (K 645 kg/ha = "excessivement riche"; Mg/P
-  ~7-8× field veg optima).
+| Nutrient | Optimal Range (ppm) | Notes (ppm) |
+|---|---|---|
+| **K** | 200-250 | <50 très pauvre → 100-150 moyen → 250-300 très riche → >300 excessivement riche |
+| **P** | 31-40 | <20 très bas → 41-50 haut → 51+ très haut |
+| **Ca** | 1000-2000 (approx.) | no true threshold — base-saturation / ISP driven, texture-expected from liming |
+| **Mg** | derived — see [§ Mg band](#mg-band--derived-from-ca-and-k-not-fixed) | relational, not a fixed number; tissue dip → foliar, not soil |
+| **Mn** | 20-50 | <10 inadequate; sufficient range 3-30 (index ≥25) |
+| **Zn** | 10-50 | <2 inadequate; raise band as pH rises |
+| **Cu** | 0.5-3 | <0.5 inadequate; rarely limiting on mineral soil |
+| **Fe** | 20-100 (approx.) | M3-Fe poorly correlated → broadcast (front-load / side-dress), never tank-dosed |
 
-So:
 
-- Use field bands as a **coarse regime gate** (above / within /
-  below → don't-build / maintain / build), **not** a precise
-  setpoint.
+## Mg band — derived from Ca and K, not fixed
 
-- A numeric greenhouse band, if wanted, must be **constructed**:
-  field band × (greenhouse yield ÷ field yield) — approximation,
-  cert-low.
+Mg alone among the pool-formers has **no standalone field band**. Its
+target is **relational** — set by the cation ratios against the
+current Ca and K pools. Compute it from the live M3, don't read a
+fixed number.
+
+Ratios are **charge equivalents (meq), not ppm**. Convert:
+`meq = ppm ÷ (eq.wt × 10)`; eq.wt Ca 20.0, Mg 12.2, K 39.1. M3
+kg/ha ÷2 = ppm.
+
+- **Ca:Mg 6-8:1** → `Ca/8 ≤ Mg ≤ Ca/6` (a floor *and* a ceiling).
+
+- **K:Mg <2-3** → `Mg ≥ K/2` (floor only — excess K starves Mg).
+
+- **Feasible window** = `[ max(Ca/8, K/2, floor) , Ca/6 ]`, absolute
+  floor ≈ 0.4 meq (~50 ppm sufficiency).
+
+**Guard, not master.** Yield tracks **absolute Mg sufficiency**, not
+the ratio — Ca:Mg from 2:1 to 8:1 shows no yield effect when both are
+sufficient (Kopittke & Menzies 2007). The ratio only *raises* the
+target when a big K/Ca pool would crowd Mg out; it must never pull the
+target **below** the ~50 ppm floor. On calcareous soil the Ca:Mg
+window inflates into nonsense (below) — treat it as a flag to check,
+not a dose.
+
+
+### Worked from the M3 (Berger 39088, 2026-04-10)
+
+| Bed | Ca ppm (meq) | K ppm (meq) | Mg ppm (meq) |
+|---|---|---|---|
+| Tomato | 5495 (27.4) | 1059 (2.71) | 823 (6.78) |
+| Lettuce | 5306 (26.5) | 323 (0.83) | 467 (3.84) |
+
+- **K:Mg** — tomato 0.40, lettuce 0.21. Both far under 2 → **no
+  K-induced Mg antagonism** (Na:Mg <0.08 too → no Na antagonism).
+
+- **Ca:Mg** — tomato **4.0:1**, lettuce **6.9:1**. Lettuce sits in
+  the 6-8 window; tomato is *below* 6 → **Mg-rich vs Ca**, not
+  Mg-short.
+
+- **Ratio-derived window** (Ca/8..Ca/6): tomato 417-555 ppm, lettuce
+  402-536 ppm — an **artifact of the calcareous Ca** (5300-5500 ppm,
+  lime-inflated). Actual Mg clears the real ~50 ppm floor **9-16×**.
+
+**Verdict: dose 0 Mg on both beds.** Absolute Mg is hugely sufficient
+and K:Mg shows no antagonism. The tissue-Mg deficiency (LAIT #1) is
+high-pH lockout / transport, not soil-Mg or cation crowding → **foliar
+Mg**, never soil. Matches the live recipe (tank MgSO₄ = 0).
+
+**Caveat — calcareous inflation.** Base cations (Ca+Mg+K+Na) sum to
+≈37 meq on the tomato bed vs CEC estimated 33.1 → bases exceed CEC.
+Free lime dissolves into the M3 Ca reading, so **Ca:Mg is unreliable
+here**. Lean on absolute Mg + K:Mg + tissue, not Ca:Mg.
 
 
 ## Intensity floor
@@ -135,15 +191,6 @@ low-demand.
 
 - **P** → intensity-limited too, but **no floor**: no clean organic-
   soluble P, pool is a vault. Fix is **AMF** (mycorrhizal drench).
-
-- **Ca, Mg** → *pseudo*-intensity. Ca uptake is mass-flow (soil
-  saturated); the real limit is in-plant transport to low-
-  transpiration tissue — tomato BER, lettuce tip-burn → humidity +
-  foliar Ca. Mg low despite a big pool = cation antagonism (Na/K) →
-  foliar Mg. **Neither is fixed by a soil floor.**
-
-- **Fe** → never a tank floor: FeSO₄ oxidizes and clogs drippers →
-  passive/foliar.
 
 
 ## Cadence + feedback
@@ -173,31 +220,6 @@ intensity floor; full replacement ~840 g held back for salt) +
 `../nutrition/lettuce/protocol/fertigation-recipe-standing.md`.
 
 **Tomato**: analogous. K floored; Mn/Zn already returned to
-fertigation at full demand (pH 6.5); Fe passive; P → AMF drench;
+fertigation at full demand (pH 6.5); Fe broadcast (front-load /
+side-dress) to removal; P → AMF drench;
 Ca(BER) → humidity/foliar, not tank.
-
-
-## Open tasks for the builder
-
-- Assemble M3 band `[lower, upper]` per pool-forming nutrient (CRAAQ
-  K classes + full guide / US extension for the rest); or construct
-  greenhouse bands via the yield-ratio method.
-
-- Encode `poolDose()` as a pure function (removal prior + damped ΔM3
-  + floor + CE cap). Keep it pure per repo convention.
-
-- Wire the K-floor constant (20% start) + CE ceiling per crop.
-
-- Pre-existing debt: reconcile the per-100 m² `LETTUCE` bilan
-  constant with the operator recipe (add a B term); update the
-  front-load N model from 50 g/m² feather-meal-only to the real
-  alfalfa (3-0-2) + actisol + feather mix.
-
-
-## Certainty
-
-- Transport theory (K/P diffusion-limited), removal primitive:
-  high (textbook + matches the Quebec authority's own basis).
-
-- K-floor 20%, 100-day horizon, constructed greenhouse bands:
-  heuristic starting points, tune with SME + tissue.

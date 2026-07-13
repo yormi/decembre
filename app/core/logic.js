@@ -19,8 +19,9 @@ function setCrop(crop) {
   setCropBtn('irr-crop-tomato', crop === 'tomato', 'tomato');
   setCropBtn('irr-crop-lettuce', crop === 'lettuce', 'lettuce');
   setCropBtn('irr-crop-nursery', crop === 'nursery', 'nursery');
-  // Sol page: 1 button (tomato-only since 2026-05-28 — Salanova sol removed).
+  // Sol page: 2 buttons (tomato side-dress + lettuce feather-meal at planting).
   setCropBtn('sol-crop-tomato', crop === 'tomato', 'tomato');
+  setCropBtn('sol-crop-lettuce', crop === 'lettuce', 'lettuce');
   // Lumière page: 1 button (lettuce-only — supplemental lighting is lettuce-only).
   setCropBtn('lum-crop-lettuce', crop === 'lettuce', 'lettuce');
 
@@ -34,10 +35,11 @@ function setCrop(crop) {
   document.getElementById('irr-field-content').style.display = isField ? 'block' : 'none';
   document.getElementById('irr-nursery-content').style.display = crop === 'nursery' ? 'block' : 'none';
 
-  // Sol page is tomato-only (Salanova sol page removed 2026-05-28 — no
-  // STORED.lettuce.sidedress; soufre / bore / Ecocert cards retired).
+  // Sol page: tomato side-dress vs lettuce feather-meal recipe.
   const solTomato = document.getElementById('sol-tomato-content');
   if (solTomato) solTomato.style.display = crop === 'tomato' ? 'block' : 'none';
+  const solLettuce = document.getElementById('sol-lettuce-content');
+  if (solLettuce) solLettuce.style.display = crop === 'lettuce' ? 'block' : 'none';
 
   // Set accent color CSS variables
   const r = document.documentElement.style;
@@ -126,9 +128,9 @@ function setPage(page) {
   if (page === 'foliar' && (currentCrop === 'nursery' || currentCrop === 'lettuce')) {
     setCrop('tomato');
   }
-  // Sol page is tomato-only (Salanova / nursery don't apply — Salanova page
-  // removed 2026-05-28; nursery uses seedling watering, not field amendments).
-  if (page === 'sol' && currentCrop !== 'tomato') {
+  // Sol page serves tomato + lettuce; nursery has no field amendments
+  // (seedling watering only) — redirect it to tomato.
+  if (page === 'sol' && currentCrop === 'nursery') {
     setCrop('tomato');
   }
   // Lumière page is lettuce-only (supplemental lighting is lettuce-only).

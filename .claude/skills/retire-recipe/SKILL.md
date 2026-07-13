@@ -1,11 +1,11 @@
 ---
 name: retire-recipe
-description: Use BEFORE editing any of the three live STORED recipe channels — `STORED_RECIPE.tomato.fertigation`, `STORED_RECIPE.tomato.sidedress`, or `STORED_RECIPE.tomato.foliaire` (each defined in its own subproject `procedure/stored.js`). Captures the current stored recipe state into `RECIPE_HISTORY` so the audit trail stays intact for organic certification. Invoke when the user asks to change a fertigation dose, retire a spray, swap a sidedress product, or any edit to a hand-stored recipe value. Do NOT use for plant-need edits (`RECIPE_INPUTS`, `TOMATO_FRUIT_EXPORT`, `BIOMASS_DEMAND`, lettuce-side constants) — those are model inputs, not stored recipes.
+description: Use BEFORE editing any live STORED recipe channel — `STORED_RECIPE.tomato.{fertigation,sidedress,foliaire}`, `STORED_RECIPE.nursery.fertigation`, or `STORED_RECIPE.lettuce.fertigation` (each defined in its own subproject `stored.js`). Captures the current stored recipe state into `RECIPE_HISTORY` so the audit trail stays intact for organic certification. Invoke when the user asks to change a fertigation dose, retire a spray, swap a sidedress product, or any edit to a hand-stored recipe value. Do NOT use for plant-need edits (`RECIPE_INPUTS`, `TOMATO_FRUIT_EXPORT`, `BIOMASS_DEMAND`, model-input constants) — those are model inputs, not stored recipes.
 ---
 
 # Retire a recipe
 
-Every edit to `STORED_RECIPE.tomato.{fertigation, sidedress, foliaire}` must capture the OLD state into `RECIPE_HISTORY` before the live constant is edited. Rendered by the Historique des nutriments admin page (`#admin/historique-nutriments`).
+Every edit to a STORED recipe channel (`STORED_RECIPE.tomato.{fertigation, sidedress, foliaire}`, `STORED_RECIPE.nursery.fertigation`, `STORED_RECIPE.lettuce.fertigation`) must capture the OLD state into `RECIPE_HISTORY` before the live constant is edited. Rendered by the Historique des nutriments admin page (`#admin/historique-nutriments`).
 
 **Where the data lives (source of truth = the `.js` source files, NOT the running app):**
 
@@ -14,13 +14,16 @@ Every edit to `STORED_RECIPE.tomato.{fertigation, sidedress, foliaire}` must cap
 | fertigation | `nutrition/tomato/protocol/fertigation/stored.js` | `app/admin/nutrition/historique/history.js` |
 | sidedress | `nutrition/tomato/protocol/sidedress/stored.js` | (same) |
 | foliaire | `nutrition/tomato/protocol/foliar/stored.js` | (same) |
-| nursery (semis feed) | `nutrition/nursery/protocol/fertigation/stored.js` | (same) |
+| nursery (semis feed) | `nutrition/lettuce/protocol/nursery/fertigation/stored.js` | (same) |
+| lettuce (production fertigation) | `nutrition/lettuce/protocol/fertigation/stored.js` | (same) |
 
-Tomato `stored.js` assigns `window.STORED_RECIPE.tomato.<channel> = {...}`; nursery assigns `window.STORED_RECIPE.nursery.fertigation = {...}` (flat `{product: dose}`, per-litre — mirror `NURSERY_RECIPE_DEFAULT`). `RECIPE_HISTORY` is the array in `history.js` at `const RECIPE_HISTORY = [`.
+Tomato `stored.js` assigns `window.STORED_RECIPE.tomato.<channel> = {...}`; nursery assigns `window.STORED_RECIPE.nursery.fertigation = {...}` (flat `{product: dose}`, per-litre — mirror `NURSERY_RECIPE_DEFAULT`); lettuce assigns `window.STORED_RECIPE.lettuce.fertigation = {...}` (flat `{product: dose}`, grams per weekly block — mirror `LETTUCE_FERTIGATION_RECIPE` in `app/core/state.js`). `RECIPE_HISTORY` is the array in `history.js` at `const RECIPE_HISTORY = [`.
 
-Nursery snapshot shape: `fullSnapshot: { nursery: { Ocean_15_1_1, AcadiePoisson, AcadieKelp, IronSulfate } }` — flat, no stages. Capture ONLY the nursery channel (don't paste tomato channels into a nursery-trigger entry; the render diffs per-channel).
+Flat snapshot shapes — capture ONLY the triggered channel (the render diffs per-channel; don't paste other channels in):
+- Nursery: `fullSnapshot: { nursery: { Ocean_15_1_1, AcadiePoisson, AcadieKelp, IronSulfate } }`.
+- Lettuce: `fullSnapshot: { lettuce: { Potassium, Bore } }`.
 
-**Out of scope:** `RECIPE_INPUTS`, `TOMATO_FRUIT_EXPORT`, `BIOMASS_DEMAND`, lettuce-side constants. Edits to those shift the FP-target output of `computeStageRecipe(stage)` (Block 7 drift gauge) but do NOT change `STORED_RECIPE.tomato.fertigation` outside this skill — hand-stored audit-trail channel (current values are Haifa-heritage; PA Taillon recommendation is the FP target, not STORED).
+**Out of scope:** `RECIPE_INPUTS`, `TOMATO_FRUIT_EXPORT`, `BIOMASS_DEMAND`, and lettuce model-input constants (`LETTUCE` bilan per-100 m², `LETTUCE_SOL_RECIPE`). Edits to those shift the FP-target output of `computeStageRecipe(stage)` (Block 7 drift gauge) but do NOT change `STORED_RECIPE.tomato.fertigation` outside this skill — hand-stored audit-trail channel (current values are Haifa-heritage; PA Taillon recommendation is the FP target, not STORED).
 
 ## Pre-flight
 
@@ -29,11 +32,13 @@ Nursery snapshot shape: `fullSnapshot: { nursery: { Ocean_15_1_1, AcadiePoisson,
 
 ## Step 1 — capture the snapshot from the source files
 
-Read the THREE `procedure/stored.js` source files (table above) and copy their current literal values into the `fullSnapshot` — all three channels go in even when only one is the trigger, so reviewers see the complete applied recipe at that date.
+Read the trigger channel's source file (table above) and copy its current literal values into `fullSnapshot`.
 
+- **Tomato trigger** → capture all THREE tomato channels (`fertigation`, `sidedress`, `foliaire`), so reviewers see the complete applied tomato recipe at that date.
+- **Nursery or lettuce trigger** → capture ONLY that channel — each is a single-channel crop with its own lineage; the render diffs per-channel.
 - The source `.js` files are the source of truth. **Do NOT read the running browser app** — the dev-server bundle can be stale (un-rebuilt), so the live page may show a prior recipe. The data structures in the files are authoritative.
-- Copy the object literals verbatim, preserving legacy key names (e.g. fertigation boron sits under the key `borax` even though the product is Solubore — keep `borax` in the snapshot; the render path labels it).
-- `fullSnapshot` shape mirrors `STORED_RECIPE.tomato`: `{ fertigation: {T1..T5}, sidedress: {T1..T5}, foliaire: {masterVol, backpacks, area, A:[...], B:[...]} }`.
+- Copy the object literals verbatim, preserving legacy key names (e.g. tomato fertigation boron sits under the key `borax` even though the product is Solubore — keep `borax`; the render path labels it).
+- `fullSnapshot` shapes: tomato `{ fertigation: {T1..T5}, sidedress: {T1..T5}, foliaire: {masterVol, backpacks, area, A:[...], B:[...]} }`; nursery `{ nursery: {product: dose} }`; lettuce `{ lettuce: {Potassium, Bore} }`.
 
 ## Step 2 — append the new RECIPE_HISTORY entry
 
@@ -57,7 +62,7 @@ Edit `app/admin/nutrition/historique/history.js` at `const RECIPE_HISTORY = [`. 
 
 ## Step 3 — edit the live constant
 
-Only after step 2 is saved, apply the change in the channel's `procedure/stored.js` source file (table above) — `STORED_RECIPE.tomato.{fertigation, sidedress, foliaire}`.
+Only after step 2 is saved, apply the change in the channel's `stored.js` source file (table above). For lettuce, also keep `LETTUCE_FERTIGATION_RECIPE` (`app/core/state.js`) in step — it's the operator-facing source the mirror tracks.
 
 ## Step 4 — verify
 
@@ -78,7 +83,7 @@ Append one line at the top of the most-recent date section in `working files/cha
 ## Anti-patterns
 
 - **Don't edit the live constant before capturing.** If you already did, restore from `git diff` BEFORE staging, run the skill, re-apply.
-- **Don't read the running browser app for the snapshot.** The dev-server bundle can be stale (un-rebuilt), showing a prior recipe. Read the `procedure/stored.js` source files — they're authoritative.
+- **Don't read the running browser app for the snapshot.** The dev-server bundle can be stale (un-rebuilt), showing a prior recipe. Read the `stored.js` source files — they're authoritative.
 - **Don't fabricate snapshots from memory.** Copy the current literals out of the source files verbatim.
 - **Don't invoke this skill for model inputs** — `RECIPE_INPUTS`, `TOMATO_FRUIT_EXPORT`, `BIOMASS_DEMAND`, lettuce-side. Edit those freely.
 - **Don't skip step 2 for "small" changes.** A 4 → 2 g Cu cut is exactly what Ecocert audits.

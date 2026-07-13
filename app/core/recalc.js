@@ -134,8 +134,8 @@ function autoStage() {
 // (g/L; for liquids mL/L ≈ g/L) × water litres — no hardcoded recipe numbers, so
 // this operator card and the model can't drift apart. The old salty recipe
 // (fish 13 mL/L, no Ocean) was retired here when the bench switched over.
-// Derivation: nutrition/nursery/domain/fertigation/. Leaching + pour-through flush:
-// nutrition/nursery/protocol/salt-flush.md.
+// Derivation: nutrition/lettuce/domain/nursery/fertigation/. Leaching + pour-through flush:
+// nutrition/lettuce/protocol/nursery/salt-flush.md.
 //   Ocean 15-1-1 (powder, g) — N. Acadie poisson (liquid, mL) — P.
 //   Acadie kelp (liquid, mL) — K + micros. Sulfate de fer 20 % (powder, g) — Fe,
 //   stays available in the acidic peat (cell pH ~5.8) where field pH 7.48 would

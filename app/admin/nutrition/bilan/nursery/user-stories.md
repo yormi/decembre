@@ -4,7 +4,7 @@ UI invariants for the Semis laitue (lettuce nursery) Nutrition admin
 subpage: scannable recipe headers, gap-grid tables (manque entrant /
 apport ici / manque sortant) with color coding, gap-chain ordering.
 
-Crop-side recipe specs live in `nutrition/nursery/spec.md`; chemistry /
+Crop-side recipe specs live in `nutrition/lettuce/domain/nursery/`; chemistry /
 cross-crop rules in `nutrition/spec.md`. Cross-crop URL hash routing
 (`spec — url-hash-routing`) covers subpage crop-toggle behavior.
 

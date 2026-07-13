@@ -39,17 +39,34 @@ const LETTUCE = { mgSulfate: 467, kSulfate: 2996, feSulfate: 7.5 };
 //     Potassium — 400 g K₂SO₄ = CE-safe partial replacement (~+0.5 mS/cm on a
 //       salt-stressed crop; full weekly removal is ~840 g). The soil K bank
 //       (645 kg/ha) covers the gap ~48 wk → monitor tissue K, top up if it dips.
-//     Bore — 0,7 g Solubore (20,5 % B) = weekly removal (~150 mg B). Soil B is
-//       below detection, so the tank is the sole B source. Weigh on a 0,1 g scale.
+//     Bore — 1,3 g Solubore (20,5 % B) = weekly removal at the ~180 kg/wk block
+//       target (80 kg/bed / 2 wk); sole B source (soil B below detection). Weigh
+//       on a 0,1 g scale.
 //   N is not fertigated — supplied by the pre-plant front-load (alfalfa +
 //   actisol + feather meal). NOTE: still independent of the per-100 m² `LETTUCE`
 //   bilan constant above — not yet reconciled.
+//   AUDIT MIRROR: STORED_RECIPE.lettuce.fertigation (nutrition/lettuce/protocol/
+//   fertigation/stored.js) mirrors this for RECIPE_HISTORY — keep in step; edits
+//   go through /retire-recipe first.
 const LETTUCE_FERTIGATION_RECIPE = {
   stockL: 24,
   ratioPct: 2,
   products: [
     { name: 'Potassium', grams: 400, emoji: '🍌' },   // Sulfate de potassium 0-0-50
-    { name: 'Bore',      grams: 0.7, emoji: '🔷' },    // Solubore 20,5 %
+    { name: 'Bore',      grams: 1.3, emoji: '🔷' },    // Solubore 20,5 %
+  ],
+};
+
+// Lettuce dry side-dress — feather meal spread per bed at planting. Organic N
+// front-load; feather meal is CAN/CGSB-32.311 allowed (permitted animal
+// by-product). Fixed hand-set recipe, no stage/solar math. Rendered on the
+// Fertilisation (sol) page under the lettuce crop.
+// One full bed holds 800 lettuce heads. The operator enters how many heads are
+// transplanted this week; the feather-meal dose scales to that bed fraction.
+const LETTUCE_HEADS_PER_BED = 800;
+const LETTUCE_SOL_RECIPE = {
+  products: [
+    { name: 'Farine de plumes', grams: 1500, emoji: '🪶' },   // feather meal ~13-0-0, per full bed
   ],
 };
 

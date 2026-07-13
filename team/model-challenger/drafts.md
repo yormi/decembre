@@ -1,3 +1,22 @@
+## 2026-07-12 — review of nutrition/tomato/domain/foliar/model/derivation.md (HEAD working-tree diff)
+
+No-op pass — diff repoints the Implementation-map table + include-order line to the `domain/foliar/model/` layout (`calc.js`→`recipe.js`, `model.js`→`contribution.js`, adds `computeFoliarRecipeForGap`/`computeFoliarStrategy` to the owner cell). No constant, dose, cert, stage, formula, or derivation logic moved. Body carries no stale old-layout path (grep clean) — fully migrated, no doc-hygiene flag, unlike the fertigation sibling below.
+
+
+## 2026-07-12 — review of nutrition/tomato/domain/sidedress/derivation.md (HEAD working-tree diff)
+
+No-op on model content — diff repoints the Implementation-map table to the `domain/sidedress/` layout (`calc.js`→`recipe.js`, `model.js` folded into `recipe.js`, adds `contribution.js` owning `computeSidedressContribution`, `learnings.md`→`learnings/`). No constant, dose, cert, stage, formula, or derivation logic moved.
+
+One doc-hygiene flag (flag-don't-fix):
+- **Half-migrated file references.** The map now names `recipe.js`/`contribution.js`, but the load-order paragraph immediately below still reads "Internal order: `data.js` → `calc.js` → `model.js`". Map says `recipe.js`, prose says `calc.js`/`model.js` — same files, two names in one doc. Finish the rename in that paragraph. · `PENDING`
+
+## 2026-07-12 — review of nutrition/tomato/domain/fertigation/derivation.md (HEAD working-tree diff)
+
+No-op on model content — diff repoints the Implementation-map table + include-order line to the `domain/fertigation/` layout (`calc.js`→`recipe.js`, `model.js` folded in, adds `contribution.js`, `learnings.md`→`learnings/`). No constant, dose, cert, stage, formula, or derivation logic moved.
+
+One doc-hygiene flag (flag-don't-fix):
+- **Half-migrated file references.** The map now names `recipe.js` as owner of `computeStageRecipe`, but the body still cites the old `calc.js` in three spots: "Implemented in `calc.js`" (§ Mass-balance derivation), "pin in `calc.js`" and the parallel "same pin-by-construction discipline" (§ Mo algorithmic detail). Map says `recipe.js`, prose says `calc.js` — same file, two names in one doc. Finish the rename in the body. · `PENDING`
+
 ## 2026-05-30 — review of yield-range/derivation.md (HEAD working-tree diff)
 
 No-op pass on model content — diff is slug heading/reference migration only (→`canopy-cap-is-ceiling`/`nursery-canopy-cap-by-plateau`, →`best-non-light-conditions`, →`dli-annual-sun-plus-led`/`double-poly-transmission-decomposed`, →`logistic-growth-no-decay`). No constant, dose, cert, stage, or derivation logic moved. Sibling `spec.md` is already fully slug-migrated — every cited slug resolves to a real heading, so no dangling refs (unlike the nursery entry below).
@@ -445,3 +464,6 @@ Not a re-trigger no-op: the passes above ran the three-angle sweep and converged
 
 ### Verdict
 Hold the SLA re-derivation pending the day-10-anchor-DLI call. The 402-429 "net coherence improvement" read holds only if that cohort was truly light-limited to 14; if it saw 17, the re-anchor breaks the open-canopy invariant in the field and lifts sold-weight ~21% with no anchor to catch it. The age-stepped ceiling mechanism itself is fine — the exposure is coupling it to the SLA back-solve rather than leaving SLA anchored at the field DLI. · `PENDING`
+
+## 2026-07-12 — review of nutrition/tomato/domain/fertigation/derivation.md HEAD (no-op)
+Mechanical rename tracking the domain-split refactor (commit c5e4760): title `fertigation-recipe`→`fertigation`, `calc.js`→`recipe.js`, `model.js`→`contribution.js`, `learnings.md`→`learnings/`, plus implementation-map path updates. No claim, constant, cert, or model logic moved. Trivial → no-op pass, no findings.

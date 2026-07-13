@@ -62,7 +62,7 @@
 
   <!-- ═══════════════ SOL PAGE (team-facing) ═══════════════ -->
   <!-- Soil-feeding operations: soufre (pH program) + side-dressing schedule.
-       Tomato-only for now (lettuce side-dress TBD). Static reference page —
+       Tomato side-dress + lettuce feather-meal at planting. Static reference page —
        no calculations, no inputs. The team consults this for what to apply
        this week and on what schedule.
        Plan A+ rationale (granular only — drench removed 2026-05-02):
@@ -73,17 +73,20 @@
        framework.md for the full strategic context. -->
   <div id="page-sol-content" style="display:none;">
 
-    <!-- Crop sub-toggle: Tomates only. Salanova sol page removed 2026-05-28
-         (no STORED.lettuce.sidedress; soufre / bore / Ecocert cards retired).
-         Single button preserved for visual parity with the foliar page;
-         setPage forces tomato if currentCrop != tomato when navigating here. -->
+    <!-- Crop sub-toggle: Tomates / Laitue. Nursery has no sol page (seedling
+         watering, not field amendments); setPage redirects nursery to tomato. -->
     <div class="crop-toggle">
       <button class="crop-btn active-tomato" id="sol-crop-tomato" onclick="setCrop('tomato')">
         <span class="crop-icon">🍅</span> Tomates
       </button>
+      <button class="crop-btn" id="sol-crop-lettuce" onclick="setCrop('lettuce')">
+        <span class="crop-icon">🥬</span> Laitue
+      </button>
     </div>
 
     <!-- @include app/operator/nutrition/sol/tomato/page.html -->
+
+    <!-- @include app/operator/nutrition/sol/lettuce/page.html -->
 
   </div><!-- end page-sol-content -->
 
@@ -280,12 +283,13 @@
 // Plant-need / model inputs (RECIPE_INPUTS, TOMATO_FRUIT_EXPORT,
 // BIOMASS_DEMAND, lettuce-side constants) are NOT triggers — edit them freely.
 //
-// LETTUCE: slot intentionally absent. Add when locked.
-window.STORED_RECIPE = { tomato: {}, nursery: {} };
+// LETTUCE: fertigation channel (K₂SO₄ + Solubore, weekly block dose).
+window.STORED_RECIPE = { tomato: {}, nursery: {}, lettuce: {} };
 <!-- @include nutrition/tomato/protocol/fertigation/stored.js -->
 <!-- @include nutrition/tomato/protocol/sidedress/stored.js -->
 <!-- @include nutrition/tomato/protocol/foliar/stored.js -->
-<!-- @include nutrition/nursery/protocol/fertigation/stored.js -->
+<!-- @include nutrition/lettuce/protocol/nursery/fertigation/stored.js -->
+<!-- @include nutrition/lettuce/protocol/fertigation/stored.js -->
 
 // FP recipe (T5 only — refined 2026-05-08 to mass-balance pure, no soil credit).
 // Single source of truth for the Phase 1 comparison (Block 6) and the bank-
@@ -362,21 +366,21 @@ const FP_RECIPE_T5 = {
 // over the cycle (default 35 d / 5 wk). Demand = mass × DM × tissue conc.,
 // expressed per-plant and per-tray (operational unit).
 //
-// Refactored 2026-05-09 into 3 subprojects under nutrition/nursery/.
+// Refactored 2026-05-09 into 3 subprojects under nutrition/lettuce/domain/nursery/.
 // Public APIs at runtime:
 //   window.PlantNeedsNursery            — demand model (calculateNurseryDemand)
 //   window.SubstrateContributionNursery — OM2 + feather meal release
 //   window.FertigationNursery           — Ocean + Acadie + kelp recipe + EC/pH
 
-<!-- @include nutrition/nursery/domain/plant-needs/data.js -->
-<!-- @include nutrition/nursery/domain/plant-needs/calc.js -->
-<!-- @include nutrition/nursery/domain/plant-needs/model.js -->
-<!-- @include nutrition/nursery/domain/substrate-contribution/data.js -->
-<!-- @include nutrition/nursery/domain/substrate-contribution/calc.js -->
-<!-- @include nutrition/nursery/domain/substrate-contribution/model.js -->
-<!-- @include nutrition/nursery/domain/fertigation/data.js -->
-<!-- @include nutrition/nursery/domain/fertigation/calc.js -->
-<!-- @include nutrition/nursery/domain/fertigation/model.js -->
+<!-- @include nutrition/lettuce/domain/nursery/plant-needs/data.js -->
+<!-- @include nutrition/lettuce/domain/nursery/plant-needs/calc.js -->
+<!-- @include nutrition/lettuce/domain/nursery/plant-needs/model.js -->
+<!-- @include nutrition/lettuce/domain/nursery/substrate-contribution/data.js -->
+<!-- @include nutrition/lettuce/domain/nursery/substrate-contribution/calc.js -->
+<!-- @include nutrition/lettuce/domain/nursery/substrate-contribution/model.js -->
+<!-- @include nutrition/lettuce/domain/nursery/fertigation/data.js -->
+<!-- @include nutrition/lettuce/domain/nursery/fertigation/calc.js -->
+<!-- @include nutrition/lettuce/domain/nursery/fertigation/model.js -->
 
 <!-- @include nutrition/compost-contribution/data.js -->
 <!-- @include nutrition/compost-contribution/calc.js -->

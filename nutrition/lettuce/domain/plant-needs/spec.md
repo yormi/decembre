@@ -14,7 +14,7 @@ Salanova head need to take up this week, given current/target head mass,
 density, and cycle length — and how much is supplied passively vs.
 through fertigation?"**
 
-Out of scope: nursery seedling stage (covered by `nutrition/nursery/`);
+Out of scope: nursery seedling stage (covered by `nutrition/lettuce/domain/nursery/`);
 actual uptake (tissue tests); soil amendment recipe sizing.
 
 ---
