@@ -9,10 +9,10 @@
 // `${blockId}.cell.${element}` (apport-ici-clickable-cert-and-cap-modals cell click), `${blockId}.cap.${element}.${kind}`
 // (apport-ici-clickable-cert-and-cap-modals cap-emoji click).
 //
-// Depends on: renderSpec (lib/spec-strings.js) — operator-prose-is-deterministic-render interpretation prose.
+// Depends on: renderSpec (app/lib/spec-strings.js) — operator-prose-is-deterministic-render interpretation prose.
 
 // Collapsed <details> "Pourquoi cette dose?" expander. Still used by
-// nutrition/lettuce/app/logic.js's lever recommendation card; Bilan tables use
+// app/admin/nutrition/bilan/lettuce/logic.js's lever recommendation card; Bilan tables use
 // the modal flow (registerPourquoi / showPourquoi) below.
 function pourquoiExpander(equationHtml, pluggedHtml, interpretationHtml) {
   return '<details style="margin-top:6px; font-size:11px; color:var(--text-muted); line-height:1.5;">'

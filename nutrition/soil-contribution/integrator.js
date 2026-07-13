@@ -4,7 +4,7 @@
 // SME-throttled depletion runway). This file owns the SME × transpiration
 // mass-flow path that the Bilan supply orchestrator consumes — it reads the
 // session state (currentCrop) + solar lookup (getSolarRad) declared in
-// app/operator/state.js + app/operator/recalc.js, so it sits at the
+// app/core/state.js + app/core/recalc.js, so it sits at the
 // integrator boundary rather than in the pure calc.js layer.
 //
 // SME source-of-truth: the per-crop SME_SOIL_SOLUTION_PPM table in data.js.
@@ -51,7 +51,7 @@ function weeklyMassFlowL() {
 //
 // Previous formula: `current_yield / target_yield` (floor 0.4, cap 1.0). Retired
 // 2026-05-24 — operator-anchored (denominator was the operator's target), not
-// first-principles. See `nutrition/tomato/doc/ca-ber-investigation-tests-
+// first-principles. See `nutrition/tomato/domain/doc/ca-ber-investigation-tests-
 // 2026-05-24.md` Test 6 for the physics-anchored replacements:
 //   - Variant 6a — sunlight × RUE → theoretical yield; ratio = currentYield /
 //     theoreticalYield, paired with canopy-state visual override.
@@ -109,29 +109,17 @@ function nMineralizationFactor() {
 }
 
 // Bioavailability efficiency from SME concentration to actual root uptake.
-// For ions where mass-flow is the dominant uptake mechanism (most macros + B,
-// Cu, Mo at this pH), efficiency is ~100%. For Fe specifically, even when
-// in solution at SME concentration, calcareous-rhizosphere chemistry suppresses
-// root reductase activity and real uptake is much lower than mass-flow predicts.
-// Cert 3-4. Confirmed empirically: SME shows Fe in spec (0.86 ppm) but plants
-// display Fe deficiency symptoms — so the discount is real.
-//
-// N also gets the seasonal mineralization multiplier (above) on top of the
-// base 0.85 efficiency — soil microbial activity is rate-limiting for organic
-// N supply, and that activity is strongly temperature-dependent.
-function soilWeeklyAvailable(elem, phLocked, transpFactor) {
+// Mass-flow dominates uptake for all elements at the current root-zone pH, so
+// efficiency is ~100% — except N, which gets the seasonal mineralization
+// multiplier on top of a 0.85 base (soil microbial activity is rate-limiting
+// for organic N and strongly temperature-dependent).
+function soilWeeklyAvailable(elem, transpFactor) {
   const sme_ppm = smePpmForSupply('tomato', elem);
   const tf = transpFactor || 1.0;
   // `transpFactor` (0,4-1,0) corrects mass-flow for canopy size — see
   // transpirationFactor() comment. Applies to ALL elements because they all
   // arrive at roots via the same water flow.
   const massFlow_mg = sme_ppm * weeklyMassFlowL() * tf;
-  let efficiency = 1.0;
-  // Fe lockout — 0,15 = midpoint of the Cadre framework page's 10-20% bypass
-  // efficiency at pH 7,4. Aligned 2026-05-05; previously 0,30 was too generous
-  // and contradicted both the Cadre page narrative AND field observation
-  // (visible Fe chlorosis on apex despite SME Fe in spec). Cert 4.
-  if (elem === 'Fe' && phLocked) efficiency = 0.15;
-  else if (elem === 'N')         efficiency = 0.85 * nMineralizationFactor();
+  const efficiency = (elem === 'N') ? 0.85 * nMineralizationFactor() : 1.0;
   return massFlow_mg * efficiency;
 }

@@ -1,6 +1,6 @@
 // Test helpers for nutrition/soil-contribution.
 //
-// Same pattern as nutrition/tomato/plant-needs/test-helpers.mjs: load the
+// Same pattern as nutrition/tomato/domain/plant-needs/test-helpers.mjs: load the
 // four source files (data.js / calc.js / render.js / model.js) into a
 // node:vm sandbox with a `window` host object, return the namespace +
 // window for assertions.

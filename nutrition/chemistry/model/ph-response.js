@@ -1,7 +1,7 @@
 // Chemistry — pH-response curves + foliar-uptake curve + effective efficiency.
 //
 // Pure functions over PRODUCT (declared in sibling products.js). Carved out
-// of nutrition/tomato/lib/recipe-math.js 2026-05-23 (Phase 2 chemistry
+// of nutrition/tomato/app/lib/recipe-math.js 2026-05-23 (Phase 2 chemistry
 // pull-up).
 
 // ph-aware-effective-efficiency — pH-aware effective efficiency curves.

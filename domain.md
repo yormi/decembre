@@ -32,4 +32,4 @@
 
 ## Boundaries
 
-- Hands off film transmission and LED addition to the **greenhouses** domain (`greenhouses/domain.md`).
+- Hands off film transmission and LED addition to the **greenhouse** domain (`domain/greenhouse.md`).

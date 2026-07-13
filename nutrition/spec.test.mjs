@@ -9,7 +9,7 @@
 // demand exports with channel fractions summing to 1.0 ± 0.05.
 //
 // Today only tomato qualifies (lettuce's demand table lives at
-// nutrition/lettuce/plant-needs/data.js — different path). The test
+// nutrition/lettuce/domain/plant-needs/data.js — different path). The test
 // auto-extends when a future crop ships nutrition/<crop>/plant-needs/
 // model/data.js + nutrition/<crop>/channel-role.js.
 //
@@ -134,7 +134,7 @@ test('every crop with a demand table ships channel-role.js with full coverage + 
 //      no parallel sub-tanks (no nested {A,B}, no array shape).
 //   3. The previous "single foliar spray per week" clause is RETIRED;
 //      foliar frequency is governed by
-//      nutrition/tomato/foliar-strategy — frequency-is-model-output.
+//      nutrition/tomato/domain/foliar — frequency-is-model-output.
 //      Covered structurally: nutrition/spec.md single-fertigation-tank-per-week must NOT pin any
 //      foliar sprayCount ceiling. (Asserting that here would require
 //      parsing spec.md prose; the cross-ref is captured by tests in

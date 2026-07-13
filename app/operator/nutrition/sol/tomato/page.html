@@ -1,0 +1,93 @@
+    <div id="sol-tomato-content">
+
+      <!-- Recette — current-stage sidedress (STORED_RECIPE.tomato.sidedress).
+           Seedling-model tiles: emoji / label / big number / unit. Doses in g,
+           caption once. Stage auto-derived from the ISO week. -->
+      <div class="card">
+        <div style="display:flex; align-items:baseline; justify-content:space-between; gap:12px; margin-bottom:6px;">
+          <div class="card-title" style="margin-bottom:0;">Recette</div>
+          <span id="sol-tomato-stage-chip" style="background:var(--accent-active-light); border:1.5px solid var(--accent-active-border); color:var(--text); font-size:12px; font-weight:600; padding:4px 10px; border-radius:4px; white-space:nowrap;">—</span>
+        </div>
+        <div style="font-size:11.5px; color:var(--text-muted); margin-bottom:12px;">par planche · chaque semaine</div>
+        <div id="sol-tomato-doses" style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">—</div>
+      </div>
+
+      <!-- AMF root-drench card — shown only during a week with a drench pass
+           (tomato only); filled + gated by buildAmf (amf-drench/operator/logic.js). -->
+      <div class="card" id="amf-week-card" style="display:none;"></div>
+
+    </div><!-- end sol-tomato-content -->
+
+    <script>
+      (function renderSolTomato() {
+        var stageLabels = {
+          T1: 'début du cycle',
+          T2: 'installation',
+          T3: 'floraison précoce',
+          T4: 'fructification',
+          T5: 'pleine production',
+        };
+        var productLabels = {
+          actisol_g: 'Actisol 5-3-2',
+          farine_g:  'Farine de plumes',
+          alfalfa_g: 'Luzerne',
+          frass_g:   'Frass',
+        };
+        var productEmoji = {
+          actisol_g: '🌾',
+          farine_g:  '🪶',
+          alfalfa_g: '🌿',
+          frass_g:   '🪲',
+        };
+
+        // Seedling-model tile: emoji / label / big value / unit.
+        function tile(emoji, label, value, unit) {
+          return '<div style="background:var(--accent-active-light); border:1.5px solid var(--accent-active-border); border-radius:var(--radius-sm); padding:14px 10px; text-align:center;">' +
+            '<div style="font-size:24px; margin-bottom:6px;">' + emoji + '</div>' +
+            '<div style="font-size:10px; font-weight:600; text-transform:uppercase; letter-spacing:1.5px; color:var(--text-muted); margin-bottom:6px;">' + label + '</div>' +
+            '<div style="font-family:\'DM Mono\',monospace; font-size:24px; font-weight:700; color:var(--text);">' + value + '</div>' +
+            '<div style="font-family:\'DM Mono\',monospace; font-size:12px; color:var(--text-muted); margin-top:2px;">' + unit + '</div>' +
+          '</div>';
+        }
+
+        function renderRecipe() {
+          var chipElement  = document.getElementById('sol-tomato-stage-chip');
+          var dosesElement = document.getElementById('sol-tomato-doses');
+          if (!chipElement || !dosesElement) return;
+          if (typeof getWeekNumber !== 'function' || typeof getStageFromWeek !== 'function') return;
+          if (!window.STORED_RECIPE || !window.STORED_RECIPE.tomato || !window.STORED_RECIPE.tomato.sidedress) return;
+
+          var week  = getWeekNumber();
+          var stage = getStageFromWeek(week);
+          var label = stageLabels[stage] || '';
+          chipElement.innerHTML =
+            '<span style="font-size:14px;">' + stage + '</span>' +
+            (label ? ' · ' + label : '') +
+            ' <span style="color:var(--text-muted); font-weight:400;">· sem ' + week + '</span>';
+
+          var stageRecipe = window.STORED_RECIPE.tomato.sidedress[stage] || {};
+          var tiles = [];
+          Object.keys(stageRecipe).forEach(function (productKey) {
+            var grams = stageRecipe[productKey];
+            if (!(grams > 0)) return;
+            tiles.push(tile(
+              productEmoji[productKey] || '·',
+              productLabels[productKey] || productKey,
+              Math.round(grams).toLocaleString('fr-CA'), 'g'
+            ));
+          });
+
+          dosesElement.innerHTML = tiles.length ? tiles.join('') : '—';
+        }
+
+        function mount() {
+          renderRecipe();
+        }
+
+        if (document.readyState === 'loading') {
+          document.addEventListener('DOMContentLoaded', mount);
+        } else {
+          mount();
+        }
+      })();
+    </script>

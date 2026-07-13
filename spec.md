@@ -11,21 +11,21 @@ code under `nutrition/**/spec.md` and `yield-range/**/spec.md`.
 | `spec.md` (this file) | Cross-app: UI language, URL routing, ISO week numbering |
 | `nutrition/spec.md` | Cross-crop nutrition: mass-balance, channel cascade, pH-aware efficiency, lockout gates, crop-level channel-role coverage |
 | `nutrition/chemistry/spec.md` | Cross-crop chemistry: product catalog, pH-response, mixing compatibility (Ksp / tags / mix order / incompatible recipes / stock stability), tank-level CE + pH predictions |
-| `nutrition/tomato/spec.md` | Tomato nutrition: per-stage demand, fruit export, biomass, mass-balance coupling |
-| `nutrition/tomato/shell/spec.md` | Tomato Nutrition admin page chrome (header inputs, ceiling, recipe-mode toggle, drift block, single-source-of-truth read) |
-| `nutrition/tomato/plant-needs/builder/user-stories.md` | Plant-needs builder block on the admin page (Block 1) |
-| `nutrition/tomato/foliar-strategy/builder/user-stories.md` | Foliar builder block on the admin page (Block 5/6) |
-| `nutrition/tomato/fertigation-recipe/builder/user-stories.md` | Fertigation builder block on the admin page (supply vs demand + drift sub-block) |
-| `nutrition/tomato/sidedress-recipe/builder/user-stories.md` | Sidedress builder block on the admin page (supply vs demand + drift sub-block) |
-| `nutrition/tomato/fertigation-recipe/operator/user-stories.md` | Operator-facing tomato fertigation page UI |
-| `nutrition/tomato/fertigation-recipe/procedure/user-stories.md` | Procedural data layer behind the operator fertigation page (stage, steps, calc) |
-| `nutrition/lettuce/spec.md` | Salanova post-transplant nutrition (model/recipe) |
-| `nutrition/lettuce/app/user-stories.md` | Salanova admin subpage UI |
-| `nutrition/nursery/spec.md` | Semis laitue nutrition (seedling DW%, cell volume cap) |
-| `nutrition/nursery/app/user-stories.md` | Semis admin subpage UI |
-| `yield-range/spec.md` | Salanova nursery time-to-canopy-cap model |
-| `yield-range/app/user-stories.md` | Yield Range admin page UI |
-| `yield-range/doc/yield-range-calibration-2026-spring.md` | Empirical cohort observations anchoring the yield-range model |
+| `nutrition/tomato/domain/spec.md` | Tomato nutrition: per-stage demand, fruit export, biomass, mass-balance coupling |
+| `app/admin/nutrition/bilan/tomato/spec.md` | Tomato Nutrition admin page chrome (header inputs, ceiling, recipe-mode toggle, drift block, single-source-of-truth read) |
+| `app/admin/nutrition/builder/plant-needs/tomato/user-stories.md` | Plant-needs builder block on the admin page (Block 1) |
+| `app/admin/nutrition/builder/foliar/tomato/user-stories.md` | Foliar builder block on the admin page (Block 5/6) |
+| `app/admin/nutrition/builder/fertigation/tomato/user-stories.md` | Fertigation builder block on the admin page (supply vs demand + drift sub-block) |
+| `app/admin/nutrition/builder/sidedress/tomato/user-stories.md` | Sidedress builder block on the admin page (supply vs demand + drift sub-block) |
+| `app/operator/nutrition/fertigation/user-stories.md` | Operator-facing tomato fertigation page UI |
+| `nutrition/tomato/protocol/fertigation/user-stories.md` | Procedural data layer behind the operator fertigation page (stage, steps, calc) |
+| `nutrition/lettuce/domain/spec.md` | Salanova post-transplant nutrition (model/recipe) |
+| `app/admin/nutrition/bilan/lettuce/user-stories.md` | Salanova admin subpage UI |
+| `nutrition/lettuce/domain/nursery/plant-needs/spec.md` | Semis laitue nutrition (seedling DW%, cell volume cap) |
+| `app/admin/nutrition/bilan/nursery/user-stories.md` | Semis admin subpage UI |
+| `yield-range/domain/spec.md` | Salanova nursery time-to-canopy-cap model |
+| `app/admin/rendement/user-stories.md` | Yield Range admin page UI |
+| `yield-range/domain/doc/yield-range-calibration-2026-spring.md` | Empirical cohort observations anchoring the yield-range model |
 
 REQ-NNN ids are drawn from a single global pool — claim via
 `scripts/claim-req.sh <target-spec-path> <persona>` from the repo root.

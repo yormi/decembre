@@ -1,0 +1,187 @@
+  <!-- ═══════════════ FERTIGATION PAGE ═══════════════ -->
+  <div id="page-fertigation-content">
+
+    <!-- Crop sub-toggle: Tomates / Laitue / Semis laitue -->
+    <div class="crop-toggle">
+      <button class="crop-btn active-tomato" id="fert-crop-tomato" onclick="setCrop('tomato')">
+        <span class="crop-icon">🍅</span> Tomates
+      </button>
+      <button class="crop-btn" id="fert-crop-lettuce" onclick="setCrop('lettuce')">
+        <span class="crop-icon">🥬</span> Laitue
+      </button>
+      <button class="crop-btn" id="fert-crop-nursery" onclick="setCrop('nursery')">
+        <span class="crop-icon">🌱</span> Semis laitue
+      </button>
+    </div>
+
+    <!-- Field-crop fertigation content (tomato + lettuce) -->
+    <div id="fert-field-content">
+    <!-- Fixed config — doesn't change weekly -->
+    <div class="card" id="stage-card">
+      <div class="card-title">Configuration</div>
+      <div class="param-row">
+        <span class="param-label">Dosatron</span>
+        <span class="param-value">2%</span>
+      </div>
+      <div class="card-title" style="margin-bottom:10px; margin-top:14px;">Recette</div>
+      <div class="stage-selector" style="grid-template-columns:1fr 1fr;">
+        <button class="stage-btn" id="fert-recipe-nutrient" onclick="setFertRecipe('nutrient')"><span class="stage-label">Nutriments</span></button>
+        <button class="stage-btn" id="fert-recipe-rootfix" onclick="setFertRecipe('rootfix')"><span class="stage-label">Correction racinaire</span></button>
+      </div>
+      <div id="fert-stage-block" style="font-size:12px; color:var(--text-muted); line-height:1.5; margin-top:14px;">
+        <div class="card-title" style="margin-bottom:10px;">Stade de croissance</div>
+        <div class="stage-selector">
+          <button class="stage-btn" data-stage="T1"><span class="stage-label">T1</span><span class="stage-weeks">Sem 51–2</span></button>
+          <button class="stage-btn" data-stage="T2"><span class="stage-label">T2</span><span class="stage-weeks">Sem 3–6</span></button>
+          <button class="stage-btn" data-stage="T3"><span class="stage-label">T3</span><span class="stage-weeks">Sem 7–9</span></button>
+          <button class="stage-btn" data-stage="T4"><span class="stage-label">T4</span><span class="stage-weeks">Sem 10–18</span></button>
+          <button class="stage-btn" data-stage="T5"><span class="stage-label">T5</span><span class="stage-weeks">Sem 19+</span></button>
+        </div>
+        <div id="stage-auto-label" style="font-size:12px; color:var(--text-muted); line-height:1.5;"></div>
+      </div>
+    </div>
+
+    <!-- Lettuce config — Dosatron only (no recipe, no stage, no steps) -->
+    <div class="card" id="lettuce-fert-config" style="display:none;">
+      <div class="param-row">
+        <span class="param-label">Dosatron</span>
+        <span class="param-value">2%</span>
+      </div>
+    </div>
+
+    <!-- Dosatron diagram kept as reference but hidden
+         SVG illustration of D25 series Dosatron with injection ratio reading point
+         Ratio fixed at 2% (read on silver ring)
+    -->
+
+    <!-- Water parameters (kept for reference):
+         Eau: pH 6.26 (Berger Labs Report 39086, April 2026)
+         Alcalinité: 24.68 ppm CaCO₃
+         pH cible irrigation: 5.8
+         EC: 0.10 mmhos/cm
+         Calcium: 4.8 ppm
+         Source: Municipal tap water, Quebec City
+    -->
+
+    <!-- Monday Morning (tomato only — lettuce shows Dosatron config alone) -->
+    <div class="card" id="fert-steps-card">
+      <div class="card-title" id="steps-card-title">🌅 Vendredi matin</div>
+      <ol class="steps-list" id="steps-list"></ol>
+    </div>
+
+    <!-- Following Mornings -->
+    <div class="card" style="display:none;">
+      <div class="card-title">☀️ Lundi à vendredi — vérification matinale</div>
+      <div style="font-size:12px; color:var(--text-muted); margin-bottom:14px;">
+        <strong style="color:var(--text);">Chaque matin, vérifier si le baril de stock est vide.</strong>
+      </div>
+      <ol class="steps-list" style="padding-left:28px;">
+        <li class="step-item">
+          <span class="step-number">1</span>
+          <div class="step-title">Le baril est-il vide ?</div>
+          <div class="step-desc">
+            <ul style="margin:4px 0 0; padding-left:18px;">
+              <li>Regarder dans le baril de la solution stock</li>
+              <li>Si non vide → rien à faire, journée normale</li>
+            </ul>
+          </div>
+        </li>
+        <li class="step-item step-acid">
+          <span class="step-number">2</span>
+          <div class="step-title">Si vide : fermer valves Dosatron, ouvrir bypass</div>
+        </li>
+        <li class="step-item step-acid">
+          <span class="step-number">3</span>
+          <div class="step-title">Si vide : écrire <strong>immédiatement</strong> sur Slack</div>
+          <div class="step-desc">
+            <ul style="margin:4px 0 0; padding-left:18px;">
+              <li>Canal <strong>#recherche-et-developpement</strong></li>
+              <li>Format : <em>"Solution [tomate/laitue] vide - [Jour]"</em></li>
+              <li>Ex : <em>"Solution tomate vide - Mardi"</em></li>
+              <li>Pour ajuster rapidement</li>
+            </ul>
+          </div>
+        </li>
+      </ol>
+    </div>
+
+    </div><!-- end fert-field-content -->
+
+    <!-- Semis laitue (nursery) content, shown when crop=nursery -->
+    <div id="fert-nursery-content" style="display:none;">
+      <!-- ADMIN-ONLY block — hidden for non-admin via applyAdminMode
+           (#nursery-admin-block). Visually distinct from operator cards.
+           Inputs not wired to the model yet (rendement + type de plateau). -->
+      <div class="card" id="nursery-admin-block" style="border:2px dashed #7c4dff; background:rgba(124,77,255,0.05);">
+        <div style="display:flex; align-items:center; gap:8px; margin-bottom:12px;">
+          <span style="font-size:10px; font-weight:700; letter-spacing:1.5px; text-transform:uppercase; color:#fff; background:#7c4dff; padding:3px 8px; border-radius:4px;">⚙ Admin uniquement</span>
+          <span style="font-size:11px; color:var(--text-muted);">hors vue opérateur</span>
+        </div>
+        <div class="input-row">
+          <div class="input-group">
+            <label>Rendement attendu / transplant</label>
+            <input type="number" id="nutr-n-admin-yield" value="20" min="1" max="500" step="1" inputmode="decimal">
+            <div class="input-unit">g / plant</div>
+          </div>
+        </div>
+        <div class="input-group" style="margin-top:12px;">
+          <label>Type de plateau</label>
+          <div style="display:flex; flex-wrap:wrap; gap:8px; margin-top:6px;">
+            <button type="button" id="nutr-n-admin-tray-50" data-tray="50-cell" onclick="setNurseryAdminTray('50-cell')"
+              style="cursor:pointer; padding:8px 14px; font-size:12px; font-weight:600; border-radius:var(--radius-sm); border:1.5px solid #7c4dff; background:#7c4dff; color:#fff;">50 cellules</button>
+            <button type="button" id="nutr-n-admin-tray-18" data-tray="18-pot-3in" onclick="setNurseryAdminTray('18-pot-3in')"
+              style="cursor:pointer; padding:8px 14px; font-size:12px; font-weight:600; border-radius:var(--radius-sm); border:1.5px solid #7c4dff; background:transparent; color:var(--text);">18 × pot 3 po</button>
+            <button type="button" id="nutr-n-admin-tray-32" data-tray="32-pot-2.5in" onclick="setNurseryAdminTray('32-pot-2.5in')"
+              style="cursor:pointer; padding:8px 14px; font-size:12px; font-weight:600; border-radius:var(--radius-sm); border:1.5px solid #7c4dff; background:transparent; color:var(--text);">32 × pot 2,5 po</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Nombre de plateaux</div>
+        <div style="display:flex; justify-content:center;">
+          <div style="width:140px;">
+            <input type="number" id="tray-count" value="75" min="1" max="200" oninput="recalcNursery()" style="width:100%; padding:12px 14px; border:1.5px solid var(--border); border-radius:var(--radius-sm); font-family:'DM Mono',monospace; font-size:18px; font-weight:600; background:var(--input-bg); color:var(--text); text-align:center; -webkit-appearance:none;">
+            <div style="font-size:11px; color:var(--text-muted); margin-top:3px; font-family:'DM Mono',monospace; text-align:center;">plateaux</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Recette de la semaine</div>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:8px;">
+          <div style="background:var(--accent-active-light); border:1.5px solid var(--accent-active-border); border-radius:var(--radius-sm); padding:14px 10px; text-align:center;">
+            <div style="font-size:20px; margin-bottom:6px;">💧</div>
+            <div style="font-size:10px; font-weight:600; text-transform:uppercase; letter-spacing:1.5px; color:var(--text-muted); margin-bottom:6px;">Eau</div>
+            <div style="font-family:'DM Mono',monospace; font-size:20px; font-weight:700; color:var(--text);" id="out-water">94</div>
+            <div style="font-family:'DM Mono',monospace; font-size:12px; color:var(--text-muted); margin-top:2px;">litres</div>
+          </div>
+          <div style="background:var(--accent-active-light); border:1.5px solid var(--accent-active-border); border-radius:var(--radius-sm); padding:14px 10px; text-align:center;">
+            <div style="font-size:20px; margin-bottom:6px;">🦀</div>
+            <div style="font-size:10px; font-weight:600; text-transform:uppercase; letter-spacing:1.5px; color:var(--text-muted); margin-bottom:6px;">Océan 15-1-1</div>
+            <div style="font-family:'DM Mono',monospace; font-size:20px; font-weight:700; color:var(--text);" id="out-ocean">190</div>
+            <div style="font-family:'DM Mono',monospace; font-size:12px; color:var(--text-muted); margin-top:2px;">g</div>
+          </div>
+          <div style="background:var(--accent-active-light); border:1.5px solid var(--accent-active-border); border-radius:var(--radius-sm); padding:14px 10px; text-align:center;">
+            <div style="font-size:20px; margin-bottom:6px;">🐟</div>
+            <div style="font-size:10px; font-weight:600; text-transform:uppercase; letter-spacing:1.5px; color:var(--text-muted); margin-bottom:6px;">Poisson</div>
+            <div style="font-family:'DM Mono',monospace; font-size:20px; font-weight:700; color:var(--text);" id="out-fish">140</div>
+            <div style="font-family:'DM Mono',monospace; font-size:12px; color:var(--text-muted); margin-top:2px;">mL</div>
+          </div>
+          <div style="background:var(--accent-active-light); border:1.5px solid var(--accent-active-border); border-radius:var(--radius-sm); padding:14px 10px; text-align:center;">
+            <div style="font-size:20px; margin-bottom:6px;">🌿</div>
+            <div style="font-size:10px; font-weight:600; text-transform:uppercase; letter-spacing:1.5px; color:var(--text-muted); margin-bottom:6px;">Algue</div>
+            <div style="font-family:'DM Mono',monospace; font-size:20px; font-weight:700; color:var(--text);" id="out-kelp">94</div>
+            <div style="font-family:'DM Mono',monospace; font-size:12px; color:var(--text-muted); margin-top:2px;">mL</div>
+          </div>
+          <div style="background:var(--accent-active-light); border:1.5px solid var(--accent-active-border); border-radius:var(--radius-sm); padding:14px 10px; text-align:center;">
+            <div style="font-size:20px; margin-bottom:6px;">🩶</div>
+            <div style="font-size:10px; font-weight:600; text-transform:uppercase; letter-spacing:1.5px; color:var(--text-muted); margin-bottom:6px;">Sulfate de fer</div>
+            <div style="font-family:'DM Mono',monospace; font-size:20px; font-weight:700; color:var(--text);" id="out-fe">1.4</div>
+            <div style="font-family:'DM Mono',monospace; font-size:12px; color:var(--text-muted); margin-top:2px;">g</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>

@@ -1,0 +1,24 @@
+  /* Admin-only visual affordances. Reuse across any block that
+     applyAdminMode gates. Tomato-red cue matches the footer admin toggle.
+
+     .admin-block  — put on a .card to make the whole block read as admin
+                     at a glance (dashed red border + red-tinted fill).
+     .admin-badge  — small pill; drop <span class="admin-badge">admin</span>
+                     inside the block's label. */
+  .admin-block {
+    border: 1.5px dashed var(--accent-tomato);
+    background: var(--accent-tomato-light);
+  }
+  .admin-badge {
+    display: inline-block;
+    padding: 2px 7px;
+    border-radius: 999px;
+    background: var(--card);
+    color: var(--accent-tomato);
+    border: 1px solid var(--accent-tomato);
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    vertical-align: middle;
+  }

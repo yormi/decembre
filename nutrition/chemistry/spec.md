@@ -19,8 +19,8 @@ elements`.
 
 Every product entry in `PRODUCT` has `mode: 'flux' | 'concentration'`.
 Flux-mode products participate in the demand-supply balance
-(`nutrition/tomato/spec.md — under-fert-guard` /
-`nutrition/tomato/spec.md — luxury-feeding-guard`).
+(`nutrition/tomato/domain/spec.md — under-fert-guard` /
+`nutrition/tomato/domain/spec.md — luxury-feeding-guard`).
 Concentration-mode products participate in the tank-concentration envelope
 (concentration-dose-within-band).
 

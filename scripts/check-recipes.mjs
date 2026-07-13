@@ -202,7 +202,7 @@ const exposeNames = [
   'NURSERY_TARGETS', 'calculateNurseryDemand',
   'LETTUCE_NURSERY_TISSUE_DW', 'LETTUCE_NURSERY_DM_FRACTION',
   // Salanova plant-needs (lettuce plant-needs spec). After the 2026-05-16 carve, the
-  // partials in nutrition/lettuce/plant-needs/ supply LETTUCE_TISSUE_DW,
+  // partials in nutrition/lettuce/domain/plant-needs/ supply LETTUCE_TISSUE_DW,
   // LETTUCE_DM_FRACTION, LETTUCE_FRONTLOAD_DEFAULTS, SME_LETTUCE_PPM,
   // calculateLettuceNutrition{Demand,Supply}, and window.PlantNeedsLettuce.
   'PlantNeedsLettuce',
@@ -527,7 +527,7 @@ if (!CHANNEL_ROLE || !BIOMASS_DEMAND || !TOMATO_FRUIT_EXPORT) {
 // biomass term for Ca and Mg only. Verified by calling at tf=1.0 vs tf=0.5
 // and asserting Ca/Mg biomass term halves while N/P/K/micros are unchanged.
 //
-// Spec: nutrition/tomato/plant-needs/spec.md → ca-mg-biomass-transpiration-coupled.
+// Spec: nutrition/tomato/domain/plant-needs/spec.md → ca-mg-biomass-transpiration-coupled.
 
 header('ca-mg-biomass-transpiration-coupled — Ca/Mg biomass demand × transpFactor');
 
@@ -573,7 +573,7 @@ if (!calculateNutritionDemand) {
 // flagging anything in the 250%+ range as suspicious. Stage order is
 // taken from `Object.keys(BIOMASS_DEMAND)` in declaration order.
 //
-// Spec: nutrition/tomato/plant-needs/spec.md → stage-transition-continuity.
+// Spec: nutrition/tomato/domain/plant-needs/spec.md → stage-transition-continuity.
 
 header('stage-transition-continuity — BIOMASS_DEMAND stage-transition continuity (≤ 250 %)');
 
@@ -613,7 +613,7 @@ if (!BIOMASS_DEMAND) {
 // expected public API. Renames or removals fail loudly here, before
 // they break consumers (Bilan UI, recipe calculators).
 //
-// Spec: nutrition/tomato/plant-needs/spec.md → plant-needs-tomato-namespace.
+// Spec: nutrition/tomato/domain/plant-needs/spec.md → plant-needs-tomato-namespace.
 
 header('plant-needs-tomato-namespace — window.PlantNeedsTomato public API surface');
 
@@ -808,7 +808,7 @@ header('months-to-depletion-clamped-by-peak-demand — monthsToDepletion = bank 
     if (typeof caMonths !== 'number' || !(caMonths > 0)) {
       offenders.push(`monthsToDepletion(tomato, Ca) = ${caMonths} (expected positive number)`);
     }
-    // Tomato P — lockout regime (mass-flow 16.5 < peak 660). Runway ~780 mo.
+    // Tomato P — low-SME regime (mass-flow 16.5 < peak 660). Runway ~780 mo.
     const pMonths = SC.monthsToDepletion('tomato', 'P');
     if (typeof pMonths !== 'number' || !(pMonths > 0)) {
       offenders.push(`monthsToDepletion(tomato, P) = ${pMonths} (expected positive number)`);
@@ -838,7 +838,7 @@ header('months-to-depletion-clamped-by-peak-demand — monthsToDepletion = bank 
     if (typeof lettuceCa !== 'number' || !(lettuceCa > 0)) {
       offenders.push(`monthsToDepletion(lettuce, Ca) = ${lettuceCa} (expected positive number)`);
     }
-    // Pinned arithmetic — tomato P (lockout, clamp no-op).
+    // Pinned arithmetic — tomato P (low SME, clamp no-op).
     //   bank 55770 ; mass-flow 1.1 × 15 = 16.5 ; peak 660 ; min = 16.5.
     //   runway = 55770 / (16.5 × 52/12) ≈ 780 mois.
     const expectedP = 55770 / (Math.min(1.1 * 15, 660) * WPM);
@@ -868,7 +868,7 @@ header('months-to-depletion-clamped-by-peak-demand — monthsToDepletion = bank 
     if (offenders.length > 0) {
       fail('monthsToDepletion behaviour', offenders.map(o => `  ${o}`).join('\n'));
     } else {
-      pass(`Clamped runway: tomato Ca ${caMonths.toFixed(0)} mois (demand-bound) · P ${pMonths.toFixed(0)} mois (lockout) · K ${kMonths.toFixed(0)} mois (mass-flow-bound) · N → null (turnover) · lettuce Ca ${lettuceCa.toFixed(0)} mois`);
+      pass(`Clamped runway: tomato Ca ${caMonths.toFixed(0)} mois (demand-bound) · P ${pMonths.toFixed(0)} mois (low SME) · K ${kMonths.toFixed(0)} mois (mass-flow-bound) · N → null (turnover) · lettuce Ca ${lettuceCa.toFixed(0)} mois`);
     }
   }
 }
@@ -947,7 +947,7 @@ header('sme-soil-solution-wired-per-crop-element — SME soil-solution + transpi
 // computeStageSidedress(stage) must return numeric, non-negative actisol_g,
 // farine_g, alfalfa_g, and g_per_planche for every stage in RECIPE_INPUTS.stageYield.
 //
-// Spec: nutrition/tomato/sidedress-recipe/spec.md → INV-1.
+// Spec: nutrition/tomato/domain/sidedress/spec.md → INV-1.
 
 header('Sidedress INV-1 — Stage coverage closed + numeric output');
 
@@ -991,7 +991,7 @@ if (!computeStageSidedress) {
 //   n_needed  = max(0, offtake − compost)
 //   g/planche = round(n_needed / (p.n_pct × p.efficiency) / 1000 × area)
 //
-// Spec: nutrition/tomato/sidedress-recipe/spec.md → mass-balance-sizes-product-to-n-gap.
+// Spec: nutrition/tomato/domain/sidedress/spec.md → mass-balance-sizes-product-to-n-gap.
 
 header('mass-balance-sizes-product-to-n-gap — Sidedress g_per_planche matches mass-balance formula');
 
@@ -1045,7 +1045,7 @@ if (!computeStageSidedress || !SIDEDRESS_PRODUCTS || !SIDEDRESS_AREA_PER_PLANCHE
 
 // ─── public-api-namespace — SidedressRecipeTomato public API namespace ───────────────
 //
-// Spec: nutrition/tomato/sidedress-recipe/spec.md → public-api-namespace.
+// Spec: nutrition/tomato/domain/sidedress/spec.md → public-api-namespace.
 
 header('public-api-namespace — window.SidedressRecipeTomato public API surface');
 
@@ -1086,7 +1086,7 @@ if (!SR) {
 //       the gate. Future Ca-bearing products (Selectus, frass, etc.) get
 //       rejected automatically without code changes.
 //
-// Spec: nutrition/tomato/sidedress-recipe/spec.md → ca-aware-product-gate.
+// Spec: nutrition/tomato/domain/sidedress/spec.md → ca-aware-product-gate.
 
 header('ca-aware-product-gate — Ca-aware product gate (chosen product ca_pct === 0)');
 
@@ -1150,7 +1150,7 @@ if (!computeStageSidedress || !SIDEDRESS_PRODUCTS) {
 //   kSulfate_g    = round(k_needed / 1000 / K2SO4_K × total_area)
 //   (Mg analogous, no sidedress; B analogous, no sidedress, compost B = 0.)
 //
-// Spec: nutrition/tomato/fertigation-recipe/spec.md → mass-balance-derivation + uptake-efficiency-factor.
+// Spec: nutrition/tomato/domain/fertigation/spec.md → mass-balance-derivation + uptake-efficiency-factor.
 
 header('mass-balance-derivation — computeStageRecipe matches mass-balance formula');
 
@@ -1214,7 +1214,7 @@ if (!computeStageRecipe || !TOMATO_FRUIT_EXPORT || !BIOMASS_DEMAND
 
 // ─── public-api-namespace — FertigationRecipeTomato public API namespace ─────────────
 //
-// Spec: nutrition/tomato/fertigation-recipe/spec.md → public-api-namespace.
+// Spec: nutrition/tomato/domain/fertigation/spec.md → public-api-namespace.
 
 header('public-api-namespace — window.FertigationRecipeTomato public API surface');
 
@@ -1247,7 +1247,7 @@ if (!FR) {
 
 // ─── fp-target-mirrors-sizer — FIRST_PRINCIPLES_T5_FERTIGATION pinned to computeStageRecipe('T5')
 //
-// Spec: nutrition/tomato/fertigation-recipe/spec.md → fp-target-mirrors-sizer.
+// Spec: nutrition/tomato/domain/fertigation/spec.md → fp-target-mirrors-sizer.
 // The FP T5 fertigation target equals the mass-balance derivation output
 // by construction (wireFpFertigation mutates the constant values at boot
 // from computeStageRecipe('T5')). PA Taillon legacy anchor preserved in
@@ -1290,7 +1290,7 @@ if (!FIRST_PRINCIPLES_T5_FERTIGATION || !computeStageRecipe || !FP_RECIPE_T5) {
 
 // ─── uptake-efficiency-factor — PH_UPTAKE_FACTOR_AT_CURRENT_SOIL applied to fertigation sizing
 //
-// Spec: nutrition/tomato/fertigation-recipe/spec.md → uptake-efficiency-factor.
+// Spec: nutrition/tomato/domain/fertigation/spec.md → uptake-efficiency-factor.
 // Asserts the constant exists with K/Mg/B keys at the expected cert-2
 // mid-band values (B2-REV defaults), each in (0, 1]. The function-output
 // correlation is covered by mass-balance-derivation (which now applies the factor in the
@@ -1618,7 +1618,7 @@ function stageDemandMg(stage, element) {
 
 const STAGES = ['T1', 'T2', 'T3', 'T4', 'T5'];
 const MASS_BALANCE_ELEMENTS = ['N', 'P', 'K', 'Mg'];  // CHANNEL_ROLE elements with non-foliar supply
-const SOIL_PH_NOW = 7.4;  // current soil pH per CLAUDE.md (April 2026 Berger)
+const SOIL_PH_NOW = 6.5;  // current bed pH — bed EC 1:1, 9 July 2026, 7-bed avg (range 6.1-6.8); was 7.4 (April 2026 Berger root-zone)
 
 // ─── under-fert-guard — Σ(channel_supply) ≥ 0.9 × demand per (element, stage) ──────
 //
@@ -1750,7 +1750,7 @@ if (!PRODUCT) {
 // zero stored value — B (borax → Solubore) stays at 10 g, exercising the same
 // FP/Stored direction without a zero denominator.
 //
-// Spec: nutrition/tomato/shell/spec.md → stored-vs-computed-drift-block.
+// Spec: app/admin/nutrition/bilan/tomato/spec.md → stored-vs-computed-drift-block.
 
 header('stored-vs-computed-drift-block — Block 8 drift gauge renders FP ÷ Stored (≥100 % = under-supply)');
 
@@ -2397,7 +2397,7 @@ header('ecocert-only-products — Pas de produits non-Ecocert dans le copy de l\
 // ─── nursery plant-needs subproject ─────────────────────
 //
 // The nursery/plant-needs subproject (data + calc + model) lives at
-// nutrition/nursery/plant-needs/{data.js,calc.js,model.js}. Until
+// nutrition/lettuce/domain/nursery/plant-needs/{data.js,calc.js,model.js}. Until
 // app/index.html @includes the partials, window.PlantNeedsNursery /
 // NURSERY_TARGETS / calculateNurseryDemand are absent from the dist/index.html
 // artifact. To avoid a chicken-and-egg between source-of-truth (the partials)
@@ -2406,16 +2406,16 @@ header('ecocert-only-products — Pas de produits non-Ecocert dans le copy de l\
 // integration, the same code path still works — the partials remain the
 // canonical definitions.
 //
-// Spec: nutrition/nursery/plant-needs/spec.md → nursery plant-needs + INV-1.
+// Spec: nutrition/lettuce/domain/nursery/plant-needs/spec.md → nursery plant-needs + INV-1.
 
 import vm from 'node:vm';
 
 let nurseryNs = null;
 let nurseryLoadError = null;
 try {
-  const dataSrc  = readFileSync(join(REPO_ROOT, 'nutrition/nursery/plant-needs/data.js'),  'utf8');
-  const pureFunctionSource  = readFileSync(join(REPO_ROOT, 'nutrition/nursery/plant-needs/calc.js'),  'utf8');
-  const modelSrc = readFileSync(join(REPO_ROOT, 'nutrition/nursery/plant-needs/model.js'), 'utf8');
+  const dataSrc  = readFileSync(join(REPO_ROOT, 'nutrition/lettuce/domain/nursery/plant-needs/data.js'),  'utf8');
+  const pureFunctionSource  = readFileSync(join(REPO_ROOT, 'nutrition/lettuce/domain/nursery/plant-needs/calc.js'),  'utf8');
+  const modelSrc = readFileSync(join(REPO_ROOT, 'nutrition/lettuce/domain/nursery/plant-needs/model.js'), 'utf8');
   // The partials use bare `const` declarations and `window.PlantNeedsNursery
   // = {…}`. A shared sandbox with a `window` host lets all three modules see
   // one another's bindings (data → calc → model) the same way they do in the
@@ -2456,7 +2456,7 @@ if (!nurseryNs) {
 // calculateNurseryDemand(1g, days, cells), per element, on perTray_mg. Asserted
 // within ±0.1 %.
 //
-// Spec: nutrition/nursery/plant-needs/spec.md → demand-linear-in-target-weight.
+// Spec: nutrition/lettuce/domain/nursery/plant-needs/spec.md → demand-linear-in-target-weight.
 
 header('demand-linear-in-target-weight — Nursery demand linear in targetG (±0.1 %)');
 
@@ -2487,7 +2487,7 @@ if (!nurseryNs || typeof nurseryNs.calculateNurseryDemand !== 'function') {
 // calculateNurseryDemand(g, 70, cells).perTray_mg is exactly half of
 // calculateNurseryDemand(g, 35, cells).perTray_mg, per element. ±0.1 %.
 //
-// Spec: nutrition/nursery/plant-needs/spec.md → demand-inverse-linear-in-cycle-length.
+// Spec: nutrition/lettuce/domain/nursery/plant-needs/spec.md → demand-inverse-linear-in-cycle-length.
 
 header('demand-inverse-linear-in-cycle-length — Nursery demand inverse-linear in cycleDays (±0.1 %)');
 
@@ -2518,7 +2518,7 @@ if (!nurseryNs || typeof nurseryNs.calculateNurseryDemand !== 'function') {
 // At defaults (90 g, 35 d, 50 cells), N perPlant_mg ∈ [50, 70]. Catches
 // order-of-magnitude typos in DM, tissue concentration, or cycle length.
 //
-// Spec: nutrition/nursery/plant-needs/spec.md → nitrogen-demand-in-band-at-defaults.
+// Spec: nutrition/lettuce/domain/nursery/plant-needs/spec.md → nitrogen-demand-in-band-at-defaults.
 
 header('nitrogen-demand-in-band-at-defaults — Nursery N demand ∈ [50, 70] mg/plant/wk au défaut');
 
@@ -2544,7 +2544,7 @@ if (!nurseryNs || typeof nurseryNs.calculateNurseryDemand !== 'function') {
 // that calculateNurseryDemand returns shape `{ perPlant_mg, perTray_mg }` per
 // element and demandPerTray returns a number.
 //
-// Spec: nutrition/nursery/plant-needs/spec.md → public-api-namespace.
+// Spec: nutrition/lettuce/domain/nursery/plant-needs/spec.md → public-api-namespace.
 
 header('public-api-namespace — window.PlantNeedsNursery public API surface');
 
@@ -2580,20 +2580,20 @@ if (!nurseryNs) {
 
 // ─── salanova plant-needs subproject ────────────────────
 //
-// nutrition/lettuce/plant-needs/{data.js,calc.js,model.js} carved out of
+// nutrition/lettuce/domain/plant-needs/{data.js,calc.js,model.js} carved out of
 // app/index.html 2026-05-16. Same vm-loaded pattern as nursery plant-needs:
 // load the partials in a shared sandbox, prefer the real jsdom window
 // when present, else fall back to the vm copy.
 //
-// Spec: nutrition/lettuce/plant-needs/spec.md → public-api-namespace..169 + INV-1.
+// Spec: nutrition/lettuce/domain/plant-needs/spec.md → public-api-namespace..169 + INV-1.
 
 let lettucePlantNeedsNs = window.PlantNeedsLettuce || null;
 let lettucePlantNeedsLoadError = null;
 if (!lettucePlantNeedsNs) {
   try {
-    const dataSrc  = readFileSync(join(REPO_ROOT, 'nutrition/lettuce/plant-needs/data.js'),  'utf8');
-    const pureFunctionSource  = readFileSync(join(REPO_ROOT, 'nutrition/lettuce/plant-needs/calc.js'),  'utf8');
-    const modelSrc = readFileSync(join(REPO_ROOT, 'nutrition/lettuce/plant-needs/model.js'), 'utf8');
+    const dataSrc  = readFileSync(join(REPO_ROOT, 'nutrition/lettuce/domain/plant-needs/data.js'),  'utf8');
+    const pureFunctionSource  = readFileSync(join(REPO_ROOT, 'nutrition/lettuce/domain/plant-needs/calc.js'),  'utf8');
+    const modelSrc = readFileSync(join(REPO_ROOT, 'nutrition/lettuce/domain/plant-needs/model.js'), 'utf8');
     const sandbox = { window: {} };
     vm.createContext(sandbox);
     vm.runInContext(dataSrc + '\n' + pureFunctionSource + '\n' + modelSrc, sandbox, {
@@ -2680,7 +2680,7 @@ if (!lettucePlantNeedsNs || typeof lettucePlantNeedsNs.calculateLettuceNutrition
        lettucePlantNeedsLoadError || 'function missing on namespace');
 } else {
   const handler = lettucePlantNeedsNs.calculateLettuceNutritionSupply;
-  const supply = handler(50, 100, 43, false, 50, LETTUCE_TEST_DEPENDENCIES);
+  const supply = handler(50, 100, 43, 50, LETTUCE_TEST_DEPENDENCIES);
   const elements = Object.keys(lettucePlantNeedsNs.LETTUCE_TISSUE_DW);
   const offenders = [];
   for (const element of elements) {
@@ -2709,7 +2709,7 @@ if (!lettucePlantNeedsNs || typeof lettucePlantNeedsNs.calculateLettuceNutrition
 // (Fe, Mn, Zn, B, Cu, Mo) at cert 3 (broader range, varies with light +
 // genetics). The verifier asserts the structural shape (5 macros + 6 micros,
 // every element numeric); the per-element cert annotation lives in
-// nutrition/lettuce/plant-needs/derivation.md and is surfaced via the
+// nutrition/lettuce/domain/plant-needs/derivation.md and is surfaced via the
 // integrator pourquoi modal — not enforced by code today.
 
 header('demand-certainty-floor — Lettuce demand: 5 macros + 6 micros structurally present');
@@ -2747,7 +2747,7 @@ if (!lettucePlantNeedsNs || typeof lettucePlantNeedsNs.calculateLettuceNutrition
   ];
   const offenders = [];
   for (const [label, currentG, targetG] of cases) {
-    const supply = handler(currentG, targetG, 43, false, 0, LETTUCE_TEST_DEPENDENCIES);
+    const supply = handler(currentG, targetG, 43, 0, LETTUCE_TEST_DEPENDENCIES);
     if (!(supply.canopyFactor >= 0.2 - 1e-9 && supply.canopyFactor <= 0.7 + 1e-9)) {
       offenders.push(`${label} (currentG=${currentG}, targetG=${targetG}): canopyFactor=${supply.canopyFactor}`);
     }
@@ -2782,22 +2782,22 @@ if (!lettucePlantNeedsNs) {
 // ─── nursery substrate-contribution subproject ──────────
 //
 // The nursery/substrate-contribution subproject (data + calc + model)
-// lives at nutrition/nursery/substrate-contribution/{data.js,calc.js,model.js}.
+// lives at nutrition/lettuce/domain/nursery/substrate-contribution/{data.js,calc.js,model.js}.
 // Same vm-loaded pattern as nursery plant-needs above: load the partials in a
 // shared sandbox, run feather-meal-front-load-cap..097 against the produced namespace. Once
 // app/index.html @includes the partials, window.SubstrateContributionNursery
 // will also exist on the real jsdom window — we prefer that when present,
 // otherwise fall back to the vm-loaded copy.
 //
-// Spec: nutrition/nursery/substrate-contribution/spec.md → feather-meal-front-load-cap..097.
+// Spec: nutrition/lettuce/domain/nursery/substrate-contribution/spec.md → feather-meal-front-load-cap..097.
 
 let SCN = window.SubstrateContributionNursery;
 let substrateLoadError = null;
 if (!SCN) {
   try {
-    const dataSrc  = readFileSync(join(REPO_ROOT, 'nutrition/nursery/substrate-contribution/data.js'),  'utf8');
-    const pureFunctionSource  = readFileSync(join(REPO_ROOT, 'nutrition/nursery/substrate-contribution/calc.js'),  'utf8');
-    const modelSrc = readFileSync(join(REPO_ROOT, 'nutrition/nursery/substrate-contribution/model.js'), 'utf8');
+    const dataSrc  = readFileSync(join(REPO_ROOT, 'nutrition/lettuce/domain/nursery/substrate-contribution/data.js'),  'utf8');
+    const pureFunctionSource  = readFileSync(join(REPO_ROOT, 'nutrition/lettuce/domain/nursery/substrate-contribution/calc.js'),  'utf8');
+    const modelSrc = readFileSync(join(REPO_ROOT, 'nutrition/lettuce/domain/nursery/substrate-contribution/model.js'), 'utf8');
     const sandbox = { window: {} };
     vm.createContext(sandbox);
     vm.runInContext(dataSrc + '\n' + pureFunctionSource + '\n' + modelSrc, sandbox, {
@@ -2980,7 +2980,7 @@ if (!SCN) {
 // N, P, K, Ca, Mg, Fe, Mn, Zn, B, Cu, Mo) at every stage in
 // RECIPE_INPUTS.stageYield.
 //
-// Spec: nutrition/tomato/foliar-strategy/spec.md → INV-1.
+// Spec: nutrition/tomato/domain/foliar/spec.md → INV-1.
 
 header('Foliar INV-1 — Element coverage closed + numeric output');
 
@@ -3024,7 +3024,7 @@ header('Foliar INV-1 — Element coverage closed + numeric output');
 // computeFoliarSupply('T5').{Mn, Fe} matches within 1 % tolerance. Mn pins
 // the surfactant-coverage logic; Fe pins the FeSO₄·7H₂O 20 % Fe path.
 //
-// Spec: nutrition/tomato/foliar-strategy/spec.md → coverage-discount-on-delivery.
+// Spec: nutrition/tomato/domain/foliar/spec.md → coverage-discount-on-delivery.
 
 header('coverage-discount-on-delivery — Foliar delivery applies FOLIAR_COVERAGE_DEFAULT (Mn, Fe)');
 
@@ -3068,7 +3068,7 @@ header('coverage-discount-on-delivery — Foliar delivery applies FOLIAR_COVERAG
 
 // ─── public-api-namespace — FoliarRecipeTomato public API namespace ──────────────────
 //
-// Spec: nutrition/tomato/foliar-strategy/spec.md → public-api-namespace.
+// Spec: nutrition/tomato/domain/foliar/spec.md → public-api-namespace.
 
 header('public-api-namespace — window.FoliarRecipeTomato public API surface');
 
@@ -3086,15 +3086,22 @@ header('public-api-namespace — window.FoliarRecipeTomato public API surface');
     if (missing.length > 0) {
       fail('FoliarRecipeTomato exposes the public API', `manquants: ${missing.join(', ')}`);
     } else {
+      // Default supply reads STORED foliaire, which can be empty (sprays
+      // retired 2026-07-11 — micros moved to fertigation). Retired-tolerant:
+      // default supply is a valid ≥0 number; the machinery still delivers >0
+      // from a non-empty probe recipe (capability survives dormancy).
       const t5Fe = FRT.computeFoliarSupply('T5').Fe;
+      const probeFe = FRT.computeFoliarSupply('T5', {}, [{ name: 'FeSO₄·7H₂O (20% Fe)', master: '90 g' }]).Fe;
       const okShape = typeof FRT.AREA_M2 === 'number'
                     && typeof FRT.FOLIAR_COVERAGE_DEFAULT === 'number'
                     && typeof FRT.FOLIAR_COVERAGE_WITH_YUCCA === 'number'
-                    && typeof t5Fe === 'number' && isFinite(t5Fe) && t5Fe > 0;
+                    && typeof t5Fe === 'number' && isFinite(t5Fe) && t5Fe >= 0
+                    && typeof probeFe === 'number' && isFinite(probeFe) && probeFe > 0;
       if (!okShape) {
-        fail('FoliarRecipeTomato shape', `AREA_M2: ${typeof FRT.AREA_M2}; COV_DEFAULT: ${FRT.FOLIAR_COVERAGE_DEFAULT}; COV_YUCCA: ${FRT.FOLIAR_COVERAGE_WITH_YUCCA}; T5.Fe: ${t5Fe}`);
+        fail('FoliarRecipeTomato shape', `AREA_M2: ${typeof FRT.AREA_M2}; COV_DEFAULT: ${FRT.FOLIAR_COVERAGE_DEFAULT}; COV_YUCCA: ${FRT.FOLIAR_COVERAGE_WITH_YUCCA}; T5.Fe(stored): ${t5Fe}; T5.Fe(probe): ${probeFe}`);
       } else {
-        pass(`FoliarRecipeTomato exposes ${expectedKeys.length} clés (toutes présentes, T5.Fe=${t5Fe.toFixed(2)} mg/m²/wk)`);
+        const dormant = t5Fe === 0 ? ' (STORED dormant — sprays retired)' : '';
+        pass(`FoliarRecipeTomato exposes ${expectedKeys.length} clés (toutes présentes, T5.Fe stored=${t5Fe.toFixed(2)} probe=${probeFe.toFixed(2)} mg/m²/wk)${dormant}`);
       }
     }
   }
@@ -3105,7 +3112,7 @@ header('public-api-namespace — window.FoliarRecipeTomato public API surface');
 // Defaults match prior single-arg behavior; sprayCount=2 doubles every
 // element; surfactant=true scales by FOLIAR_COVERAGE_WITH_YUCCA / DEFAULT.
 //
-// Spec: nutrition/tomato/foliar-strategy/spec.md → supply-accepts-spray-count-surfactant.
+// Spec: nutrition/tomato/domain/foliar/spec.md → supply-accepts-spray-count-surfactant.
 
 header('supply-accepts-spray-count-surfactant — computeFoliarSupply(stage, opts) — sprayCount + surfactant levers');
 
@@ -3179,7 +3186,7 @@ header('supply-accepts-spray-count-surfactant — computeFoliarSupply(stage, opt
 
 // ─── gap-maximizing-recipe — computeFoliarRecipeForGap derives gap-maximizing recipe
 //
-// Spec: nutrition/tomato/foliar-strategy/spec.md → gap-maximizing-recipe.
+// Spec: nutrition/tomato/domain/foliar/spec.md → gap-maximizing-recipe.
 
 header('gap-maximizing-recipe — computeFoliarRecipeForGap (min-dose clamp + surfactant + burn cap + CE scale)');
 
@@ -3307,7 +3314,7 @@ header('gap-maximizing-recipe — computeFoliarRecipeForGap (min-dose clamp + su
 
 // ─── fp-strategy-live-derived — FP foliar recipe live-derived from pre-foliar gap chain ──
 //
-// Spec: nutrition/tomato/foliar-strategy/spec.md → fp-strategy-live-derived.
+// Spec: nutrition/tomato/domain/foliar/spec.md → fp-strategy-live-derived.
 //
 // Integration test: call calculateNutritionSupply twice in FP mode at T5. Between
 // calls, bump COMPOST_RELEASE_PER_WEEK.Mn so the pre-foliar gap drops
@@ -3332,10 +3339,10 @@ header('fp-strategy-live-derived — FP foliar recipe live-derived from pre-foli
     let offenders = [];
     const originalMnRelease = CC.releasePerWeek.Mn;
     try {
-      // Baseline: default compost state. T5, phLocked=true, transpFactor=1.0,
+      // Baseline: default compost state. T5, transpFactor=1.0,
       // target=1.5 kg/m²/wk — match the page defaults so FP_RECIPE_T5.foliar
       // reflects the canonical FP state.
-      calculateNutritionSupply('T5', true, 1.0, 1.5, 'fp');
+      calculateNutritionSupply('T5', 1.0, 1.5, 'fp');
       const baselineMn = fpFoliar['MnSO4'];
       if (!isFinite(baselineMn) || baselineMn < 0) {
         offenders.push(`baseline FP_RECIPE_T5.foliar.MnSO4 = ${baselineMn} (expected finite ≥ 0 after calculateNutritionSupply FP call)`);
@@ -3346,7 +3353,7 @@ header('fp-strategy-live-derived — FP foliar recipe live-derived from pre-foli
       // so computeFoliarRecipeForGap should return MnSO4_g = 0 (min-dose
       // clamp). Confirms calculateNutritionSupply consults the live compost chain.
       CC.releasePerWeek.Mn = 1.0;
-      calculateNutritionSupply('T5', true, 1.0, 1.5, 'fp');
+      calculateNutritionSupply('T5', 1.0, 1.5, 'fp');
       const droppedMn = fpFoliar['MnSO4'];
       if (!(droppedMn < baselineMn)) {
         offenders.push(`after compost.Mn bump, FP_RECIPE_T5.foliar.MnSO4 = ${droppedMn}; expected < baseline ${baselineMn} (gap closed → recipe shrinks)`);
@@ -3361,7 +3368,7 @@ header('fp-strategy-live-derived — FP foliar recipe live-derived from pre-foli
       CC.releasePerWeek.Mn = originalMnRelease;
       // Re-derive once at canonical state so FP_RECIPE_T5.foliar reflects
       // baseline for any subsequent verifier that reads it.
-      try { calculateNutritionSupply('T5', true, 1.0, 1.5, 'fp'); } catch (e) { void e; }
+      try { calculateNutritionSupply('T5', 1.0, 1.5, 'fp'); } catch (e) { void e; }
     }
     if (offenders.length === 0) {
       pass('FP_RECIPE_T5.foliar.MnSO4 shrinks when compost.Mn rises (pre-foliar gap chain wired through calculateNutritionSupply)');
@@ -3375,15 +3382,14 @@ header('fp-strategy-live-derived — FP foliar recipe live-derived from pre-foli
 //
 // Section 1 of the Bilan UI specs. Asserts header inputs, light ceiling
 // formula, recipe-mode toggle behaviour. Spec:
-// nutrition/tomato/shell/spec.md → header-inputs-five-scalars..107.
+// app/admin/nutrition/bilan/tomato/spec.md → header-inputs-four-scalars..107.
 
-header('header-inputs-five-scalars — Header inputs are exactly five scalars (no nutr-current)');
+header('header-inputs-four-scalars — Header inputs are exactly four scalars (no nutr-current)');
 
 const REQUIRED_HEADER_INPUTS = [
   'nutr-target',
   'nutr-solar-per-gram',
   'nutr-stage-selector',
-  'nutr-phlocked',
   'nutr-recipe-fp',
   'nutr-recipe-stored',
 ];
@@ -3407,7 +3413,7 @@ header('light-ceiling-from-operator-j-per-g — Light ceiling reactive to solarP
   let logicJsBody = '';
   try {
     logicJsBody = readFileSync(
-      join(REPO_ROOT, 'nutrition', 'tomato', 'shell', 'logic.js'),
+      join(REPO_ROOT, 'app', 'admin', 'nutrition', 'bilan', 'tomato', 'logic.js'),
       'utf8'
     );
   } catch (e) { /* swallow — fail below */ }
@@ -3458,7 +3464,7 @@ header('fp-recipe-mode-locks-t5 — FP mode locks stage to T5 (auto-revert + def
   let logicJsBody = '';
   try {
     logicJsBody = readFileSync(
-      join(REPO_ROOT, 'nutrition', 'tomato', 'shell', 'logic.js'),
+      join(REPO_ROOT, 'app', 'admin', 'nutrition', 'bilan', 'tomato', 'logic.js'),
       'utf8'
     );
   } catch (e) { /* */ }
@@ -3532,7 +3538,7 @@ header('recipe-mode-toggle-fp-left-default-right — Recipe toggle: First princi
 // ─── tomato Nutrition page Block 1 (Besoin du plant) ────
 //
 // Section 2 of the Bilan UI specs. Spec:
-// nutrition/tomato/plant-needs/builder/user-stories.md.
+// app/admin/nutrition/builder/plant-needs/tomato/user-stories.md.
 
 header('Block 1 calls PN.calculateNutritionDemand (no bare-global lookups in render)');
 
@@ -3540,7 +3546,7 @@ header('Block 1 calls PN.calculateNutritionDemand (no bare-global lookups in ren
   let logicJsBody = '';
   try {
     logicJsBody = readFileSync(
-      join(REPO_ROOT, 'nutrition', 'tomato', 'shell', 'logic.js'),
+      join(REPO_ROOT, 'app', 'admin', 'nutrition', 'bilan', 'tomato', 'logic.js'),
       'utf8'
     );
   } catch (e) { /* */ }
@@ -3676,8 +3682,8 @@ header('Block 1 row layout: 4 columns (Él. / Fruit / Biomasse / Total)');
 
 // ─── multi-fertigation degree of freedom ────────────────
 //
-// Spec: nutrition/nursery/fertigation/spec.md → supply-scales-linearly-with-applications..126.
-// Implementation: nutrition/nursery/fertigation/calc.js.
+// Spec: nutrition/lettuce/domain/nursery/fertigation/spec.md → supply-scales-linearly-with-applications..126.
+// Implementation: nutrition/lettuce/domain/nursery/fertigation/calc.js.
 // All five checks read the live `window.FertigationNursery` namespace,
 // which is mounted by the @included data.js + calc.js + model.js trio.
 
@@ -3867,7 +3873,7 @@ header('applications-per-week-positive-integer — applicationsPerWeek coerced t
 
 // ─── semis subpage Blocks 2/3 layout + gap chain ─────────
 //
-// Specs: nutrition/nursery/app/user-stories.md → Block 2 layout,
+// Specs: app/admin/nutrition/bilan/nursery/user-stories.md → Block 2 layout,
 // Block 3 layout, gap chain demand → substrate → fert.
 //
 // Need to flip the page to the Semis subpage so the render lands. setNutrCrop
@@ -4232,10 +4238,9 @@ header('contribution-block-gap-grid — Tomato Bilan blocks: 6-col gap-grid + ce
       }
     }
   }
-  // Note: 💧 precipitation emoji on sidedress P fires only when supply.sidedress.P > 0
-  // AND phLocked. At current Ca-aware default (Actisol=0, ca-aware-product-gate), supply.sidedress.P
-  // is 0 → no cap fires → no emoji. That's consistent with apport-ici-clickable-cert-and-cap-modals semantics
-  // (cap fires only when there's a value to cap). Synthetic-cap test deferred.
+  // Note: sidedress P no longer carries a precipitation cap (pH-lockout retired),
+  // so no 💧 emoji fires on sidedress P. At current Ca-aware default
+  // (Actisol=0, ca-aware-product-gate), supply.sidedress.P is 0 anyway.
   if (offs.length === 0) {
     pass('Tomato compost/sidedress/fert/foliar blocks: 6-col grid · cell-keyed · gap-grid is <table>\'s next sibling');
   } else {
@@ -4409,8 +4414,8 @@ header('channel-efficiency-capability-map — Contribution-channel efficiency ma
     let supply = null;
     try {
       // Match the canonical FP call shape used by the fp-strategy-live-derived verifier
-      // above: T5, phLocked=true, transpFactor=1.0, target=1.5.
-      supply = window.calculateNutritionSupply('T5', true, 1.0, 1.5, 'fp');
+      // above: T5, transpFactor=1.0, target=1.5.
+      supply = window.calculateNutritionSupply('T5', 1.0, 1.5, 'fp');
     } catch (e) {
       offenders.push(`calculateNutritionSupply threw: ${e && e.message ? e.message : e}`);
     }
@@ -4454,7 +4459,7 @@ header('channel-efficiency-capability-map — Contribution-channel efficiency ma
       // Post-2026-05-16 carve: calculateLettuceNutritionSupply is pure and
       // takes a `dependencies` bag instead of reading globals.
       const PNL = window.PlantNeedsLettuce || {};
-      lettuceSupply = window.calculateLettuceNutritionSupply(30, 100, 43, true, 50, {
+      lettuceSupply = window.calculateLettuceNutritionSupply(30, 100, 43, 50, {
         weeklyMassFlowL: 50,
         smeLettucePpm: PNL.SME_LETTUCE_PPM || {},
         lettuceRecipe: window.LETTUCE || { kSulfate: 2996, mgSulfate: 467, feSulfate: 7.5 },
@@ -4649,7 +4654,7 @@ header('channel-efficiency-capability-map — Contribution-channel efficiency ma
 
 // ─── surfactant-aware-efficiency-map — Surfactant-aware foliar efficiency map ─────────────────────
 //
-// Spec: nutrition/tomato/foliar-strategy/spec.md → surfactant-aware-efficiency-map. The foliar
+// Spec: nutrition/tomato/domain/foliar/spec.md → surfactant-aware-efficiency-map. The foliar
 // channel exposes `efficiencyFor(surfactant)` returning a per-element map
 // reactive to the surfactant lever. The page-side foliar Block 5 reads
 // this surface and updates the Efficacité column when the operator toggles.
@@ -5112,7 +5117,7 @@ header('pourquoi-modal-strings-owned-here — Pourquoi modal interpretation stri
     // assert each <key> is in expectedKeys.
     const consumers = [
       join(REPO_ROOT, 'app', 'index.html'),
-      join(REPO_ROOT, 'nutrition', 'tomato', 'shell', 'logic.js'),
+      join(REPO_ROOT, 'app', 'admin', 'nutrition', 'bilan', 'tomato', 'logic.js'),
     ];
     const callRe = /renderSpec\(\s*['"]pourquoi-modal-strings-owned-here['"]\s*,\s*['"]([^'"]+)['"]/g;
     let callsFound = 0;
@@ -5145,7 +5150,7 @@ header('pourquoi-modal-strings-owned-here — Pourquoi modal interpretation stri
     }
 
     if (callsFound === 0) {
-      offenders.push('no consumer found for pourquoi-modal-strings-owned-here — renderSpec(\'pourquoi-modal-strings-owned-here\', …) absent in app/index.html or nutrition/tomato/shell/logic.js');
+      offenders.push('no consumer found for pourquoi-modal-strings-owned-here — renderSpec(\'pourquoi-modal-strings-owned-here\', …) absent in app/index.html or app/admin/nutrition/bilan/tomato/logic.js');
     }
   }
 
@@ -5482,7 +5487,7 @@ header('identifiers-unabbreviated — Function/variable/property names in JS sou
 // Specs: nutrition/spec.md → elemental-mass-in-mg (elemental-mass columns in mg),
 // column-header-unit-declaration (unit suffix in header not in cells), manque-sortant-zero-bare (bare 0, no
 // `(couvert)`), mois-depuisement-sme-runway (Mois d'épuisement every row with reservoir data).
-// nutrition/tomato/foliar-strategy/builder/user-stories.md → foliar Block 5 (foliar Efficacité reacts to
+// app/admin/nutrition/builder/foliar/tomato/user-stories.md → foliar Block 5 (foliar Efficacité reacts to
 // surfactant lever).
 //
 // elemental-mass-in-mg / column-header-unit-declaration / manque-sortant-zero-bare are designed-to-fail at first run — the
@@ -5953,7 +5958,7 @@ header('mois-depuisement-sme-runway — Mois d\'épuisement rendered for every r
 
 // ─── Foliar Efficacité is surfactant-aware ───────────────────
 //
-// Spec: nutrition/tomato/foliar-strategy/builder/user-stories.md → foliar Block 5. Two assertions:
+// Spec: app/admin/nutrition/builder/foliar/tomato/user-stories.md → foliar Block 5. Two assertions:
 //   (a) Reactive render — toggling #nutr-foliar-surfactant re-renders
 //       Block 5's Efficacité column (column index 2 in the 6-col gap-grid
 //       per contribution-block-gap-grid: Él. | Manque entrant | Efficacité | Apport ici |

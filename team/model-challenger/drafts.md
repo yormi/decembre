@@ -1,3 +1,22 @@
+## 2026-07-12 — review of nutrition/tomato/domain/foliar/model/derivation.md (HEAD working-tree diff)
+
+No-op pass — diff repoints the Implementation-map table + include-order line to the `domain/foliar/model/` layout (`calc.js`→`recipe.js`, `model.js`→`contribution.js`, adds `computeFoliarRecipeForGap`/`computeFoliarStrategy` to the owner cell). No constant, dose, cert, stage, formula, or derivation logic moved. Body carries no stale old-layout path (grep clean) — fully migrated, no doc-hygiene flag, unlike the fertigation sibling below.
+
+
+## 2026-07-12 — review of nutrition/tomato/domain/sidedress/derivation.md (HEAD working-tree diff)
+
+No-op on model content — diff repoints the Implementation-map table to the `domain/sidedress/` layout (`calc.js`→`recipe.js`, `model.js` folded into `recipe.js`, adds `contribution.js` owning `computeSidedressContribution`, `learnings.md`→`learnings/`). No constant, dose, cert, stage, formula, or derivation logic moved.
+
+One doc-hygiene flag (flag-don't-fix):
+- **Half-migrated file references.** The map now names `recipe.js`/`contribution.js`, but the load-order paragraph immediately below still reads "Internal order: `data.js` → `calc.js` → `model.js`". Map says `recipe.js`, prose says `calc.js`/`model.js` — same files, two names in one doc. Finish the rename in that paragraph. · `PENDING`
+
+## 2026-07-12 — review of nutrition/tomato/domain/fertigation/derivation.md (HEAD working-tree diff)
+
+No-op on model content — diff repoints the Implementation-map table + include-order line to the `domain/fertigation/` layout (`calc.js`→`recipe.js`, `model.js` folded in, adds `contribution.js`, `learnings.md`→`learnings/`). No constant, dose, cert, stage, formula, or derivation logic moved.
+
+One doc-hygiene flag (flag-don't-fix):
+- **Half-migrated file references.** The map now names `recipe.js` as owner of `computeStageRecipe`, but the body still cites the old `calc.js` in three spots: "Implemented in `calc.js`" (§ Mass-balance derivation), "pin in `calc.js`" and the parallel "same pin-by-construction discipline" (§ Mo algorithmic detail). Map says `recipe.js`, prose says `calc.js` — same file, two names in one doc. Finish the rename in the body. · `PENDING`
+
 ## 2026-05-30 — review of yield-range/derivation.md (HEAD working-tree diff)
 
 No-op pass on model content — diff is slug heading/reference migration only (→`canopy-cap-is-ceiling`/`nursery-canopy-cap-by-plateau`, →`best-non-light-conditions`, →`dli-annual-sun-plus-led`/`double-poly-transmission-decomposed`, →`logistic-growth-no-decay`). No constant, dose, cert, stage, or derivation logic moved. Sibling `spec.md` is already fully slug-migrated — every cited slug resolves to a real heading, so no dangling refs (unlike the nursery entry below).
@@ -20,7 +39,7 @@ Two doc-hygiene flags (not model critiques, flag-don't-fix):
 - **Stray `(placeholder)` line** inserted under §6 refinement trigger 5 — accidental leftover, no content. · `PENDING`
 - **Dangling slug refs.** Derivation now cites slugs (`predicted-ce-under-nursery-cap`, `predicted-tank-ph-in-nursery-envelope`, `default-recipe-p-supply-half-demand`) but sibling `spec.md` headings are still the old numbered form — spec side wasn't migrated, so these point at headings that don't exist yet. Also §6 trigger 5 still reads un-migrated. · `PENDING`
 
-## 2026-05-30 — review of nutrition/tomato/soil-ph/model/derivation.md (HEAD working-tree diff)
+## 2026-05-30 — review of nutrition/tomato/domain/soil-ph/derivation.md (HEAD working-tree diff)
 
 Scope: new subsection "What the cap governs — total acid, NOT oxidation rate (cert 4)" under the per-pass safety cap. No spec entries (sibling `spec.md` still has zero slugs — blocked on PO band + calcimeter). Adds reasoning claims, no new numbers/doses.
 
@@ -44,7 +63,7 @@ No challenge. cert 4 on "total acid = f(mass), not f(rate)" is if anything conse
 ### Verdict
 Ship after addressing C1 framing (flag the fast-product branch as conditional) + B1 (Microthiol cert status). Both low-cost doc fixes; no rework, no number moved.
 
-## 2026-05-30 — review of nutrition/tomato/soil-ph/model/derivation.md (HEAD working-tree diff, peak-hazard expansion)
+## 2026-05-30 — review of nutrition/tomato/domain/soil-ph/derivation.md (HEAD working-tree diff, peak-hazard expansion)
 
 Scope: per-pass-cap subsection "What the cap governs". Prior 2-line "rate hazard, flatten the peak" paragraph expanded into (a) a 30× instantaneous-acid-flux figure (9 µm wettable vs micronized) and (b) a two-regime split — buffered (carbonate present) vs unbuffered (carbonate exhausted) acid-microzone hazard. No spec entries (sibling still zero-slug). No dose number moved. Builds directly on the prior entry's B1/C1 (lines 23-45) — read those first; not re-raising the Microthiol-cert / product-not-on-hand points.
 
@@ -68,22 +87,22 @@ No new cert challenge beyond B1. The regime-dependent claim (cert 3) is mechanis
 ### Verdict
 Ship after addressing B1 (fix or drop the 30×) + C1 (move the unbuffered-state mechanism to learnings, keep the pH-cue trigger). No rework, no dose moved; both are altitude/arithmetic hygiene on a not-yet-built, not-current-crop lever.
 
-## 2026-05-30 — review of nutrition/tomato/fertigation-recipe/model/derivation.md (HEAD working-tree diff)
+## 2026-05-30 — review of nutrition/tomato/domain/fertigation/derivation.md (HEAD working-tree diff)
 
 No-op pass — diff is slug reference migration only (→`mass-balance-derivation`, →`uptake-efficiency-factor`, →`fp-target-mirrors-sizer`, →`ca-aware-product-gate`, →`only-ca-p-participate-in-gap-chain`). No claim, number, or derivation logic moved. Nothing to critique.
-## 2026-05-30 — review of nutrition/tomato/foliar-strategy/model/derivation.md (HEAD working-tree diff)
+## 2026-05-30 — review of nutrition/tomato/domain/foliar/model/derivation.md (HEAD working-tree diff)
 
 No-op pass — diff is slug/namespace reference migration only (→`nutrition/chemistry — foliar-ce-under-burn-cap`, →`coverage-discount-on-delivery`, →`weekly-leaf-tolerance-cap`, →`gap-maximizing-recipe`). No dose, cert, or derivation logic moved. Nothing to critique.
 
-## 2026-05-30 — review of nutrition/tomato/foliar-strategy/model/derivation.md (working-tree diff)
+## 2026-05-30 — review of nutrition/tomato/domain/foliar/model/derivation.md (working-tree diff)
 
 No-op pass. Diff is a pure slug citation migration (→ `foliar-ce-under-burn-cap`, → `coverage-discount-on-delivery`, → `weekly-leaf-tolerance-cap`, → `gap-maximizing-recipe`). No claim, constant, cert, or number moved. Nothing to critique.
 
-## 2026-05-30 — review of nutrition/tomato/foliar-strategy/model/derivation.md (HEAD working-tree diff)
+## 2026-05-30 — review of nutrition/tomato/domain/foliar/model/derivation.md (HEAD working-tree diff)
 
 No-op pass — diff is slug reference migration only (→`nutrition/chemistry — foliar-ce-under-burn-cap`, →`coverage-discount-on-delivery`, →`weekly-leaf-tolerance-cap`, →`gap-maximizing-recipe`). No constant, cap, cert, or claim moved. Nothing to critique.
 
-## 2026-05-30 — review of nutrition/tomato/foliar-strategy/model/derivation.md (HEAD working-tree diff)
+## 2026-05-30 — review of nutrition/tomato/domain/foliar/model/derivation.md (HEAD working-tree diff)
 
 No-op pass — same slug citation migration as the four entries above (→`foliar-ce-under-burn-cap`, →`coverage-discount-on-delivery`, →`weekly-leaf-tolerance-cap`, →`gap-maximizing-recipe`, →`surfactant-aware-efficiency-map`, →`foliar-uptake-ph-curve`, →`in-tank-ksp-precipitation-guard`). No dose, cap, cert, or derivation logic moved. Nothing to critique.
 
@@ -91,27 +110,27 @@ No-op pass — same slug citation migration as the four entries above (→`folia
 
 No-op pass — slug citation migration only (→`default-recipe-p-supply-half-demand`, →`predicted-ce-under-nursery-cap`, →`predicted-tank-ph-in-nursery-envelope`). No constant, cap, cert, or claim moved. Nothing to critique.
 
-## 2026-05-30 — review of nutrition/tomato/fertigation-recipe/model/derivation.md HEAD
+## 2026-05-30 — review of nutrition/tomato/domain/fertigation/derivation.md HEAD
 
 No-op pass. Diff is citation-format migration only (→ slug names `under-fert-guard` / `luxury-feeding-guard` / `replenishment-cascade-earliest-first`). No constant, factor, stage, or claim moved. Nothing to critique.
 
-## 2026-05-30 — review of nutrition/tomato/fertigation-recipe/model/derivation.md (HEAD working-tree diff)
+## 2026-05-30 — review of nutrition/tomato/domain/fertigation/derivation.md (HEAD working-tree diff)
 
 No-op pass — continuation of the same slug citation migration, now covering the channel-efficiency-map + Mo sections (→`nutrition — channel-efficiency-capability-map`, →`ph-aware-effective-efficiency`, →`no-decorative-products-at-current-ph`, →`replenishment-cascade-earliest-first`). No constant, ratio, cert, or derivation logic moved. Nothing to critique.
 
-## 2026-05-30 — review of nutrition/tomato/fertigation-recipe/model/derivation.md (HEAD working-tree diff)
+## 2026-05-30 — review of nutrition/tomato/domain/fertigation/derivation.md (HEAD working-tree diff)
 
 No-op pass — same slug citation migration already logged above (active-channels-sum + Solubore + channel-efficiency-map + Mo + no-pH-gate + flat-return sections; →`under-fert-guard`/`luxury-feeding-guard`, →`replenishment-cascade-earliest-first`, →`channel-efficiency-capability-map`, →`ph-aware-effective-efficiency`, →`no-decorative-products-at-current-ph`, →`contribution-channel-details-payload`). No constant, factor, ratio, cert, or derivation logic moved. Nothing to critique. · `PENDING`
 
-## 2026-05-30 — review of nutrition/tomato/foliar-strategy/model/derivation.md (HEAD working-tree diff)
+## 2026-05-30 — review of nutrition/tomato/domain/foliar/model/derivation.md (HEAD working-tree diff)
 
 No-op pass — same slug citation migration (→`under-fert-guard`/`luxury-feeding-guard`, →`replenishment-cascade-earliest-first` ×2). No constant, factor, floor, cert, or band moved. Nothing to critique.
 
-## 2026-05-30 — review of nutrition/tomato/sidedress-recipe/model/derivation.md (HEAD working-tree diff)
+## 2026-05-30 — review of nutrition/tomato/domain/sidedress/derivation.md (HEAD working-tree diff)
 
 No-op pass — same slug citation migration (→`channel-efficiency-capability-map`, →`luxury-feeding-guard`, →`release-values-within-mass-balance-band`). No constant, factor, eff, cert, or derivation logic moved. Nothing to critique.
 
-## 2026-05-30 — review of nutrition/tomato/plant-needs/model/derivation.md HEAD
+## 2026-05-30 — review of nutrition/tomato/domain/plant-needs/derivation.md HEAD
 
 No-op pass — trivial diff: lone reference-label migration (→ slug `nutrition/tomato — tomato-removal-biased-high`) in the macro back-test refinement trigger. No claim, number, or cert moved. · `PENDING`
 
@@ -119,7 +138,7 @@ No-op pass — trivial diff: lone reference-label migration (→ slug `nutrition
 
 No-op pass. Diff deletes a single bare reference in the channel-efficiency-map section ("Block 5 toggle that the page-side reads") — bare-reference elimination migration. No constant, dose, cert, stage, branch, or mechanism moved. Sibling clause already names the slug (`surfactant-aware-efficiency-map`), so the removal leaves no dangling reference. · `PENDING`
 
-## 2026-05-31 — review of nutrition/tomato/soil-ph/model/derivation.md (HEAD working-tree diff)
+## 2026-05-31 — review of nutrition/tomato/domain/soil-ph/derivation.md (HEAD working-tree diff)
 
 Scope: new subsection "Target band (the correction endpoint)" added above the feasibility gate. Cert-3 endpoint band (Mehlich-3 water pH 6.4–6.8, aim 6.5, hard floor 6.2) lifted from the new `learnings/define-soil-root-zone-ph-target-band.md` into the live derivation. No dose number moved; the band was already the implicit endpoint the dose tables drive toward. Sibling `spec.md` still zero-slug.
 
@@ -132,7 +151,7 @@ Scope: new subsection "Target band (the correction endpoint)" added above the fe
 
 ### Complexity
 **C1 — target band now stated in three places, one of them stale and contradicting** · `PENDING`
-- **Specialist added:** the band as a full subsection in `derivation.md`, duplicating `learnings/define-soil-root-zone-ph-target-band.md` (canonical rationale) and overlapping the older specialist note in `nutrition/tomato/spec.md` (lines 41–59).
+- **Specialist added:** the band as a full subsection in `derivation.md`, duplicating `learnings/define-soil-root-zone-ph-target-band.md` (canonical rationale) and overlapping the older specialist note in `nutrition/tomato/domain/spec.md` (lines 41–59).
 - **Test:** changes a team action? The duplication itself doesn't — but the **parent spec.md note still frames the band as an unwritten PO gap** ("`soil-root-zone-ph-band` does not yet exist… Recommend the PO write the entry") and quotes **operational midpoint ~6.6**, which the new decision reverses (specialist-owned, aim **6.5**). A reader landing on the parent spec gets the superseded ownership + a different number.
 - **MVP version:** keep the band in `learnings/` (rationale) + a one-line pointer from `derivation.md`; flag the parent `spec.md` note (lines 41–59) for the specialist to prune/reverse-in-place per the no-vestigial rule. Challenger doesn't edit spec — flag only.
 - **Why it might stay:** a short endpoint table in the derivation is reasonable (the dose tables sit right below it and reference 6.5/6.2). The defect is the un-reversed parent note, not the derivation copy.
@@ -147,7 +166,7 @@ Ship the derivation subsection after addressing C1 (reverse/prune the stale pare
 
 Hook re-fired on the unchanged target-band diff. Already reviewed above (2026-05-31, lines 122–144: B1 Mn-knee aim · C1 stale parent note). No new claim moved → no-op pass. · `PENDING`
 
-## 2026-05-31 — review of nutrition/tomato/soil-ph/model/derivation.md (band-lowered diff)
+## 2026-05-31 — review of nutrition/tomato/domain/soil-ph/derivation.md (band-lowered diff)
 
 Scope: **distinct from the prior entries** — the band was *lowered* this edit (6.4–6.8/aim 6.5/floor 6.2 → **6.0–6.5/aim 6.3/floor 5.8**), per a same-day Guillaume call ("we control the foliar Mn source"). Diff adds the new Target-band table, rewires the pH guardrail bullet (stop 6.3, floor 5.8), and edits the refinement-trigger line. The band *value* is Guillaume's decision — not challenged. Two correctness/coherence defects + one cert ask below.
 
@@ -177,7 +196,7 @@ No new complexity finding. The guardrail bullet now carries "zero foliar Mn thro
 The lowered band did not propagate. Four surfaces still carry 6.4–6.8 / aim 6.5 / floor 6.2:
 - `learnings/define-soil-root-zone-ph-target-band.md` § "Practical note — undershoot" ("landing anywhere in 6.4–6.8 is a win… floor 6.2") and § "Why 6.0–6.5… not 6.0–6.4" header still says 6.0–6.4 in the heading — the *canonical* rationale file self-contradicts its own new table.
 - sibling `soil-ph/model/spec.md` (lines 12, 23) — old band.
-- parent `nutrition/tomato/spec.md` (lines 43–48) — old band.
+- parent `nutrition/tomato/domain/spec.md` (lines 43–48) — old band.
 Per the no-vestigial rule these are the specialist's to reverse-in-place. The learning's own internal contradiction (new table vs stale Practical-note) is the most urgent — that file is cited as the source of truth from three places.
 
 ### Verdict
@@ -191,7 +210,7 @@ Hook re-fired on the band-lowering diff already reviewed above (lines 150–184:
 
 Hook re-fired again on the same band-lowering diff (6.0–6.5 / aim 6.3 / floor 5.8). Ran the full three-angle pass independently; landed on the identical findings already captured at lines 150–184. No new claim moved → no-op pass, no duplicate entry. · `PENDING`
 
-## 2026-06-02 — review of nutrition/tomato/soil-ph/model/derivation.md (HEAD working-tree diff)
+## 2026-06-02 — review of nutrition/tomato/domain/soil-ph/derivation.md (HEAD working-tree diff)
 
 Scope: **two genuinely new claims beyond the band-lowering already reviewed at lines 150–184.** (1) Tiger 90CR cert flipped **0 → 4** ("Ecocert certified, allowed") in both the § product block and the refinement-trigger line. (2) Stage-2 dose bumped to **~12 kg S/bed** for the deeper 6.3 aim (vs ~10 kg for 6.5). The band-lowering's prior B1 (trigger line stuck on old numbers) is now **resolved** — trigger line reads 6.0–6.5 / 6.3 / 5.8. Band value itself remains Guillaume's call, unchallenged.
 
@@ -211,7 +230,7 @@ No new finding beyond the band-lowering's B2 (floor-drop on unquantified Mn offs
 ### Verdict
 Land the dose bump (cert-2, proportional, fine). **Block the Tiger 90CR cert flip** (D1) until the Ecocert certificate is on file or cited — revert to cert-0/UNKNOWN otherwise. This is an organic-cert claim with no document behind it; the on-file label is disclaimed as proof by its own index. · `PENDING`
 
-## 2026-06-02 — review of nutrition/tomato/soil-ph/model/derivation.md (HEAD working-tree diff)
+## 2026-06-02 — review of nutrition/tomato/domain/soil-ph/derivation.md (HEAD working-tree diff)
 
 Scope: new "Target band" subsection (6.0–6.5 / aim 6.3 / floor 5.8); dose-stop guardrail 6.5/6.2 → 6.3/5.8; Tiger 90CR cert 0 → 4 (Ecocert); new "Field application log" with first empirical pH titration (5 reads, cert 2); stage-table endpoint 6.5 → 6.3 (~12 kg S); two refinement triggers resolved. No sibling `spec.md` slugs (still blocked on calcimeter).
 
@@ -273,5 +292,178 @@ No new constant, stage, or branch — a single value moved. Nothing to cut.
 ### Verdict
 Land after refreshing the stale worked example (B1 — concrete defect, highest priority) and confirming film condition justifies top-of-band (B2/D1 — Guillaume call). The constant choice itself is defensible if the film is genuinely fresh; the trace just hasn't caught up to the new value.
 
+## 2026-07-05 — review of nutrition/nursery/plant-needs/derivation.md (HEAD working-tree diff)
+
+Scope: `LETTUCE_NURSERY_DM_FRACTION` section only. No number moved — DM held 0.07, cert held 3. Adds (a) "held-long crowded plugs run drier still (≥ 0.07)" and (b) a bold "not the same as yield-range's `DRY_MATTER_FRACTION = 0.045`" paragraph forbidding unification, citing a ~36 % demand cut and "mask the salt-driven under-supply." Touches `nitrogen-demand-in-band-at-defaults` (spec.md) only indirectly — the 63 mg worked example still rides on 0.07.
+
+### Blindspots
+**B1 — DM value defended by appeal to its own convenient downstream conclusion** · `PENDING`
+- **What the spec assumes:** 0.07 is right partly because "dropping this to 0.045 would … mask the salt-driven under-supply." The under-supply diagnosis is used as a reason to hold DM high.
+- **What might be ignored:** this inverts the derivation direction. DM is an input; it must stand on tissue-physics grounds (firm younger tissue, moderate moisture) — which the paragraph *also* states, and which is sufficient. Coupling the input's defense to the output it produces is the `refit-not-relabel` failure mode: if true plug DM were nearer 0.05, the honest response is to update the under-supply read, not to protect DM because it yields the wanted story. The physical basis carries the value alone; the "mask the under-supply" clause adds motivated reasoning, not evidence.
+- **How to test it:** the end-of-cycle DW measurement already named in the refinement triggers — it settles DM on its own, independent of any downstream diagnosis. Until it lands, defend 0.07 on tissue grounds only.
+- **Cost if real:** low — no number moved, doc/reasoning-discipline only. But it's the exact input-defended-by-output pattern the persona exists to catch.
+
+**B2 — "≥ 0.07" widens the claim to a floor, but only the downside is guarded** · `PENDING`
+- **What the spec assumes:** the new "held-long crowded plugs run drier still (≥ 0.07)" reframes 0.07 from a point estimate to a lower bound, while the formula still feeds it as a single point linearly.
+- **What might be ignored:** if plugs genuinely run 0.08–0.10, computed demand is *under*-stated ~15–40 % — the opposite tail from the 0.045 concern, and it points the *same direction* as the under-supply worry (demand even higher than modelled). The note defends hard against the low side (don't unify to 0.045) and asserts the high side (≥ 0.07) without carrying either tail into a cert or trigger. Asymmetric — the value is now a bound in prose but a point in the math.
+- **How to test it:** same DW measurement; log the actual spread, not just a floor. If it reads 0.09, the 63 mg N band example and the whole demand table shift up too.
+- **Cost if real:** low-medium — nursery demand-sizing, docs only; matters if the ≥0.07 hint is real and the demand table is quietly low.
+
+### Complexity
+**C1 — the "don't unify" note is worth keeping; the under-supply justification clause is not** · `PENDING`
+- **Specialist added:** full bold paragraph = (i) "different quantity, don't unify 0.07 with yield-range 0.045" + (ii) "would cut demand ~36 % and mask the salt-driven under-supply."
+- **Test:** changes a team action? (i) yes-ish — it prevents a real footgun (two same-named DM constants, different values across subprojects; a future editor could unify them). (ii) no — the under-supply clause guides no edit; it only couples the value to a diagnosis (see B1).
+- **MVP version:** keep (i) and the ~36 % figure (arithmetic checks: 0.045/0.07 = 0.64 → −36 %, correct — it quantifies the footgun). Drop (ii)'s "mask the salt-driven under-supply" tail — the physical-basis sentence already justifies the value.
+- **Why it might stay:** if the under-supply read is the reason this cross-reference was written at all, the specialist may want the motivation on record — but that belongs in `learnings/`, not as the value's justification in the live derivation.
+
+### Cert defense
+No challenge. DM cert 3 (operator notes, no lab) is honestly stated and unchanged; the refinement trigger to bump 3→4 on a ±0.5 % DW measurement is already in place. The "≥ 0.07" widening loosens the claim slightly but stays inside the operator-notes basis.
+
+### Verdict
+Ship the cross-reference note (the footgun guard + correct ~36 % figure are useful) after trimming the "mask the under-supply" justification (B1/C1 — decouple input from output) and deciding whether ≥0.07 should carry into the demand math or stay prose (B2). No dose moved; findings are reasoning-discipline + one asymmetry, all low-cost.
+
 ## 2026-06-13 — re-trigger, yield-range/derivation.md (no-op)
 Hook re-fired on the same `GH_LIGHT_TRANSMISSION_DOUBLE_POLY` 0.55 → 0.65 diff already reviewed above (lines 247-274: B1 stale d44 worked example · B2 top-of-band optimism / film-condition · D1 cert-3 holds on literature but now a field-reality bet). Ran the three-angle pass independently; landed on the same findings (plus the annual-average-sun × peak-fresh-transmission time-axis framing, already covered by B2's optimism point). No new claim moved → no-op pass, no duplicate entry. · `PENDING`
+
+
+## 2026-07-05 — review of yield-range/derivation.md (full rewrite: logistic → carbon-balance + senescence)
+
+Scope: entire derivation rewritten. Retired `logistic-growth-no-decay`, `best-non-light-conditions`, `packed-canopy-spacing`, per-plant DLI-share. New live entries: `carbon-balance-growth`, `canopy-closure-detection` / `senescence-past-closure`, `nursery-canopy-cap` / `field-canopy-cap-by-density`, `field-spacing-config`, `labor-routine-cadence` / `throughput-and-sales`. New sales surface ($/kg × kg/year). Guillaume decision 2026-07-04.
+
+### Blindspots
+**B1 — RUE 1.1 (clean) drives the full-cycle sales surface, but the only anchors are stressed (ε≈0.85); the field output is a +29% extrapolation with no intermediate data point** · `PENDING`
+- **What the spec assumes:** the params "reproduce the observed stressed anchors — 16 g @ d28, 40 g @ d35 — in `seedling-thinning.js`", and `predictYield` "shares the constants". Fit + headline treated as one validated engine.
+- **What might be ignored:** the anchor fit runs at stressed ε≈0.85 (domain.md, day10 learning), but the headline `predictYield` / sales surface runs at clean `RADIATION_USE_EFFICIENCY = 1.1`. Field fresh weight ≈ stressed-anchor × (1.1 / 0.85) ≈ **+29%**, unvalidated against any observation. This is structurally the same move the challenger already rejected once — the 0.40 RGR jump "had no intermediate data point" ([[refit-not-relabel]]). Fresh weight also scales inversely with `DRY_MATTER_FRACTION = 0.045` (also cert 2) in any *uncapped* short-routine config, so two cert-2 multipliers stack into the same sales number.
+- **How to test it:** one clean (destressed) cohort weighed at a known day/spacing that is NOT cap-bound → back out ε at Décembre and check it lands near 1.1; until then the field surface is literature-scaled, not anchored.
+- **Cost if real:** high — every $ in `yearlySalesDollars` scales ~linearly with ε (and 1/DM in uncapped configs).
+
+**B2 — Growth held at DLI_TARGET = 17 makes the whole sales surface a "light always optimal" number; QC winter feasibility is deferred to `light/` but the $ output doesn't carry the caveat** · `PENDING`
+- **What the spec assumes:** growth DLI pinned at 17; whether sun + LED reaches it is decoupled as a `light/` feasibility concern, "not a growth input".
+- **What might be ignored:** the old engine coupled growth to *actual* per-plant DLI (sun × transmission + LED, minus canopy-share decay). The rewrite removes that coupling entirely — the engine never sees a shortfall. `kgPerYear` / `yearlySalesDollars` are therefore best-case-light annual figures. In QC winter, aged poly (0.45), and cloudy strings (`SKY_CONDITION_FACTORS` down to 0.25), the fixture may not close the gap to 17 for weeks — real annual kg would fall below the surface with no in-model signal.
+- **How to test it:** `Guillaume call needed:` is the annual-sales surface meant as best-case-light (planning ceiling) or light-feasible-adjusted (bookable revenue)? If the latter, throughput must weight by the fraction of the year `light/` says 17 is reachable.
+- **Cost if real:** high — a headline revenue number read as achievable when it's a lighting-optimal ceiling.
+
+**B3 — Senescence (cert 1, uncalibrated) feeds harvestWeightG → kgPerYear → sales; and the nursery reuses the field rate 0.04, under its own observed 0.066 anchor** · `PENDING`
+- **What the spec assumes:** `SENESCENCE_ONSET_DAYS = 7`, `SENESCENCE_DECLINE_RATE = 0.04` make the labor-routine tradeoff "directional, not quantitative".
+- **What might be ignored:** onset 7 d after closure with field routines of 14/21/28 d means most configs harvest *inside* the senescence regime → `harvestWeightG` (hence all $ output) depends on a cert-1 number, not just the routine ranking. Separately, `senescingAtTransplant` applies the same 0.04 in the nursery, but the nursery's own anchor was −0.066/day (16→10 g d28–35) — so the nursery decline is modeled ~40% gentler than the one observation it has. Directional-only is the stated claim, but the sales tiles read as quantitative.
+- **How to test it:** first field cohort weighed at harvest at the operational routine (already the named refinement trigger) — but flag in-app that sales figures inherit a cert-1 rate until it lands.
+- **Cost if real:** medium-high — routine *ranking* likely survives; routine *magnitude* and absolute sales do not.
+
+**B4 — No marketable-fraction / survival haircut on the sales surface, and the prior open marketability question (150-160 g sellable?) was dropped, not resolved** · `PENDING`
+- **What the spec assumes:** Little's-law throughput → `yearlySalesDollars = kgPerYear × 25` with 100% bed occupancy, zero germination loss, zero cull, every gram sellable.
+- **What might be ignored:** the retired derivation carried an explicit Guillaume-owned open input — "does 200 g matter or is 150-160 g sellable? drives whether 43/m² is final density". The rewrite deletes that block. If it was answered, the answer isn't recorded; if not, a live commercial decision was dropped silently ([[feedback_no_vestigial]]). Also no marketable-fraction multiplier — real ops lose 10-20% to culls/failures before sale.
+- **How to test it:** `Guillaume call needed:` was the min-sellable-head-size / density decision settled? And should sales carry a marketable-fraction factor, or is best-case (every head sold) the intended surface?
+- **Cost if real:** medium — dropped decision + unhaircut sales both inflate the revenue read.
+
+### Complexity
+**C1 — `SENESCENCE_ONSET_DAYS` and `SENESCENCE_DECLINE_RATE` are two cert-1 knobs for a result the spec says is only directional** · `PENDING`
+- **Specialist added:** separate onset (7 d) + rate (0.04) parameters, each with its own refinement trigger.
+- **Test:** for a *directional* "held longer → lose more" tradeoff, does splitting onset from rate change a team action vs a single decline-from-closure param? Not until field data calibrates both.
+- **MVP version:** could fold to one param (decline begins at closure, or a single days-to-loss) until the first field weigh-in splits them.
+- **Why it might stay:** the two map to distinct observables (peak-day vs slope) with clean separate triggers, and the second field-weight series is already named to calibrate onset — so the split pre-positions the calibration cleanly. Steelman holds; low-value cut. Flagging for completeness, not pressing.
+
+Note: the rewrite is net *complexity-reducing* (removed f_light piecewise, per-plant DLI-share, best-non-light framing). The two-DM-fraction choice (0.045 field vs 0.07 nursery-nutrient) is well-argued in the trace — unify-either-way distorts one lane — no cut.
+
+### Cert defense
+**D1 — `RADIATION_USE_EFFICIENCY = 1.1 g dry/mol`, stated "cert 2 literature"** · `PENDING`
+- **Specialist's defense:** clean-root lettuce RUE from literature.
+- **What I'd need to accept cert ≥ 2:** an on-disk primary source. The retired derivation itself flagged the [[P-10]] missing-doc gap — no growth-physiology source in `nutrition/doc/` (only fertigation-chemistry PDFs). Same gap now applies to RUE 1.1: literature-asserted, unverified on disk ([[read-vendor-doc-first]]).
+- **My read:** cert 2 holds *only if* the RUE source lands in `nutrition/doc/`; until then it's a literature assertion (effective cert 1-2). This is load-bearing (B1) — the whole field surface scales on it, so the missing doc matters more here than it did for RGR.
+
+**D2 — `GROWTH_RGR = 0.20`, cert unstated in the new trace** · `PENDING`
+- **Specialist's defense:** day-10 open-canopy photo refutes 0.30; spring back-fit corroborates 0.22 (`learnings/day10-open-canopy-refutes-rm-030.md`).
+- **What I'd need to accept:** nothing more — the coverage-based refutation of 0.30 is sound and the two-photo argument is honest about wanting a 3-plant d10 weigh to tighten. Reasoning fine.
+- **My read:** defense fine; but the new `carbon-balance-growth` block prints no cert on `GROWTH_RGR` where the old block stated one. Flag: state the cert (2, per the photo-coverage basis) so the trace doesn't leave the engine's primary rate uncerted.
+
+### Verdict
+Land after addressing B1 (clean-ε anchor gap — highest, the field/sales surface is a +29% unvalidated scale-up) and D1 (RUE source doc). B2 + B4 are Guillaume calls on what the sales number *means* (best-case-light + every-head-sold vs bookable). B3 directional claim is fine but the app must not present cert-1-derived $ as firm. C1/D2 are low-value cleanups. Engine rewrite itself is coherent and net-simpler; the exposure is that a dollars surface now rides on two cert-2 multipliers + one cert-1 rate + a best-case-light assumption, none yet anchored at Décembre.
+
+## 2026-07-05 — re-trigger, yield-range/derivation.md (no-op)
+Hook re-fired on the same logistic → carbon-balance rewrite already reviewed above (lines 310-360: B1 clean-ε +29% anchor gap · B2 DLI_TARGET=17 best-case-light sales · B3 senescence cert-1 into $ + nursery reuses 0.04 under 0.066 · B4 no marketable-fraction / dropped 150-160 g question · C1 two senescence knobs · D1 RUE-1.1 missing doc · D2 GROWTH_RGR cert unstated). Ran the three-angle pass independently; landed on the identical findings — the validation block still calibrates the "optimum-stress" curve to the stressed 16 g/40 g anchors (their B1), `GROWTH_RGR` still prints no cert (D2), senescence still `cert 1` feeding sales (B3). No new claim, constant, or cert moved → no-op pass, no duplicate entry. · `PENDING`
+
+## 2026-07-08 — review of yield-range/derivation.md (evolution since the 2026-07-05 rewrite)
+
+Scope: **not** the full rewrite (already at lines 310-360). This diff evolves it: anchor swapped `16 g@d28 / 40 g@d35` → **`5 g (biggest) @ d25`, drought+heat** (old anchors retired as salt-stalled/unsourced); new constant `NURSERY_STRESS_RUE = 0.85` (field still clean `1.1`); `min()` cliff → Beer–Lambert interception (`SLA` back-derived, `k = 0.7` new); senescence onset retuned **`7 → 1.7`**, closure `LAI 1.4 → 3`.
+
+**Still standing, not re-raised (2026-07-05 PENDING):** B1 clean-ε drives the whole $ surface, only anchor stressed — now *sharper*, derivation itself admits "clean ε (1.1) is unanchored — no well-watered 50-cell weighed yet". B2 DLI_TARGET=17 best-case-light. B4 marketable-fraction / the 150-160 g density question — the "Extension-pending" block that held it is **deleted** this diff, so that Guillaume-owned commercial input is now gone from the file, still unresolved. D1 RUE-1.1 missing doc. D2 GROWTH_RGR still prints no cert.
+
+### Blindspots
+**B1 — the anchor is the tray's *biggest* plant; ε calibrated to the max, applied to every head in `kgPerYear`** · `PENDING`
+- **What the spec assumes:** reproducing "5 g (biggest) @ d25" validates the growth engine; `throughput-and-sales` then multiplies `harvestWeightG` across `headsPerWeek` (all heads).
+- **What might be ignored:** "biggest" is the population max, not the mean. Calibrating ε (and the transplant weight it sets) to the largest seedling propagates a max-of-population weight onto *every* head in the sales roll-up. With no survival/marketable haircut (B4), mean < biggest → `kgPerYear` and `yearlySalesDollars` are systematically over-read. The bias is baked into the *calibration philosophy*, so it will re-infect the clean field ε the moment that cohort is weighed the same way.
+- **How to test it:** weigh the **mean** (or a distribution) of the next anchor cohort, not the biggest; anchor ε to the mean. If only a max is ever recorded, carry an explicit biggest→mean derate into throughput.
+- **Cost if real:** high — direct multiplier on the headline revenue surface.
+
+**B2 — senescence retune makes the 2wk-vs-3wk labor comparison unreliable, but that IS the lever the model is built to inform** · `PENDING`
+- **Guillaume call needed:** does the operator surface present a 2-week vs 3-week routine choice as decision-grade?
+- **What the spec assumes:** onset `1.7` + rate `0.04` keep the labor-routine tradeoff "directional (hold longer → lose more)".
+- **What might be ignored:** the derivation now *admits* the strict `2wk < 3wk < 4wk` ordering is "phase-sensitive" — only over-holding past the peak (`4wk < 3wk`) is robust; whether 2wk reads below 3wk "depends on where the LAI-3 oscillation phase falls, which `1.7` tunes". The app compares 2/3/4-week routines (`labor-routine-cadence`). So the model is directional exactly where it doesn't matter (nobody debates 4wk) and phase-dependent where the real call sits (2 vs 3).
+- **How to test it:** first field cohort weighed at 2wk and 3wk at the operational spacing → check the model reproduces the *sign* of the 2-vs-3 gap before any surface presents it as a routine recommendation.
+- **Cost if real:** medium-high — an operational lever presented as decision-grade over a comparison the model can't reliably order.
+
+### Complexity
+**C1 — `SENESCENCE_ONSET_DAYS` retuned `7 → 1.7` to preserve a qualitative behavior, not to fit data** · `PENDING`
+- **Specialist added:** onset dropped to 1.7 explicitly "to keep the labor-routine tradeoff *directional*" after closure moved to LAI 3.
+- **Test:** changes a team action vs leaving onset uncalibrated? No — it's a free knob tuned to make the model's own output monotone, on zero senescence data.
+- **MVP version:** hold onset at a physically-motivated placeholder and let the ordering be whatever the physics gives, OR collapse onset+rate to one days-to-loss param until the salt-controlled cohort lands — don't tune a cert-1 knob to manufacture a directional signal the data can't yet support. This is the [[refit-not-relabel]] pattern: a parameter moved to hit a desired result (there RGR 0.40 → chosen asymptote; here onset 1.7 → chosen ordering).
+- **Why it might stay:** directionality is the stated purpose and the field trigger is named — but tuning to preserve it, then labeling the result "directional," is circular. Flag the tune as a placeholder, don't present the ordering as a model finding.
+
+### Cert defense
+**D1 — "Validation" oversells a single-scalar fit of a two-parameter (ε × DM) engine** · `PENDING`
+- **Specialist's defense:** the params "reproduce the one real Décembre weight — 5 g biggest @ d25" in both `calc.js` and the chart view.
+- **What I'd need to accept "validated":** more than one datum. `5 g = ε_stress × DM × f(day, DLI)` is one equation in two unknowns — the learnings table itself shows **`(DM 0.045, ε 0.68)` and `(DM 0.07, ε 0.85)` both hit 5 g**. The 0.07/0.85 pair was chosen to reuse an existing constant, not because the datum distinguishes it. One scalar can't validate a curve; it can only be *consistent* with it.
+- **My read:** downgrade the language from "validated" to "consistent with the single stressed datum". `NURSERY_STRESS_RUE` cert 1 is honest; but `PLUG_DRY_MATTER_FRACTION` carrying **cert 3** while co-determining that same fit overstates — its cert rests on the nursery-lane tissue basis, not on this reproduction, so the derivation shouldn't lean the "reproduces the anchor" claim on it. Split: the *fit* is cert 1 (one point, degenerate); the plug-DM *value* keeps its own cert 3 on tissue grounds, but not by virtue of the 5 g match.
+
+### Verdict
+Land the engine evolution (Beer–Lambert + derived SLA is a genuine improvement — net-simpler, kills the LAI-1.4 cliff artifact). But three new exposures ride on top of the still-open 2026-07-05 set: the anchor is a population **max** feeding a mean surface (B1, high), the senescence retune makes the **2-vs-3-week lever unreliable** in the range that matters (B2, Guillaume call), and "validated" overstates a **degenerate one-point fit** (D1). None block the math; all bear on whether the sales/labor surfaces can be read as decision-grade. · `PENDING`
+
+
+## 2026-07-11 — review of yield-range/derivation.md (HEAD working-tree diff: age-stepped DLI ceiling + SLA re-anchor)
+
+Scope: `carbon-balance-growth`. Two moves: flat-17 light fold → `NURSERY_DLI_CEILING_BY_WEEK = [10,14,17]`, growth on `min(DLI_TARGET, nurseryLightCeiling(day))` (`calc.js:136`); `SPECIFIC_LEAF_AREA` re-derived at the week-2 ceiling (14) not `DLI_TARGET` (17), 0.015 → 0.019. Not re-raised: the 2026-07-08 / 07-05 PENDING set (max-anchor, senescence-lever, one-point fit) all still stand.
+
+**Steelman first (why this diff is net-good):** day 10 sits in the week bucket that gets ceiling 14, so deriving `SLA` at 14 makes the small-LAI limit `ε·DLI·k·SLA·W` actually equal `GROWTH_RGR·W` *at the anchor's real DLI* — deriving at 17 (prior state) was an internal inconsistency this fixes. And the stepped ceiling removes the flat-17 over-lighting of fragile cotyledon/true-leaf plugs (the named `#3` fix). Both are improvements. The findings below are narrow.
+
+### Blindspots
+**B1 — sibling `spec.md` contract still says flat `DLI_TARGET`; code + derivation moved to the age-stepped `min()`** · `PENDING`
+- **What the contract states:** `spec.md` § carbon-balance-growth line 71 `gain = ε × DLI_TARGET × A_ground × fi`; lines 86-88 "folds into `ε × DLI_TARGET` (no separate `f_light` multiplier)"; Assumptions line 50 "Growth DLI held at `DLI_TARGET`".
+- **What the model now does:** `calc.js:136` `effectiveDli = Math.min(DLI_TARGET, nurseryLightCeiling(day))` and this derivation's age-stepped fold. All three contract statements now contradict the code. The contract is the read surface — it understates the model.
+- **How to test it:** n/a — coherence, not physics. Specialist / context-coherence lane updates `spec.md` § carbon-balance-growth pseudo-code + Assumptions to the `min(DLI_TARGET, nurseryLightCeiling(day))` form.
+- **Cost if real:** low on yield; but live drift on the contract surface — the exact vestigial-hold pattern the shop bans.
+
+**B2 — `SLA` is now pinned to an unmeasured directional band-top, and `SLA` sets closure/senescence timing model-wide** · `PENDING`
+- **What the spec assumes:** `SLA = GROWTH_RGR/(ε·NURSERY_DLI_CEILING_BY_WEEK[1]·k)` is "**derived, not free**" — reads as anchored.
+- **What might be ignored:** the anchor DLI (14) is itself a cert-2 band-top from `light/domain.md`, self-labeled "directional only, not a Décembre measurement." Moving the anchor DLI 17→14 lifted `SLA` ~27 % (0.015→0.019). `SLA` feeds `LAI → closure day → senescence onset → the whole labor-routine trajectory`. So an unmeasured nursery light band now propagates into field yield + senescence predictions, and the next band revision moves `SLA` again.
+- **How to test it:** first leaf-area / SLA measurement at week 2 (already the named trigger). Until then, closure timing inherits the band's cert 2 — the derivation's "derived, not free" should read "derived from the week-2 band (cert 2), not measured."
+- **Cost if real:** medium — closure/senescence timing is exactly what the 2-vs-3-week labor lever (B2, 07-08) rides on; an SLA shift re-phases the LAI-3 oscillation that lever depends on.
+
+### Complexity
+**C1 — three-step ceiling `[10, 14, 17]`** · `PENDING`
+- **Specialist added:** per-week 3-value lookup + `nurseryLightCeiling(day)`.
+- **Test:** changes a team action vs a single early-nursery sub-ceiling, or vs just anchoring? The 5 g @ d25 anchor lands either way (4.9 g); field ages all sit at 17, so the steps only bite wk1-2.
+- **MVP version:** could fold to one "fragile-plug" sub-ceiling — but the SLA anchor now needs the week-2 value (14) named explicitly, and the 3 steps carry no extra data cost.
+- **Why it might stay:** it is the `#3` over-lighting fix *and* the SLA-at-14 coherence needs the week-2 step. Weak cut — lean **stays**.
+
+### Verdict
+Ship — net a coherence improvement (SLA now consistent with the day-10 anchor's actual DLI; fragile-plug over-lighting removed). Two follow-ups, neither a math blocker: `spec.md` contract is now stale vs the `min()`-form code (B1, low-yield / live drift — route to coherence lane), and the derived `SLA` inherits the unmeasured week-2 band's cert 2 and propagates it into closure/senescence timing that the labor lever depends on (B2, medium). · `PENDING`
+
+## 2026-07-11 — re-trigger, yield-range/derivation.md (no-op)
+Hook re-fired on the same age-stepped-ceiling + SLA-re-anchor diff already reviewed above (lines 402-429: B1 spec.md flat-`DLI_TARGET` drift · B2 SLA pinned to unmeasured cert-2 band-top → closure/senescence timing · C1 three-step ceiling lean-stays). Ran the three-angle pass independently and landed the identical findings. One extra angle considered and dropped: whether the `GROWTH_RGR = 0.20` day-10 anchor lived at clean ε (1.1) vs stressed (0.85) — the SLA back-solve uses clean 1.1, so a stressed-cohort 0.20 would over-set SLA ~1.3×; steelmanned away because the day-10 refutation of 0.30 is coverage-geometric (ε-independent, `learnings/day10-open-canopy-refutes-rm-030.md`), so 0.20 stands as a clean rate. No new claim, constant, or cert moved → no-op pass, no duplicate entry. · `PENDING`
+
+## 2026-07-11 — supplement, same diff (one finding the 402-429 pass + the two re-triggers all missed)
+
+Not a re-trigger no-op: the passes above ran the three-angle sweep and converged, but none noticed the field-side consequence of the SLA re-anchor. The 402-429 steelman ("deriving SLA at 14 makes the small-LAI limit equal `GROWTH_RGR·W` at the anchor's real DLI") is circular — "real DLI = 14" is *imposed by the new ceiling model*, not measured. Only this one finding; B1/B2/C1 above stand as written.
+
+### Blindspots
+**B1 — SLA back-solved at DLI 14 while the engine runs field + late-nursery at DLI 17 → field open-canopy RGR silently became 0.24, not the 0.20 anchor; the "open-canopy limit = GROWTH_RGR" invariant now holds only at nursery week 2** · `PENDING`
+- **What the spec assumes:** `derivation.md` `carbon-balance-growth` and `spec.md:85` state the small-LAI limit equals `GROWTH_RGR·W` as an **unqualified invariant** ("derived so this limit is exact"). The 402-429 C1 treats "field ages all sit at 17, so the steps only bite wk1-2" as benign.
+- **What might be ignored:** open-canopy RGR = `ε·DLI·k·SLA`, *linear in the operating DLI*. SLA was pinned to make that = 0.20 at DLI 14. The engine runs field plants (and day ≥ 14 nursery) at `effectiveDli = 17`, where the rate is `1.1·17·0.7·0.019 = 0.243/day` — **+21% over GROWTH_RGR = 0.20**. Post-transplant a head sits deeply open-canopy (LAI ≈ 0.3 at field spacing) for much of the field window, so this faster exponential phase feeds `harvestWeightG → kgPerYear → yearlySalesDollars`. Field yield rode up as a side effect of a change whose stated purpose (`#3`) was the *early* plug. The d25 nursery anchor can't catch it — there the plug is near-closed (light-limited), so SLA↑ and ceiling↓ cancel (5 → 4.9 g). Validation sits exactly where the bias is invisible.
+- **Why the steelman is circular:** "the anchor's real DLI is 14" comes from the new ceiling model (day 10 → week bucket → 14), not a measurement. It's only right if the day-10 cohort was genuinely light-limited to ~14. If the propagation space delivered ~17 and the plug grew at 0.20, then 0.20 is the rate at 17, SLA should derive off 17 (stays 0.015), and this diff over-derives SLA and inflates field growth.
+- **How to test it:** `Guillaume call needed:` what usable DLI did the day-10 open-canopy anchor cohort actually see — full propagation-space 17, or young-tissue-limited ~14? Independent back-check: a clean field cohort weighed at a non-cap-bound day/spacing shows whether field open-canopy RGR is 0.20 or 0.24. MVP alternative if the ceiling effect is wanted only early: keep SLA off 17 (0.015) so the invariant holds at the field DLI, and let the wk1/2 ceiling slow only the early plug — isolates the `#3` fix without the field inflation.
+- **Cost if real:** high — a ~21% multiplier on the field open-canopy phase, i.e. on the headline revenue surface, introduced silently by the SLA re-anchor.
+
+### Verdict
+Hold the SLA re-derivation pending the day-10-anchor-DLI call. The 402-429 "net coherence improvement" read holds only if that cohort was truly light-limited to 14; if it saw 17, the re-anchor breaks the open-canopy invariant in the field and lifts sold-weight ~21% with no anchor to catch it. The age-stepped ceiling mechanism itself is fine — the exposure is coupling it to the SLA back-solve rather than leaving SLA anchored at the field DLI. · `PENDING`
+
+## 2026-07-12 — review of nutrition/tomato/domain/fertigation/derivation.md HEAD (no-op)
+Mechanical rename tracking the domain-split refactor (commit c5e4760): title `fertigation-recipe`→`fertigation`, `calc.js`→`recipe.js`, `model.js`→`contribution.js`, `learnings.md`→`learnings/`, plus implementation-map path updates. No claim, constant, cert, or model logic moved. Trivial → no-op pass, no findings.
