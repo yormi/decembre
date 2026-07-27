@@ -49,6 +49,30 @@
 // It also serves as the team-visible audit trail for organic certification.
 const RECIPE_HISTORY = [
   {
+    retired: '2026-07-18',
+    recipe: 'STORED_RECIPE.tomato.sidedress',
+    summary: 'Actisol retiré du sidedress tomate (tous stades) — farine de plumes seule',
+    reason: 'L\'Actisol 5-3-2 était déjà gated à 0 au T5 (ca-aware-product-gate, sol Ca-saturé) ; sa contribution N/P/K aux stades T1-T4 est retirée pour simplifier le canal en farine-de-plumes-seule. Le Ca du sol est en large surplus (Mehlich-3 Ca ~11 000 kg/ha) donc l\'apport granulaire Actisol n\'est pas requis. Décision Guillaume.',
+    replacedBy: 'STORED_RECIPE.tomato.sidedress = farine de plumes seule (actisol_g retiré)',
+    fullSnapshot: {
+      fertigation: {
+        T1: { mgSulfate: 0, kSulfate: 0, mnSulfate: 3,  znSulfate: 1.5, borax: 10, naMolybdate: 0.5 },
+        T2: { mgSulfate: 0, kSulfate: 0, mnSulfate: 6,  znSulfate: 2.5, borax: 10, naMolybdate: 0.5 },
+        T3: { mgSulfate: 0, kSulfate: 0, mnSulfate: 8,  znSulfate: 4,   borax: 10, naMolybdate: 0.5 },
+        T4: { mgSulfate: 0, kSulfate: 0, mnSulfate: 9,  znSulfate: 5,   borax: 10, naMolybdate: 0.5 },
+        T5: { mgSulfate: 0, kSulfate: 0, mnSulfate: 12, znSulfate: 6.5, borax: 10, naMolybdate: 0.5 },
+      },
+      sidedress: {
+        T1: { actisol_g: 57,  farine_g:  84  },
+        T2: { actisol_g: 180, farine_g:  267 },
+        T3: { actisol_g: 467, farine_g:  695 },
+        T4: { actisol_g: 755, farine_g: 1125 },
+        T5: { actisol_g: 0,   farine_g: 2000 },
+      },
+      foliaire: { masterVol: 15, backpacks: 1, area: '383 m²', A: [], B: [] },
+    },
+  },
+  {
     retired: '2026-07-12',
     recipe: 'STORED_RECIPE.lettuce.fertigation',
     summary: 'Bore fertigation laitue Solubore 0,7 → 1,3 g (rendement relevé)',

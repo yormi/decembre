@@ -30,10 +30,10 @@ nutrition/chemistry — every-cation-anion-pair-classified / every-chemistry-tag
 (= 1.0 mS/cm).
 
 **Rationale:** Domain seedling root-zone band is target 1.0–1.2, hold feed
-> 1.5 (young roots salt-sensitive; `nutrition/lettuce/domain/domain.md`). The cell
+> 1.5 (young roots salt-sensitive; `domain/lettuce/model.md`). The cell
 concentrates ~1.5× above the bucket feed as it dries between weekly feeds
 (cert 2 dry-down estimate), so a 1.0 bucket cap keeps the cell peak near the
-1.5 hold line, targeting ~1.2. Per-feed leaching (`nutrition/lettuce/protocol/nursery/salt-flush.md`)
+1.5 hold line, targeting ~1.2. Per-feed leaching (`protocol/salt-flush/seedlings.md`)
 resets weekly accumulation; pour-through EC is the cell ground truth.
 Cap lowered 3.0 → 1.0 (2026-06-20) — the prior 1.5–2.5 substrate band was
 rejected by the field (leachate 5+, Na 3166, tip-burn). Cert 2 — dry-down
@@ -60,25 +60,28 @@ is what holds the tank in band (predicted 5.83).
 ≥ `0.5 × demandPerTray_N_mg`.
 
 `demandPerTray_N_mg` from `window.PlantNeedsNursery.demandPerTray('N')`, which
-reads `targetG_default` (= 20 g since 2026-06-20) → demand ~700 mg N/tray/wk,
-floor ~350 mg. If namespace not loaded, verifier falls back to inline 3 150 mg
-(90 g reference — stale vs the live 20 g default; only hit if the namespace is
-absent). Cert 3 — `LETTUCE_NURSERY_TISSUE_DW.N` × DW per plant × 50.
+reads `targetG_default` (= 50 g since 2026-07-19) → demand ~1120 mg N/tray/wk
+(35 mg/plant × 32 pots), floor ~560 mg. If namespace not loaded, verifier falls
+back to inline 3 150 mg (90 g reference — stale vs the live 50 g default; only
+hit if the namespace is absent). Cert 3 — `LETTUCE_NURSERY_TISSUE_DW.N` × DW
+per plant × 32.
 
 **Rationale:** N is rate-limiting macro for seedling growth on peat. <50 %
 from bucket means plant eats peat starter charge (variable batch-to-batch)
 or slows. 50 % is soft floor; full demand is goal once tissue tests come
-back. At the 20 g target the salt-safe feed clears the floor with room
-(supply ~412 mg ≥ 350).
+back. At the 50 g target on the ~120 mL/pot feed volume the salt-safe feed
+clears **full** demand (supply ~1290 mg ≥ 1120), not just the floor — the
+extra feed volume of the 2.5"-pot format delivers the higher N at unchanged
+bucket CE.
 
 ---
 
 ## default-recipe-p-supply-half-demand
 
 **Statement:** `nurseryRecipeSupply(NURSERY_RECIPE_DEFAULT, NURSERY_FERTIGATION_DEFAULTS.trayVolumeL).perTray_mg.P`
-≥ `0.5 × demandPerTray_P_mg`. Live demand at the 20 g default ~70 mg P/tray/wk
-→ floor ~35 mg; supply ~44 mg clears it. Inline fallback 315 mg (90 g
-reference) only if namespace absent. Cert 3.
+≥ `0.5 × demandPerTray_P_mg`. Live demand at the 50 g default ~112 mg P/tray/wk
+(3.5 mg/plant × 32 pots) → floor ~56 mg; supply ~138 mg clears **full** demand.
+Inline fallback 315 mg (90 g reference) only if namespace absent. Cert 3.
 
 **Rationale:** P is second-most-important seedling macro (root
 development); peat starter charge unreliable post-2-3 waterings. Acadie

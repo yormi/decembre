@@ -92,6 +92,9 @@ window.
 - demand ramps with plug age → DLI past the stage optimum is wasted; on tender tissue it is stressful
 
 
+- **weeks below are counted from SOWING** (week 1 = days 1–7), matching the growth engine's `NURSERY_DLI_CEILING_BY_WEEK` and `doc/data-points.md`. Week 1 therefore contains emergence.
+
+
 - week 1 (cotyledon) : fragile, low demand — floor DLI ~8–10 mol; overshoot (> ~12) → tipburn / stress on tender cotyledons, not faster growth
 
 
@@ -177,7 +180,7 @@ window.
 - Site light climate (clear-day-max DLI, cloud attenuation, annual mean) → root `domain.md`.
 
 
-- Film transmission and LED fixture → `domain/greenhouse.md`.
+- Film transmission and LED fixture → `domain/lighting-zones.md`.
 
 
 - Seedling growth-weight engine (radiation use efficiency ε, expolinear curve, canopy-volume cap) → yield-range · seedling weight (`yield-range/domain/domain.md`).

@@ -28,6 +28,10 @@ import { readFile, writeFile, copyFile, mkdir, readdir, cp, stat } from 'node:fs
 import { watch, statSync } from 'node:fs';
 import { resolve, dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { execFile } from 'node:child_process';
+import { promisify } from 'node:util';
+
+const execFileAsync = promisify(execFile);
 
 const PROJECT_ROOT = resolve(fileURLToPath(import.meta.url), '../..');
 const SOURCE       = resolve(PROJECT_ROOT, 'app/index.html');
@@ -65,7 +69,27 @@ const PRACTICE_PHOTO_DEST   = 'diagnostic/practice-images';
 const INCLUDE_RE   = /^[ \t]*<!--\s*@include\s+(\S+?)\s*-->[ \t]*\r?\n?/gm;
 const SPEC_STRINGS_MARKER = /^[ \t]*<!--\s*@spec-strings\s*-->[ \t]*\r?\n?/m;
 const WATCH_DIRS   = ['app', 'nutrition', 'yield-range'];
-const WATCH_EXTS   = ['.html', '.css', '.js', '.md'];
+const WATCH_EXTS   = ['.html', '.css', '.js', '.md', '.elm'];
+
+// Elm islands. Compiled every build (elm-stuff cache makes no-change
+// compiles ~100ms); output lands in dist/ next to index.html.
+const ELM_BINARY  = resolve(PROJECT_ROOT, 'node_modules/.bin/elm');
+const ELM_ISLANDS = [
+  { main: 'app/admin/nutrition/bilan/tomato/Main.elm', out: 'elm-bilan-tomato.js' },
+  { main: 'app/operator/lettuce/LettuceRoutine.elm',   out: 'elm-operator-lettuce.js' },
+];
+
+async function buildElm() {
+  for (const island of ELM_ISLANDS) {
+    try {
+      await execFileAsync(ELM_BINARY,
+        ['make', island.main, '--output=' + resolve(DIST_DIR, island.out)],
+        { cwd: PROJECT_ROOT });
+    } catch (e) {
+      throw new Error(`elm make failed (${island.main}):\n${e.stderr || e.message}`);
+    }
+  }
+}
 
 // Parse `Renders:` blocks out of a spec.md file.
 //
@@ -164,6 +188,7 @@ async function resolveIncludes(content, sourcePath, depth = 0) {
 async function build() {
   const t0 = Date.now();
   await mkdir(DIST_DIR, { recursive: true });
+  await buildElm();
   const tpl = await readFile(SOURCE, 'utf8');
   let out = await resolveIncludes(tpl, SOURCE);
 

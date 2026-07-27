@@ -1,6 +1,6 @@
 # Yield Range — Salanova carbon-balance yield model
 
-Predicts a Salanova cohort from germination through field harvest on a
+Predicts a Salanova cohort from sowing through field harvest on a
 single carbon-balance growth engine, then rolls the per-plant harvest
 weight into the operation's throughput: kg/month, yearly sales, and trays
 held in the nursery at a time.
@@ -26,7 +26,7 @@ page: `light/`.
 - `thinDay` — integer in `[1, nurseryDays]` when `thinning`, else `null`
 - `nurseryDays` — integer ≥ 1, days in nursery before transplant
 - `nurseryStress` — boolean (default `false`); `true` = drought + high-heat
-  nursery (reduced ε, anchored to 5 g @ d25), `false` = clean/well-watered
+  nursery (reduced ε, unanchored), `false` = clean/well-watered
   (`carbon-balance-growth`)
 
 ### Outputs
@@ -40,20 +40,20 @@ page: `light/`.
 - `nurseryPeakWeightG` — max weight during the nursery phase (day ≤ `nurseryDays`)
 - `senescingAtHarvest` — `harvestWeightG < 0.98 × peakWeightG`
 - `senescingAtTransplant` — `transplantWeightG < 0.98 × nurseryPeakWeightG`
-- `trajectory` — `{ day, weight_g, regime }` from day 0 to `nurseryDays + fieldDays` (`carbon-balance-growth`)
+- `trajectory` — `{ day, weight_g, regime }` from day 1 to `nurseryDays + fieldDays` (`carbon-balance-growth`)
 - `headsPerWeek`, `kgPerWeek`, `kgPerMonth`, `kgPerYear`, `yearlySalesDollars`, `traysInNursery` (`throughput-and-sales`)
 
 ### Assumptions
 - Steady-state weekly rotation: one bed's cohorts cut and replanted on the
   labor cadence; nursery and field cohorts overlap in parallel.
-- Growth DLI held at `DLI_TARGET` (the photosynthetic optimum). Whether sun +
-  LED reaches it is the lighting-feasibility concern (`light/`), not a growth
-  input.
+- Growth DLI = the age ceiling in the nursery, `DLI_TARGET` in the field.
+  Whether sun + LED reaches `DLI_TARGET` is the lighting-feasibility concern
+  (`light/`), not a growth input.
 - All non-light stress (VPD, CE, nutrients, disease) fixed at optimum except
   the emergent crowding/senescence the engine models — and the nursery
-  drought+heat regime exposed by `nurseryStress` (the one calibrated stress,
-  anchored to 5 g @ d25).
-- Days are days-from-germination.
+  drought+heat regime exposed by `nurseryStress` (unanchored — see
+  `learnings/5g-day25-drought-heat-primary-anchor.md`).
+- **Days are days from sowing, day 1 = the sowing day** — the same axis as every observation in `doc/data-points.md`, so no conversion is ever needed. **Time to emergence is modelled, not assumed**: `germinationDaysFromSoilTemperature(T)` = `GERMINATION_THERMAL_TIME_DEGREE_DAYS / (T − GERMINATION_BASE_TEMPERATURE_C)`, null below the base temperature and above `GERMINATION_INHIBITION_TEMPERATURE_C` (thermo-dormancy → `predictYield` throws). Light-driven gain is zero before `emergenceDay = 1 + germinationDays`. The nursery DLI ceiling steps on `day − 1`. `EMERGENCE_DRY_MASS_G` is the mass at emergence — a fitted level, not a weighed seed (`derivation.md` Day axis).
 - Bed geometry: 4 beds, 30 in × 100 ft each (`BED_AREA_M2 = 23.23 m²`).
 
 ---
@@ -67,7 +67,7 @@ Per-plant dry mass integrates in `GROWTH_STEP_DAYS` steps:
 DM        = nursery ? PLUG_DRY_MATTER_FRACTION : DRY_MATTER_FRACTION
 LAI       = W_dry × SPECIFIC_LEAF_AREA / A_ground
 fi        = 1 − exp(−LEAF_AREA_EXTINCTION_K × LAI)
-DLI_use   = min(DLI_TARGET, nurseryLightCeiling(day))   # age ceiling: wk1 10 · wk2 14 · wk3+ 17
+DLI_use   = nursery ? nurseryLightCeiling(day) : DLI_TARGET   # sowing-age ceiling: wk1 10 · wk2 14 · wk3+ 25
 gain      = ε × DLI_use × A_ground × fi
 net_dry   = daysClosed < SENESCENCE_ONSET_DAYS ? gain : −SENESCENCE_DECLINE_RATE × W_dry
 W_dry     = clamp(W_dry + net_dry × dt, 0, capFresh × DM)
@@ -75,8 +75,9 @@ W_fresh   = W_dry / DM
 ```
 
 `ε` and `DM` are **stage-specific**. Nursery: plug DM (`0.07`, firm/dry) and,
-when `nurseryStress`, the drought+heat ε (`NURSERY_STRESS_RUE = 0.85`) — this
-pair reproduces the real anchor, 5 g (biggest) @ d25 for a 50-cell at DLI 17.
+when `nurseryStress`, the drought+heat ε (`NURSERY_STRESS_RUE = 0.85`) — the
+pair no longer reproduces a weight anchor; 0.85 keeps the value it was fitted
+to at DLI 17, before the wk3+ ceiling moved to 25.
 Field: hydrated head DM (`0.045`) and clean ε (`1.1`). DM steps *up* at
 transplant (nursery→field), lifting `W_fresh` — the rehydration gain. The plug
 never reaches its volume cap, so plug DM sets its fresh weight directly.
@@ -88,12 +89,14 @@ canopy (small `LAI`) → `fi ≈ k·LAI` → gain ≈ `GROWTH_RGR × W` → expo
 RGR sags smoothly from `GROWTH_RGR` toward 0 across the band — no hard knee.
 The light response folds into `ε × DLI_use` (no separate `f_light`
 multiplier), where `DLI_use` is the DLI the plant can use at its age —
-`min(DLI_TARGET, nurseryLightCeiling(day))`, stepping 10 (cotyledon wk1) → 14
-(true-leaf wk2) → 17 (plug/field wk3+). Light past the stage ceiling buys no
-growth; this slows the early nursery to what the fragile plug can realize
+`nurseryLightCeiling(day)` in the nursery, stepping on sowing weeks — 10
+(cotyledon, days 1–7) → 14 (true-leaf, days 8–14) → 25 (plug, day 15 on);
+`DLI_TARGET` in the field. Light past the
+stage ceiling buys no growth; this slows the early nursery to what the fragile
+plug can realize and lets a hardened plug convert above the LED target
 (derivation Light fold). `A_ground = TRAY_FRAME_M2 / nurseryTrayCells` in the nursery
 (×2 after a checker-thin), `1 / density` in the field. `trajectory` samples
-integer days 0..`nurseryDays + fieldDays`, tagged `nursery` for
+integer days 1..`nurseryDays + fieldDays`, tagged `nursery` for
 `day ≤ nurseryDays` else `field`.
 
 ---

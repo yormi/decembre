@@ -52,50 +52,52 @@ function computeStageRecipe(stage) {
   const sd = STORED_RECIPE.tomato.sidedress[stage] || { actisol_g: 0, farine_g: 0 };
   const biomass = BIOMASS_DEMAND[stage] || {};
   const compost = (typeof window !== 'undefined' && window.CompostContribution && window.CompostContribution.releasePerWeek) || {};
-  const uptake = PH_UPTAKE_FACTOR_AT_CURRENT_SOIL;
+  const PM = (typeof window !== 'undefined') ? window.PoolMaintenance : null;
+  const SC = (typeof window !== 'undefined') ? window.SoilContribution : null;
 
-  // ── K ──
-  const k_demand_mg = (TOMATO_FRUIT_EXPORT.K.g * 1000 * y) + (biomass.K || 0);
-  const k_demand_to_bed = k_demand_mg / (uptake.K || 1);
+  // ── Bed-level need per element, SOIL-BANK-CREDITED (soil-bank-credited-fertigation-basis) ──
+  // The FP target only replenishes what the soil + other channels don't cover.
+  // For pool-forming elements the fertigation need is the pool-MAINTENANCE dose
+  // (0 when the pool sits above band — the multi-season bank buffers offtake),
+  // NOT full offtake ÷ uptake. Mirrors the Bilan Block-2 cascade so the FP
+  // recipe answers the incoming gap instead of over-replenishing a saturated
+  // pool. Mobile B: weekly-removal (bed-level). Fallback to offtake if
+  // PoolMaintenance is unavailable (headless boot before soil-contribution).
+  const offtake = (el) => ((TOMATO_FRUIT_EXPORT[el] ? TOMATO_FRUIT_EXPORT[el].g * 1000 * y : 0) + (biomass[el] || 0));
+  const bankMap = (SC && SC.BANK_MG_M2 && SC.BANK_MG_M2.tomato) || {};
+  const ppm = {};
+  if (PM) Object.keys(bankMap).forEach(el => { ppm[el] = PM.poolPpmFromBankMg(bankMap[el]); });
+  const bedNeed = (el) => {
+    if (PM && PM.POOL_FORMING_ELEMENTS.includes(el)) {
+      return PM.maintenanceDose(el, ppm[el], offtake(el), PM.bandPpm(el, ppm)).dose;
+    }
+    return offtake(el);  // mobile (B): weekly removal, bed-level
+  };
+  const compostMg = (el) => (compost[el] || 0) * 1000;
+
+  // ── K ── pool-maintenance basis net of sidedress + compost
   const k_sd_mg = (sd.actisol_g * PRODUCT_PCT.Actisol_K * (SIDEDRESS_MINIMUM_EFFICIENCY.K || 0.85) * 1000) / SIDEDRESS_AREA_PER_PLANCHE;
-  const k_compost_mg = (compost.K || 0) * 1000;
-  const k_fert_mg_per_m2 = Math.max(0, k_demand_to_bed - k_sd_mg - k_compost_mg);
-  const kSulfate = Math.round((k_fert_mg_per_m2 / 1000 / PRODUCT_PCT.K2SO4_K) * totalArea);
+  const kSulfate = Math.round((Math.max(0, bedNeed('K') - k_sd_mg - compostMg('K')) / 1000 / PRODUCT_PCT.K2SO4_K) * totalArea);
 
-  // ── Mg ──
-  const mg_demand_mg = (TOMATO_FRUIT_EXPORT.Mg.g * 1000 * y) + (biomass.Mg || 0);
-  const mg_demand_to_bed = mg_demand_mg / (uptake.Mg || 1);
-  // Side-dress products carry no Mg; compost release subtracted.
-  const mg_compost_mg = (compost.Mg || 0) * 1000;
-  const mg_fert_mg_per_m2 = Math.max(0, mg_demand_to_bed - mg_compost_mg);
-  const mgSulfate = Math.round((mg_fert_mg_per_m2 / 1000 / PRODUCT_PCT.MgSO4_Mg) * totalArea);
+  // ── Mg ── pool-maintenance basis; sidedress carries no Mg
+  const mgSulfate = Math.round((Math.max(0, bedNeed('Mg') - compostMg('Mg')) / 1000 / PRODUCT_PCT.MgSO4_Mg) * totalArea);
 
-  // ── B (Solubore) — single-channel B at T5+ (replenishment-cascade-earliest-first) ──
-  // TOMATO_FRUIT_EXPORT[el].g uses uniform-field convention (×1000 → mg)
-  // for both macros and micros — see plant-needs/calc.js calculateNutritionDemand.
-  const b_demand_mg = (TOMATO_FRUIT_EXPORT.B.g * 1000 * y) + (biomass.B || 0);
-  const b_demand_to_bed = b_demand_mg / (uptake.B || 1);
-  const b_compost_mg = (compost.B || 0) * 1000;
-  const b_fert_mg_per_m2 = Math.max(0, b_demand_to_bed - b_compost_mg);
-  const solubore = Math.round((b_fert_mg_per_m2 / 1000 / PRODUCT_PCT.Solubore_B) * totalArea);
+  // ── B (Solubore) — mobile, single-channel, weekly-removal basis ──
+  const solubore = Math.round((Math.max(0, bedNeed('B') - compostMg('B')) / 1000 / PRODUCT_PCT.Solubore_B) * totalArea);
 
-  // ── Mo (sodium molybdate) — flat 0.5 g/wk across stages, replenishment-cascade-earliest-first Mo carve-out ──
-  const naMolybdate = 0.5;
+  // ── Mo (sodium molybdate) — anionic, amply available at pH ≥ 6; soil covers
+  // offtake → no fertigation need (soil-bank-credited-fertigation-basis). FP target 0; the
+  // operator 0.5 g weighability floor lives in STORED_RECIPE, not the FP target.
+  const naMolybdate = 0;
 
-  // ── Cation micros Mn / Zn (rendus au fertigation 2026-07-11) ──
-  // Soil pH recovered to 6.5 → sulfate-metal lockout lifted (channel efficiency
-  // 0.10 → 0.75). Delivered to FULL plant demand: no soil-bank credit applied
-  // (decision Guillaume 2026-07-11 — feed demand, let the next SME re-source).
-  // Unlike K/Mg, the micro dose divides by the channel efficiency because the
-  // sulfate-metal loss at pH 6.5 (25 %) is material, not noise. Bed→plant
-  // uptake factor = 1.0 (PH_UPTAKE_FACTOR, cert 1 placeholder).
-  // Fe is NOT fertigated: soil-covered at 6.5 + FeSO₄ oxidizes in the 5-day
-  // drip tank (channel-role Fe = passive). Granular FeSO₄ sidedress = fallback.
+  // ── Cation micros Mn / Zn — pool-maintenance basis, grossed up for the
+  // sulfate-metal channel loss at pH 6.5 (efficiency 0.75). 0 when the pool is
+  // above band; a build dose only when it dips below.
+  // Fe is NOT fertigated: soil-covered + FeSO₄ oxidizes in the 5-day drip tank
+  // (channel-role Fe = passive). Granular FeSO₄ sidedress = fallback.
   const microDose = function(element, productPct) {
-    const demand_mg = (TOMATO_FRUIT_EXPORT[element].g * 1000 * y) + (biomass[element] || 0);
-    const demand_to_bed = demand_mg / (uptake[element] || 1);
     const channelEfficiency = FERTIGATION_EFFICIENCY_AT_CURRENT_SOIL[element] || 1;
-    return Math.round((demand_to_bed / 1000 / productPct / channelEfficiency) * totalArea);
+    return Math.round((Math.max(0, bedNeed(element) - compostMg(element)) / 1000 / productPct / channelEfficiency) * totalArea);
   };
   const mnSulfate = microDose('Mn', PRODUCT_PCT.MnSO4_Mn);
   const znSulfate = microDose('Zn', PRODUCT_PCT.ZnSO4_Zn);

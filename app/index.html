@@ -18,6 +18,7 @@
 <!-- @include app/operator/nutrition/fertigation/page.css -->
 <!-- @include app/admin/week/page.css -->
 <!-- @include app/admin/diagnostic/page.css -->
+<!-- @include app/admin/rendement/page.css -->
 </style>
 </head>
 <body>
@@ -106,13 +107,15 @@
        coverage and pH lockout). Flags gaps and prioritizes corrections. -->
   <div id="page-nutriment-content" style="display:none;">
 
-    <!-- Crop sub-toggle: Tomate / Salanova. Tomate uses the stage-driven
-         (T1-T5) Bilan; Salanova uses a continuous post-transplant model
-         (mass gain × DM × tissue conc.) since lettuce has no flowering/fruit
-         transitions to stage on. -->
+    <!-- Crop sub-toggle: Tomate (Elm island) / Tomates backup (legacy JS
+         stage-driven Bilan) / Salanova (continuous post-transplant model) /
+         Semis laitue. -->
     <div class="crop-toggle">
       <button class="crop-btn active-tomato" id="nutr-crop-tomato" onclick="setNutrCrop('tomato')">
         <span class="crop-icon">🍅</span> Tomates
+      </button>
+      <button class="crop-btn" id="nutr-crop-tomato-backup" onclick="setNutrCrop('tomato.backup')">
+        <span class="crop-icon">🍅</span> Tomates (backup)
       </button>
       <button class="crop-btn" id="nutr-crop-lettuce" onclick="setNutrCrop('lettuce')">
         <span class="crop-icon">🥬</span> Salanova
@@ -122,8 +125,11 @@
       </button>
     </div>
 
-    <!-- ═════════ TOMATO BILAN (existing) ═════════ -->
+    <!-- ═════════ TOMATO BILAN — ELM ISLAND ═════════ -->
     <!-- @include app/admin/nutrition/bilan/tomato/page.html -->
+
+    <!-- ═════════ TOMATO BILAN (backup — legacy JS) ═════════ -->
+    <!-- @include app/admin/nutrition/bilan/tomato.backup/page.html -->
 
     <!-- ═════════ SALANOVA POST-TRANSPLANT NUTRITION ═════════ -->
     <!-- @include app/admin/nutrition/bilan/lettuce/page.html -->
@@ -141,14 +147,10 @@
        buildYieldRange() in app/admin/rendement/logic.js. -->
   <!-- @include app/admin/rendement/page.html -->
 
-  <!-- ═══════════════ LUMIÈRE PAGE (operator) ═══════════════ -->
-  <!-- Supplemental-LED-hours guide (lettuce-only). Defined in
-       app/operator/lumiere/lettuce/page.html; wired via setPage('lumiere') →
-       buildLight() in app/operator/lumiere/lettuce/logic.js. -->
-  <!-- @include app/operator/lumiere/lettuce/page.html -->
+  <!-- @include app/operator/lettuce/page.html -->
 
   <div class="footer">
-    <span id="last-update"></span>Ferme Décembre · Système d'opération 2026 · <a href="historique.html" style="color:inherit;text-decoration:underline;">Historique</a>
+    <a href="historique.html" style="color:inherit;text-decoration:underline;">Historique</a>
     <button id="admin-toggle" class="admin-toggle" onclick="toggleAdmin()" title="Mode admin" aria-label="Basculer le mode admin">admin</button>
   </div>
 </div>
@@ -288,8 +290,8 @@ window.STORED_RECIPE = { tomato: {}, nursery: {}, lettuce: {} };
 <!-- @include nutrition/tomato/protocol/fertigation/stored.js -->
 <!-- @include nutrition/tomato/protocol/sidedress/stored.js -->
 <!-- @include nutrition/tomato/protocol/foliar/stored.js -->
-<!-- @include nutrition/lettuce/protocol/nursery/fertigation/stored.js -->
-<!-- @include nutrition/lettuce/protocol/fertigation/stored.js -->
+<!-- @include protocol/fertigation/lettuce/seedlings-week-2-to-transplant.js -->
+<!-- @include protocol/fertigation/lettuce/transplanted.js -->
 
 // FP recipe (T5 only — refined 2026-05-08 to mass-balance pure, no soil credit).
 // Single source of truth for the Phase 1 comparison (Block 6) and the bank-
@@ -390,6 +392,7 @@ const FP_RECIPE_T5 = {
 <!-- @include nutrition/soil-contribution/calc.js -->
 <!-- @include nutrition/soil-contribution/render.js -->
 <!-- @include nutrition/soil-contribution/model.js -->
+<!-- @include nutrition/soil-contribution/pool-maintenance.js -->
 
 // Soil-contribution integrator-side mass-flow helpers — SME_TOMATO_PPM,
 // weeklyMassFlowL, transpirationFactor, nMineralizationFactor,
@@ -580,12 +583,12 @@ const ACCEPTED_EXCESSES = [
 // statusFor. Consumes the pure per-channel contribution functions loaded
 // in section 7 (computeFertigationContribution, computeSidedressContribution,
 // computeFoliarContribution, deriveFoliarRecipeFromGap). Consumers:
-// app/admin/nutrition/bilan/tomato/logic.js → buildNutrimentTomato.
-<!-- @include app/admin/nutrition/bilan/tomato/contribution-orchestrator.js -->
+// app/admin/nutrition/bilan/tomato.backup/logic.js → buildNutrimentTomato.
+<!-- @include app/admin/nutrition/bilan/tomato.backup/contribution-orchestrator.js -->
 
 // renderPhase1Comparison — stored-vs-FP drift table renderer for the Bilan's
 // Block 7 admin panel. Reads nutrStage + STORED_RECIPE + FP_RECIPE_T5 +
-// computeStageRecipe. Consumer: app/admin/nutrition/bilan/tomato/logic.js.
+// computeStageRecipe. Consumer: app/admin/nutrition/bilan/tomato.backup/logic.js.
 <!-- @include app/operator/nutrition/fertigation/drift.js -->
 
 // ── 10. UI helpers (modal, format, gap-grid) ──────────────────────────────
@@ -595,7 +598,7 @@ const ACCEPTED_EXCESSES = [
 <!-- @include nutrition/lib/pourquoi.js -->
 
 // formatValue + formatMg live in nutrition/lib/format.js — consumed by
-// renderGapGrid below, app/admin/nutrition/bilan/tomato/logic.js, and
+// renderGapGrid below, app/admin/nutrition/bilan/tomato.backup/logic.js, and
 // nutrition/soil-contribution/render.js.
 <!-- @include nutrition/lib/format.js -->
 
@@ -605,13 +608,13 @@ const ACCEPTED_EXCESSES = [
 <!-- @include nutrition/lib/render-gap-grid.js -->
 
 // ── 11. Per-crop nutriment builders ───────────────────────────────────────
-<!-- @include app/admin/nutrition/bilan/tomato/logic.js -->
-<!-- @include app/admin/nutrition/builder/sidedress/tomato/logic.js -->
-<!-- @include app/admin/nutrition/builder/fertigation/tomato/logic.js -->
+<!-- @include app/admin/nutrition/bilan/tomato.backup/logic.js -->
 
 <!-- @include app/admin/nutrition/bilan/lettuce/logic.js -->
 
 <!-- @include app/admin/rendement/logic.js -->
+// Supplemental-LED-hours table. No page of its own: buildLight() renders
+// into the slot the Laitue routine's light card draws.
 <!-- @include app/operator/lumiere/lettuce/logic.js -->
 
 <!-- @include app/admin/nutrition/bilan/nursery/logic.js -->

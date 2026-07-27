@@ -1,5 +1,11 @@
 # Age-stepped usable-DLI ceiling in the nursery (2026-07-11)
 
+> **Amended 2026-07-26.** The germination lag is gone: the model axis is
+> sowing-only, day 1 = the sowing day, so **model day = sowing day** and the
+> ceiling steps on `day − 1`. Every "model day N" conversion below is superseded
+> — read every day number as a sowing day. Band days: 1–7 → 10, 8–14 → 14,
+> day 15 on → 25. Values unchanged.
+
 ## Decision
 
 The growth engine now drives on `min(DLI_TARGET, nurseryLightCeiling(day))`
@@ -11,8 +17,17 @@ instead of a flat `DLI_TARGET = 17`. The ceiling steps by plug age:
 | wk2 — true-leaf | 14 | leaves hardening, band 12–14 |
 | wk3+ — plug/field | 17 | tolerates the production optimum |
 
+**2026-07-25:** wk3+ raised **17 → 25** and the nursery term decoupled from
+`DLI_TARGET` (nursery drives on the ceiling, field on `DLI_TARGET`). A measured
+July bench DLI of 23.3 mol/m²/j was converted by a week-4 plug without tipburn,
+so 17 was capping growth the tissue could realize. `SPECIFIC_LEAF_AREA` derives
+from the wk2 step, so the day-10 anchor is unaffected. The 5 g datum below is
+demoted to a data point on **basis** grounds (biggest plant vs a mean-plant
+engine) — it still fits, at 4.56 g on its correct axis: its "d25" is a **sowing**
+day = model day 21 ([[5g-day25-drought-heat-primary-anchor]]).
+
 Values are the tops of the `light/domain.md` setpoint bands (8–10 / 12–14 /
-~17). Applied by days-from-germination, so field ages (≥ wk3) sit at 17 and
+~17). Applied by age on the sowing axis (`day − 1`), so field ages (≥ wk3) sit at 17 and
 the ceiling only bites in the early nursery.
 
 ## Why (the #3 fix)
@@ -36,7 +51,8 @@ usable DLI is the ceiling **14**, not 17. So SLA is now derived at 14:
 (was 0.015 at 17).
 
 Deriving at 14 keeps the day-10 rate at `GROWTH_RGR` and **preserves the
-stressed anchor**: the model still reproduces 5 g (biggest) @ d25 for a
+stressed anchor**: the model still reproduces 5 g (biggest) at that datum's age
+(sowing day 25 = model day 21) for a
 drought+heat 50-cell (4.9 g). Without the re-anchor the ceiling would have
 dropped the day-10 rate to 0.20·14/17 ≈ 0.165 and violated the anchor.
 

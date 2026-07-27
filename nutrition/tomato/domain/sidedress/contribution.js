@@ -1,6 +1,6 @@
 // Per-channel contribution function for sidedress, extracted from the
 // inline sidedress slice of calculateNutritionSupply in
-// app/admin/nutrition/bilan/tomato/contribution-orchestrator.js. Pure: no DOM reads, no window.* reads.
+// app/admin/nutrition/bilan/tomato.backup/contribution-orchestrator.js. Pure: no DOM reads, no window.* reads.
 //
 // Returns { N, P, K } in mg/m²/wk for the sidedress channel at `stage`.
 // Caller selects the sd source (stored vs FP).

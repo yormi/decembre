@@ -133,8 +133,8 @@ function setPage(page) {
   if (page === 'sol' && currentCrop === 'nursery') {
     setCrop('tomato');
   }
-  // Lumière page is lettuce-only (supplemental lighting is lettuce-only).
-  if (page === 'lumiere' && currentCrop !== 'lettuce') {
+  // Routine laitue is lettuce-only.
+  if (page === 'laitue' && currentCrop !== 'lettuce') {
     setCrop('lettuce');
   }
   // Subtle text-only Semaine + Diagnostic buttons: darken color when active
@@ -147,7 +147,7 @@ function setPage(page) {
   const section = sectionOf(page);
   document.getElementById('section-nutriments').className = section === 'nutriments' ? 'section-btn active' : 'section-btn';
   document.getElementById('section-effeuillage').className = section === 'effeuillage' ? 'section-btn active' : 'section-btn';
-  document.getElementById('section-lumiere').className = section === 'lumiere' ? 'section-btn active' : 'section-btn';
+  document.getElementById('section-laitue').className = section === 'laitue' ? 'section-btn active' : 'section-btn';
   document.getElementById('section-irrigation').className = section === 'irrigation' ? 'section-btn active' : 'section-btn';
   document.getElementById('page-fertigation').className = page === 'fertigation' ? 'page-btn active' : 'page-btn';
   document.getElementById('page-sol').className = page === 'sol' ? 'page-btn active' : 'page-btn';
@@ -163,7 +163,7 @@ function setPage(page) {
   document.getElementById('page-nutriment-content').style.display = page === 'nutriment' ? 'block' : 'none';
   document.getElementById('page-historique-nutriments-content').style.display = page === 'historique-nutriments' ? 'block' : 'none';
   document.getElementById('page-rendement-content').style.display = page === 'rendement' ? 'block' : 'none';
-  document.getElementById('page-lumiere-content').style.display = page === 'lumiere' ? 'block' : 'none';
+  document.getElementById('page-laitue-content').style.display = page === 'laitue' ? 'block' : 'none';
   // Highlight the active admin tool button
   const nutrBtn = document.getElementById('page-nutriment');
   nutrBtn.style.color = page === 'nutriment' ? 'var(--text)' : 'var(--text-muted)';
@@ -180,6 +180,9 @@ function setPage(page) {
   // the header) is the back-nav primitive that returns to the operational pages
   // from any admin/tool view. The secondary page-toggle additionally only shows
   // inside the Nutriments section (Effeuillage / Irrigation are single-page).
+  // Rendement lays three cards side by side — it needs more than the 480 px
+  // phone column the rest of the app uses.
+  document.querySelector('.container').classList.toggle('container-wide', page === 'rendement');
   const isToolPage = (page === 'week' || page === 'diagnostic' || page === 'diagnostic-practice' || page === 'nutriment' || page === 'historique-nutriments' || page === 'rendement');
   document.getElementById('section-toggle').style.display = isToolPage ? 'none' : 'flex';
   document.getElementById('page-toggle').style.display = (isToolPage || section !== 'nutriments') ? 'none' : 'flex';
@@ -188,7 +191,6 @@ function setPage(page) {
   if (page === 'nutriment') buildNutriment();
   if (page === 'historique-nutriments') buildHistoriqueNutriments();
   if (page === 'rendement') buildYieldRange();
-  if (page === 'lumiere') buildLight();
   if (page === 'diagnostic-practice') buildDiagnosticPractice();
   if (page === 'diagnostic') {
     // Apply the diagnostic crop's accent color when entering the page,
@@ -207,7 +209,7 @@ function setPage(page) {
 // Default page (fertigation) + default crop (tomato) collapse to `/` (no hash).
 // Why: lets hot-reload / bookmarks land on the same page+crop, and keeps
 // `admin` orthogonal to navigation rather than buried in a comma list.
-const PAGES = ['fertigation','sol','foliar','effeuillage','lumiere','irrigation','week','diagnostic','diagnostic-practice','nutriment','historique-nutriments','rendement'];
+const PAGES = ['fertigation','sol','foliar','effeuillage','laitue','irrigation','week','diagnostic','diagnostic-practice','nutriment','historique-nutriments','rendement'];
 const DEFAULT_PAGE = 'fertigation';
 const DEFAULT_CROP = 'tomato';
 // Primary nav sections. Each operational page belongs to exactly one section;
@@ -218,10 +220,10 @@ const DEFAULT_CROP = 'tomato';
 const SECTIONS = {
   nutriments:  ['fertigation','sol','foliar'],
   effeuillage: ['effeuillage'],
-  lumiere:     ['lumiere'],
+  laitue:      ['laitue'],
   irrigation:  ['irrigation'],
 };
-const SECTION_DEFAULT_PAGE = { nutriments: 'fertigation', effeuillage: 'effeuillage', lumiere: 'lumiere', irrigation: 'irrigation' };
+const SECTION_DEFAULT_PAGE = { nutriments: 'fertigation', effeuillage: 'effeuillage', laitue: 'laitue', irrigation: 'irrigation' };
 function sectionOf(page) {
   for (const s in SECTIONS) if (SECTIONS[s].includes(page)) return s;
   return 'nutriments';
@@ -241,9 +243,8 @@ const CROP_PAGES = {
   fertigation: ['tomato','lettuce','nursery'],
   irrigation:  ['tomato','lettuce','nursery'],
   sol:         ['tomato','lettuce'],
-  lumiere:     ['lettuce'],
   diagnostic:  ['tomato','lettuce'],
-  nutriment:   ['tomato','lettuce','nursery'],
+  nutriment:   ['tomato','tomato.backup','lettuce','nursery'],
 };
 function cropFor(page) {
   if (page === 'diagnostic') return diagCrop;
@@ -265,7 +266,18 @@ function parseHash() {
   const recipe = (page === 'nutriment' && (rest[2] === 'fp' || rest[2] === 'stored'))
     ? rest[2]
     : null;
-  return { admin, page, crop, recipe };
+  // Day segment — only on the laitue routine page. The Elm island reads it at
+  // init (flags) and writes it back through setLaitueDay.
+  const day = (page === 'laitue' && LAITUE_DAYS.includes(rest[1])) ? rest[1] : null;
+  return { admin, page, crop, recipe, day };
+}
+const LAITUE_DAYS = ['lundi', 'mercredi', 'vendredi'];
+// Day currently shown on the laitue routine page; null = let the page pick
+// (today, or the next task day). Mirrors the recipe-segment mechanism.
+let laitueDay = null;
+function setLaitueDay(day) {
+  laitueDay = LAITUE_DAYS.includes(day) ? day : null;
+  syncHash();
 }
 // Default recipe-source for the Nutrition page. Mirrors `let nutrRecipeMode = 'fp'`
 // — kept as a named constant so syncHash and the initialize parser stay in sync.
@@ -297,6 +309,8 @@ function syncHash() {
     // page=default + crop=default but recipe non-default — emit full triplet.
     segs.push(currentPage, DEFAULT_CROP, recipe);
   }
+  // Laitue day rides the second slot (the page has no crop/recipe segment).
+  if (currentPage === 'laitue' && laitueDay) segs.push(laitueDay);
   const newHash = segs.length ? '#' + segs.join('/') : '';
   // replaceState (vs assigning location.hash) avoids firing hashchange,
   // which would re-enter setPage in a loop.
@@ -360,6 +374,8 @@ function toggleAdmin() {
   } else if (!recipeIsDefault) {
     segs.push(currentPage, DEFAULT_CROP, recipe);
   }
+  // Laitue day rides the second slot (the page has no crop/recipe segment).
+  if (currentPage === 'laitue' && laitueDay) segs.push(laitueDay);
   const newHash = segs.length ? '#' + segs.join('/') : '';
   history.replaceState(null, '', location.pathname + location.search + newHash);
   applyAdminMode();
@@ -386,6 +402,9 @@ window.addEventListener('hashchange', () => {
 {
   const initialize = parseHash(); // restore page+crop+recipe from URL (hot-reload / bookmark)
   currentPage = initialize.page;
+  // Keep the laitue day segment the Elm island read at init, so the first
+  // syncHash doesn't strip it back out of the URL.
+  laitueDay = initialize.day;
   if (initialize.crop) {
     if (initialize.page === 'diagnostic') diagCrop = initialize.crop;
     else if (initialize.page === 'nutriment') nutrCrop = initialize.crop;

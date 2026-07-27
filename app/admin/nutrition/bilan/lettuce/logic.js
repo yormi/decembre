@@ -150,7 +150,7 @@ function buildNutrimentLettuce() {
     });
   });
   compostHtml += `<div style="font-size:11.5px; color:var(--text-muted); margin-bottom:4px;">Besoin hebdo → manque restant après libération du compost :</div>`;
-  compostHtml += renderGapGrid(gapAfterDemand, compostMg, gapAfterCompost, 'lettuce-compost', undefined, undefined, {});
+  compostHtml += renderGapGrid(gapAfterDemand, compostMg, gapAfterCompost, 'lettuce-compost', undefined, undefined);
   document.getElementById('nutr-l-compost').innerHTML = compostHtml;
 
   // ─── Block 3: Front-load farine de plumes (slow-release N) ───
@@ -183,7 +183,7 @@ function buildNutrimentLettuce() {
   });
   let flHtml = `<div style="font-size:12.5px; line-height:1.5; color:var(--text-muted); margin-bottom:10px;">Farine de plumes 13-0-0 appliquée avant transplant à <strong style="color:var(--text);">${frontloadG.toFixed(0)} g/m²</strong> (~${totalKg.toFixed(1)} kg total sur ${planches} planches × ${planchAreaM2} m²). Minéralisation 75 % distribuée sur ~${fmWeeks} sem (cert 3). N seul — aucun P, aucun Ca (les deux déjà saturés au sol).</div>`;
   flHtml += `<div style="font-size:11.5px; color:var(--text-muted); margin-bottom:4px;">Manque entrant (après compost) → manque restant après front-load :</div>`;
-  flHtml += renderGapGrid(gapAfterCompost, frontloadMg, gapAfterFront, 'lettuce-frontload', undefined, undefined, (supply.frontload && supply.frontload.efficiency) || {});
+  flHtml += renderGapGrid(gapAfterCompost, frontloadMg, gapAfterFront, 'lettuce-frontload', undefined, undefined);
   document.getElementById('nutr-l-frontload-block').innerHTML = flHtml;
 
   // ─── Block 4: Fertigation actuelle (LETTUCE constant) ───
@@ -236,7 +236,7 @@ function buildNutrimentLettuce() {
     });
   });
   fertHtml += `<div style="font-size:11.5px; color:var(--text-muted); margin-bottom:4px;">Manque entrant (après front-load) → manque restant après fertigation :</div>`;
-  fertHtml += renderGapGrid(gapAfterFront, supply.fert, gapAfterFert, 'lettuce-fert', undefined, undefined, {});
+  fertHtml += renderGapGrid(gapAfterFront, supply.fert, gapAfterFert, 'lettuce-fert', undefined, undefined);
   document.getElementById('nutr-l-fert').innerHTML = fertHtml;
 
   // ─── Block 5: Leviers (auto-derived from gap chain residual) ───

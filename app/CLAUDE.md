@@ -9,4 +9,6 @@ Layout mirrors the navigation:
 - `admin/` — admin pages: `nutrition/{bilan,builder,historique}/`, `irrigation/<crop>/`, `diagnostic/`, `week/`, `rendement/`.
 - `lib/` — shared styles + cross-cutting primitives (`global.css`, `admin.css`, `sun.js`, `spec-strings.js`, `tomato.css`).
 
+Elm island: `admin/nutrition/bilan/tomato/Main.elm` is the tomato Bilan (`elm.json` at repo root; `build.mjs` compiles it to `dist/elm-bilan-tomato.js` every build, watches `.elm`). The legacy JS Bilan lives in `admin/nutrition/bilan/tomato.backup/`, reachable via the « Tomates (backup) » crop button; verifier + `loadTomatoApp` target it (jsdom doesn't load the external Elm script).
+
 Partials also pull model/spec code from `nutrition/` and `yield-range/` (each subproject's `domain/` + `protocol/`). `nutrition/lib/` holds nutrition-shared helpers (`format.js`, `pourquoi.js`, …) and stays put.

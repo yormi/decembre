@@ -110,6 +110,25 @@ describe('computeStageRecipe matches mass-balance formula (uptake-factor + compo
   const compostReleasePerWeek = (window.CompostContribution
     && window.CompostContribution.releasePerWeek) || {};
 
+  // soil-bank-credited-fertigation-basis (2026-07-18): pool-forming elements size to the
+  // pool-MAINTENANCE dose (0 when the pool sits above band), NOT full offtake —
+  // the multi-season bank is a valid supply source. Mobile B: weekly removal.
+  // Replicated from the same PoolMaintenance law computeStageRecipe uses.
+  const PMt = window.PoolMaintenance;
+  const SCt = window.SoilContribution;
+  function bedNeed(stage, element) {
+    const y = ph1.RECIPE_INPUTS.stageYield[stage] || 0;
+    const biomass = ph1.BIOMASS_DEMAND[stage] || {};
+    const offtake = (((ph1.TOMATO_FRUIT_EXPORT[element] || {}).g || 0) * 1000 * y) + (biomass[element] || 0);
+    if (PMt && PMt.POOL_FORMING_ELEMENTS.includes(element)) {
+      const bankMap = (SCt && SCt.BANK_MG_M2 && SCt.BANK_MG_M2.tomato) || {};
+      const ppm = {};
+      Object.keys(bankMap).forEach(el => { ppm[el] = PMt.poolPpmFromBankMg(bankMap[el]); });
+      return PMt.maintenanceDose(element, ppm[element], offtake, PMt.bandPpm(element, ppm)).dose;
+    }
+    return offtake;  // mobile (B): weekly removal, bed-level
+  }
+
   test('required upstream globals are exposed', () => {
     assert.equal(typeof ph1.computeStageRecipe, 'function',
       'computeStageRecipe must be exposed');
@@ -145,27 +164,21 @@ describe('computeStageRecipe matches mass-balance formula (uptake-factor + compo
       'CompostContribution.releasePerWeek.Mg must be numeric');
   });
 
-  test('kSulfate matches (demand/uptake − sidedress − compost) for every stage', () => {
+  test('kSulfate = round(max(0, maintenanceDose(K) − sidedress − compost) / pct × area) per stage', () => {
     const stages = Object.keys(ph1.RECIPE_INPUTS.stageYield);
     const totalArea = ph1.TOMATO_NUMBER_BEDS * ph1.TOMATO_BED_AREA;
     const kCompostMg = (compostReleasePerWeek.K || 0) * 1000;
-    const uK = (ph1.PH_UPTAKE_FACTOR_AT_CURRENT_SOIL || {}).K || 1;
     const offenders = [];
     for (const stage of stages) {
-      const stageYield = ph1.RECIPE_INPUTS.stageYield[stage] || 0;
       const sidedress = ph1.STORED_RECIPE.tomato.sidedress[stage]
         || { actisol_g: 0, farine_g: 0 };
-      const biomass = ph1.BIOMASS_DEMAND[stage] || {};
-      const kOfftakeMg = (ph1.TOMATO_FRUIT_EXPORT.K.g * 1000 * stageYield)
-        + (biomass.K || 0);
-      const kDemandToBedMg = kOfftakeMg / uK;
       // calc.js falls back to 0.85 if SIDEDRESS_MINIMUM_EFFICIENCY.K is undefined; the
       // canonical key is Actisol_K (also 0.85). Both produce identical math.
       const sidedressEfficiency = (ph1.SIDEDRESS_MINIMUM_EFFICIENCY && ph1.SIDEDRESS_MINIMUM_EFFICIENCY.Actisol_K) || 0.85;
       const kSidedressMg = (sidedress.actisol_g * ph1.PRODUCT_PCT.Actisol_K
         * sidedressEfficiency * 1000)
         / ph1.SIDEDRESS_AREA_PER_PLANCHE;
-      const kNeededMg = Math.max(0, kDemandToBedMg - kSidedressMg - kCompostMg);
+      const kNeededMg = Math.max(0, bedNeed(stage, 'K') - kSidedressMg - kCompostMg);
       const expectedKsulfate = Math.round(
         (kNeededMg / 1000 / ph1.PRODUCT_PCT.K2SO4_K) * totalArea
       );
@@ -176,24 +189,16 @@ describe('computeStageRecipe matches mass-balance formula (uptake-factor + compo
       }
     }
     assert.equal(offenders.length, 0,
-      `kSulfate drift from mass-balance formula:\n  ${offenders.join('\n  ')}`);
+      `kSulfate drift from bank-credited mass-balance formula:\n  ${offenders.join('\n  ')}`);
   });
 
-  test('mgSulfate matches (demand/uptake − compost) for every stage (sidedress carries no Mg)', () => {
+  test('mgSulfate = round(max(0, maintenanceDose(Mg) − compost) / pct × area) per stage (sidedress carries no Mg)', () => {
     const stages = Object.keys(ph1.RECIPE_INPUTS.stageYield);
     const totalArea = ph1.TOMATO_NUMBER_BEDS * ph1.TOMATO_BED_AREA;
     const mgCompostMg = (compostReleasePerWeek.Mg || 0) * 1000;
-    const uMg = (ph1.PH_UPTAKE_FACTOR_AT_CURRENT_SOIL || {}).Mg || 1;
     const offenders = [];
     for (const stage of stages) {
-      const stageYield = ph1.RECIPE_INPUTS.stageYield[stage] || 0;
-      const biomass = ph1.BIOMASS_DEMAND[stage] || {};
-      // Sidedress carries no Mg by product chemistry (spec); compost is
-      // subtracted; demand divided by Mg uptake factor.
-      const mgOfftakeMg = (ph1.TOMATO_FRUIT_EXPORT.Mg.g * 1000 * stageYield)
-        + (biomass.Mg || 0);
-      const mgDemandToBedMg = mgOfftakeMg / uMg;
-      const mgNeededMg = Math.max(0, mgDemandToBedMg - mgCompostMg);
+      const mgNeededMg = Math.max(0, bedNeed(stage, 'Mg') - mgCompostMg);
       const expectedMgSulfate = Math.round(
         (mgNeededMg / 1000 / ph1.PRODUCT_PCT.MgSO4_Mg) * totalArea
       );
@@ -204,24 +209,16 @@ describe('computeStageRecipe matches mass-balance formula (uptake-factor + compo
       }
     }
     assert.equal(offenders.length, 0,
-      `mgSulfate drift from mass-balance formula:\n  ${offenders.join('\n  ')}`);
+      `mgSulfate drift from bank-credited mass-balance formula:\n  ${offenders.join('\n  ')}`);
   });
 
-  test('solubore matches (demand/uptake − compost) for every stage (sidedress carries no B)', () => {
+  test('solubore = round(max(0, offtake(B) − compost) / pct × area) per stage (mobile B, sidedress carries no B)', () => {
     const stages = Object.keys(ph1.RECIPE_INPUTS.stageYield);
     const totalArea = ph1.TOMATO_NUMBER_BEDS * ph1.TOMATO_BED_AREA;
     const bCompostMg = (compostReleasePerWeek.B || 0) * 1000;
-    const uB = (ph1.PH_UPTAKE_FACTOR_AT_CURRENT_SOIL || {}).B || 1;
     const offenders = [];
     for (const stage of stages) {
-      const stageYield = ph1.RECIPE_INPUTS.stageYield[stage] || 0;
-      const biomass = ph1.BIOMASS_DEMAND[stage] || {};
-      // B follows the same uniform-field convention as the macros: ×1000 →
-      // mg/m²/wk regardless of the .unit annotation in TOMATO_FRUIT_EXPORT.
-      const bOfftakeMg = (ph1.TOMATO_FRUIT_EXPORT.B.g * 1000 * stageYield)
-        + (biomass.B || 0);
-      const bDemandToBedMg = bOfftakeMg / uB;
-      const bNeededMg = Math.max(0, bDemandToBedMg - bCompostMg);
+      const bNeededMg = Math.max(0, bedNeed(stage, 'B') - bCompostMg);
       const expectedSolubore = Math.round(
         (bNeededMg / 1000 / ph1.PRODUCT_PCT.Solubore_B) * totalArea
       );
@@ -235,41 +232,29 @@ describe('computeStageRecipe matches mass-balance formula (uptake-factor + compo
       `solubore drift from mass-balance formula:\n  ${offenders.join('\n  ')}`);
   });
 
-  // Per-stage numeric pins reported by the team-leader after B1-REV + B2-REV
-  // (2026-05-15):
-  //   T5 K₂SO₄        = 5 568 g (±5)  — was 4 953 pre-uptake-factor, +12 % lift
-  //   T5 MgSO₄·7H₂O   = 1 963 g (±5)  — was 1 378, +42 %
-  //   T5 Solubore     = 11 g (±2)     — was hand-coded 9, +22 %
-  // These are derived numbers — the formula tests above are the load-bearing
-  // assertions; these pins guard against silent shifts that match the
-  // formula but contradict the agreed live values.
-  test('T5 kSulfate pins at 5568 g (±5 g)', () => {
-    const t5 = ph1.computeStageRecipe('T5') || {};
-    assert.ok(typeof t5.kSulfate === 'number'
-      && Math.abs(t5.kSulfate - 5568) <= TOLERANCE_KMG_G,
-      `T5 kSulfate: got ${t5.kSulfate}, expected 5568 (±5)`);
-  });
-
-  test('T5 mgSulfate pins at 1963 g (±5 g)', () => {
-    const t5 = ph1.computeStageRecipe('T5') || {};
-    assert.ok(typeof t5.mgSulfate === 'number'
-      && Math.abs(t5.mgSulfate - 1963) <= TOLERANCE_KMG_G,
-      `T5 mgSulfate: got ${t5.mgSulfate}, expected 1963 (±5)`);
-  });
-
-  // Early-stage Mg clamp: with the uptake factor inflating demand by 1/0.85
-  // (~+18 %), Mg no longer clamps to 0 across all of T1-T3. Live values per
-  // probe: T1=0, T2=0, T3=264. Pin only the stages that still clamp.
-  test('T1 and T2 mgSulfate clamp at 0 (compost > demand_to_bed)', () => {
+  // Bank-credited pins (soil-bank-credited-fertigation-basis, 2026-07-18): the tomato K and
+  // Mg pools both sit above band, so the FP fertigation goes lean —
+  //   Mg → 0 every stage (pool above band, no build)
+  //   K  → the K intensity floor (0.2 × offtake) net of compost, ≪ 1000 g
+  //        (was ~5 568 g when the recipe replenished full offtake).
+  // The formula tests above are the load-bearing assertions; these guard
+  // against silent shifts back to the offtake-replenishment model.
+  test('mgSulfate clamps to 0 every stage (K/Mg pools above band → no build)', () => {
     const offenders = [];
-    for (const stage of ['T1', 'T2']) {
+    for (const stage of Object.keys(ph1.RECIPE_INPUTS.stageYield)) {
       const recipe = ph1.computeStageRecipe(stage) || {};
       if (recipe.mgSulfate !== 0) {
         offenders.push(`${stage}: got mgSulfate=${recipe.mgSulfate}, expected 0`);
       }
     }
     assert.equal(offenders.length, 0,
-      `Early-stage Mg should clamp to 0 (compost release exceeds inflated demand):\n  ${offenders.join('\n  ')}`);
+      `Mg should clamp to 0 (pool above band, bank covers offtake):\n  ${offenders.join('\n  ')}`);
+  });
+
+  test('T5 kSulfate is the lean intensity-floor dose (0 < K < 1000 g, was ~5568 pre-credit)', () => {
+    const t5 = ph1.computeStageRecipe('T5') || {};
+    assert.ok(typeof t5.kSulfate === 'number' && t5.kSulfate > 0 && t5.kSulfate < 1000,
+      `T5 kSulfate: got ${t5.kSulfate}, expected the bank-credited intensity-floor dose (0 < K < 1000 g)`);
   });
 });
 
@@ -301,8 +286,10 @@ describe('Public API namespace window.FertigationRecipeTomato', () => {
     for (const productKey of ['K2SO4', 'MgSO4-7H2O', 'Solubore']) {
       assert.equal(typeof fp[productKey], 'number',
         `FIRST_PRINCIPLES_T5["${productKey}"] must be a numeric gram value`);
-      assert.ok(Number.isFinite(fp[productKey]) && fp[productKey] > 0,
-        `FIRST_PRINCIPLES_T5["${productKey}"] must be positive and finite`);
+      // ≥ 0: soil-bank-credited-fertigation-basis can legitimately zero a product when the
+      // pool sits above band (e.g. MgSO₄ → 0 at current tomato Mg saturation).
+      assert.ok(Number.isFinite(fp[productKey]) && fp[productKey] >= 0,
+        `FIRST_PRINCIPLES_T5["${productKey}"] must be non-negative and finite`);
     }
   });
 

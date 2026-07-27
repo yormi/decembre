@@ -12,13 +12,14 @@
 // dW_dry/dt = ε·DLI·A_ground·(1 − exp(−k·LAI)), LAI = W_dry·SLA/A_ground,
 // clamped to the volume cap; flips to −DECLINE·W once the canopy has been
 // closed past the onset. One Beer–Lambert interception term (no min knee).
-// Anchored to the real Décembre nursery datum — 5 g biggest @ d25, 50-cell,
-// drought+heat, DLI 17 — reproduced in the stressed nursery regime (ε
-// NURSERY_STRESS_RUE × plug DM). See derivation.md carbon-balance-growth and
-// doc/yield-range-calibration-2026-spring.md.
+// No weight anchor is currently reproduced. 5 g biggest @ d25 (50-cell,
+// drought+heat) is a recorded datum only — biggest-plant basis, assumed DLI 17
+// — see learnings/5g-day25-drought-heat-primary-anchor.md. The clean-regime
+// datum awaiting a plug dry-matter measurement is 9.2 g @ d23, measured bench
+// DLI 23.3. See derivation.md carbon-balance-growth.
 const GROWTH_RGR = 0.20;                 // open-canopy exponential rate = ε·DLI·k·SLA; small-LAI limit of the curve, CLEAN (/day)
 const RADIATION_USE_EFFICIENCY = 1.1;    // g dry mass / mol PAR — clean roots, well-watered
-const NURSERY_STRESS_RUE = 0.85;         // effective ε under drought + high heat (nursery regime); reproduces 5 g @ d25
+const NURSERY_STRESS_RUE = 0.85;         // effective ε under drought + high heat (nursery regime); UNANCHORED — was fitted to 5 g @ d25 at DLI 17, before the wk3+ ceiling moved to 25
 const LEAF_AREA_EXTINCTION_K = 0.7;      // canopy light-extinction coefficient (Beer–Lambert)
 const LAI_CLOSURE = 3;                   // LAI at which the canopy is light-limited (fi ≈ 0.88)
 // Dry-matter fraction is STAGE-SPECIFIC (not one value): the plug is firm/dry,
@@ -27,7 +28,30 @@ const LAI_CLOSURE = 3;                   // LAI at which the canopy is light-lim
 // LETTUCE_NURSERY_DM_FRACTION (different consumer). See derivation.
 const PLUG_DRY_MATTER_FRACTION = 0.07;   // nursery plug — firm young tissue, drier under drought
 const DRY_MATTER_FRACTION = 0.045;       // field/mature head — hydrated
-const W_INIT_GERMINATED_G = 0.015;       // dry mass at germination (g)
+// Dry mass at EMERGENCE — the intercept the photosynthetic curve integrates
+// from once the seed has fired. FITTED against cohort D day 12 = 0.5 g
+// (stressed ε, 50-cell packed, no thin), NOT a weighed seed: a lettuce seed is
+// ~1 mg, and a single ε·DLI·fi law cannot represent the heterotrophic phase
+// that turns seed reserves into cotyledons. So this level still absorbs that
+// phase — but its TIMING no longer is: emergence day comes out of thermal time
+// below. Refit whenever GROWTH_RGR, either ε, the ceiling bands,
+// SPECIFIC_LEAF_AREA, PLUG_DRY_MATTER_FRACTION or the germination constants
+// move (derivation.md).
+const EMERGENCE_DRY_MASS_G = 0.013;
+
+// ── Germination timing — thermal time, not a day count ───────────────
+// The seed accumulates heat above a base temperature and fires at a fixed
+// thermal-time total, so time-to-emergence is an OUTPUT of soil temperature.
+// Above the inhibition temperature it goes thermo-dormant and accumulates
+// nothing (domain/propagation.md). cert 2 — literature values for lettuce; no
+// Décembre cohort has logged a sowing→emergence interval. Refinement trigger:
+// one logged emergence date with its soil temperature.
+const GERMINATION_BASE_TEMPERATURE_C = 4;
+const GERMINATION_THERMAL_TIME_DEGREE_DAYS = 50;
+const GERMINATION_INHIBITION_TEMPERATURE_C = 24;
+// Default nursery soil temperature (°C) — midpoint of the 18-21 viable
+// germination band in domain/propagation.md.
+const NURSERY_SOIL_TEMPERATURE_C = 19.5;
 const GROWTH_STEP_DAYS = 0.05;           // integration step (days)
 
 // Senescence — CROWDING decline once the canopy is held closed too long.
@@ -107,23 +131,26 @@ const SKY_CONDITION_FACTORS = [
 // separate saturation multiplier (derivation.md carbon-balance-growth).
 const DLI_TARGET = 17;
 
-// Usable DLI ceiling by plug age (mol/m²/j). Young tissue saturates low:
+// Usable DLI ceiling by age from sowing (day 1 = sowing).
+// Young tissue saturates low:
 // cotyledons tipburn above ~10-12, the ceiling climbs as leaves harden. The
-// growth term drives on min(DLI_TARGET, ceiling) — light past the stage
-// ceiling buys no growth, it only stresses tender tissue. From light/domain.md
-// setpoints (wk1 8-10 · wk2 12-14 · plug ~17). Field plants (age ≥ wk3) sit at
-// the full target, so this only bites in the early nursery.
-const NURSERY_DLI_CEILING_BY_WEEK = [10, 14, 17]; // wk1 cotyledon · wk2 true-leaf · wk3+ plug
-function nurseryLightCeiling(dayFromGermination) {
-  const week = Math.floor(dayFromGermination / 7);
+// nursery growth term drives on this ceiling directly — it is what the plug
+// can use, not what the LED aims for (DLI_TARGET, the lighting-feasibility
+// concern). Field ages drive on DLI_TARGET. wk1/wk2 are light/domain.md
+// band-tops (8-10 / 12-14); wk3+ is 25, above the band, set from the measured
+// July bench DLI 23.3 a hardened plug converted without tipburn — see
+// learnings/nursery-dli-ceiling-by-stage.md.
+const NURSERY_DLI_CEILING_BY_WEEK = [10, 14, 25]; // wk1 cotyledon · wk2 true-leaf · wk3+ plug
+function nurseryLightCeiling(dayFromSowing) {
+  const week = Math.floor((dayFromSowing - 1) / 7);
   return NURSERY_DLI_CEILING_BY_WEEK[Math.min(week, NURSERY_DLI_CEILING_BY_WEEK.length - 1)];
 }
 
 // Specific leaf area (m²/g dry) — DERIVED, not free: back-solved so the
 // small-LAI limit of the interception curve equals exactly GROWTH_RGR·W at the
-// day-10 anchor's stage (week 2), whose usable DLI is the week-2 ceiling — not
-// the full target the cotyledon-week plug cannot use. Keeps the open-canopy
-// anchor load-bearing under the age-stepped ceiling. ≈ 0.019 m²/g.
+// day-10 open-canopy anchor, which on the sowing axis is age 9 → sowing-week 2
+// (days 8-14), so the usable DLI there is the week-2 ceiling — not the full
+// target the cotyledon-week plug cannot use. ≈ 0.019 m²/g.
 const SPECIFIC_LEAF_AREA = GROWTH_RGR / (RADIATION_USE_EFFICIENCY * NURSERY_DLI_CEILING_BY_WEEK[1] * LEAF_AREA_EXTINCTION_K);
 
 // Maximum healthy lamp photoperiod (h). Past this, lettuce risks chlorosis

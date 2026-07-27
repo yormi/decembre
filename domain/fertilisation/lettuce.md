@@ -11,7 +11,7 @@ front-load N as a single 50 g/m² feather rate
 (`../../nutrition/lettuce/domain/plant-needs/data.js`); this doc is
 the sizing logic that should replace it.
 
-Companions: generic method → `../fertigation.md`; uptake primitive →
+Companions: generic method → `../soil-maintenance.md`; uptake primitive →
 `../../nutrition/lettuce/domain/plant-needs/crop-removal.md`; tissue
 targets + assays → `../../nutrition/lettuce/domain/plant-needs/data.js`;
 product N → `../../nutrition/lib/product-pct.js`.

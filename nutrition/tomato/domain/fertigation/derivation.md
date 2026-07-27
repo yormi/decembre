@@ -188,7 +188,7 @@ Omitting `recipe` defaults to the stored reshape (one-arg convenience for admin 
 
 ### Why flat return (no `details`)
 
-`nutrition — contribution-channel-details-payload` requires per-element `{cert, cap}` alongside flat `mg` map. For fertigation, cap detection depends on pH state + sourced elements (caller context, not model). Matches `computeFoliarSupply` precedent — flat return; details composed in `app/admin/nutrition/bilan/tomato/logic.js`. Unified retrofit is a separate REQ. Full options + rationale: `learnings/` `per-element-supply` `details` entry.
+`nutrition — contribution-channel-details-payload` requires per-element `{cert, cap}` alongside flat `mg` map. For fertigation, cap detection depends on pH state + sourced elements (caller context, not model). Matches `computeFoliarSupply` precedent — flat return; details composed in `app/admin/nutrition/bilan/tomato.backup/logic.js`. Unified retrofit is a separate REQ. Full options + rationale: `learnings/` `per-element-supply` `details` entry.
 
 ### Cert table
 

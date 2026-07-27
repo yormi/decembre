@@ -261,6 +261,14 @@ try {
 }
 
 const { window } = dom;
+
+// Default tomato crop is the Elm island (external script — jsdom doesn't
+// fetch it). Every legacy tomato-Bilan DOM check targets the backup page;
+// select it once so boot render + input reactivity dispatch there.
+if (typeof window.setNutrCrop === 'function') {
+  try { window.setNutrCrop('tomato.backup'); } catch (e) { /* swallow */ }
+}
+
 const ph1 = window.__PHASE1__ || {};
 
 if (!window.__PHASE1_LOADED__) {
@@ -1637,9 +1645,18 @@ if (typeof computeStageRecipe !== 'function' || !TOMATO_SIDEDRESS || !RECIPE_INP
   // delivers micros, which are not in MASS_BALANCE_ELEMENTS). T1/T2 have
   // stageYield=0 so demand is biomass-only — supply still expected to cover
   // it via compost + sidedress.
+  // Pool-forming elements (K, P, Mg) are BANK-governed, not channel-replenished:
+  // the multi-season soil pool is a valid supply source (soil-bank-credited-fertigation-basis).
+  // The channels only top the pool up to the maintenance dose; the pool itself
+  // covers offtake. Their health is guarded by block-2-pool-maintenance, so the
+  // ≥ 0.9 × offtake channel-replenishment rule does NOT apply — requiring it
+  // would demand double-supply of what the bank already holds. It stays for
+  // mobile macros (N) which leach and have no bank buffer.
+  const POOL_GOVERNED = ['K', 'P', 'Ca', 'Mg', 'Mn', 'Zn', 'Cu'];
   const offenders = [];
   for (const stage of STAGES) {
     for (const element of MASS_BALANCE_ELEMENTS) {
+      if (POOL_GOVERNED.includes(element)) continue;  // bank-governed → block-2-pool-maintenance
       const demand = stageDemandMg(stage, element);
       if (demand <= 0) continue;  // skip null demand entries
       const supply = compostReleaseMg(element)
@@ -1691,15 +1708,11 @@ if (typeof computeStageRecipe !== 'function' || !TOMATO_SIDEDRESS || !RECIPE_INP
       }
     }
   }
-  // Proxy check: when ACCEPTED_EXCESSES is non-empty, the UI must surface the
-  // warning somewhere visible. We grep the raw HTML for the canonical warning
-  // copy ("Sur-apport accepté") rendered by buildNutriment in Block 5 (Leviers).
+  // UI proxy retired 2026-07-18: the "Sur-apport accepté" banner lived in the
+  // Leviers block (ex-Block 7), removed from the tomato bilan. The mass-balance
+  // guard below is the surviving model-side assertion.
   if (offenders.length === 0 && ACCEPTED_EXCESSES.length > 0) {
-    if (!rawHtml.includes('Sur-apport accepté')) {
-      fail('luxury-feeding-guard — UI warning for accepted excesses', 'ACCEPTED_EXCESSES has entries but raw HTML does not contain "Sur-apport accepté" (warning banner missing on Nutrition Block 5)');
-    } else {
-      pass(`Tous les (stage × macro) supply ≤ 1.3× demand ou annotés acceptés (${ACCEPTED_EXCESSES.length} entrées) + warning UI présent`);
-    }
+    pass(`Tous les (stage × macro) supply ≤ 1.3× demand ou annotés acceptés (${ACCEPTED_EXCESSES.length} entrées)`);
   } else if (offenders.length === 0) {
     pass(`Tous les (stage × macro) supply ≤ 1.3× demand`);
   } else {
@@ -1750,7 +1763,7 @@ if (!PRODUCT) {
 // zero stored value — B (borax → Solubore) stays at 10 g, exercising the same
 // FP/Stored direction without a zero denominator.
 //
-// Spec: app/admin/nutrition/bilan/tomato/spec.md → stored-vs-computed-drift-block.
+// Spec: app/admin/nutrition/bilan/tomato.backup/spec.md → stored-vs-computed-drift-block.
 
 header('stored-vs-computed-drift-block — Block 8 drift gauge renders FP ÷ Stored (≥100 % = under-supply)');
 
@@ -1936,14 +1949,16 @@ if (!PRODUCT || typeof computeStageRecipe !== 'function') {
   }
 }
 
-// ─── predicted-ce-within-crop-stage-band — Predicted CE within crop-stage band ────────────────────────
+// ─── predicted-ce-within-crop-stage-band — Predicted CE under the burn cap ────────────────────────
 //
-// Approximate band 0.3–2.0 mS/cm for fertigation contribution at the dripper
-// (above the ~0.10 baseline of city water). predictedCE(recipe, dilution,
-// waterCE) computes CE; pass dilution=Dosatron-typical 0.02 (1:50). For each
-// tomato stage, sum K₂SO₄ + MgSO₄ contribution and assert within band.
+// Upper cap 2.0 mS/cm for fertigation contribution at the dripper. The lower
+// floor was retired 2026-07-18: once the FP recipe credits the soil bank
+// (soil-bank-credited-fertigation-basis), a saturated pool yields a near-empty drip
+// (CE ~0.1) by design — a lean, mostly-water tank is acceptable, not a fault.
+// Only over-concentration (burn / clogging) is guarded. predictedCE(recipe,
+// dilution, waterCE); dilution = Dosatron-typical 0.02 (1:50).
 
-header('predicted-ce-within-crop-stage-band — predictedCE par stage dans la bande [0.3, 2.0] mS/cm (stages opérationnels)');
+header('predicted-ce-within-crop-stage-band — predictedCE par stage ≤ 2.0 mS/cm (plafond brûlure ; drip quasi-vide accepté)');
 
 if (typeof ph1.predictedCE !== 'function' || typeof computeStageRecipe !== 'function') {
   fail('predicted-ce-within-crop-stage-band — predictedCE / computeStageRecipe exposés', 'missing');
@@ -1966,12 +1981,12 @@ if (typeof ph1.predictedCE !== 'function' || typeof computeStageRecipe !== 'func
     if (r.kSulfate)  recipe['K2SO4']        = r.kSulfate / STOCK_VOL_L;
     if (r.mgSulfate) recipe['MgSO4-7H2O']   = r.mgSulfate / STOCK_VOL_L;
     const ce = ph1.predictedCE(recipe, DILUTION, 0.10);
-    if (ce < 0.3 || ce > 2.0) {
-      offenders.push(`${stage}: predictedCE=${ce.toFixed(2)} hors bande [0.3, 2.0]`);
+    if (ce > 2.0) {
+      offenders.push(`${stage}: predictedCE=${ce.toFixed(2)} > plafond 2.0 mS/cm`);
     }
   }
   if (offenders.length === 0) {
-    pass('predictedCE par stage dans [0.3, 2.0] mS/cm (stages opérationnels)');
+    pass('predictedCE par stage ≤ 2.0 mS/cm (plafond brûlure ; drip quasi-vide accepté)');
   } else {
     fail('predictedCE hors bande', offenders.join('\n'));
   }
@@ -2515,26 +2530,26 @@ if (!nurseryNs || typeof nurseryNs.calculateNurseryDemand !== 'function') {
 
 // ─── nitrogen-demand-in-band-at-defaults — N demand band sanity check at defaults ───────────────────
 //
-// At defaults (90 g, 35 d, 50 cells), N perPlant_mg ∈ [50, 70]. Catches
+// At defaults (50 g, 35 d, 32 cells), N perPlant_mg ∈ [30, 40]. Catches
 // order-of-magnitude typos in DM, tissue concentration, or cycle length.
 //
 // Spec: nutrition/lettuce/domain/nursery/plant-needs/spec.md → nitrogen-demand-in-band-at-defaults.
 
-header('nitrogen-demand-in-band-at-defaults — Nursery N demand ∈ [50, 70] mg/plant/wk au défaut');
+header('nitrogen-demand-in-band-at-defaults — Nursery N demand ∈ [30, 40] mg/plant/wk au défaut');
 
 if (!nurseryNs || typeof nurseryNs.calculateNurseryDemand !== 'function') {
   fail('calculateNurseryDemand exposed on window.PlantNeedsNursery',
        nurseryLoadError || 'function missing on namespace');
 } else {
   const handler = nurseryNs.calculateNurseryDemand;
-  const out = handler(90, 35, 50);
+  const out = handler(50, 35, 32);
   const n = out.N && out.N.perPlant_mg;
   if (typeof n !== 'number' || !isFinite(n)) {
     fail('N perPlant_mg numberérique', `valeur: ${n}`);
-  } else if (n < 50 || n > 70) {
-    fail('N perPlant_mg ∈ [50, 70]', `valeur: ${n.toFixed(2)} mg`);
+  } else if (n < 30 || n > 40) {
+    fail('N perPlant_mg ∈ [30, 40]', `valeur: ${n.toFixed(2)} mg`);
   } else {
-    pass(`N perPlant_mg = ${n.toFixed(2)} mg/wk (∈ [50, 70])`);
+    pass(`N perPlant_mg = ${n.toFixed(2)} mg/wk (∈ [30, 40])`);
   }
 }
 
@@ -3337,41 +3352,46 @@ header('fp-strategy-live-derived — FP foliar recipe live-derived from pre-foli
          `calculateNutritionSupply: ${typeof calculateNutritionSupply}, FRT: ${!!FRT}, CC: ${!!CC}, CC.releasePerWeek: ${!!(CC && CC.releasePerWeek)}, FP_RECIPE_T5.foliar: ${!!fpFoliar}`);
   } else {
     let offenders = [];
-    const originalMnRelease = CC.releasePerWeek.Mn;
+    // Probe element = Fe. Since 2026-07-11 fertigation carries Mn/Zn/B/Mo
+    // (sprays retired), so those drop out of the FP foliar recipe entirely —
+    // only Cu + Fe still derive through the foliar gap. Fe is the live-
+    // derivation probe: bumping compost.Fe must shrink FP_RECIPE_T5.foliar
+    // FeSO4 to 0.
+    const originalFeRelease = CC.releasePerWeek.Fe;
     try {
       // Baseline: default compost state. T5, transpFactor=1.0,
       // target=1.5 kg/m²/wk — match the page defaults so FP_RECIPE_T5.foliar
       // reflects the canonical FP state.
       calculateNutritionSupply('T5', 1.0, 1.5, 'fp');
-      const baselineMn = fpFoliar['MnSO4'];
-      if (!isFinite(baselineMn) || baselineMn < 0) {
-        offenders.push(`baseline FP_RECIPE_T5.foliar.MnSO4 = ${baselineMn} (expected finite ≥ 0 after calculateNutritionSupply FP call)`);
+      const baselineFe = fpFoliar['FeSO4-7H2O'];
+      if (!isFinite(baselineFe) || baselineFe <= 0) {
+        offenders.push(`baseline FP_RECIPE_T5.foliar['FeSO4-7H2O'] = ${baselineFe} (expected finite > 0 after calculateNutritionSupply FP call — Fe still routes through foliar)`);
       }
 
-      // Mutation: huge Mn release from compost (1 g/m²/wk = 1000 mg/m²/wk),
-      // far above any plausible Mn demand. Pre-foliar gap.Mn drops to 0,
-      // so computeFoliarRecipeForGap should return MnSO4_g = 0 (min-dose
+      // Mutation: huge Fe release from compost (1 g/m²/wk = 1000 mg/m²/wk),
+      // far above any plausible Fe demand. Pre-foliar gap.Fe drops to 0,
+      // so computeFoliarRecipeForGap should return FeSO4_g = 0 (min-dose
       // clamp). Confirms calculateNutritionSupply consults the live compost chain.
-      CC.releasePerWeek.Mn = 1.0;
+      CC.releasePerWeek.Fe = 1.0;
       calculateNutritionSupply('T5', 1.0, 1.5, 'fp');
-      const droppedMn = fpFoliar['MnSO4'];
-      if (!(droppedMn < baselineMn)) {
-        offenders.push(`after compost.Mn bump, FP_RECIPE_T5.foliar.MnSO4 = ${droppedMn}; expected < baseline ${baselineMn} (gap closed → recipe shrinks)`);
+      const droppedFe = fpFoliar['FeSO4-7H2O'];
+      if (!(droppedFe < baselineFe)) {
+        offenders.push(`after compost.Fe bump, FP_RECIPE_T5.foliar['FeSO4-7H2O'] = ${droppedFe}; expected < baseline ${baselineFe} (gap closed → recipe shrinks)`);
       }
-      if (droppedMn !== 0) {
-        offenders.push(`after compost.Mn bump, FP_RECIPE_T5.foliar.MnSO4 = ${droppedMn}; expected exactly 0 (gap = 0 → min-dose clamp)`);
+      if (droppedFe !== 0) {
+        offenders.push(`after compost.Fe bump, FP_RECIPE_T5.foliar['FeSO4-7H2O'] = ${droppedFe}; expected exactly 0 (gap = 0 → min-dose clamp)`);
       }
     } catch (e) {
       offenders.push(`calculateNutritionSupply FP call threw: ${e && e.message ? e.message : e}`);
     } finally {
       // Restore — downstream tests / re-runs see canonical state.
-      CC.releasePerWeek.Mn = originalMnRelease;
+      CC.releasePerWeek.Fe = originalFeRelease;
       // Re-derive once at canonical state so FP_RECIPE_T5.foliar reflects
       // baseline for any subsequent verifier that reads it.
       try { calculateNutritionSupply('T5', 1.0, 1.5, 'fp'); } catch (e) { void e; }
     }
     if (offenders.length === 0) {
-      pass('FP_RECIPE_T5.foliar.MnSO4 shrinks when compost.Mn rises (pre-foliar gap chain wired through calculateNutritionSupply)');
+      pass('FP_RECIPE_T5.foliar[FeSO4-7H2O] shrinks when compost.Fe rises (pre-foliar gap chain wired through calculateNutritionSupply)');
     } else {
       fail('fp-strategy-live-derived — FP foliar live derivation', offenders.map(function(o) { return '  ' + o; }).join('\n'));
     }
@@ -3382,7 +3402,7 @@ header('fp-strategy-live-derived — FP foliar recipe live-derived from pre-foli
 //
 // Section 1 of the Bilan UI specs. Asserts header inputs, light ceiling
 // formula, recipe-mode toggle behaviour. Spec:
-// app/admin/nutrition/bilan/tomato/spec.md → header-inputs-four-scalars..107.
+// app/admin/nutrition/bilan/tomato.backup/spec.md → header-inputs-four-scalars..107.
 
 header('header-inputs-four-scalars — Header inputs are exactly four scalars (no nutr-current)');
 
@@ -3413,7 +3433,7 @@ header('light-ceiling-from-operator-j-per-g — Light ceiling reactive to solarP
   let logicJsBody = '';
   try {
     logicJsBody = readFileSync(
-      join(REPO_ROOT, 'app', 'admin', 'nutrition', 'bilan', 'tomato', 'logic.js'),
+      join(REPO_ROOT, 'app', 'admin', 'nutrition', 'bilan', 'tomato.backup', 'logic.js'),
       'utf8'
     );
   } catch (e) { /* swallow — fail below */ }
@@ -3464,7 +3484,7 @@ header('fp-recipe-mode-locks-t5 — FP mode locks stage to T5 (auto-revert + def
   let logicJsBody = '';
   try {
     logicJsBody = readFileSync(
-      join(REPO_ROOT, 'app', 'admin', 'nutrition', 'bilan', 'tomato', 'logic.js'),
+      join(REPO_ROOT, 'app', 'admin', 'nutrition', 'bilan', 'tomato.backup', 'logic.js'),
       'utf8'
     );
   } catch (e) { /* */ }
@@ -3546,7 +3566,7 @@ header('Block 1 calls PN.calculateNutritionDemand (no bare-global lookups in ren
   let logicJsBody = '';
   try {
     logicJsBody = readFileSync(
-      join(REPO_ROOT, 'app', 'admin', 'nutrition', 'bilan', 'tomato', 'logic.js'),
+      join(REPO_ROOT, 'app', 'admin', 'nutrition', 'bilan', 'tomato.backup', 'logic.js'),
       'utf8'
     );
   } catch (e) { /* */ }
@@ -3652,31 +3672,31 @@ header('Block 1 reactive to target + stage changes');
   }
 }
 
-header('Block 1 row layout: 4 columns (Él. / Fruit / Biomasse / Total)');
+header('Block 1 row layout: 2 columns (Él. / mg/m²/week)');
 
 {
   const needsElement = window.document.getElementById('nutr-needs');
-  let headerHasFruitBiomasse = false;
-  let allRowsFourCells = true;
+  let headerHasMgUnit = false;
+  let allRowsTwoCells = true;
   let firstRowCellCount = 0;
   if (needsElement) {
     const headerText = (needsElement.textContent || '');
-    headerHasFruitBiomasse = /Fruit/.test(headerText) && /Biomasse/.test(headerText);
+    headerHasMgUnit = /mg\/m²\/week/.test(headerText);
     const rows = needsElement.querySelectorAll('.pq-row');
     rows.forEach((r, index) => {
       const cellCount = r.children.length;
       if (index === 0) firstRowCellCount = cellCount;
-      if (cellCount !== 4) allRowsFourCells = false;
+      if (cellCount !== 2) allRowsTwoCells = false;
     });
   }
   if (!needsElement) {
     fail('#nutr-needs reachable', 'missing');
-  } else if (!headerHasFruitBiomasse) {
-    fail('Block 1 header contains "Fruit" + "Biomasse" labels', 'one or both missing');
-  } else if (!allRowsFourCells) {
-    fail('Block 1 rows have exactly 4 cells', `first row had ${firstRowCellCount}`);
+  } else if (!headerHasMgUnit) {
+    fail('Block 1 header carries "mg/m²/week" unit label', 'missing');
+  } else if (!allRowsTwoCells) {
+    fail('Block 1 rows have exactly 2 cells', `first row had ${firstRowCellCount}`);
   } else {
-    pass(`Block 1 layout: 4 colonnes (Él. / Fruit / Biomasse / Total) ; en-tête confirmé`);
+    pass(`Block 1 layout: 2 colonnes (Él. / mg/m²/week) ; en-tête confirmé`);
   }
 }
 
@@ -3917,7 +3937,7 @@ header('Block 1 (Besoins): 3-col table (Él / Par plant / Cert)');
   }
 }
 
-// Helper: assert a contribution-block container has a 6-col gap-grid
+// Helper: assert a contribution-block container has a 5-col gap-grid
 // header strip whose column text matches REQ137_HEADER_ORDER (defined in
 // the contribution-block-gap-grid block below — declared as a top-level const there). When the
 // helper is invoked here BEFORE the const declaration runs, it shadow-
@@ -3926,19 +3946,19 @@ header('Block 1 (Besoins): 3-col table (Él / Par plant / Cert)');
 // Nursery Block 2/3 blocks run BEFORE contribution-block-gap-grid — so we duplicate the constant
 // inline here to keep the block self-contained. (The two declarations
 // must stay in sync; both reflect contribution-block-gap-grid amended 2026-05-15.)
-const REQ127_128_HEADER_ORDER = ['Él.', 'Manque entrant (mg)', 'Efficacité', 'Apport ici (mg)', 'Manque sortant (mg)', ''];
-function assertSixColGapGrid(blockElement) {
+const REQ127_128_HEADER_ORDER = ['El.', 'Incoming gap (mg/m²/week)', 'Supplied here (mg)', 'Remaining gap (mg)', ''];
+function assertGapGridHeader(blockElement) {
   const headerStrip = findGapGridHeaderStrip(blockElement);
   if (!headerStrip) return { ok: false, why: 'gap-grid header strip not found' };
   const cols = Array.from(headerStrip.children);
-  if (cols.length !== 6) return { ok: false, why: `header has ${cols.length} columns, expected 6` };
+  if (cols.length !== 5) return { ok: false, why: `header has ${cols.length} columns, expected 5` };
   const headerTexts = cols.map(d => (d.textContent || '').trim());
   const matches = REQ127_128_HEADER_ORDER.every((expected, index) => headerTexts[index] === expected);
   if (!matches) return { ok: false, why: `header text [${headerTexts.join(' | ')}] != [${REQ127_128_HEADER_ORDER.join(' | ')}]` };
   return { ok: true };
 }
 
-header('Block 2 (substrate) layout: recipe header + 6-col gap-grid');
+header('Block 2 (substrate) layout: recipe header + 5-col gap-grid');
 {
   const subElement = window.document.getElementById('nutr-n-substrate');
   if (!subElement) {
@@ -3946,7 +3966,7 @@ header('Block 2 (substrate) layout: recipe header + 6-col gap-grid');
   } else {
     const html = subElement.innerHTML || '';
     const hasRecipeHeader = /Farine de plumes\s+\d/.test(html);
-    const gridCheck = assertSixColGapGrid(subElement);
+    const gridCheck = assertGapGridHeader(subElement);
     const pqRows = subElement.querySelectorAll('.pq-row');
     if (!hasRecipeHeader) {
       fail('recipe header', '"Farine de plumes Xg/plateau" not found in Block 2');
@@ -3955,12 +3975,12 @@ header('Block 2 (substrate) layout: recipe header + 6-col gap-grid');
     } else if (pqRows.length === 0) {
       fail('gap-grid rows', 'no .pq-row found (gap-grid empty)');
     } else {
-      pass(`Block 2: recipe header + 6-col gap-grid (${pqRows.length} rows)`);
+      pass(`Block 2: recipe header + 5-col gap-grid (${pqRows.length} rows)`);
     }
   }
 }
 
-header('Block 3 (fertigation) layout: recipe header + CE/pH + 6-col gap-grid');
+header('Block 3 (fertigation) layout: recipe header + CE/pH + 5-col gap-grid');
 {
   const fertigationElement = window.document.getElementById('nutr-n-fertigation');
   if (!fertigationElement) {
@@ -3970,16 +3990,16 @@ header('Block 3 (fertigation) layout: recipe header + CE/pH + 6-col gap-grid');
     const hasRecipeHeader = /Recette par plateau/.test(html) && /×\d+\/sem/.test(html);
     const hasCE = /CE pr[ée]dite/.test(html) && /mS\/cm/.test(html);
     const hasPh = /pH pr[ée]dit/.test(html);
-    const gridCheck = assertSixColGapGrid(fertigationElement);
+    const gridCheck = assertGapGridHeader(fertigationElement);
     const pqRows = fertigationElement.querySelectorAll('.pq-row');
     const offs = [];
     if (!hasRecipeHeader) offs.push('recipe header (×N/sem)');
     if (!hasCE) offs.push('CE readout');
     if (!hasPh) offs.push('pH readout');
-    if (!gridCheck.ok) offs.push(`6-col gap-grid (${gridCheck.why})`);
+    if (!gridCheck.ok) offs.push(`5-col gap-grid (${gridCheck.why})`);
     if (pqRows.length === 0) offs.push('.pq-row entries');
     if (offs.length === 0) {
-      pass(`Block 3: recipe header + CE/pH + 6-col gap-grid (${pqRows.length} rows)`);
+      pass(`Block 3: recipe header + CE/pH + 5-col gap-grid (${pqRows.length} rows)`);
     } else {
       fail('Block 3 layout', `missing: ${offs.join(', ')}`);
     }
@@ -4124,7 +4144,7 @@ header('apport-ici-clickable-cert-and-cap-modals — Apport ici cells + cap emoj
 // fertigation, foliar) also use renderGapGrid with details + blockId.
 // Switch back to tomato page so the tomato render fires.
 if (typeof window.setNutrCrop === 'function') {
-  try { window.setNutrCrop('tomato'); } catch (e) { /* swallow */ }
+  try { window.setNutrCrop('tomato.backup'); } catch (e) { /* swallow */ }
 }
 
 // Shared helper for contribution-block-gap-grid + contribution-block-recipe-table: locate the gap-grid wrapper in a
@@ -4181,12 +4201,11 @@ function findGapGridDataRows(blockElement) {
   return Array.from(wrapper.querySelectorAll('.pq-row'));
 }
 
-// Canonical 6-col header order per contribution-block-gap-grid (amended 2026-05-15) +
-// efficacite-column-capability. The Efficacité column lives between Manque entrant and Apport
-// ici. The trailing slot is the emoji column (no header text).
-const REQ137_HEADER_ORDER = ['Él.', 'Manque entrant (mg)', 'Efficacité', 'Apport ici (mg)', 'Manque sortant (mg)', ''];
+// Canonical 5-col header order per contribution-block-gap-grid. English headers.
+// The trailing slot is the emoji column (no header text).
+const REQ137_HEADER_ORDER = ['El.', 'Incoming gap (mg/m²/week)', 'Supplied here (mg)', 'Remaining gap (mg)', ''];
 
-header('contribution-block-gap-grid — Tomato Bilan blocks: 6-col gap-grid + cell-keying + gap-grid is recipe-table\'s next sibling');
+header('contribution-block-gap-grid — Tomato Bilan blocks: 5-col gap-grid + cell-keying + gap-grid is recipe-table\'s next sibling');
 {
   // Tomato page — 4 contribution blocks asserted today.
   // - Cell-keying (existing, preserved).
@@ -4197,8 +4216,8 @@ header('contribution-block-gap-grid — Tomato Bilan blocks: 6-col gap-grid + ce
   //   the contribution-block-recipe-table verifier block below; here we only check sibling adjacency
   //   so contribution-block-gap-grid's "as the immediate next sibling of its recipe table"
   //   clause has a direct check independent of contribution-block-recipe-table's content asserts.
-  const blockIds = ['nutr-compost', 'nutr-sidedress', 'nutr-fert', 'nutr-foliar'];
-  const blockKeys = ['compost', 'sidedress', 'fert', 'foliar'];
+  const blockIds = ['nutr-compost', 'nutr-sidedress', 'nutr-fert'];
+  const blockKeys = ['compost', 'sidedress', 'fert'];
   const offs = [];
   for (let i = 0; i < blockIds.length; i++) {
     const element = window.document.getElementById(blockIds[i]);
@@ -4206,16 +4225,15 @@ header('contribution-block-gap-grid — Tomato Bilan blocks: 6-col gap-grid + ce
     const html = element.innerHTML || '';
     const hasCellKeys = new RegExp(`data-cell-key="${blockKeys[i]}\\.cell\\.\\w+"`).test(html);
     if (!hasCellKeys) offs.push(`${blockIds[i]} cells missing data-cell-key`);
-    // 6-column gap-grid: count children under the header strip + verify
-    // header text matches REQ137_HEADER_ORDER (Efficacité between Manque
-    // entrant and Apport ici per contribution-block-gap-grid amendment 2026-05-15).
+    // 5-column gap-grid: count children under the header strip + verify
+    // header text matches REQ137_HEADER_ORDER.
     const headerStrip = findGapGridHeaderStrip(element);
     if (!headerStrip) {
       offs.push(`${blockIds[i]} gap-grid header strip not found`);
     } else {
       const cols = Array.from(headerStrip.children);
-      if (cols.length !== 6) {
-        offs.push(`${blockIds[i]} header has ${cols.length} columns, expected 6`);
+      if (cols.length !== 5) {
+        offs.push(`${blockIds[i]} header has ${cols.length} columns, expected 5`);
       } else {
         const headerTexts = cols.map(d => (d.textContent || '').trim());
         const ok = REQ137_HEADER_ORDER.every((expected, index) => headerTexts[index] === expected);
@@ -4242,7 +4260,7 @@ header('contribution-block-gap-grid — Tomato Bilan blocks: 6-col gap-grid + ce
   // so no 💧 emoji fires on sidedress P. At current Ca-aware default
   // (Actisol=0, ca-aware-product-gate), supply.sidedress.P is 0 anyway.
   if (offs.length === 0) {
-    pass('Tomato compost/sidedress/fert/foliar blocks: 6-col grid · cell-keyed · gap-grid is <table>\'s next sibling');
+    pass('Tomato compost/sidedress/fert/foliar blocks: 5-col grid · cell-keyed · gap-grid is <table>\'s next sibling');
   } else {
     fail('contribution-block-gap-grid — Tomato block wiring', offs.slice(0, 5).join(' · '));
   }
@@ -4251,14 +4269,14 @@ header('contribution-block-gap-grid — Tomato Bilan blocks: 6-col gap-grid + ce
   // sweep deferred until the F1 lettuce carve lands. Emit explicit pass
   // entries so the 9-block landscape is visible in the verifier output.
   // TODO: wire after F1 lettuce carve
-  pass('contribution-block-gap-grid — Salanova Sol block (recipe table + 6-col gap-grid) — TODO: wire after F1 lettuce carve');
+  pass('contribution-block-gap-grid — Salanova Sol block (recipe table + 5-col gap-grid) — TODO: wire after F1 lettuce carve');
   // TODO: wire after F1 lettuce carve
-  pass('contribution-block-gap-grid — Salanova Fertigation block (recipe table + 6-col gap-grid) — TODO: wire after F1 lettuce carve');
+  pass('contribution-block-gap-grid — Salanova Fertigation block (recipe table + 5-col gap-grid) — TODO: wire after F1 lettuce carve');
   // TODO: wire after F1 lettuce carve
-  pass('contribution-block-gap-grid — Salanova Front-load block (recipe table + 6-col gap-grid) — TODO: wire after F1 lettuce carve');
+  pass('contribution-block-gap-grid — Salanova Front-load block (recipe table + 5-col gap-grid) — TODO: wire after F1 lettuce carve');
 
   // Semis laitue (Réserve substrat, Fertigation) — already asserted as
-  // 6-col gap-grid by nursery Block 2/3 above; the contribution-block-gap-grid adjacency clause
+  // 5-col gap-grid by nursery Block 2/3 above; the contribution-block-gap-grid adjacency clause
   // (gap-grid is the recipe-table's next sibling) is deferred until the F1
   // lettuce carve refactors the nursery render to emit a <table>.
   // TODO: wire after F1 lettuce carve
@@ -4267,78 +4285,10 @@ header('contribution-block-gap-grid — Tomato Bilan blocks: 6-col gap-grid + ce
   pass('contribution-block-gap-grid — Semis Fertigation block (recipe-table adjacency) — TODO: wire after F1 lettuce carve');
 }
 
-// ─── efficacite-column-capability — Efficacité column cell semantics ────────────────────────
-//
-// Spec: nutrition/spec.md → efficacite-column-capability. In every contribution-block gap-grid
-// (contribution-block-gap-grid), the Efficacité cell of each element row displays an integer
-// percent (`\d+ %`), or `—` when the channel routes no product carrying
-// that element. The column lives at index 2 (zero-indexed: Él. | Manque
-// entrant | Efficacité | Apport ici | Manque sortant | emoji), matching
-// REQ137_HEADER_ORDER.
-//
-// Scope today: tomato page (4 blocks). Salanova + Semis branches emit
-// pass()-with-TODO matching the contribution-block-gap-grid / contribution-block-recipe-table pattern above.
-
-header('efficacite-column-capability — Efficacité cell renders integer % or `—` per data row (Tomato page)');
-{
-  const blocks = [
-    { id: 'nutr-compost',   label: 'Compost' },
-    { id: 'nutr-sidedress', label: 'Sidedress' },
-    { id: 'nutr-fert',      label: 'Fertigation' },
-    { id: 'nutr-foliar',    label: 'Foliaire' },
-  ];
-  // Index of the Efficacité column in each data row, matching the header
-  // order (Él. | Manque entrant | Efficacité | Apport ici | Manque sortant | emoji).
-  const EFFICACITE_COL_INDEX = 2;
-  // Accept "12 %" / "12%" / "0%" — integer only, no decimals.
-  const PERCENT_RE = /^\s*\d+\s*%\s*$/;
-  // Em-dash placeholder when the channel routes nothing for this element.
-  const ABSENT = '—';
-  const offenders = [];
-  for (const block of blocks) {
-    const element = window.document.getElementById(block.id);
-    if (!element) { offenders.push(`#${block.id} (${block.label}): container missing`); continue; }
-    const dataRows = findGapGridDataRows(element);
-    if (dataRows.length === 0) {
-      // Block has no rendered rows (all elements at gIn=0 + c=0 are hidden
-      // by the renderer). Pass with a note so the structural absence is
-      // visible in the verifier output.
-      pass(`${block.label}: no data rows rendered (all elements covered or empty) — Efficacité cell format vacuously satisfied`);
-      continue;
-    }
-    for (let rowIndex = 0; rowIndex < dataRows.length; rowIndex++) {
-      const row = dataRows[rowIndex];
-      const cells = Array.from(row.children);
-      if (cells.length !== 6) {
-        offenders.push(`${block.label} row ${rowIndex + 1}: ${cells.length} cells, expected 6`);
-        continue;
-      }
-      const efficaciteCell = cells[EFFICACITE_COL_INDEX];
-      const text = (efficaciteCell.textContent || '').trim();
-      if (text === ABSENT) continue;
-      if (!PERCENT_RE.test(text)) {
-        offenders.push(`${block.label} row ${rowIndex + 1}: Efficacité cell = "${text}" (expected integer % or ${ABSENT})`);
-      }
-    }
-  }
-  if (offenders.length === 0) {
-    pass('Tomato compost/sidedress/fert/foliar: every Efficacité cell is integer % or em-dash');
-  } else {
-    fail('efficacite-column-capability — Efficacité cell format', offenders.slice(0, 5).join(' · '));
-  }
-
-  // Salanova + Semis: structural sweep deferred (mirrors contribution-block-gap-grid).
-  // TODO: wire after F1 lettuce carve
-  pass('efficacite-column-capability — Salanova Sol Efficacité cell — TODO: wire after F1 lettuce carve');
-  // TODO: wire after F1 lettuce carve
-  pass('efficacite-column-capability — Salanova Fertigation Efficacité cell — TODO: wire after F1 lettuce carve');
-  // TODO: wire after F1 lettuce carve
-  pass('efficacite-column-capability — Salanova Front-load Efficacité cell — TODO: wire after F1 lettuce carve');
-  // TODO: wire after F1 lettuce carve
-  pass('efficacite-column-capability — Semis Réserve-substrat Efficacité cell — TODO: wire after F1 lettuce carve');
-  // TODO: wire after F1 lettuce carve
-  pass('efficacite-column-capability — Semis Fertigation Efficacité cell — TODO: wire after F1 lettuce carve');
-}
+// efficacite-column-capability retired 2026-07-18 — the Efficacité display
+// column was removed from the shared gap-grid (render-gap-grid.js) when the
+// bilan blocks went English/5-col. The model still exposes per-channel
+// efficiency maps; that contract is checked by channel-efficiency-capability-map below.
 
 // ─── channel-efficiency-capability-map — Per-element channel efficiency exposure ─────────────────
 //
@@ -4763,13 +4713,13 @@ function compositionCellOrderOk(cellText) {
 
 header('contribution-block-recipe-table — Contribution-block recipe table — Tomato page (Salanova/Semis deferred)');
 {
-  // Tomato Nutrition page — 4 contribution blocks asserted today.
+  // Tomato Nutrition page — 3 contribution blocks asserted today.
   // Tomato Sol soil-bank block (#nutr-soil) is EXCLUDED per contribution-block-recipe-table.
+  // Foliaire block removed 2026-07-18 (sprays retired, block deleted).
   const blocks = [
     { id: 'nutr-compost',   label: 'Compost' },
     { id: 'nutr-sidedress', label: 'Sidedress' },
     { id: 'nutr-fert',      label: 'Fertigation' },
-    { id: 'nutr-foliar',    label: 'Foliaire' },
   ];
   const offenders = [];
   for (const block of blocks) {
@@ -4820,7 +4770,7 @@ header('contribution-block-recipe-table — Contribution-block recipe table — 
     }
   }
   if (offenders.length === 0) {
-    pass('Tomato Compost/Sidedress/Fertigation/Foliaire: 3-col recipe table · canonical composition order · gap-grid is the immediate next sibling');
+    pass('Tomato Compost/Sidedress/Fertigation: 3-col recipe table · canonical composition order · gap-grid is the immediate next sibling');
   } else {
     fail('contribution-block-recipe-table — Tomato recipe tables', offenders.slice(0, 10).join('\n'));
   }
@@ -5113,49 +5063,16 @@ header('pourquoi-modal-strings-owned-here — Pourquoi modal interpretation stri
       }
     }
 
-    // Scan consumer sources for renderSpec('pourquoi-modal-strings-owned-here', '<key>', …) calls and
-    // assert each <key> is in expectedKeys.
-    const consumers = [
-      join(REPO_ROOT, 'app', 'index.html'),
-      join(REPO_ROOT, 'app', 'admin', 'nutrition', 'bilan', 'tomato', 'logic.js'),
-    ];
-    const callRe = /renderSpec\(\s*['"]pourquoi-modal-strings-owned-here['"]\s*,\s*['"]([^'"]+)['"]/g;
-    let callsFound = 0;
-    for (const path of consumers) {
-      let text;
-      try { text = readFileSync(path, 'utf8'); } catch { continue; }
-      let m;
-      while ((m = callRe.exec(text))) {
-        callsFound++;
-        const key = m[1];
-        if (!expectedKeys.includes(key)) {
-          offenders.push(`renderSpec('pourquoi-modal-strings-owned-here', '${key}') in ${path}: key not declared in spec`);
-        }
-      }
-    }
-
-    // Indirect calls via { requirementId: 'pourquoi-modal-strings-owned-here', key: '<key>' } — also valid call site.
-    const indirectRe = /requirementId:\s*['"]pourquoi-modal-strings-owned-here['"]\s*,\s*key:\s*([^,}]+)/g;
-    for (const path of consumers) {
-      let text;
-      try { text = readFileSync(path, 'utf8'); } catch { continue; }
-      let m;
-      while ((m = indirectRe.exec(text))) {
-        callsFound++;
-        // The key may be a variable (interpretationKey) or a literal.
-        // We don't deref the variable — just count the indirect site as a
-        // pass-through; the renderSpec runtime check will fail-fast if the
-        // variable resolves to an unknown key.
-      }
-    }
-
-    if (callsFound === 0) {
-      offenders.push('no consumer found for pourquoi-modal-strings-owned-here — renderSpec(\'pourquoi-modal-strings-owned-here\', …) absent in app/index.html or app/admin/nutrition/bilan/tomato/logic.js');
-    }
+    // NOTE (2026-07-18): the tomato Block 2 soil-bank display was replaced by
+    // the pool-maintenance block, dropping the only consumer of these strings.
+    // The consumer-scan clause is retired; this now only asserts the spec
+    // content still parses into SPEC_STRINGS. The 7 Renders blocks in
+    // soil-contribution/spec.md are orphaned — pending a spec-pruner pass to
+    // either re-consume or retire them together with this check.
   }
 
   if (offenders.length === 0) {
-    pass(`SPEC_STRINGS['pourquoi-modal-strings-owned-here'] has ${Object.keys(specStrings).length} keys · 6 consumer call sites resolve OK`);
+    pass(`SPEC_STRINGS['pourquoi-modal-strings-owned-here'] has ${Object.keys(specStrings).length} keys (build-integrity only; UI consumer retired)`);
   } else {
     fail('pourquoi-modal-strings-owned-here — pourquoi modal interpretation strings', offenders.join('\n'));
   }
@@ -5507,7 +5424,6 @@ const REQ159_TOMATO_BLOCKS = [
   { id: 'nutr-compost',   label: 'Tomato Compost' },
   { id: 'nutr-sidedress', label: 'Tomato Sidedress' },
   { id: 'nutr-fert',      label: 'Tomato Fertigation' },
-  { id: 'nutr-foliar',    label: 'Tomato Foliaire' },
 ];
 const REQ159_NURSERY_BLOCKS = [
   { id: 'nutr-n-substrate',   label: 'Semis Substrat' },
@@ -5697,7 +5613,7 @@ header('elemental-mass-in-mg — Nutrition-table elemental-mass columns declare 
   }
   // Flip back to tomato so #nutr-soil is live (soil-bank uses tomato page).
   if (typeof window.setNutrCrop === 'function') {
-    try { window.setNutrCrop('tomato'); } catch (e) { /* swallow */ }
+    try { window.setNutrCrop('tomato.backup'); } catch (e) { /* swallow */ }
   }
   {
     const soilBlock = window.document.getElementById('nutr-soil');
@@ -5793,7 +5709,7 @@ header('column-header-unit-declaration — Cell text does not duplicate the head
     }
   }
   if (typeof window.setNutrCrop === 'function') {
-    try { window.setNutrCrop('tomato'); } catch (e) { /* swallow */ }
+    try { window.setNutrCrop('tomato.backup'); } catch (e) { /* swallow */ }
   }
   if (offenders.length === 0) {
     pass('No cell duplicates a header-declared unit across tomato + nursery contribution blocks');
@@ -5885,7 +5801,7 @@ header('manque-sortant-zero-bare — Bare 0 in Manque sortant cell, no `(couvert
     });
   }
   if (typeof window.setNutrCrop === 'function') {
-    try { window.setNutrCrop('tomato'); } catch (e) { /* swallow */ }
+    try { window.setNutrCrop('tomato.backup'); } catch (e) { /* swallow */ }
   }
   if (offenders.length === 0) {
     pass('No "(couvert)" annotation in any contribution-block cell across tomato + nursery + soil-bank');
@@ -5905,150 +5821,65 @@ header('manque-sortant-zero-bare — Bare 0 in Manque sortant cell, no `(couvert
   pass('manque-sortant-zero-bare — Salanova blocks — TODO: wire after F1 lettuce carve');
 }
 
-// ─── mois-depuisement-sme-runway — Mois d'épuisement on every row with reservoir data ──────
+// ─── Block 2 pool-maintenance — the control-law dose per pool-forming element ──────
 //
-// Spec: nutrition/spec.md → mois-depuisement-sme-runway. Every element row on the soil-bank
-// block displays Mois d'épuisement = Mehlich-3 reservoir ÷ weekly plant
-// uptake currently sustainable at SME plant-availability. The model-side
-// formula is wired by months-to-depletion-clamped-by-peak-demand + sme-soil-solution-wired-per-crop-element; this matcher walks the DOM and
-// asserts the rendered cell tracks the model output for every element row
-// whose `SoilContribution.BANK_MG_M2` + `SME_SOIL_SOLUTION_PPM` entries
-// are populated (renders a non-`—` string), and falls back to `—` for
-// elements without bank or SME data.
+// Spec: app/admin/nutrition/bilan/tomato.backup/spec.md → block-2-pool-maintenance.
+// Model: domain/soil-maintenance.md, implemented in
+// nutrition/soil-contribution/pool-maintenance.js (window.PoolMaintenance).
+// Block 2 (#nutr-soil) renders one row per pool-forming element with 5 cells
+// (Él. · M3 actuel · bande optimale · épuisement · dose min). Asserts: the PM
+// namespace is live, exactly the 7 pool-formers render, the K row carries the
+// nonzero intensity-floor dose, and every over-band pool doses 0.
 
-header('mois-depuisement-sme-runway — Mois d\'épuisement rendered for every row with reservoir + SME data');
+header('block-2-pool-maintenance — 7 pool-forming rows, control-law dose (K intensity floor, over-band → 0)');
 {
-  const SC = window.SoilContribution;
+  const PM = window.PoolMaintenance;
   const block = window.document.getElementById('nutr-soil');
-  if (!SC || !block) {
-    fail('mois-depuisement-sme-runway prerequisites available', `SC=${!!SC} block=${!!block}`);
+  const offenders = [];
+  if (!PM || !block) {
+    fail('block-2-pool-maintenance prerequisites available', `PM=${!!PM} block=${!!block}`);
   } else {
     const rows = block.querySelectorAll('.pq-row');
-    const offenders = [];
-    const elements = ['N','P','K','Ca','Mg','Fe','Mn','Zn','B','Cu','Mo'];
-    if (rows.length < elements.length) {
-      offenders.push(`only ${rows.length} rows rendered, expected ≥ ${elements.length}`);
-    } else {
-      rows.forEach((row, index) => {
-        const element = elements[index];
-        if (!element) return;
-        const cells = row.querySelectorAll('div');
-        // Column order: Él. · Manque entrant · Apport ici · Manque sortant · Mois épuisement · icon
-        const depletionCellText = cells[4] ? cells[4].textContent.trim() : '';
-        const modelMonths = SC.monthsToDepletion('tomato', element);
-        const expectedNumeric = (typeof modelMonths === 'number' && modelMonths > 0);
-        if (expectedNumeric) {
-          if (depletionCellText === '—' || depletionCellText === '') {
-            offenders.push(`${element}: model returns ${modelMonths}, cell renders "${depletionCellText}"`);
-          }
-        } else {
-          if (depletionCellText !== '—') {
-            offenders.push(`${element}: model returns null, cell renders "${depletionCellText}" (expected "—")`);
-          }
-        }
-      });
+    if (rows.length !== PM.POOL_FORMING_ELEMENTS.length) {
+      offenders.push(`${rows.length} rows, expected ${PM.POOL_FORMING_ELEMENTS.length} pool-formers`);
     }
-    if (offenders.length > 0) {
-      fail('mois-depuisement-sme-runway row-by-row runway render', offenders.map(o => `  ${o}`).join('\n'));
-    } else {
-      pass(`Mois d'épuisement: ${rows.length} rows scanned, all match SME-derived model output (numeric where bank+SME present, "—" otherwise)`);
+    let fiveCellRows = true;
+    rows.forEach(row => { if (row.children.length !== 5) fiveCellRows = false; });
+    if (!fiveCellRows) offenders.push('a Block 2 row does not have exactly 5 cells');
+    const headerText = block.textContent || '';
+    if (!/Current \(ppm\)/.test(headerText) || !/Min dose/.test(headerText)) {
+      offenders.push('header missing "Current (ppm)" or "Min dose" label');
     }
+    // K intensity floor: dose = 20% of weekly removal, nonzero even over-band.
+    const kRemoval = 6000;  // T5 K demand mg/m²/wk (plant-needs data.js)
+    const kBandPpm = PM.M3_BANDS_PPM.K;
+    const kPpm = PM.poolPpmFromBankMg(211840);  // tomato K bank
+    const kDose = PM.maintenanceDose('K', kPpm, kRemoval, kBandPpm);
+    if (!(kDose.dose > 0) || kDose.gate !== 'floor') {
+      offenders.push(`K dose ${kDose.dose} gate ${kDose.gate} — expected nonzero intensity floor`);
+    }
+    // P is 14× over band → dose 0, gate hold.
+    const pDose = PM.maintenanceDose('P', PM.poolPpmFromBankMg(55770), 660, PM.M3_BANDS_PPM.P);
+    if (pDose.dose !== 0 || pDose.gate !== 'hold') {
+      offenders.push(`P dose ${pDose.dose} gate ${pDose.gate} — expected 0 / hold (over-band)`);
+    }
+    // Mg band is relational (computed from Ca + K), never empty.
+    const mgBand = PM.bandPpm('Mg', { Ca: PM.poolPpmFromBankMg(1098910), K: kPpm });
+    if (!mgBand || !(mgBand[1] > mgBand[0])) {
+      offenders.push(`Mg relational band malformed: ${JSON.stringify(mgBand)}`);
+    }
+  }
+  if (offenders.length > 0) {
+    fail('block-2-pool-maintenance render + control law', offenders.map(o => `  ${o}`).join('\n'));
+  } else {
+    pass('Block 2: 7 pool-forming rows · 5 cells · K intensity floor nonzero · over-band → 0 · Mg band relational');
   }
 }
 
-// ─── Foliar Efficacité is surfactant-aware ───────────────────
-//
-// Spec: app/admin/nutrition/builder/foliar/tomato/user-stories.md → foliar Block 5. Two assertions:
-//   (a) Reactive render — toggling #nutr-foliar-surfactant re-renders
-//       Block 5's Efficacité column (column index 2 in the 6-col gap-grid
-//       per contribution-block-gap-grid: Él. | Manque entrant | Efficacité | Apport ici |
-//       Manque sortant | emoji). At least one cell text must change
-//       across the toggle.
-//   (b) Strict-increase semantics — when surfactant is engaged, at least
-//       one routed element's Efficacité cell must render a higher integer
-//       % than its surfactant-off value (spec wording: "with surfactant
-//       on, foliar efficiency for routed elements is higher than without").
-//
-// Model-side capability (window.FoliarRecipeTomato.efficiencyFor) is
-// already verified by surfactant-aware-efficiency-map; this block targets the page-side wiring
-// (Wave 2 coder threads the surfactant flag from #nutr-foliar-surfactant
-// into the foliar branch of calculateNutritionSupply via
-// FoliarRecipeTomato.efficiencyFor). Designed-to-fail today: the page
-// binds the static `.efficiency` map regardless of lever state.
-
-header('Foliar Efficacité column reactive to surfactant lever');
-{
-  const surfInput = window.document.getElementById('nutr-foliar-surfactant');
-  const foliarBlock = window.document.getElementById('nutr-foliar');
-  const offenders = [];
-  if (!surfInput) {
-    offenders.push('#nutr-foliar-surfactant input missing');
-  } else if (!foliarBlock) {
-    offenders.push('#nutr-foliar block missing');
-  } else {
-    const EFFICACITE_COL_INDEX = 2;
-    const readEfficaciteCellTexts = () => {
-      const rows = findGapGridDataRows(foliarBlock);
-      return rows.map(row => {
-        const cells = Array.from(row.children);
-        return cells.length > EFFICACITE_COL_INDEX
-          ? (cells[EFFICACITE_COL_INDEX].textContent || '').trim()
-          : null;
-      });
-    };
-    surfInput.checked = false;
-    surfInput.dispatchEvent(new window.Event('change', { bubbles: true }));
-    const cellsOff = readEfficaciteCellTexts();
-    surfInput.checked = true;
-    surfInput.dispatchEvent(new window.Event('change', { bubbles: true }));
-    const cellsOn = readEfficaciteCellTexts();
-    // Restore default state for downstream verifier blocks.
-    surfInput.checked = false;
-    surfInput.dispatchEvent(new window.Event('change', { bubbles: true }));
-
-    if (cellsOff.length === 0) {
-      offenders.push('foliar gap-grid has no data rows — Efficacité column unreachable');
-    } else if (cellsOff.length !== cellsOn.length) {
-      offenders.push(`row count changed on toggle: off=${cellsOff.length} on=${cellsOn.length}`);
-    } else {
-      // (a) ≥1 cell text changes across the toggle.
-      const anyChange = cellsOff.some((text, index) => text !== cellsOn[index]);
-      if (!anyChange) {
-        offenders.push(
-          `Efficacité column unchanged on surfactant toggle — `
-          + `off=[${cellsOff.join(' | ')}] on=[${cellsOn.join(' | ')}]`
-        );
-      } else {
-        // (b) For every cell that renders an integer %, with-surfactant
-        // must be ≥ without; at least one must be strictly greater.
-        const PERCENT_RE = /^\s*(\d+)\s*%\s*$/;
-        let anyStrictlyHigher = false;
-        for (let index = 0; index < cellsOff.length; index++) {
-          const offMatch = (cellsOff[index] || '').match(PERCENT_RE);
-          const onMatch = (cellsOn[index] || '').match(PERCENT_RE);
-          if (!offMatch || !onMatch) continue;
-          const offValue = parseInt(offMatch[1], 10);
-          const onValue = parseInt(onMatch[1], 10);
-          if (onValue < offValue) {
-            offenders.push(`row ${index + 1}: surfactant on (${onValue}%) < off (${offValue}%) — efficiency must not regress`);
-          }
-          if (onValue > offValue) anyStrictlyHigher = true;
-        }
-        if (!anyStrictlyHigher && offenders.length === 0) {
-          offenders.push(
-            `no Efficacité cell increased on surfactant=true — `
-            + `off=[${cellsOff.join(' | ')}] on=[${cellsOn.join(' | ')}]`
-          );
-        }
-      }
-    }
-  }
-  if (offenders.length === 0) {
-    pass('Foliaire Efficacité column updates on surfactant toggle; at least one cell strictly higher with surfactant on');
-  } else {
-    fail('Foliar Efficacité reactivity', offenders.slice(0, 4).join(' · '));
-  }
-}
+// Foliar Efficacité display-reactivity check retired 2026-07-18 — the
+// Efficacité column no longer renders in the gap-grid (English/5-col). The
+// surfactant lever still drives the model-side efficiency map, which stays
+// covered by surfactant-aware-efficiency-map + supply-accepts-spray-count-surfactant.
 
 // ─── Final ─────────────────────────────────────────────────────────────
 

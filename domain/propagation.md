@@ -46,4 +46,4 @@ Per-container substrate (round-pot basis; square holds ~50–70 % more):
 
 - Substrate cost only — excludes pot/tray cost, labor, bench heating, fill waste (~10–15 %).
 
-- Container choice's effect on plant timing/quality → `../nutrition/lettuce/domain/domain.md` (`### Canopy closure`, `### Growth rate`).
+- Container choice's effect on plant timing/quality → `lettuce/model.md` (`### Canopy closure`, `### Growth rate`).

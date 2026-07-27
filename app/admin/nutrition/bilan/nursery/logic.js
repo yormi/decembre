@@ -10,7 +10,7 @@
 function buildNutrimentNursery() {
   const targetG     = parseFloat(document.getElementById('nutr-n-target').value)  || 50;
   const cycleDays   = parseFloat(document.getElementById('nutr-n-days').value)    || 35;
-  const cellsPerTray= parseFloat(document.getElementById('nutr-n-cells').value)   || 50;
+  const cellsPerTray= parseFloat(document.getElementById('nutr-n-cells').value)   || 32;
   const traysCohort = parseFloat(document.getElementById('nutr-n-trays').value)   || 50;
   const appsPerWeek = parseFloat(document.getElementById('nutr-n-applications')?.value) || 1;
 
@@ -128,7 +128,7 @@ function buildNutrimentNursery() {
     + `<span style="color:var(--text-muted); font-size:10.5px;">(cert 2 placeholder, fiche Berger pendante)</span>.`
     + ` Apport moyen sur ${SCN.OM2_RELEASE_CURVE_BY_WEEK.length} sem du cycle.`
     + `</div>`;
-  subHtml += renderGapGrid(demandFlat, subContrib, gapAfterSubstrate, 'nursery-substrate', subDetails, 'nursery-substrate', (subResult && subResult.efficiency) || {});
+  subHtml += renderGapGrid(demandFlat, subContrib, gapAfterSubstrate, 'nursery-substrate', subDetails, 'nursery-substrate');
   document.getElementById('nutr-n-substrate').innerHTML = subHtml;
 
   // ─── Block 3: Fertigation — recipe header + gap-grid table ───
@@ -195,7 +195,7 @@ function buildNutrimentNursery() {
     <div style="font-family:'DM Mono',monospace; color:${phColor};">${tankPh.toFixed(2)}</div>
     <div style="color:var(--text-muted); font-size:11px;">[${phLo}-${phHi}]</div>
   </div>`;
-  fertHtml += renderGapGrid(gapAfterSubstrate, fertContrib, gapAfterFert, 'nursery-fert', fertDetails, 'nursery-fert', supply.efficiency || {});
+  fertHtml += renderGapGrid(gapAfterSubstrate, fertContrib, gapAfterFert, 'nursery-fert', fertDetails, 'nursery-fert');
   document.getElementById('nutr-n-fertigation').innerHTML = fertHtml;
 
   // ─── Block 4: Leviers (reads gapAfterFert as residual) ───

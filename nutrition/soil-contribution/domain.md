@@ -37,4 +37,4 @@ instead.
 
 Pool-forming, steerable by the M3 law: **K, Ca, P, Fe, Mn, Zn, Cu**.
 
-The dosing method that uses this split → `/domain/fertigation.md`.
+The dosing method that uses this split → `/domain/soil-maintenance.md`.

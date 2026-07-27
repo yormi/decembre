@@ -3,8 +3,8 @@
 // Spec:        nutrition/lettuce/domain/nursery/plant-needs/spec.md
 // Derivation:  nutrition/lettuce/domain/nursery/plant-needs/derivation.md
 //
-// Salanova lettuce nursery seedlings raised in 50-cell trays in a Berger
-// OM2 + feather meal substrate. Seed → target weight over the cycle
+// Salanova lettuce nursery seedlings raised in 2.5"-deep pots (32/tray) in a
+// Berger OM2 + feather meal substrate. Seed → target weight over the cycle
 // (default 35 d / 5 wk). The model answers: "how much of element X
 // does a seedling need to take up this week to hit target weight T at
 // density D over cycle C days?"
@@ -47,24 +47,29 @@ const LETTUCE_NURSERY_TISSUE_DW = {
 // elongating. Cert 3 — Décembre-adjacent measurement on prior cohorts.
 const LETTUCE_NURSERY_DM_FRACTION = 0.07;
 
-// Default operational targets for the Décembre nursery. cert 4 —
-// observed at Décembre, single greenhouse, single tray geometry.
+// Default operational targets for the Décembre nursery.
 //
-// targetG_default       = 20 g per plant at end of cycle (default, NOT cap;
-//                         user can override for tighter / looser schedules).
-//                         Lowered 90 → 20 (2026-06-20): salt-control phase
-//                         pulls a small healthy plug, not a large salt-damaged
-//                         one. 20 g halves N demand, which lets the fertigation
-//                         feed drop into the salt-safe CE band. Revisit upward
-//                         as salinity is brought under control (see derivation).
-// cycleDays_default     = 35 d (5 weeks germination → transplant-ready)
-// cellsPerTray_default  = 50 cells/tray (Salanova plug tray standard)
-// traysPerCohort_default= 50 trays/cohort (sized to fertigation barrel)
-// trayAreaM2            = 0.149 m² per tray (≈ 11 in × 21 in standard 50-cell)
+// targetG_default       = 50 g per plant at end of cycle (default, NOT cap).
+//                         Step-up 20 → 50 (2026-07-19), moving the salanova
+//                         nursery from 50-cell trays to 2.5"-deep pots (32 per
+//                         tray). Larger substrate volume (~200 mL vs 40 mL)
+//                         drops salt density per mL, so a bigger plug fits the
+//                         salt-safe CE band without a hotter feed. Realizes the
+//                         "raise the plug target once salinity holds" trigger
+//                         (fertigation derivation §6.5). The 20 g / 50-cell
+//                         interim (2026-06-20) is retired to history, like the
+//                         90 g before it. cert 2 — planned step-up, not yet
+//                         field-run.
+// cycleDays_default     = 35 d (5-week nursery, sowing → transplant-ready)
+// cellsPerTray_default  = 32 pots/tray (2.5"-deep pot, 32 per standard tray)
+// traysPerCohort_default= 50 trays/cohort (approx; pending re-measure for the
+//                         2.5"-pot format — cohort sizing tracks the barrel)
+// trayAreaM2            = 0.149 m² per tray (standard ≈ 11 in × 21 in; pot-tray
+//                         footprint pending re-measure)
 const NURSERY_TARGETS = {
-  targetG_default:        20,    // cert 4 — interim salt-control target (was 90)
+  targetG_default:        50,    // cert 2 — 2.5"-pot step-up, not yet field-run (was 20 interim, 90 original)
   cycleDays_default:      35,    // cert 4
-  cellsPerTray_default:   50,    // cert 4
-  traysPerCohort_default: 50,    // cert 4 (approx; cohort sized to fertigation barrel)
-  trayAreaM2:             0.149, // cert 4 (50-cell standard ≈ 11" × 21")
+  cellsPerTray_default:   32,    // cert 3 — 2.5"-deep pot, 32 per tray
+  traysPerCohort_default: 50,    // cert 2 (approx; pending 2.5"-pot cohort re-measure)
+  trayAreaM2:             0.149, // cert 2 (pot-tray footprint pending re-measure)
 };

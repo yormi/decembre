@@ -220,7 +220,7 @@ those elements climb back into measurable range).
 Block 2) is **owned by this spec entry**. Code calls
 `renderSpec('pourquoi-modal-strings-owned-here', '<key>', { el })`; MUST NOT inline prose at call
 site. Seven keys below, one per branch of per-element interpretation
-logic in `app/admin/nutrition/bilan/tomato/logic.js` `buildNutrimentTomato` ↔ soil
+logic in `app/admin/nutrition/bilan/tomato.backup/logic.js` `buildNutrimentTomato` ↔ soil
 block. `spec — operator-prose-is-deterministic-render` forbids hand-written stable strings; bytes injected via
 `window.SPEC_STRINGS`.
 

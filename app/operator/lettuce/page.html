@@ -1,0 +1,55 @@
+  <div id="page-laitue-content" style="display:none;">
+
+    <div id="elm-operator-lettuce"></div>
+    <script src="elm-operator-lettuce.js"></script>
+    <script>
+      // jsdom verifier doesn't fetch external scripts — guard so the rest
+      // of the page scripts keep running without Elm.
+      if (typeof Elm !== 'undefined') {
+        // The picked day round-trips through the hash (#laitue/<jour>), so a
+        // reload or a shared link lands on the same day.
+        // Parsed inline, not via parseHash(): this partial runs while the body
+        // is being parsed, before core/logic.js has defined the router.
+        var laitueSegs = location.hash.replace(/^#/, '').split('/').filter(Boolean);
+        var laitueDayFlag = laitueSegs.indexOf('laitue') >= 0
+          ? laitueSegs[laitueSegs.indexOf('laitue') + 1] || null
+          : null;
+        // Ticked steps live in localStorage stamped with the week's Monday, so
+        // the list self-expires at Monday 00:00 without any scheduled job.
+        var LAITUE_DONE_KEY = 'laitue-routine-done';
+        function laitueWeekId() {
+          var now = new Date();
+          var sinceMonday = (now.getDay() + 6) % 7;
+          var monday = new Date(now.getFullYear(), now.getMonth(), now.getDate() - sinceMonday);
+          return monday.getFullYear() + '-' + (monday.getMonth() + 1) + '-' + monday.getDate();
+        }
+        var laitueSaved = null;
+        try { laitueSaved = JSON.parse(localStorage.getItem(LAITUE_DONE_KEY) || 'null'); } catch (e) {}
+        var laitueDoneFlag =
+          (laitueSaved && laitueSaved.week === laitueWeekId() && Array.isArray(laitueSaved.done))
+            ? laitueSaved.done
+            : [];
+
+        var laitueApp = Elm.LettuceRoutine.init({
+          node: document.getElementById('elm-operator-lettuce'),
+          flags: { day: laitueDayFlag, done: laitueDoneFlag },
+        });
+        laitueApp.ports.persistDay.subscribe(function (day) {
+          if (typeof setLaitueDay === 'function') setLaitueDay(day);
+        });
+        // The LED-hours table is JS-rendered into the slot the light card
+        // draws; rAF lets Elm put that slot in the DOM first.
+        laitueApp.ports.renderLight.subscribe(function () {
+          requestAnimationFrame(function () {
+            if (typeof buildLight === 'function') buildLight();
+          });
+        });
+        laitueApp.ports.persistDone.subscribe(function (done) {
+          try {
+            localStorage.setItem(LAITUE_DONE_KEY, JSON.stringify({ week: laitueWeekId(), done: done }));
+          } catch (e) {}
+        });
+      }
+    </script>
+
+  </div><!-- end page-laitue-content -->

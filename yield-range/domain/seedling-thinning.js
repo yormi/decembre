@@ -3,10 +3,11 @@
 // Domain: yield-range/domain/domain.md (expolinear light-limited engine clamped
 // by the canopy-volume cap; nursery phase only).
 //
-// Nursery-chart view — NOT spec-tied. Anchored to the real Décembre datum
-// (5 g biggest @ d25, 50-cell, drought+heat, DLI 17) in the stressed regime;
-// the clean regime (well-watered) is unvalidated. Kept out of calc.js so the
-// cert-tied integrator stays clean.
+// Nursery-chart view — NOT spec-tied. No weight anchor is reproduced; both
+// regimes are unvalidated pending a plug dry-matter measurement. Kept out of
+// calc.js so the cert-tied integrator stays clean.
+//
+// Day axis: DAYS FROM SOWING, day 1 = sowing day (same as calc.js and doc/).
 //
 // Growth law:  dW_dry/dt = ε·DLI·A_ground·(1 − exp(−k·LAI)) , LAI = W_dry·SLA/A ,
 // clamped W ≤ cap. The Beer–Lambert interception makes canopy closure, thinning
@@ -17,8 +18,9 @@
 // is the nursery-chart view of the same carbon-balance law.
 const SEEDLING_RGR = GROWTH_RGR;                 // open-canopy exponential rate = ε·DLI·k·SLA (clean)
 const SEEDLING_RUE = RADIATION_USE_EFFICIENCY;   // g dry / mol PAR — clean, well-watered
-const SEEDLING_STRESS_RUE = NURSERY_STRESS_RUE;  // drought+heat ε (reproduces 5 g @ d25)
-const SEEDLING_DLI = DLI_TARGET;                 // nursery-space DLI (17)
+const SEEDLING_STRESS_RUE = NURSERY_STRESS_RUE;  // drought+heat ε (unanchored)
+const SEEDLING_DLI = NURSERY_DLI_CEILING_BY_WEEK[2]; // plug-stage usable DLI; growth runs on nurseryLightCeiling(day), all sampleDays (21/28/35) are sowing-week 3+
+const SEEDLING_EMERGENCE_DAY = 1 + germinationDaysFromSoilTemperature(NURSERY_SOIL_TEMPERATURE_C);
 const SEEDLING_DM_FRACTION = PLUG_DRY_MATTER_FRACTION; // plug DM — fresh = dry ÷ this
 const SEEDLING_STEP_DAYS = GROWTH_STEP_DAYS;     // integration step
 const SEEDLING_SLA = SPECIFIC_LEAF_AREA;         // specific leaf area (derived)
@@ -46,13 +48,14 @@ function seedlingCapSpaced(plateauSize) {
 function seedlingWeightFresh(plateauSize, thinDay, targetDay, stressed = false) {
   const areaBase = TRAY_FRAME_M2 / plateauSize;
   const rue = seedlingRue(stressed);
-  let weightDry = W_INIT_GERMINATED_G;
-  for (let t = 0; t <= targetDay + 1e-9; t += SEEDLING_STEP_DAYS) {
+  let weightDry = EMERGENCE_DRY_MASS_G;
+  for (let t = 1; t <= targetDay + 1e-9; t += SEEDLING_STEP_DAYS) {
+    if (t < SEEDLING_EMERGENCE_DAY) continue;
     const thinned = thinDay != null && t >= thinDay;
     const areaGround = thinned ? 2 * areaBase : areaBase;
     const capDry = (thinned ? seedlingCapSpaced(plateauSize) : seedlingCapPacked(plateauSize)) * SEEDLING_DM_FRACTION;
     const lai = weightDry * SEEDLING_SLA / areaGround;
-    const grow = rue * Math.min(SEEDLING_DLI, nurseryLightCeiling(t)) * areaGround * (1 - Math.exp(-SEEDLING_K * lai));
+    const grow = rue * nurseryLightCeiling(t) * areaGround * (1 - Math.exp(-SEEDLING_K * lai));
     weightDry = Math.min(weightDry + grow * SEEDLING_STEP_DAYS, capDry);
   }
   return weightDry / SEEDLING_DM_FRACTION;
@@ -67,20 +70,24 @@ function seedlingClosureWeightFresh(plateauSize, spaced) {
   return weightDry / SEEDLING_DM_FRACTION;
 }
 
-// Fresh-weight series [{day, weight}] from germination to maximumDay, checker-
+// Fresh-weight series [{day, weight}] from sowing (day 1) to maximumDay, checker-
 // thinning (area ×2) at thinDay (null = none). Same integrator as
 // seedlingWeightFresh, sampled at every step instead of only the target day.
 function seedlingTrajectory(plateauSize, thinDay, maximumDay, stressed = false) {
   const areaBase = TRAY_FRAME_M2 / plateauSize;
   const rue = seedlingRue(stressed);
-  let weightDry = W_INIT_GERMINATED_G;
-  const series = [{ day: 0, weight: weightDry / SEEDLING_DM_FRACTION }];
-  for (let t = SEEDLING_STEP_DAYS; t <= maximumDay + 1e-9; t += SEEDLING_STEP_DAYS) {
+  let weightDry = EMERGENCE_DRY_MASS_G;
+  const series = [{ day: 1, weight: weightDry / SEEDLING_DM_FRACTION }];
+  for (let t = 1 + SEEDLING_STEP_DAYS; t <= maximumDay + 1e-9; t += SEEDLING_STEP_DAYS) {
+    if (t < SEEDLING_EMERGENCE_DAY) {
+      series.push({ day: t, weight: weightDry / SEEDLING_DM_FRACTION });
+      continue;
+    }
     const thinned = thinDay != null && t >= thinDay;
     const areaGround = thinned ? 2 * areaBase : areaBase;
     const capDry = (thinned ? seedlingCapSpaced(plateauSize) : seedlingCapPacked(plateauSize)) * SEEDLING_DM_FRACTION;
     const lai = weightDry * SEEDLING_SLA / areaGround;
-    const grow = rue * Math.min(SEEDLING_DLI, nurseryLightCeiling(t)) * areaGround * (1 - Math.exp(-SEEDLING_K * lai));
+    const grow = rue * nurseryLightCeiling(t) * areaGround * (1 - Math.exp(-SEEDLING_K * lai));
     weightDry = Math.min(weightDry + grow * SEEDLING_STEP_DAYS, capDry);
     series.push({ day: t, weight: weightDry / SEEDLING_DM_FRACTION });
   }
@@ -112,11 +119,12 @@ function seedlingChartModel(plateauSize, thinDay, maximumDay, stressed = false) 
 function seedlingClosureDay(plateauSize, stressed = false) {
   const areaBase = TRAY_FRAME_M2 / plateauSize;
   const rue = seedlingRue(stressed);
-  let weightDry = W_INIT_GERMINATED_G;
-  for (let t = 0; t <= 60; t += SEEDLING_STEP_DAYS) {
+  let weightDry = EMERGENCE_DRY_MASS_G;
+  for (let t = 1; t <= 60; t += SEEDLING_STEP_DAYS) {
     const lai = weightDry * SEEDLING_SLA / areaBase;
     if (lai >= SEEDLING_LAI_CLOSURE) return t;
-    const grow = rue * Math.min(SEEDLING_DLI, nurseryLightCeiling(t)) * areaBase * (1 - Math.exp(-SEEDLING_K * lai));
+    if (t < SEEDLING_EMERGENCE_DAY) continue;
+    const grow = rue * nurseryLightCeiling(t) * areaBase * (1 - Math.exp(-SEEDLING_K * lai));
     weightDry = weightDry + grow * SEEDLING_STEP_DAYS;
   }
   return null;

@@ -129,22 +129,41 @@ function autoStage() {
 }
 
 // Nursery (semis laitue) — per-tray watering recipe.
-// Salt-control recipe (adopted 2026-06-20): target plug ~20 g, 1 feed/week.
-// Doses read from the model `window.FertigationNursery.NURSERY_RECIPE_DEFAULT`
-// (g/L; for liquids mL/L ≈ g/L) × water litres — no hardcoded recipe numbers, so
-// this operator card and the model can't drift apart. The old salty recipe
-// (fish 13 mL/L, no Ocean) was retired here when the bench switched over.
+// Step-up recipe (2026-07-19): target plug ~50 g in 2.5"-deep pots (32/tray),
+// 1 feed/week. Doses read from the model
+// `window.FertigationNursery.NURSERY_RECIPE_DEFAULT` (g/L; for liquids mL/L ≈
+// g/L) × water litres — no hardcoded recipe numbers, so this operator card and
+// the model can't drift apart. Per-tray water litres come from the admin
+// tray-type picker (NURSERY_TRAY_TYPES); the 32-pot default reads the model's
+// trayVolumeL so the card follows the step-up. Recipe concentrations are
+// unchanged from the 2026-06-20 salt-control feed — a bigger plug is fed by
+// more volume, not a hotter bucket.
 // Derivation: nutrition/lettuce/domain/nursery/fertigation/. Leaching + pour-through flush:
-// nutrition/lettuce/protocol/nursery/salt-flush.md.
+// protocol/salt-flush/seedlings.md.
 //   Ocean 15-1-1 (powder, g) — N. Acadie poisson (liquid, mL) — P.
 //   Acadie kelp (liquid, mL) — K + micros. Sulfate de fer 20 % (powder, g) — Fe,
 //   stays available in the acidic peat (cell pH ~5.8) where field pH 7.48 would
-//   precipitate it. Water 1.25 L/tray. Feed CE ~0.85 mS/cm, tank pH ~5.8.
+//   precipitate it. Feed CE ~0.85 mS/cm, tank pH ~5.8.
+
+// Per-tray water litres by container. The 32-pot-2.5in default resolves to the
+// model's NURSERY_FERTIGATION_DEFAULTS.trayVolumeL (null sentinel) so the live
+// default can't drift from the model. Other rows are explicit (50-cell retired,
+// 3"-pot cert 2 estimate).
+const NURSERY_TRAY_TYPES = {
+  '50-cell':      { trayVolumeL: 1.25 },   // retired 50-cell (historical, 25 mL/cell)
+  '18-pot-3in':   { trayVolumeL: 2.70 },   // ~150 mL/pot × 18; cert 2 estimate
+  '32-pot-2.5in': { trayVolumeL: null  },  // null → model default (~120 mL/pot × 32 = 3.84 L)
+};
+
 function recalcNursery() {
   const element = document.getElementById('tray-count');
   if (!element) return;
   const trays = parseInt(element.value) || 1;
-  const water = trays * 1.25;                                       // L (1.25 L/tray)
+  const modelVol = (window.FertigationNursery && window.FertigationNursery.NURSERY_FERTIGATION_DEFAULTS
+    && window.FertigationNursery.NURSERY_FERTIGATION_DEFAULTS.trayVolumeL) || 3.84;
+  const trayType = NURSERY_TRAY_TYPES[window.__nurseryTrayId || '32-pot-2.5in'] || {};
+  const trayVolumeL = (trayType.trayVolumeL != null) ? trayType.trayVolumeL : modelVol;
+  const water = trays * trayVolumeL;                               // L (per-tray volume × trays)
   const sig2 = (v) => Number(v.toPrecision(2));                     // 2 significant figures
   const recipe = (window.FertigationNursery && window.FertigationNursery.NURSERY_RECIPE_DEFAULT) || {};
   document.getElementById('out-water').textContent = sig2(water);

@@ -25,6 +25,13 @@ Pre-closure coverage depends on Rm alone (exponential leaf-area buildup),
 independent of ε — the one observation the grams-only anchors could not give.
 Closure-day prediction for 50-cell (ε=0.85 stressed, W0=0.015):
 
+> **Amendment 2026-07-26.** Superseded inputs: the day-1 mass is now
+> `EMERGENCE_DRY_MASS_G = 0.013` (fitted) applied at an emergence day derived
+> from thermal time (day 4.2 at 19.5 °C soil), the axis is days-from-sowing, and
+> the engine's closure day is ~25.9 stressed at 50-cell. The Rm 0.30 refutation still stands — it turns on
+> pre-closure coverage, which depends on Rm alone — but the day numbers below
+> are pre-rebase. Do not read them as current.
+
 - Rm = 0.30 → canopy closes ~**day 7.6** → would be closed by day 10. **Refuted.**
 - Rm = 0.20 → closes ~**day 13** → open at day 10, closed by day 21. **Matches.**
 

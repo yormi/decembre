@@ -53,7 +53,7 @@ Lab's per-element déficience / faible flags:
 **Reach for:** what roots-to-leaves actually delivered post-crisis (foliar Mn/Zn working? Ca-saturation still leaving plants Ca-déficient?); cross-checking the pH 7.4 lockout hypothesis against leaf uptake; calibrating downstream model anchors (luxury K, Ca/Mg ratios, foliar dose sufficiency).
 ⚠️ Lab interpretation thresholds are generic plant-tissue norms, not Salanova / tomato cultivar-specific — same caveat as SME spec ranges. LAIT #2 N value appears clipped on layout-extracted text; verify against the PDF before citing.
 ⚠️ Three samples but no in-PDF map to which bed / which cohort / which sampling date by cultivar; cross-reference Catherine's sampling log if downstream decisions hinge on which lettuce cohort is which.
-**Lettuce reads (LAIT #1/#2) interpreted for the salanova yield diagnostic:** `nutrition/lettuce/domain/doc/diagnostic-2026-06-06/diagnosis.md` (Ca/Mg/K low, Na very high → salinity/cation antagonism; N sufficient).
+**Lettuce reads (LAIT #1/#2) interpreted for the salanova yield diagnostic:** `domain/lettuce/doc/diagnostic-2026-06-06/diagnosis.md` (Ca/Mg/K low, Na very high → salinity/cation antagonism; N sufficient).
 
 
 ### `FAO-217-tissue-sufficiency-ranges.png`

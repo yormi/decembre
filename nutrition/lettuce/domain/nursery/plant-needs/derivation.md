@@ -61,7 +61,7 @@ computed demand ~36 % and mask the salt-driven under-supply.
 | Field                      | Value | Notes                                           |
 |----------------------------|-------|-------------------------------------------------|
 | `targetG_default`          | 90    | g/plant end of cycle. Default, not cap (60-120 range). Cert 4 — Décembre observed. |
-| `cycleDays_default`        | 35    | 5-week germination → transplant-ready. Cert 4. |
+| `cycleDays_default`        | 35    | 5-week nursery, sowing → transplant-ready. Cert 4. |
 | `cellsPerTray_default`     | 50    | Salanova plug tray standard. Cert 4.            |
 | `traysPerCohort_default`   | 50    | Cohort sized to fertigation barrel. Cert 4.     |
 | `trayAreaM2`               | 0.149 | 50-cell tray ≈ 11 in × 21 in. Cert 4.           |

@@ -2,7 +2,7 @@
 
 Strategy kernel part 2+3 of 3 (Rumelt: diagnosis → **guiding
 policy → coherent action**). Diagnosis: `problem.md`. Mechanism +
-setpoints: `nutrition/lettuce/domain/domain.md`. Forks: `learnings/`.
+setpoints: `domain/lettuce/model.md`. Forks: `learnings/`.
 
 ## Guiding policy — outrun the heat
 
@@ -18,7 +18,7 @@ bolt threshold without shade.**
 Yield is booked as **kg/bed, not g/head**: head size × density
 flexes by season (bigger/looser in cool months, smaller/denser/
 faster in summer), respecting the canopy net-positive window
-(`nutrition/lettuce/domain/domain.md` § Canopy closure).
+(`domain/lettuce/model.md` § Canopy closure).
 
 Rules **in**: cold barn nursery, 3″-pot 40 g plug, bolt-tolerant
 variety, de-salt, short bed flip, night-flush venting, HAF.
@@ -28,7 +28,7 @@ chasing yellow with N, running it like the tomatoes
 
 ## The bolt clock — why no-shade summer works on paper
 
-Bolting model + thresholds: `nutrition/lettuce/domain/domain.md` § Bolting (750 sensitive
+Bolting model + thresholds: `domain/lettuce/model.md` § Bolting (750 sensitive
 → 1250 bolt-tolerant °C·d). The clock never stops above 4 °C — the
 barn *slows* it (14 °C·d/day at 18 °C vs 28 at 26 °C), it doesn't
 freeze it. So the play is to spend the long phase at the slow rate
@@ -62,7 +62,7 @@ optional**, and the first summer crop is a calibration run.
 ## The protocol spine
 
 Failures each stage must defeat: `problem.md`. Setpoints: the
-referenced `nutrition/lettuce/domain/domain.md` bands — not restated here.
+referenced `domain/lettuce/model.md` bands — not restated here.
 
 | # | Stage | Decision | Defeats |
 |---|---|---|---|
@@ -88,10 +88,10 @@ bolt math needs.
 
 **Stage 3 — nursery climate.** Barn held ~18 °C all day (June 10,
 vs 24.1 °C house) → cool, bolt-safe (cold never bolts lettuce,
-`nutrition/lettuce/domain/domain.md` § Bolting). Lamps (200 µmol capacity) give DLI
+`domain/lettuce/model.md` § Bolting). Lamps (200 µmol capacity) give DLI
 without sun-heat → cool *and* bright, impossible under summer glass.
 **Open guardrail:** seedling setpoints want root-zone 20–22 °C for
-fast rooting (`nutrition/lettuce/domain/domain.md` § Seedlings); flat 18 °C barn roots
+fast rooting (`domain/lettuce/model.md` § Seedlings); flat 18 °C barn roots
 slower → possible **bottom-heat** sub-decision (warm roots, cool
 air).
 
@@ -99,7 +99,7 @@ air).
 venting to pull bed night <16 °C (kills half the day>24/night>16
 bolt trigger + lowers 24 h-avg). HAF already installed (convection
 + keeps leaf-VPD a live sink + drives inner-heart Ca,
-`nutrition/lettuce/domain/domain.md` § Calcium). Tipburn/Ca lever set OPEN — `nutrition/lettuce/domain/domain.md`
+`domain/lettuce/model.md` § Calcium). Tipburn/Ca lever set OPEN — `domain/lettuce/model.md`
 gives DLI_critical ≈ 24; manage DLI under it + heart HD/HAF +
 foliar-Ca backstop.
 
@@ -110,7 +110,7 @@ foliar-Ca backstop.
 
 - plug: weight at pull (target 40 g/4 wk), no purpling/stretch
 
-- salt: tray EC pen (target ≤1.0–1.2, `nutrition/lettuce/domain/domain.md` § Seedlings);  
+- salt: tray EC pen (target ≤1.0–1.2, `domain/lettuce/model.md` § Seedlings);  
   feed Na test still open (`problem.md`)
 
 - field: soil EC (Bluelab Pulse) + tissue Ca/Na on the open gates

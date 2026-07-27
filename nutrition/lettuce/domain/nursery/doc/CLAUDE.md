@@ -20,7 +20,7 @@ Screenshot of measured nursery substrate readings (~12–13 June), two transplan
 
 **Reach for:**
 - Pulling the actual measured nursery pH / leach EC / substrate temp behind a salanova transplant-vigour read.
-- Evidence that the **Pulse media EC does not work in the 50-cell tray** ("fonctionne pas dans multicellule") — see caveat in `nutrition/lettuce/protocol/nursery/pulse-media-ec.md`.
+- Evidence that the **Pulse media EC does not work in the 50-cell tray** ("fonctionne pas dans multicellule") — prongs don't seat; use pour-through there.
 - Seeing the pour-through-vs-Pulse gap again (3" pot: leach 5.14 vs Pulse 1.16) — same moisture-vs-salt story as `nutrition/lettuce/domain/learnings/pulse-in-soil-tracks-moisture-not-salt.md`.
 
 ⚠️ Both substrates read low pH (5.5 / 4.8) and hot (29.1 / 31.7 °C); leach EC high (5.14 / 5.6). Reading date approximate.
