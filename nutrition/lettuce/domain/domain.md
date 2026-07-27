@@ -155,6 +155,23 @@ Time-to-bolt held at constant temperature (≈1000 °C·d; constant temp)
 
 - both pinned → growth rate season-independent; residual is summer-*fast* (sun overshoots DLI target + warmer days, day temp uncapped), never winter-slow
 
+- vegetative fresh weight accumulates **exponentially** in the active phase → time-to-weight is set by a doubling time, not a fixed g/day
+
+- a target harvest weight is reachable only if no quality ceiling (tipburn / bolting / canopy net-negative) fires first
+
+Doubling time by condition (cert 1–2 — provenance: `learnings/growth-rate-doubling-time-provenance.md`)
+
+| Condition | Doubling time |
+|---|---|
+| DLI ≥ saturation, 18–20 °C, pre-closure | 6–8 d |
+| bed setpoint band (DLI 14–16) | ~8–10 d |
+| closure drag or off-band temp | 10–12+ d |
+
+- best case example:
+    - 30 g → 100 g = 3.3× → ~1.7 doublings
+    - 1.7 × 6–8 d = **~10–14 d** best-case
+    - **~2–3 wk** if any factor is sub-optimal
+
 
 ### Canopy closure
 

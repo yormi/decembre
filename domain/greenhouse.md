@@ -16,7 +16,7 @@
 
 - Nursery growth rack → **4× SunBlaster T5HO 54W + reflector, 18 h/d** on a 24" Uline shelf → **~216 µmol/m²/s** (~14 mol/m²/d)
 
-- Tomato beds → no LED (sun-only)
+- Tomato beds → no LED (sun-only); costed lighting scenario in `../nutrition/tomato/domain/lighting/domain.md` is hypothetical, not installed
 
 
 ### Light delivery

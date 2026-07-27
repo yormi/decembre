@@ -57,7 +57,7 @@ Buffer-only range = tomato's 50–120 kg scaled by topsoil-mass ratio (27 360 / 
 |---|---|---|---|
 | EC (root zone) | **ECe ≤ 1.3 dS/m** (≈0.5–0.6 on 1:2) | ~half tomato's 2.5 | near it → skip/cut next pass; **check EC before transplant**, not just after |
 | pH retest | every flip / ~4 weeks | same | stop at 6.5, hard floor 6.0 |
-| Aeration | never dose a waterlogged bed | same | S⁰ → H₂S root burn |
+| Aeration | never dose a waterlogged bed (test: `../../../protocol/bed-drainage-test.md`) | same | S⁰ → H₂S root burn |
 
 Lettuce salinity threshold ECe ~1.3 dS/m (cert 4, FAO); yield falls fast above it. Gypsum salinity still self-limits (CaSO₄ solubility ~2.4 g/L, EC self-caps ~2.0–2.2 dS/m) — but lettuce's lower threshold means the transient EC pulse matters more, and it lands right as fast-cycle seedlings go in. Hence the pre-transplant EC check.
 
