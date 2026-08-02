@@ -75,9 +75,15 @@ function computeStageRecipe(stage) {
   };
   const compostMg = (el) => (compost[el] || 0) * 1000;
 
-  // ── K ── pool-maintenance basis net of sidedress + compost
+  // ── K ── pool-maintenance basis net of sidedress + compost, then floored on
+  // the intensity requirement. The credit applies to the pool-mass term only:
+  // compost and granular side-dress raise bed mass, not drip-solution
+  // concentration, so they cannot substitute for the diffusion-shell floor
+  // (PoolMaintenance.intensityFloorMg). Floor is on TOTAL uptake, un-credited.
   const k_sd_mg = (sd.actisol_g * PRODUCT_PCT.Actisol_K * (SIDEDRESS_MINIMUM_EFFICIENCY.K || 0.85) * 1000) / SIDEDRESS_AREA_PER_PLANCHE;
-  const kSulfate = Math.round((Math.max(0, bedNeed('K') - k_sd_mg - compostMg('K')) / 1000 / PRODUCT_PCT.K2SO4_K) * totalArea);
+  const kAfterCredits = Math.max(0, bedNeed('K') - k_sd_mg - compostMg('K'));
+  const kIntensityFloor = PM ? PM.intensityFloorMg('K', offtake('K')) : 0;
+  const kSulfate = Math.round((Math.max(kAfterCredits, kIntensityFloor) / 1000 / PRODUCT_PCT.K2SO4_K) * totalArea);
 
   // ── Mg ── pool-maintenance basis; sidedress carries no Mg
   const mgSulfate = Math.round((Math.max(0, bedNeed('Mg') - compostMg('Mg')) / 1000 / PRODUCT_PCT.MgSO4_Mg) * totalArea);

@@ -290,7 +290,7 @@ vendredi =
     , Step "v-recolte"
         ""
         [ L Bed, L Harvest ]
-        "Récolter avant 8h"
+        "Récolter avant 11h"
         ""
         [ "Récolter les plants en planche depuis 2 semaines."
         , "Peser la récolte."
@@ -301,11 +301,11 @@ vendredi =
         [ L GreenhouseW5, L Bed ]
         "Transplanter semis"
         ""
-        [ "Mesurer CE 1:1 + pH 1:1."
-        , "Fertiliser avec la farine de plume."
+        [ "Irriguer 1h avec Orisha avant transplant."
+        , "Mesurer CE 1:1 + pH 1:1."
+        , "[Frontload fertilisant](#sol/lettuce)"
         , "Drench pots 2,5 po."
-        , "Drench planche."
-        , "Transplanter en 4 rangs × 6 po."
+        , "Transplanter en 4 rangs × 6 po **en quinconce**."
         ]
         []
     , Step "v-damier"
@@ -389,9 +389,7 @@ stepLinks key =
             [ ( "Entrer données ici", "https://docs.google.com/spreadsheets/d/1Y-kIn3a3MMxpns7jsDiBQwGIRSaf2InWFMgYprV8UYM/edit?gid=620360155#gid=620360155" ) ]
 
         "v-transplant" ->
-            [ ( "Entrer données ici", "https://docs.google.com/spreadsheets/d/1Y-kIn3a3MMxpns7jsDiBQwGIRSaf2InWFMgYprV8UYM/edit?gid=620360155#gid=620360155" )
-            , ( "Recette farine de plume →", "#sol/lettuce" )
-            ]
+            [ ( "Entrer données ici", "https://docs.google.com/spreadsheets/d/1Y-kIn3a3MMxpns7jsDiBQwGIRSaf2InWFMgYprV8UYM/edit?gid=620360155#gid=620360155" ) ]
 
         "m-mesure" ->
             [ ( "Entrer données ici", "https://docs.google.com/spreadsheets/d/1Y-kIn3a3MMxpns7jsDiBQwGIRSaf2InWFMgYprV8UYM/edit?gid=2053664587#gid=2053664587" ) ]
@@ -904,8 +902,9 @@ nodeGlyph loc nx ny =
             opinelGlyph nx ny
 
 
-{-| Market-garden bed (top view): a soil strip planted with lettuce on
-4 rows at 6" spacing.
+{-| Market-garden bed (top view): an open soil strip — no walls, ragged
+earth edges, furrow lines — planted on 4 rows at 6", each row offset by
+half a spacing from its neighbour (quinconce).
 -}
 bedGlyph : Float -> Float -> Svg Msg
 bedGlyph cx cy =
@@ -913,32 +912,72 @@ bedGlyph cx cy =
         f =
             String.fromFloat
 
-        lettuce px py =
-            Svg.circle
-                [ SA.cx (f px), SA.cy (f py), SA.r "2.6", SA.fill "#5aa845", SA.stroke "#3f7d33", SA.strokeWidth "0.5" ]
+        soil =
+            Svg.path
+                [ SA.d
+                    (("M " ++ f (cx - 44) ++ " " ++ f (cy - 22))
+                        ++ (" Q " ++ f cx ++ " " ++ f (cy - 28) ++ " " ++ f (cx + 44) ++ " " ++ f (cy - 22))
+                        ++ (" Q " ++ f (cx + 48) ++ " " ++ f cy ++ " " ++ f (cx + 44) ++ " " ++ f (cy + 22))
+                        ++ (" Q " ++ f cx ++ " " ++ f (cy + 28) ++ " " ++ f (cx - 44) ++ " " ++ f (cy + 22))
+                        ++ (" Q " ++ f (cx - 48) ++ " " ++ f cy ++ " " ++ f (cx - 44) ++ " " ++ f (cy - 22))
+                        ++ " Z"
+                    )
+                , SA.fill "#7a5c3e"
+                , SA.stroke "#5b4229"
+                , SA.strokeWidth "1.2"
+                ]
                 []
 
-        rows =
-            List.concatMap
-                (\py ->
-                    List.map (\k -> lettuce (cx - 33 + toFloat k * 13.2) py) (List.range 0 5)
-                )
-                [ cy - 15, cy - 5, cy + 5, cy + 15 ]
+        furrow py =
+            Svg.line
+                [ SA.x1 (f (cx - 38))
+                , SA.y1 (f py)
+                , SA.x2 (f (cx + 38))
+                , SA.y2 (f py)
+                , SA.stroke "#5b4229"
+                , SA.strokeWidth "0.7"
+                , SA.strokeDasharray "3 3"
+                , SA.opacity "0.7"
+                ]
+                []
+
+        lettuce px py =
+            Svg.g []
+                [ Svg.circle
+                    [ SA.cx (f px), SA.cy (f py), SA.r "3.4", SA.fill "#5aa845", SA.stroke "#33682a", SA.strokeWidth "0.6" ]
+                    []
+                , Svg.circle
+                    [ SA.cx (f px), SA.cy (f py), SA.r "1.3", SA.fill "#8ccf6d" ]
+                    []
+                ]
+
+        -- 4 rows; odd rows shifted half a spacing → staggered (quinconce)
+        rowEls ( ri, py ) =
+            let
+                shift =
+                    if modBy 2 ri == 1 then
+                        6.6
+
+                    else
+                        0
+            in
+            furrow py
+                :: List.map
+                    (\k -> lettuce (cx - 33 + shift + toFloat k * 13.2) py)
+                    (List.range 0
+                        (if modBy 2 ri == 1 then
+                            4
+
+                         else
+                            5
+                        )
+                    )
     in
     Svg.g
         []
-        (Svg.rect
-            [ SA.x (f (cx - 42))
-            , SA.y (f (cy - 24))
-            , SA.width "84"
-            , SA.height "48"
-            , SA.rx "4"
-            , SA.fill "#e7ddca"
-            , SA.stroke "#8a6d4f"
-            , SA.strokeWidth "1.5"
-            ]
-            []
-            :: rows
+        (soil
+            :: List.concatMap rowEls
+                [ ( 0, cy - 15 ), ( 1, cy - 5 ), ( 2, cy + 5 ), ( 3, cy + 15 ) ]
         )
 
 
@@ -1532,7 +1571,49 @@ lineView line =
         , style "color" "var(--text)"
         , style "padding" "2px 0"
         ]
-        [ text ("• " ++ line) ]
+        (text "• " :: inline line)
+
+
+{-| `**…**` renders bold, `[label](href)` renders a link.
+-}
+inline : String -> List (Html Msg)
+inline line =
+    case linkParts line of
+        Just ( label, target ) ->
+            [ a
+                [ href target
+                , style "color" "var(--accent, #2563eb)"
+                , style "font-weight" "600"
+                ]
+                [ text label ]
+            ]
+
+        Nothing ->
+            String.split "**" line
+                |> List.indexedMap
+                    (\i part ->
+                        if modBy 2 i == 1 then
+                            span [ style "font-weight" "700" ] [ text part ]
+
+                        else
+                            text part
+                    )
+
+
+{-| Whole-line `[label](href)`.
+-}
+linkParts : String -> Maybe ( String, String )
+linkParts line =
+    if String.startsWith "[" line && String.endsWith ")" line then
+        case String.split "](" (String.dropLeft 1 (String.dropRight 1 line)) of
+            [ label, target ] ->
+                Just ( label, target )
+
+            _ ->
+                Nothing
+
+    else
+        Nothing
 
 
 targetView : ( String, String ) -> Html Msg

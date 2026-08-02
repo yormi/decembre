@@ -88,6 +88,20 @@ function weeksToMidBand(currentPpm, weeklyUptakeMg, midBandPpm) {
   return headroomPpm / (weeklyUptakeMg / PPM_TO_MG_PER_M2);
 }
 
+// K intensity floor in mg/m²/wk of elemental K; 0 for every other element.
+// Exposed separately from maintenanceDose because the floor is a FERTIGATION-
+// SOLUTION requirement, not a bed-mass one: it raises the concentration the
+// root surface sees so diffusion can keep the depletion shell filled. Solid
+// slow-release channels (compost, granular side-dress) add bed mass without
+// raising drip-solution concentration, so they must NEVER be credited against
+// it. Callers subtract other-channel supply from the pool-maintenance dose,
+// then apply this as a hard minimum on the tank.
+// domain/soil-maintenance.md § Intensity floor.
+function intensityFloorMg(element, weeklyUptakeMg) {
+  if (element !== 'K') return 0;
+  return K_INTENSITY_FLOOR_FRACTION * weeklyUptakeMg;
+}
+
 // Minimal weekly elemental dose (mg/m²/wk) that keeps the 100-day pool
 // projection at/above the band floor, plus the K intensity floor.
 // domain/soil-maintenance.md § Control law + § Intensity floor.
@@ -104,8 +118,8 @@ function maintenanceDose(element, currentPpm, weeklyUptakeMg, band) {
       dose = weeklyUptakeMg * (1 + BUILD_OVER_MAINTENANCE);
     }
   }
-  if (element === 'K') {
-    const intensityFloor = K_INTENSITY_FLOOR_FRACTION * weeklyUptakeMg;
+  {
+    const intensityFloor = intensityFloorMg(element, weeklyUptakeMg);
     if (intensityFloor > dose) {
       dose = intensityFloor;
       if (gate === 'hold') gate = 'floor';
@@ -126,5 +140,6 @@ window.PoolMaintenance = {
   magnesiumWindowPpm,
   bandPpm,
   weeksToMidBand,
+  intensityFloorMg,
   maintenanceDose,
 };

@@ -216,6 +216,19 @@ we increase the concentration in solution so that the uptake never deplete the
 nutrient in the thin film around the roots. That way, we never have to wait for
 slow diffusion to replenish the film around the roots.
 
+**Basis — total uptake, no channel credit.** The floor is a
+**solution-concentration** requirement, so it is taken on **total weekly
+uptake** and applied to the **tank alone**. Compost and granular
+side-dress are **not** deducted from it: they add bed mass on a
+slow-release schedule, which raises *quantity*, not the drip-solution
+*intensity* the depletion shell needs. Crediting them would cancel the
+one thing the floor exists to do.
+
+Contrast with the pool-maintenance dose, which **is** credited net of
+other channels — that one is a mass claim, and mass from any channel
+counts.
+
+
 - **K** → gets a **minimum K *fertigation dose.
     - Start **minimum 20% of maintenance** (At the lettuce scale; ~+0.2 mS/cm)
     - That's ~5× what transpiration pumps. For trivial salt.

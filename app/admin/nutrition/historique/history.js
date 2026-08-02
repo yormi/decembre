@@ -49,6 +49,30 @@
 // It also serves as the team-visible audit trail for organic certification.
 const RECIPE_HISTORY = [
   {
+    retired: '2026-08-02',
+    recipe: 'STORED_RECIPE.tomato.fertigation',
+    summary: 'K₂SO₄ remis au plancher d\'intensité 20 % (0 g → 406-1100 g/sem selon stade)',
+    reason: 'La coupe K₂SO₄ → 0 du 2026-06-05 traitait le K comme une question de quantité de pool (banque Mehlich-3 1059 ppm, 4× la bande 200-250) et négligeait l\'axe intensité : le K n\'arrive à la racine que par diffusion, donc un pool plein n\'empêche pas la coquille d\'épuisement autour des racines aux pointes de demande. Le plancher d\'intensité (domain/soil-maintenance.md § Intensity floor) impose un minimum de 20 % du prélèvement hebdomadaire quel que soit l\'état du pool. Les valeurs stockées sont désormais alignées sur computeStageRecipe(stade) — plus de dérive modèle↔bidon sur K. Le plancher porte sur le prélèvement TOTAL, sans crédit compost ni sidedress : ces canaux solides à libération lente ajoutent de la masse au lit, pas de la concentration dans la solution du goutteur, donc ils ne peuvent pas se substituer au plancher de diffusion. Certitude du 20 % assumée faible (bande admise 10-25 %) : la SME dimensionnera le plancher précisément quand la mesure K solution sera disponible. Décision Guillaume.',
+    replacedBy: 'STORED_RECIPE.tomato.fertigation kSulfate = computeStageRecipe(stade).kSulfate (T1 406 / T2 544 / T3 989 / T4 819 / T5 1100 g/sem, bloc 382,9 m²) ; T5 arrondi 1107 → 1100 pour la balance (écart 0,6 %)',
+    fullSnapshot: {
+      fertigation: {
+        T1: { mgSulfate: 0, kSulfate: 0, mnSulfate: 3,  znSulfate: 1.5, borax: 10, naMolybdate: 0.5 },
+        T2: { mgSulfate: 0, kSulfate: 0, mnSulfate: 6,  znSulfate: 2.5, borax: 10, naMolybdate: 0.5 },
+        T3: { mgSulfate: 0, kSulfate: 0, mnSulfate: 8,  znSulfate: 4,   borax: 10, naMolybdate: 0.5 },
+        T4: { mgSulfate: 0, kSulfate: 0, mnSulfate: 9,  znSulfate: 5,   borax: 10, naMolybdate: 0.5 },
+        T5: { mgSulfate: 0, kSulfate: 0, mnSulfate: 12, znSulfate: 6.5, borax: 10, naMolybdate: 0.5 },
+      },
+      sidedress: {
+        T1: { actisol_g: 0, farine_g:  84  },
+        T2: { actisol_g: 0, farine_g:  267 },
+        T3: { actisol_g: 0, farine_g:  695 },
+        T4: { actisol_g: 0, farine_g: 1125 },
+        T5: { actisol_g: 0, farine_g: 2000 },
+      },
+      foliaire: { masterVol: 15, backpacks: 1, area: '383 m²', A: [], B: [] },
+    },
+  },
+  {
     retired: '2026-07-18',
     recipe: 'STORED_RECIPE.tomato.sidedress',
     summary: 'Actisol retiré du sidedress tomate (tous stades) — farine de plumes seule',
