@@ -1,5 +1,14 @@
 [
   {
+    "date": "2026-08-05",
+    "date_fr": "5 août 2026",
+    "title": "Page Laitue, transplant et potassium tomate",
+    "changes": "- Page _Laitue_ présentant la cadence de production\n- Page _Lumière_ maintenant accessible dans la page _Laitue > Lundi > Ajuster LED serre pour le mois_\n- Dose de potassium en fertigation tomate fixée à 20 % du prélèvement, en attendant les résultats de tissu\n- Instructions de transplant mises à jour",
+    "url": "https://main--decembre-staging.netlify.app",
+    "pr": 10,
+    "sha": "931bd54d2bb2ca8daf5336a6a33264464197cf42"
+  },
+  {
     "date": "2026-07-13",
     "date_fr": "13 juillet 2026",
     "title": "Laitue : fertigation, fertilisation, lumière + retrait sprays/pH tomate",
