@@ -2,7 +2,7 @@
 
 Strategy kernel 1/3 (Rumelt: **diagnosis → guiding policy →
 coherent action**). Policy + actions: `goal.md`. Evidence:
-`nutrition/lettuce/domain/doc/diagnostic-2026-06-06/diagnosis.md`.
+`domain/lettuce/doc/diagnostic-2026-06-06/diagnosis.md`.
 
 ## The challenge
 

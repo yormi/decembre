@@ -25,9 +25,9 @@ Cross-crop: lettuce nursery only; spinach nursery out of scope.
 
 | Name           | Type   | Default                          |
 |----------------|--------|----------------------------------|
-| `targetG`      | number | `NURSERY_TARGETS.targetG_default` (90 g) |
+| `targetG`      | number | `NURSERY_TARGETS.targetG_default` (50 g) |
 | `cycleDays`    | number | `NURSERY_TARGETS.cycleDays_default` (35 d) |
-| `cellsPerTray` | number | `NURSERY_TARGETS.cellsPerTray_default` (50) |
+| `cellsPerTray` | number | `NURSERY_TARGETS.cellsPerTray_default` (32) |
 
 ### Output
 
@@ -74,10 +74,10 @@ half of `calcNurseryDemand(g, 35, cells).perTray_mg`.
 
 ## nitrogen-demand-in-band-at-defaults
 
-At default targets (90 g, 35 d, 50 cells), the N entry of
-`calcNurseryDemand(...).perPlant_mg` falls in `[50, 70]` mg/wk.
+At default targets (50 g, 35 d, 32 cells), the N entry of
+`calcNurseryDemand(...).perPlant_mg` falls in `[30, 40]` mg/wk.
 
-Numerically: `90 × 0.07 × (7/35) × 0.05 × 1000 = 63 mg/plant/wk`.
+Numerically: `50 × 0.07 × (7/35) × 0.05 × 1000 = 35 mg/plant/wk`.
 
 **Cert:** 4 (band calibrated to current data, not published threshold).
 

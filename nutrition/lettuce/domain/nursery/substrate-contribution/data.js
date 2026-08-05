@@ -15,21 +15,31 @@
 
 // ─── OM2 starter charge ────────────────────────────────────────────────
 //
-// Berger OM2 = peat-based organic potting mix. Starter charge = soluble
-// nutrients pre-mixed into the substrate at the bag fill (limestone +
-// organic fertilizer pre-charge). No OM2 datasheet is in
-// nutrition/lettuce/domain/nursery/doc/ as of 2026-05-09 — values below are conservative
-// estimates derived from typical peat-based organic mix specs (e.g.,
-// Berger SkyMix-organic family). Refinement trigger: pull the OM2
-// technical sheet from Berger and replace these.
+// Berger OM2 = peat-based organic germination mix (berger.ca, OMRI / Québec
+// Vrai). Values below are conservative estimates from typical organic-mix
+// specs — NOT OM2-measured.
+//
+// Web search exhausted (2026-07-19, see learnings/om2-nutrient-values-not-public.md):
+// Berger publishes ZERO numeric nutrient values for OM2 — no N-P-K, no Ca/Mg,
+// no micros, no EC, on any surface (product page, PDF datasheet, 2025 brochure).
+// The 2025 brochure even OMITS a fertilizer starter charge from OM2's ingredient
+// list (peat, perlite, vermiculite, dolomitic + calcitic limestone, wetting
+// agent), while the spec page calls it a "low fertilizer starter charge" — so
+// even the SIZE of the N/P/K pre-charge is unconfirmed. The N 175 placeholder
+// is the shakiest: OM2's soluble-N charge may be well below it. Confirmed
+// OM2-specific: incubated pH 5.2–6.0 (Berger PDF + product page) and Ca/Mg
+// present via dolomitic + calcitic limestone (qualitative — no rate).
+// Refinement trigger: direct Berger agronomy request for the starter-charge
+// guaranteed analysis + limestone rate, or an in-house SME lab test on a real
+// OM2 batch (convert SME ppm → mg/L-substrate with this mix's density/dilution).
 //
 // Units: ppm in fresh substrate (mg per L of substrate).
 const OM2_STARTER_CHARGE_PPM = {
-  N:  175,   // typical peat-based organic mix starter; cert 2 (refine with Berger datasheet)
-  P:  50,    // cert 2
-  K:  150,   // cert 2
-  Ca: 200,   // limestone-buffered peat — adequate; cert 3
-  Mg: 50,    // limestone-buffered peat — adequate; cert 3
+  N:  175,   // cert 2 — UNVERIFIED, likely overstated (brochure implies low/absent charge)
+  P:  50,    // cert 2 — unverified (no public value)
+  K:  150,   // cert 2 — unverified (no public value)
+  Ca: 200,   // cert 2 — lime-sourced Ca confirmed present, quantity unverified
+  Mg: 50,    // cert 2 — dolomitic-lime Mg confirmed present, quantity unverified
 };
 
 // Fractional release per week of the 5-week nursery cycle (week 1 .. week 5).

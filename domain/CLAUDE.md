@@ -4,7 +4,7 @@ Domain models + protocols that span crops (not tied to one crop's
 subtree under `nutrition/<crop>/domain/`). Crop-specific domain stays
 in its crop; shared soil chemistry + methods live here.
 
-- `greenhouse.md` — light **supply**: fixture power → PPFD → DLI.
+- `lighting-zones.md` — light **supply**: fixture power → PPFD → DLI.
   Hands crop DLI targets to each crop domain.
   **Reach for this when:** changing a fixture, zone PPFD, or the
   PPFD→DLI conversion.
@@ -18,7 +18,16 @@ in its crop; shared soil chemistry + methods live here.
 - `spinach.md` — spinach irrigation domain.
   **Reach for this when:** working spinach water scheduling.
 
-- `fertigation.md` — pool-maintenance fertigation **method**
+- `nutrient-transport.md` — mechanism model: how a nutrient moves
+  bank → solution → root → shoot, the three delivery paths (mass
+  flow / diffusion / interception), and which transport step caps
+  yield. The physics beneath both `soil-contribution` (quantity)
+  and `soil-maintenance.md` (dosing).
+  **Reach for this when:** reasoning about *why* a nutrient is
+  short despite a full pool, the K/P diffusion lag, or where in
+  the chain yield is limited.
+
+- `soil-maintenance.md` — pool-maintenance fertigation **method**
   (design, not yet wired). How weekly fertigation derives from soil
   pools: uptake-per-kg maintenance → M3 pool control law → measured
   transfer coefficient → K-only intensity floor. Cross-crop (tomato
@@ -30,7 +39,7 @@ in its crop; shared soil chemistry + methods live here.
 - `fertilisation/lettuce.md` — lettuce N front-load sizing
   (feather-meal-only): removal-per-kg → available-N-per-gram →
   constant-supply dose on a fixed re-apply cycle. The N-front-load
-  branch of `fertigation.md`, made concrete for lettuce.
+  branch of `soil-maintenance.md`, made concrete for lettuce.
   **Reach for this when:** setting the feather-meal front-load rate
   for lettuce, or wiring it into a calc/spec.
 

@@ -161,8 +161,10 @@ function buildRootFixSteps() {
 }
 
 // Admin-only nursery tray-type picker (#nursery-admin-block). Flips the active
-// button styling; the selected value is NOT wired to the model yet (yield +
-// tray type are standalone inputs for now).
+// button styling and drives the per-tray water volume in the recipe card below
+// (NURSERY_TRAY_TYPES in recalc.js): selecting a container recomputes water +
+// product amounts. The yield input is the plug target the container is sized
+// for; it drives the Bilan demand, not the bucket concentration.
 function setNurseryAdminTray(trayId) {
   ['50-cell', '18-pot-3in', '32-pot-2.5in'].forEach(id => {
     const btn = document.querySelector(`[data-tray="${id}"]`);
@@ -171,4 +173,6 @@ function setNurseryAdminTray(trayId) {
     btn.style.background = selected ? '#7c4dff' : 'transparent';
     btn.style.color = selected ? '#fff' : 'var(--text)';
   });
+  window.__nurseryTrayId = trayId;
+  if (typeof recalcNursery === 'function') recalcNursery();
 }

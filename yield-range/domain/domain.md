@@ -1,5 +1,8 @@
 # Domain — yield-range · seedling weight
 
+**Day axis: days from sowing, day 1 = the sowing day.** Same axis as `doc/data-points.md`.
+
+
 
 Fresh weight of a Salanova seedling as a function of days since
 seeding: an expolinear light-limited growth engine clamped by the
@@ -15,7 +18,7 @@ canopy-volume cap. Nursery phase only.
 
 - **DLI** → carbon-gain rate   (the only growth driver held in this model)
 
-- **usable DLI is age-capped** — young tissue saturates low; growth drives on `min(DLI_TARGET, stage ceiling)`, stepping 10 (cotyledon wk1) → 14 (true-leaf wk2) → 17 (plug/field wk3+). Light past the ceiling buys no growth, only tipburn. See `light/domain.md`.
+- **usable DLI is age-capped** — young tissue saturates low; nursery growth drives on the stage ceiling, stepping by week **from sowing**: 10 (cotyledon, days 1–7) → 14 (true-leaf, days 8–14) → 25 (plug, day 15 on). The field drives on `DLI_TARGET`. Light past the ceiling buys no growth, only tipburn. See `light/domain.md`.
 
 - leaf area → light interception   (saturates at full ground cover)
 
@@ -59,7 +62,7 @@ canopy-volume cap. Nursery phase only.
 
 - stress (pH/EC, or drought + high heat) → lowers ε → shallower growth + later/absent canopy closure
 
-- the nursery drought+heat regime is the one calibrated stress (ε 0.85, anchored to 5 g @ d25); toggled on/off, it runs slow enough that the plug may never close in the tray
+- the nursery drought+heat regime is the one named stress (ε 0.85, unanchored); toggled on/off, it runs slow enough that the plug may never close in the tray
 
 - EC / drought → higher DM% (firmer, less hydrated tissue → less fresh mass per unit carbon); the plug sits at the dry end (0.07)
 
@@ -113,10 +116,10 @@ canopy-volume cap. Nursery phase only.
 |---|---|---|
 | DLI | bench daily light integral | input axis |
 | A | ground area per plant | input axis |
-| ε | radiation use efficiency | 1.1 g dry/mol clean · 0.85 under stress (pH/EC, or the nursery drought+heat regime — anchored to 5 g @ d25) |
+| ε | radiation use efficiency | 1.1 g dry/mol clean · 0.85 under stress (pH/EC, or the nursery drought+heat regime) — both unanchored |
 | Rm | open-canopy exponential rate = ε·DLI·k·SLA ; anchored 0.20 by the day-10 open-canopy observation | 0.20 /day |
 | k | canopy light-extinction coefficient (Beer–Lambert) | 0.7 |
-| SLA | specific leaf area — derived: Rm ⁄ (ε·DLI·k) | ≈ 0.015 m²/g dry |
+| SLA | specific leaf area — derived: Rm ⁄ (ε · `NURSERY_DLI_CEILING_BY_WEEK[1]` · k), i.e. at the week-2 ceiling 14, not at `DLI_TARGET` | ≈ 0.0186 m²/g dry |
 | f_dm | dry-matter fraction — stage-specific | plug 0.07 (nursery, firm/dry) · field head 0.045 (hydrated); steps up at transplant (rehydration). The plug never reaches its cap, so plug DM sets its fresh weight directly |
 | LAI at closure | leaf-area index when canopy closes | ≈ 3 |
 | re-fill lag | slope ramp window after thinning | ≈ 7 days |

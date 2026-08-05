@@ -1,0 +1,12 @@
+/* Rendement admin page. The container widens to .container-wide on this page
+   (core/logic.js setPage); the three top cards (Configuration · Rendement ·
+   Trajectoire) then sit side by side from 1000px up, stacked below. */
+@media (min-width: 1000px) {
+  #page-rendement-content .yr-row {
+    display: grid;
+    grid-template-columns: minmax(0, 0.85fr) minmax(0, 0.85fr) minmax(0, 1.3fr);
+    gap: 16px;
+    align-items: start;
+  }
+  #page-rendement-content .yr-row > .card { margin-bottom: 0; }
+}

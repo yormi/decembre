@@ -14,8 +14,8 @@ Every edit to a STORED recipe channel (`STORED_RECIPE.tomato.{fertigation, sided
 | fertigation | `nutrition/tomato/protocol/fertigation/stored.js` | `app/admin/nutrition/historique/history.js` |
 | sidedress | `nutrition/tomato/protocol/sidedress/stored.js` | (same) |
 | foliaire | `nutrition/tomato/protocol/foliar/stored.js` | (same) |
-| nursery (semis feed) | `nutrition/lettuce/protocol/nursery/fertigation/stored.js` | (same) |
-| lettuce (production fertigation) | `nutrition/lettuce/protocol/fertigation/stored.js` | (same) |
+| nursery (semis feed) | `protocol/fertigation/lettuce/seedlings-week-2-to-transplant.js` | (same) |
+| lettuce (production fertigation) | `protocol/fertigation/lettuce/transplanted.js` | (same) |
 
 Tomato `stored.js` assigns `window.STORED_RECIPE.tomato.<channel> = {...}`; nursery assigns `window.STORED_RECIPE.nursery.fertigation = {...}` (flat `{product: dose}`, per-litre — mirror `NURSERY_RECIPE_DEFAULT`); lettuce assigns `window.STORED_RECIPE.lettuce.fertigation = {...}` (flat `{product: dose}`, grams per weekly block — mirror `LETTUCE_FERTIGATION_RECIPE` in `app/core/state.js`). `RECIPE_HISTORY` is the array in `history.js` at `const RECIPE_HISTORY = [`.
 

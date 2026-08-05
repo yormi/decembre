@@ -12,11 +12,12 @@
 let nutrCrop = 'tomato';
 
 // Top-level Nutrition page dispatch. Picks the crop-specific page builder
-// based on the current `nutrCrop` toggle. Tomato uses the stage-driven Bilan
-// (app/admin/nutrition/bilan/tomato/logic.js); Salanova uses the continuous post-transplant
-// model (app/admin/nutrition/bilan/lettuce/logic.js); Semis uses the per-tray nursery
-// model (app/admin/nutrition/bilan/nursery/logic.js). Each crop's logic.js is single-
-// purpose — the dispatch lives here at the integrator boundary.
+// based on the current `nutrCrop` toggle. Tomato is an Elm island
+// (app/admin/nutrition/bilan/tomato/ — self-rendering, nothing to call);
+// tomato.backup is the legacy stage-driven Bilan
+// (app/admin/nutrition/bilan/tomato.backup/logic.js); Salanova uses the continuous
+// post-transplant model (app/admin/nutrition/bilan/lettuce/logic.js); Semis uses
+// the per-tray nursery model (app/admin/nutrition/bilan/nursery/logic.js).
 function buildNutriment() {
   if (nutrCrop === 'lettuce') {
     buildNutrimentLettuce();
@@ -26,24 +27,29 @@ function buildNutriment() {
     buildNutrimentNursery();
     return;
   }
-  buildNutrimentTomato();
+  if (nutrCrop === 'tomato.backup') {
+    buildNutrimentTomato();
+    return;
+  }
+  // 'tomato' — Elm island, reactive on its own inputs.
 }
 
-// Switch between Tomate / Salanova / Semis laitue on the Nutrition page.
+// Switch between Tomate / Tomates (backup) / Salanova / Semis laitue.
+const NUTR_CROP_UI = {
+  'tomato':        { button: 'nutr-crop-tomato',        active: 'active-tomato',  container: 'nutr-tomato-content' },
+  'tomato.backup': { button: 'nutr-crop-tomato-backup', active: 'active-tomato',  container: 'nutr-tomato-backup-content' },
+  'lettuce':       { button: 'nutr-crop-lettuce',       active: 'active-lettuce', container: 'nutr-lettuce-content' },
+  'nursery':       { button: 'nutr-crop-nursery',       active: 'active-lettuce', container: 'nutr-nursery-content' },
+};
 function setNutrCrop(crop) {
   nutrCrop = crop;
-  const tomBtn = document.getElementById('nutr-crop-tomato');
-  const letBtn = document.getElementById('nutr-crop-lettuce');
-  const nurBtn = document.getElementById('nutr-crop-nursery');
-  if (tomBtn) tomBtn.className = crop === 'tomato'  ? 'crop-btn active-tomato'  : 'crop-btn';
-  if (letBtn) letBtn.className = crop === 'lettuce' ? 'crop-btn active-lettuce' : 'crop-btn';
-  if (nurBtn) nurBtn.className = crop === 'nursery' ? 'crop-btn active-lettuce' : 'crop-btn';
-  const tomDiv = document.getElementById('nutr-tomato-content');
-  const letDiv = document.getElementById('nutr-lettuce-content');
-  const nurDiv = document.getElementById('nutr-nursery-content');
-  if (tomDiv) tomDiv.style.display = crop === 'tomato'  ? 'block' : 'none';
-  if (letDiv) letDiv.style.display = crop === 'lettuce' ? 'block' : 'none';
-  if (nurDiv) nurDiv.style.display = crop === 'nursery' ? 'block' : 'none';
+  for (const key in NUTR_CROP_UI) {
+    const ui = NUTR_CROP_UI[key];
+    const btn = document.getElementById(ui.button);
+    if (btn) btn.className = key === crop ? 'crop-btn ' + ui.active : 'crop-btn';
+    const div = document.getElementById(ui.container);
+    if (div) div.style.display = key === crop ? 'block' : 'none';
+  }
   if (typeof syncHash === 'function') syncHash();
   syncNutrRecipeModeUI();
   buildNutriment();
@@ -84,14 +90,3 @@ document.querySelectorAll('[data-nstage]').forEach(b => {
 // jsdom (no fetch in default config) — runtime browsers always have fetch,
 // jsdom throws ReferenceError mid-script without the guard and aborts
 // every downstream declaration (PAGES TDZ in operator/logic.js init block).
-if (typeof fetch === 'function') {
-  fetch('history.json?_=' + Date.now())
-    .then(r => r.ok ? r.json() : [])
-    .then(h => {
-      if (h.length > 0) {
-        const element = document.getElementById('last-update');
-        if (element) element.textContent = 'Mis à jour le ' + (h[0].date_fr || h[0].date) + ' · ';
-      }
-    })
-    .catch(() => {});
-}

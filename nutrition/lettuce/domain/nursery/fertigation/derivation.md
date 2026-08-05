@@ -73,29 +73,31 @@ Available here (unlike the field): tank pH ~5.8 + acidic peat keep Fe²⁺
 soluble; field soil pH 7.48 precipitates the same salt. EC add negligible
 (~0.018 mS/cm at this dose). Organic-allowed (CAN/CGSB-32.311).
 
-## 2. Demand calculation (20 g / 35 d / 50 cells)
+## 2. Demand calculation (50 g / 35 d / 32 pots)
 
-Target lowered 90 → 20 g (2026-06-20, salt-control phase — see plant-needs
-derivation). Per `calculateNurseryDemand(20, 35, 50)`:
+Target stepped up 20 → 50 g (2026-07-19, moving to 2.5"-deep pots, 32 per
+tray — see plant-needs derivation). Per `calculateNurseryDemand(50, 35, 32)`:
 
 ```
-DW per plant per week = 20 × LETTUCE_NURSERY_DM_FRACTION × (7 / 35)
-                      = 20 × 0.07 × 0.2 = 0.28 g / plant / week
+DW per plant per week = 50 × LETTUCE_NURSERY_DM_FRACTION × (7 / 35)
+                      = 50 × 0.07 × 0.2 = 0.70 g / plant / week
 ```
 
-× tissue % × 1000 → mg/plant/week; × 50 cells → mg/tray/week:
+× tissue % × 1000 → mg/plant/week; × 32 pots → mg/tray/week:
 
 | Element | Tissue % | mg/plant/wk | mg/tray/wk | 50 % floor |
 |---|---|---|---|---|
-| N  | 5.0 %  | 14   | 700 | 350 |
-| P  | 0.5 %  | 1.4  | 70  | 35  |
-| K  | 6.0 %  | 16.8 | 840 | — |
-| Ca | 2.0 %  | 5.6  | 280 | — |
-| Mg | 0.4 %  | 1.12 | 56  | — |
+| N  | 5.0 %  | 35   | 1120 | 560 |
+| P  | 0.5 %  | 3.5  | 112  | 56  |
+| K  | 6.0 %  | 42   | 1344 | — |
+| Ca | 2.0 %  | 14   | 448  | — |
+| Mg | 0.4 %  | 2.8  | 90   | — |
 
-Halving the plug target halves every demand. The N floor drops 1 400 → 350 mg
-— that is what lets the feed sit in the salt-safe CE band. Cert 3 across the
-board.
+The 50 g plug carries 2.5× the per-plant demand of the 20 g interim, but the
+demand is met by **more feed volume** (trayVolumeL 1.25 → 3.84 L, i.e. ~120 mL
+per 2.5"-pot vs 25 mL per 50-cell), NOT a hotter bucket — so the salt-safe CE
+band holds. The larger substrate volume (~200 mL vs 40 mL) drops salt density
+per mL. Cert 3 across the board.
 
 ## 3. ecFactor calibration (LOCAL override, cert 3)
 
@@ -118,11 +120,12 @@ alone — see `learnings.md`.
 
 ## 4. Recipe sizing — `NURSERY_RECIPE_DEFAULT`
 
-Constraints (re-derived 2026-06-20 at 20 g target + lowered cap):
-- **CE** ≤ 1.0 mS/cm bucket (predicted-ce-under-nursery-cap; cell ~1.5× via dry-down → peak ~1.2 with per-feed leaching)
+Constraints (concentrations from 2026-06-20; feed volume scaled 2026-07-19 for
+the 50 g / 2.5"-pot step-up):
+- **CE** ≤ 1.0 mS/cm bucket (predicted-ce-under-nursery-cap; concentration-only, unchanged at 0.85)
 - **pH** ∈ [4.5, 6.5] (predicted-tank-ph-in-nursery-envelope; waterPh 6.26)
-- **N supply** ≥ 350 mg/tray (50 % of 700 demand at 20 g, `n-supply-half-demand-floor`)
-- **P supply** ≥ 35 mg/tray (50 % of 70, default-recipe-p-supply-half-demand)
+- **N supply** ≥ 560 mg/tray (50 % of 1120 demand at 50 g / 32 pots, `n-supply-half-demand-floor`; recipe clears full 1120 at 3.84 L)
+- **P supply** ≥ 56 mg/tray (50 % of 112, default-recipe-p-supply-half-demand; recipe clears full 112)
 
 Mass-flow per knob (per tray, per week, mg element):
 
@@ -188,7 +191,10 @@ Recompute recipe or ecFactor calibration when:
    → push doses up. Ca <1.5 % or Mg <0.3 % → source organic supplement.
 4. **Manufacturer EC datasheet.** Acadie technical sheet conductivity per
    dilution would replace single-point calibration.
-5. **Salinity under control → raise the plug target.** When pour-through holds
-   in band, step `targetG_default` back up (20 → 30 → …); demand, floors, and
-   doses shift in lockstep, and the N-vs-salt collision returns — frequency
-   (more feeds/wk) is the lever to hold the band at a bigger plug.
+5. **Salinity under control → raise the plug target.** ✅ Fired 2026-07-19:
+   `targetG_default` 20 → 50 g on the move to 2.5"-deep pots (32/tray). The
+   feared N-vs-salt collision did NOT return this time — the ~5× larger
+   substrate volume let the higher demand be met by feed **volume** (1.25 →
+   3.84 L) at unchanged bucket CE, so no frequency increase was needed. If a
+   later step-up in a smaller container re-triggers the collision, frequency
+   (more feeds/wk) remains the lever. See `learnings/step-up-to-50g-2.5in-pot.md`.

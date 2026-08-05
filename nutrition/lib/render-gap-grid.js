@@ -6,33 +6,30 @@
 // The block populates that registry inside buildNutriment via
 // registerPourquoi(). If a key isn't registered, the row is still rendered
 // but the click is a no-op.
-// renderGapGrid — 6-col gap-chain grid. Cross-app contribution-block layout
-// per contribution-block-gap-grid (nutrition/spec.md, amended 2026-05-15 to add Efficacité).
+// renderGapGrid — 5-col gap-chain grid. Cross-app contribution-block layout
+// per contribution-block-gap-grid (nutrition/spec.md). English headers.
 // Optional `details` (contribution-channel-details-payload) carries per-element {cert, cap}; when
-// present, the Apport ici cell becomes clickable (apport-ici-clickable-cert-and-cap-modals) and renders
+// present, the Supplied-here cell becomes clickable (apport-ici-clickable-cert-and-cap-modals) and renders
 // cap emojis (🔥 damage / 💧 precipitation / ❗ other). `blockId` keys the
 // per-cell + per-emoji modals so Block 2's K cell opens a different modal
-// than Block 3's K cell. `efficiency` (channel-efficiency-capability-map) is a per-element map
-// [0, 1]; rendered as integer % in column 3 (efficacite-column-capability), em-dash when absent.
+// than Block 3's K cell.
 //
-// Backwards compat: details + blockId + efficiency optional. When details
+// Backwards compat: details + blockId optional. When details
 // omitted, falls back to the legacy row-level pq-row click behavior.
 //
 // Depends on: formatMg + formatValue (nutrition/lib/format.js),
 // registerPourquoi + showPourquoi + showCellCert + showCapReason
 // (nutrition/lib/pourquoi.js).
-function renderGapGrid(gapsIn, contrib, gapsOut, pqKeyPrefix, details, blockId, efficiency) {
+function renderGapGrid(gapsIn, contrib, gapsOut, pqKeyPrefix, details, blockId) {
   const order = ['N','P','K','Ca','Mg','Fe','Mn','Zn','B','Cu','Mo'];
-  const CAP_EMOJI = { damage: '🔥', precipitation: '💧', other: '❗' };
-  const efficiencyMap = efficiency || {};
-  const GRID_COLUMNS = '0.6fr 1fr 0.7fr 1fr 1fr 0.4fr';
+  const CAP_EMOJI = { damage: '🔥', precipitation: '💧' };
+  const GRID_COLUMNS = '0.6fr 1fr 1fr 1fr 0.4fr';
   let html = `<div style="font-size:11.5px; margin-top:8px;">
     <div style="display:grid; grid-template-columns:${GRID_COLUMNS}; gap:4px 8px;">
-      <div style="font-weight:700; color:var(--text-muted); font-size:10px; text-transform:uppercase; letter-spacing:1px;">Él.</div>
-      <div style="font-weight:700; color:var(--text-muted); font-size:10px; text-transform:uppercase; letter-spacing:1px;">Manque entrant (mg)</div>
-      <div style="font-weight:700; color:var(--text-muted); font-size:10px; text-transform:uppercase; letter-spacing:1px;">Efficacité</div>
-      <div style="font-weight:700; color:var(--text-muted); font-size:10px; text-transform:uppercase; letter-spacing:1px;">Apport ici (mg)</div>
-      <div style="font-weight:700; color:var(--text-muted); font-size:10px; text-transform:uppercase; letter-spacing:1px;">Manque sortant (mg)</div>
+      <div style="font-weight:700; color:var(--text-muted); font-size:10px; text-transform:uppercase; letter-spacing:1px;">El.</div>
+      <div style="font-weight:700; color:var(--text-muted); font-size:10px; text-transform:uppercase; letter-spacing:1px;">Incoming gap (mg/m²/week)</div>
+      <div style="font-weight:700; color:var(--text-muted); font-size:10px; text-transform:uppercase; letter-spacing:1px;">Supplied here (mg)</div>
+      <div style="font-weight:700; color:var(--text-muted); font-size:10px; text-transform:uppercase; letter-spacing:1px;">Remaining gap (mg)</div>
       <div></div>
     </div>`;
   order.forEach(element => {
@@ -57,17 +54,15 @@ function renderGapGrid(gapsIn, contrib, gapsOut, pqKeyPrefix, details, blockId, 
     // no prose. Hover tooltip = "constraint · limit"; modal renders three
     // labelled rows + a number-delta line.
     let capEmoji = '';
-    if (blockId && det && det.cap && gOut > 0) {
+    if (blockId && det && det.cap && gOut > 0 && CAP_EMOJI[det.cap.kind]) {
       const k = det.cap.kind;
-      const emoji = CAP_EMOJI[k] || '';
+      const emoji = CAP_EMOJI[k];
       const constraint = det.cap.constraint || '';
       const limit = det.cap.limit || '';
       const lever = det.cap.lever || '';
       const tooltip = (constraint && limit) ? (constraint + ' · ' + limit) : (constraint || limit);
       const tooltipAttr = tooltip.replace(/"/g, '&quot;');
-      const kindLabel = k === 'damage'        ? '🔥 Plafond plante'
-                      : k === 'precipitation' ? '💧 Précipitation'
-                                              : '❗ Autre plafond';
+      const kindLabel = k === 'damage' ? '🔥 Plant cap' : '💧 Precipitation';
       const uncapped = Number(det.cap.uncappedMg) || 0;
       const supplied = c;
       const showDelta = (uncapped > supplied && supplied > 0);
@@ -80,9 +75,9 @@ function renderGapGrid(gapsIn, contrib, gapsOut, pqKeyPrefix, details, blockId, 
           + `</div>`
         : '';
       const rowsHtml = `<div style="display:grid; grid-template-columns:auto 1fr; column-gap:14px; row-gap:6px; font-size:12.5px;">`
-        + `<div style="color:var(--text-muted);">Contrainte</div><div style="font-weight:600;">${constraint}</div>`
-        + `<div style="color:var(--text-muted);">Limite</div><div style="font-family:'DM Mono',monospace;">${limit}</div>`
-        + `<div style="color:var(--text-muted);">Levier</div><div>${lever}</div>`
+        + `<div style="color:var(--text-muted);">Constraint</div><div style="font-weight:600;">${constraint}</div>`
+        + `<div style="color:var(--text-muted);">Limit</div><div style="font-family:'DM Mono',monospace;">${limit}</div>`
+        + `<div style="color:var(--text-muted);">Lever</div><div>${lever}</div>`
       + `</div>`;
       const subtitleHtml = `<div style="font-size:12px; color:var(--text-muted); margin-top:-4px; margin-bottom:8px;">${kindLabel}</div>`;
       registerPourquoi(blockId + '.cap.' + element + '.' + k, {
@@ -97,14 +92,9 @@ function renderGapGrid(gapsIn, contrib, gapsOut, pqKeyPrefix, details, blockId, 
     }
     const contributionValueString = c > 0 ? '−' + formatMg(c) : '—';
     const cellInner = `<span style="${cellCursor}font-family:'DM Mono',monospace; color:${c>0?'var(--text)':'var(--text-muted)'};">${contributionValueString}</span>${capEmoji}`;
-    const efficiencyValue = efficiencyMap[element];
-    const efficiencyCellText = (typeof efficiencyValue === 'number' && isFinite(efficiencyValue))
-      ? Math.round(efficiencyValue * 100) + ' %'
-      : '—';
     html += `<div ${rowClickable} style="display:grid; grid-template-columns:${GRID_COLUMNS}; gap:4px 8px; padding:2px 4px; border-radius:3px;">
       <div style="font-weight:600;">${element}</div>
       <div style="font-family:'DM Mono',monospace; color:var(--text-muted);">${formatMg(gIn)}</div>
-      <div style="font-family:'DM Mono',monospace; color:var(--text-muted);">${efficiencyCellText}</div>
       <div ${cellOnclick} data-cell-key="${blockId || ''}.cell.${element}" style="${cellCursor}">${cellInner}</div>
       <div style="font-family:'DM Mono',monospace; font-weight:600; color:${gOut<=0?'#1e6b2d':(gOut<gIn*0.3?'#5a6b1e':'var(--text)')};">${formatMg(gOut)}</div>
       <div style="text-align:center;">${icon}</div>

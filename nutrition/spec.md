@@ -6,7 +6,7 @@ organic certification rules, anything not crop-specific).
 Crop-specific nutrition specs live in:
 
 - `nutrition/tomato/domain/spec.md` — tomato model/recipe/biology
-- `app/admin/nutrition/bilan/tomato/spec.md` — Tomato Nutrition page shell (orchestration, layout)
+- `app/admin/nutrition/bilan/tomato.backup/spec.md` — Tomato Nutrition page shell (orchestration, layout)
 - `nutrition/tomato/{plant-needs,fertigation-recipe,sidedress-recipe,foliar-strategy}/builder/user-stories.md` — per-block page surface
 - `nutrition/lettuce/domain/spec.md` — Salanova post-transplant nutrition
 - `app/admin/nutrition/bilan/lettuce/user-stories.md` — Salanova subpage UI
@@ -277,10 +277,11 @@ reflected in the `Apport ici` column, not here.
 
 Every contribution channel block on every Nutrition admin page renders,
 as the immediate next sibling of its recipe table
-(`contribution-block-recipe-table`), a 6-column gap-grid: Él. / Manque
-entrant / Efficacité / Apport ici / Manque sortant / icon. Color
-coding ✅🟢🟡🔴 by residual ratio. The grid receives a per-element
-`details {cert, cap}` payload (`contribution-channel-details-payload`).
+(`contribution-block-recipe-table`), a 5-column gap-grid (English
+headers): El. / Incoming gap (mg/m²/week) / Supplied here (mg) /
+Remaining gap (mg) / icon. Color coding ✅🟢🟡🔴 by residual ratio. The
+grid receives a per-element `details {cert, cap}` payload
+(`contribution-channel-details-payload`).
 
 ---
 
@@ -314,7 +315,7 @@ row:
    = 0), no emoji renders even if a `cap` could in principle apply.
    - `cap.kind === 'damage'` → 🔥
    - `cap.kind === 'precipitation'` → 💧
-   - `cap.kind === 'other'` → ❗
+   - `cap.kind === 'other'` → no emoji (the ❗ marker was removed 2026-07-18)
    The emoji appears inline AFTER the numeric value, in the same cell.
    Tooltip (`title=`) carries the short reason for hover discovery.
 
@@ -336,8 +337,8 @@ row:
    └───────────────────────────────────────────┘
    ```
 
-   - **Kind label**: `🔥 Plafond plante` / `💧 Précipitation` /
-     `❗ Autre plafond`.
+   - **Kind label**: `🔥 Plant cap` / `💧 Precipitation`. (`other`-kind
+     caps render no emoji, so no modal.)
    - **Number delta** rendered only when `uncappedMg > supplied`.
      Format: `${supplied} → ${uncappedMg} (+${delta})`.
    - **Three labelled rows**: each label-value pair on one line, mono
@@ -352,16 +353,13 @@ full 3-row breakdown. Tooltip and modal share the same three strings.
 
 ---
 
-## efficacite-column-capability
+## efficacite-column-capability — retired 2026-07-18
 
-In every contribution-block gap-grid (`contribution-block-gap-grid`),
-the Efficacité cell of each element row displays, as an integer
-percent, the channel's per-element plant-available efficiency under
-current soil / pH / coverage conditions — independent of whether the
-channel actually doses that element this call. The cell renders `—`
-only when the element falls outside the channel's capability map (the
-channel is structurally unable to deliver it). The `Apport ici` column
-carries the per-call realized mg.
+The Efficacité **display column** was removed from the gap-grid when the
+bilan blocks went English / 5-col. The channel-efficiency capability map
+still exists model-side (`channel-efficiency-capability-map`) and drives
+dose math (`dose = removal ÷ efficiency`); it is simply no longer surfaced
+as a grid column.
 
 ---
 

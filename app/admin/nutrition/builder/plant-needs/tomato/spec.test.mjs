@@ -28,11 +28,11 @@
 //     (nutrition/chemistry/spec.md:199-204 table)
 //
 // Framework: node:test. Reuses the assembled-page jsdom fixture from
-// app/admin/nutrition/bilan/tomato/test-helpers.mjs.
+// app/admin/nutrition/bilan/tomato.backup/test-helpers.mjs.
 
 import { test, describe } from 'node:test';
 import assert from 'node:assert/strict';
-import { loadTomatoApp } from '../../../bilan/tomato/test-helpers.mjs';
+import { loadTomatoApp } from '../../../bilan/tomato.backup/test-helpers.mjs';
 
 // Cited band data for the on-builder surface this feature governs. If
 // these constants drift in nutrition/chemistry/spec.md, tests must update.
@@ -60,8 +60,8 @@ describe('plant-needs builder scope — Block 1 has no dose or product editing i
 
   test('block-1-renders-demand-not-recipe — rows reflect calcNutrDemand output (mg/m²/wk)', () => {
     // Pins the renderer identity: Block 1 is demand, not a recipe.
-    // Cross-references the user-stories.md 4-column layout
-    // (Él. / Fruit / Biomasse / Total) — none of which is a dose.
+    // Cross-references the user-stories.md 2-column layout
+    // (Él. / mg/m²/week) — neither of which is a dose.
     const { window } = loadTomatoApp();
     const rows = window.document.querySelectorAll('#nutr-needs .pq-row');
     assert.ok(rows.length > 0,

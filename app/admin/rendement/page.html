@@ -1,13 +1,17 @@
   <!-- ═══════════════ RENDEMENT PAGE (admin) ═══════════════ -->
   <!-- Salanova full-cycle yield model. Spec: app/admin/rendement/user-stories.md.
-       Four operator inputs (field spacing · labor routine · nursery tray ·
-       thinning) → yearly sales, kg/month, trays in nursery, harvest weight,
-       + full-cycle growth chart. Engine: window.YieldRange.predictYield
+       Six operator inputs (field spacing · labor routine · nursery duration ·
+       nursery tray · thinning · nursery conditions) → yearly sales, kg/week,
+       trays in nursery, heads per bed, harvest weight, + full-cycle growth chart. Engine: window.YieldRange.predictYield
        (yield-range/domain/spec.md, carbon-balance). Inputs auto-derived from
        FIELD_SPACING_CONFIGS / LABOR_ROUTINES / NURSERY_TRAY_CELLS — no
        option text hardcoded here. Wired via setPage('rendement') →
        buildYieldRange() in app/admin/rendement/logic.js. -->
   <div id="page-rendement-content" class="page-content" style="display:none;">
+
+    <!-- Three cards side by side on desktop (see page.css .yr-row), stacked
+         under 1100px. -->
+    <div class="yr-row">
 
     <!-- Four input toggle groups, rendered from data by renderYieldRangeInputs. -->
     <div class="card">
@@ -15,9 +19,9 @@
       <div id="yr-inputs"></div>
     </div>
 
-    <!-- Headline outputs: yearly sales · kg/month · trays in nursery, plus a
-         secondary row (harvest weight + senescence badge, density, heads/bed,
-         beds/week). Rendered by renderYieldRange. No values hardcoded. -->
+    <!-- Headline outputs: yearly sales · kg/week · trays in nursery · heads per
+         bed, plus a secondary row (transplant + harvest weight with senescence
+         badge, peak). Rendered by renderYieldRange. No values hardcoded. -->
     <div class="card">
       <div class="card-title">Rendement</div>
       <div id="yr-results"></div>
@@ -34,12 +38,6 @@
       <div id="yr-chart-container" style="width:100%; overflow:hidden;"></div>
     </div>
 
-    <!-- Nursery-detail heatmap: fresh weight (g) per plateau × checker-thin day
-         × sample day, from window.YieldRange.seedlingThinningGrid() (same
-         carbon-balance law, nursery only). -->
-    <div class="card">
-      <div class="card-title">Poids semis — éclaircissage échiquier</div>
-      <div id="yr-thinning-table"></div>
-    </div>
+    </div><!-- end .yr-row -->
 
   </div><!-- end page-rendement-content -->

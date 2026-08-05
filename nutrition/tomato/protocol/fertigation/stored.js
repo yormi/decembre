@@ -33,15 +33,29 @@
 // preserved verbatim; the skill greps for this identifier.
 window.STORED_RECIPE.tomato.fertigation = {
   // Oligos cationiques Mn/Zn (rendus 2026-07-11) + B (Solubore 10 g, clé `borax`)
-  // + Mo (NaMolybdate 0,5 g). K/Mg toujours 0. Fe passif (sol). Area 382,6 m² (7 planches).
-  // K₂SO₄ + MgSO₄ coupés à 0 le 2026-06-05 (/retire-recipe) : surplus confirmé sur les
-  // deux pools — SME 2026-06-04 solution K 301,7 (≥300) / Mg 158,4 (~1,6× plafond) / CE 3,96
-  // (>3,5) ; Mehlich-3 2026-04-10 K 7,3 % / Mg 18,3 % saturation CEC, banque pluri-saisonnière.
-  // Coupe corrective (réduit la CE > plafond) ; reprise d'entretien gated sur SME K/Mg milieu
-  // de gamme ET CE < 3,5.
-  T1: { mgSulfate: 0, kSulfate: 0, mnSulfate: 3,  znSulfate: 1.5, borax: 10, naMolybdate: 0.5 },
-  T2: { mgSulfate: 0, kSulfate: 0, mnSulfate: 6,  znSulfate: 2.5, borax: 10, naMolybdate: 0.5 },
-  T3: { mgSulfate: 0, kSulfate: 0, mnSulfate: 8,  znSulfate: 4,   borax: 10, naMolybdate: 0.5 },
-  T4: { mgSulfate: 0, kSulfate: 0, mnSulfate: 9,  znSulfate: 5,   borax: 10, naMolybdate: 0.5 },
-  T5: { mgSulfate: 0, kSulfate: 0, mnSulfate: 12, znSulfate: 6.5, borax: 10, naMolybdate: 0.5 },
+  // + Mo (NaMolybdate 0,5 g). Mg toujours 0. Fe passif (sol). Area 382,9 m² (7 planches).
+  // MgSO₄ coupé à 0 le 2026-06-05 (/retire-recipe) : surplus confirmé sur les deux pools —
+  // SME 2026-06-04 solution Mg 158,4 (~1,6× plafond) / CE 3,96 (>3,5) ; Mehlich-3 2026-04-10
+  // Mg 18,3 % saturation CEC, banque pluri-saisonnière. Reprise d'entretien Mg gated sur
+  // SME Mg milieu de gamme ET CE < 3,5.
+  //
+  // K₂SO₄ : remis au PLANCHER D'INTENSITÉ 20 % le 2026-08-02 (/retire-recipe). Le pool K
+  // reste en large surplus (Mehlich-3 1059 ppm vs bande 200-250) — la dose n'est PAS de
+  // l'entretien de pool, c'est l'axe intensité : le K n'atteint la racine que par diffusion,
+  // donc un pool plein ne prévient pas la coquille d'épuisement aux pointes de demande
+  // (domain/soil-maintenance.md § Intensity floor, domain/nutrient-transport.md).
+  // Valeurs = computeStageRecipe(stade).kSulfate, T5 arrondi 1107 → 1100 (lisibilité
+  // balance, écart 0,6 %). Le
+  // plancher porte sur le prélèvement TOTAL, sans crédit compost ni sidedress : ces canaux
+  // solides à libération lente ajoutent de la masse au lit, pas de la concentration dans la
+  // solution du goutteur — ils ne peuvent pas se substituer au plancher de diffusion.
+  // Non monotone T3 > T4 : suit BIOMASS_DEMAND (K T3 4640 vs T4 2040 mg/m²/sem) plus la
+  // rampe de rendement.
+  // Déclencheurs de révision : SME K solution (dimensionne le plancher précisément, bande
+  // admise 10-25 %) ; CE qui grimpe → baisser ; tissu-K qui décroche → monter.
+  T1: { mgSulfate: 0, kSulfate: 406,  mnSulfate: 3,  znSulfate: 1.5, borax: 10, naMolybdate: 0.5 },
+  T2: { mgSulfate: 0, kSulfate: 544,  mnSulfate: 6,  znSulfate: 2.5, borax: 10, naMolybdate: 0.5 },
+  T3: { mgSulfate: 0, kSulfate: 989,  mnSulfate: 8,  znSulfate: 4,   borax: 10, naMolybdate: 0.5 },
+  T4: { mgSulfate: 0, kSulfate: 819,  mnSulfate: 9,  znSulfate: 5,   borax: 10, naMolybdate: 0.5 },
+  T5: { mgSulfate: 0, kSulfate: 1100, mnSulfate: 12, znSulfate: 6.5, borax: 10, naMolybdate: 0.5 },
 };

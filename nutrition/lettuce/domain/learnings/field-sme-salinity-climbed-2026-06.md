@@ -42,14 +42,14 @@ Fe stay locked-low — the high-pH lockout signature persists even as pH falls.
 
 ## Consequences
 
-- **Confirms the salt thesis in solution** → validates the −78% salt cut in
-  `../strategy/fertigation-recipe.md`. June proves the EC was real and climbing,
+- **Confirms the salt thesis in solution** → validates the −78% salt cut on the
+  field fertigation recipe. June proves the EC was real and climbing,
   so the EC relief that cut was chasing is the biggest single benefit.
 
 - **Keep the sulphur program; leach, don't pause** (Guillaume). Sulphur is still
   drawing pH down (7.48 → 6.68). The salt it co-produces is leachable, so the
   answer to the EC breach is an active clean-water leach —
-  `../../protocol/salt-leach-DRAFT.md` — not halting sulphur. Live EC-overshoot
+  `../../../../protocol/salt-flush/bed-DRAFT.md` — not halting sulphur. Live EC-overshoot
   note in `../soil-ph/model/derivation.md`.
 
 - **The April "salinity cleared" verdict is now dated** —

@@ -1,9 +1,9 @@
 # Tomate — plant-needs — builder
 
 UI invariants for the plant-needs block on the Tomato Nutrition admin
-page (Block 1 — "Besoin du plant"). Reads from the plant-needs model
+page (Block 1 — "Plant Uptake"). Reads from the plant-needs model
 (`*/plant-needs/model/spec.md`). Page chrome / header / drift block in
-`app/admin/nutrition/bilan/tomato/spec.md`.
+`app/admin/nutrition/bilan/tomato.backup/spec.md`.
 
 ---
 
@@ -39,9 +39,10 @@ re-renders Block 1 with new per-element numbers.
 
 ---
 
-## block-1-row-four-columns
+## block-1-row-two-columns
 
-Each row in `#nutr-needs` displays 4 columns: element symbol,
-fruit-export term (mg/m²/wk), biomass term (mg/m²/wk), total
-(mg/m²/wk). Numbers come from `PN.calcNutrDemand(...)` returning the
-`{fruit, biomass, total}` shape per element.
+Each row in `#nutr-needs` displays 2 columns: element symbol and
+total demand in bare mg (header carries the `mg/m²/week` unit).
+The number is the `total` of `PN.calcNutrDemand(...)`'s
+`{fruit, biomass, total}` shape; fruit + biomass split stays in the
+pourquoi modal, not the table.

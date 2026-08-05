@@ -1,23 +1,13 @@
-# Yield Range — Calibration data
+# Yield Range — retired logistic calibration (2026 spring)
 
-Observed seedling weights from Décembre nursery. Source-of-truth for empirical anchors: when `RGR_MAX_LETTUCE_NURSERY` or `SHOOT_PER_ML_SUBSTRATE` change in `derivation.md`, the rationale + n trace back here. Spec in `spec.md`; formula derivation and stress-function tables in `derivation.md`.
+Provenance for the **pre-carbon-balance** fit, plus the operator observations
+behind the tomato-zone heat hypothesis and the list of model behaviours still
+unsupported by data.
+
+**No weights here.** Every observation lives in `data-points.md` — cohorts A and
+B are the 2026 spring batches this fit was built on.
 
 ---
-
-## 2026 spring batch — Tray 50, test 1
-
-**Variety:** Salanova (mixed)
-**Tray:** 50-cell, peat substrate, ~33–35 mL/cell
-**Sow date:** ≈ 2026-03-25 (week of; back-calculated from 21d at 2026-04-15)
-**Operation:** packed end-to-end throughout cycle, no spread schedule
-**Greenhouse zone:** tomato zone (Guillaume hypothesis: too warm for lettuce)
-
-| Date | Days from sow | FW (g/plant) | Quality notes | Source | What this row teaches |
-|---|---|---|---|---|---|
-| 2026-04-15 | 21 (3 sem) | **4** | normal; one plant poisoned 2026-04-17 | Jordane photo log | Anchors early-phase RGR before canopy closure (d ≤ 14); model must clear ~4 g by d21 |
-| 2026-04-22 | 28 (4 sem) | **16** | peak yield observed | Jordane photo log | Anchors `wPeakG` and the spacing-decay floor: 16 g at d28 fits `RootCap = 56` × ~30% headroom × (1 − W/RootCap) damping. **Sets `optimalHarvestDay ≈ 28`.** |
-| 2026-04-30 | 35 (5 sem) | **10** | yellowing, white spots, plants stressed/crowded | Jordane photo log | Anchors the senescence branch: −38 % from peak → biomass loss is real, not just stalled growth. Without this row the model would only decelerate, not decline. |
-| 2026-05-08 | ≈35 (5 sem) | **12** | moldy in trays, bolting; same observations as week 5 prior | Jordane photo log | Confirms the d28→d35 collapse repeats across cohorts (n=2 of 2 at d35). Bolting + low-VPD pockets are co-flagged → `f_VPD<2` + `bolting` flags both fire. |
 
 ### Operator observation (Jordane / Guillaume)
 
@@ -45,12 +35,23 @@ Observed seedling weights from Décembre nursery. Source-of-truth for empirical 
    cohort is the trigger to refit the crowding-only rate.
 3. **Quality regression visible at d35**: yellowing (N export from senescing
    leaves), mold (low-VPD pockets in packed canopy), bolting (heat).
-4. **Implied effective RGR_max ≈ 0.30–0.35 g/g/day** in early phase
-   (cert 3, derived from ~0.015 → 4 g over ~16 effective growth days
-   post-germination). The current operational window (d21→d28) shows
-   effective growth multiplier ~0.22/day after stress factors (cert 3).
+4. **RETIRED with the logistic fit below** — implied RGR_max ≈ 0.30–0.35 g/g/day
+   early phase, from ~0.015 g over ~16 "effective growth days post-germination",
+   and ~0.22/day over d21→d28. Both are logistic-model quantities on a
+   germination axis; neither exists in the live engine, which runs on days from
+   sowing with no germination origin. Do not carry these numbers forward.
 
-### Calibration math (current anchor)
+### Calibration math — RETIRED (2026-07-26)
+
+**This section describes a model that no longer exists.** The engine is now
+carbon-balance Beer–Lambert (`ε·DLI·A·(1 − exp(−k·LAI))`, `calc.js`), not
+logistic. `RGR_MAX_LETTUCE_NURSERY`, `RootCap`, the spacing floor and the
+stress product are **not live constants** — none appears in `data.js`. Kept as
+provenance for how the numbers below were once reached; do not refit against it.
+
+Note `DLI_BENCH_AVG = 27.5` was literature-derived (cert 2). The only *measured*
+bench DLI at Décembre is 23.3 mol/m²/j — see
+`data-points.md` (cohort D).
 
 Logistic growth model:
 ```
@@ -70,42 +71,7 @@ Backed-out parameters that fit the 4 observations:
 
 **DLI correction note.** Initial fit (RGR_max = 0.35) assumed DLI = 11.5 (LED only) — wrong; greenhouse gets sun too. With corrected DLI ≈ 27.5 (sun 16 + LED 11.5), spacing decay no longer creates a light-starvation cliff past d18, so RGR_max refit to 0.22. Operationally d28→d35 mass loss is dominated by **bolting + heat + root-cap saturation**, not light starvation.
 
-Starting points; refit iteratively when integration code runs against the 4 observations.
-
----
-
-## 2026-07 batch — Tray 50, drought + high heat
-
-**Variety:** Salanova (mixed loose-leaf)
-**Tray:** 50-cell
-**Nursery-space DLI:** 17 mol/m²/j
-**Condition:** water-stressed (lack of water) under high heat; patchy heat
-mortality (empty cells across the tray)
-**Source:** Décembre operator (Guillaume), 2026-07 photos + report
-
-| Day from sow | FW biggest (g/plant) | Notes |
-|---|---|---|
-| 25 | **5** | biggest plants; bushy survivors, canopy locally closed; stand thinned by heat mortality |
-
-### What this anchors
-
-**Primary empirical weight anchor for the 50-cell nursery**, replacing the
-retired 16 g @ d28 (salt-stalled, and inconsistent with 5 g @ d25 — 16 g @ d28
-would need ~3× in 5 days). Reads *grams* (operator-weighed), unlike the
-coverage-only 2026-07-04 photos.
-
-This cohort is **stress-reduced** (drought + heat), so it anchors the
-**stressed** growth regime, not the clean optimum. At the model's DLI 17 it is
-reproduced by a stressed ε (≈0.85 — the documented pH/EC-stress value, reused
-for heat/drought) × the plug DM (0.07); see derivation `carbon-balance-growth`.
-A well-watered, cooler 50-cell would run larger (clean ε 1.1) — no clean 50-cell
-cohort weighed yet.
-
-### Not modeled here
-
-Heat mortality (empty cells) is a stand-loss mechanism the growth engine does
-not carry — see the open candidate to model it or keep it out of scope
-(operational fix: water + cooler nursery).
+Starting points as of the retired logistic fit.
 
 ---
 
@@ -113,15 +79,15 @@ not carry — see the open candidate to model it or keep it out of scope
 
 1. **Same conditions:** append a row to the existing batch table.
 2. **Different conditions** (cell type, zone, spread schedule): start a new dated batch section. Conditions are part of the calibration key — don't pool unlike cohorts.
-3. **At n ≥ 5** under matching conditions: refit `RGR_MAX_LETTUCE_NURSERY` to minimize squared residual; update spec.md constant + cert level.
-4. Mark the spec calibration anchor with refit date and n.
+3. **At n ≥ 5** under matching conditions: refit the live growth constants (`NURSERY_STRESS_RUE`, `PLUG_DRY_MATTER_FRACTION`) to minimize squared residual; update `derivation.md` + cert level.
+4. Record the refit date and n where the constant is defined.
 5. **Measured FW outside ±25 % of predicted band**: investigate before refitting — likely an environmental anomaly to capture as a qualitative note, not averaged into RGR_max.
 
 ## Model behaviors not yet anchored by data
 
 Theory + literature only — no Décembre observations:
 
-- **Cooler-zone growth ceiling.** Whether moving lettuce out of the tomato zone recovers the d28→d35 mass loss. Bolting flag and `f_Tday` curve are predictions.
+- **Cooler-zone growth ceiling.** Whether moving lettuce out of the tomato zone recovers the late mass loss. The bolting flag and temperature curve are predictions; the growth engine carries no temperature term at all.
 - **Spread-tray uplift.** `f_light` lift from spacing past d14 never measured here (kept off the user surface; "spread = #1 lever" prediction unverified).
 - **32-cell behaviour.** 0.55 spacing-floor estimate is purely geometric; no observed weights at this density.
 - **Variety differences.** `varietyRootFactor` reserved but unpopulated (library held at Salanova-only).
@@ -130,7 +96,7 @@ Theory + literature only — no Décembre observations:
 
 Priority order (impact × ease):
 
-1. **32-cell, same zone** — anchors `RootCap_32cell` + tests RGR_max generalization across cell sizes.
-2. **50-cell, cooler zone** (target T_day 18–22°C) — tests heat-stress hypothesis; predicted yield higher, senescence later.
+1. **32-cell, same zone** — tests whether the growth constants generalize across cell sizes.
+2. **50-cell, cooler zone** (target T_day 18–22°C), **representative plant, n ≥ 5, plug dry-matter measured** — the cohort that would anchor the clean ε. Predicted yield higher, senescence later.
 3. **50-cell with spread schedule** (spread at d18) — tests `f_light` ceiling; predicted yield substantially higher (#1 lever).
 4. **Different variety** (compact Salanova or another butterhead) — anchors `varietyRootFactor`, unlocks library.

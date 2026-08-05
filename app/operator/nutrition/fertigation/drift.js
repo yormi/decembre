@@ -23,7 +23,6 @@ function renderPhase1Comparison() {
   const sd = STORED_RECIPE.tomato.sidedress[stage];
   // Side-dress is g/planche/wk (NOT total area)
   const sidedressStored = {
-    'Actisol-5-3-2': sd.actisol_g,
     'FarinePlumes':  sd.farine_g,
   };
   // Foliar parsed from STORED_RECIPE.tomato.foliaire.A label strings (g per 15 L master tank)
@@ -39,17 +38,12 @@ function renderPhase1Comparison() {
     'FeSO4-7H2O':   parseG((find('FeSO₄') || {}).master),
   };
 
-  // stable — framing copy (intro + tier thresholds + table headers) is invariant
-  // domain context. Numbers below come from constants (FP_RECIPE_T5 + stored).
-  let html = '<div style="font-size:12px; color:var(--text-muted); line-height:1.5; margin-bottom:8px;">'
-    + 'Recette stockée actuelle (ce que l\'équipe pèse cette semaine) vs cible premiers principes (Recette proposée — sidedress reframe + plafond demande + contraintes sans yucca). '
-    + '<strong>Vert</strong> ≤5 % · <strong>jaune</strong> ≤30 % · <strong>rouge</strong> &gt;30 %. Stade <strong>' + stage + '</strong>.'
-    + '</div>';
+  let html = '';
 
   // FP recipe is only derived for T5. Other stages get a placeholder.
   if (stage !== 'T5') {
     html += '<div style="padding:10px 12px; background:var(--input-bg); border-radius:var(--radius-sm); font-size:11.5px; color:var(--text-muted); line-height:1.5;">'
-      + 'FP non dérivé pour ce stade — voir <strong style="color:var(--text);">Recette proposée</strong> pour T5.'
+      + 'FP not derived for this stage — see the proposed recipe for T5.'
       + '</div>';
     return html;
   }
@@ -99,8 +93,8 @@ function renderPhase1Comparison() {
     let h = '<div style="margin-top:14px; font-weight:700; font-size:12.5px;">' + title + '</div>'
       + '<table style="width:100%; border-collapse:collapse; font-size:12px; margin-top:4px;">'
       + '<thead><tr style="text-align:left; color:var(--text-muted); font-size:10px; text-transform:uppercase; letter-spacing:1px;">'
-      + '<th style="padding:4px 8px;">Produit</th>'
-      + '<th style="padding:4px 8px; text-align:right;">Stocké</th>'
+      + '<th style="padding:4px 8px;">Product</th>'
+      + '<th style="padding:4px 8px; text-align:right;">Stored</th>'
       + '<th style="padding:4px 8px; text-align:right;">FP</th>'
       + '<th style="padding:4px 8px; text-align:right;">Ratio</th>'
       + '</tr></thead><tbody>';
@@ -112,8 +106,8 @@ function renderPhase1Comparison() {
     return h;
   };
 
-  html += section('Fertigation (g/sem · ' + (TOMATO_NUMBER_BEDS * TOMATO_BED_AREA).toFixed(0) + ' m²)', fertStored, fertFp, '');
-  html += section('Engrais sol granulaire (g/planche/sem · 54,7 m²)', sidedressStored, sidedressFp, '');
-  html += section('Foliaire (g par 15 L master)', foliarStored, foliarFp, '');
+  html += section('Fertigation (g/week · ' + (TOMATO_NUMBER_BEDS * TOMATO_BED_AREA).toFixed(0) + ' m²)', fertStored, fertFp, '');
+  html += section('Side-dress (g/bed/week · 54.7 m²)', sidedressStored, sidedressFp, '');
+  html += section('Foliar (g per 15 L master)', foliarStored, foliarFp, '');
   return html;
 }

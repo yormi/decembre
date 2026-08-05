@@ -23,6 +23,20 @@ function ledDli(ledHours) {
   return (LED_PPFD * Math.max(0, ledHours) * 3600) / 1e6;
 }
 
+// ── Germination timing ───────────────────────────────────────────────
+
+// Days from sowing to emergence at a constant nursery soil temperature.
+// Thermal time: the seed fires once it has banked
+// GERMINATION_THERMAL_TIME_DEGREE_DAYS above GERMINATION_BASE_TEMPERATURE_C.
+// Returns null when the seed cannot fire at all — at or below the base
+// temperature nothing accumulates, above the inhibition temperature it is
+// thermo-dormant.
+function germinationDaysFromSoilTemperature(soilTemperatureC) {
+  if (soilTemperatureC <= GERMINATION_BASE_TEMPERATURE_C) return null;
+  if (soilTemperatureC > GERMINATION_INHIBITION_TEMPERATURE_C) return null;
+  return GERMINATION_THERMAL_TIME_DEGREE_DAYS / (soilTemperatureC - GERMINATION_BASE_TEMPERATURE_C);
+}
+
 // ── Growth-engine geometry ───────────────────────────────────────────
 
 // Field planting density (heads/m²) from a spacing config: rows across the
@@ -58,7 +72,7 @@ function nurseryCapSpacedFresh(cellsPerTray) {
 // (senescence). Canopy "closed" = LAI ≥ LAI_CLOSURE; area jumps (checker-thin,
 // transplant) and senescence shrink re-open it and reset the closed-day clock.
 // ε and dry-matter fraction are STAGE-SPECIFIC: the nursery uses the plug DM
-// and, when nurseryStress, the drought+heat ε (anchored to 5 g @ d25); the
+// and, when nurseryStress, the drought+heat ε (unanchored, see data.js); the
 // field uses the field DM and clean ε. The DM step up at transplant is the
 // rehydration lift.
 function predictYield(inputs) {
@@ -70,6 +84,7 @@ function predictYield(inputs) {
     thinDay,
     nurseryDays,
     nurseryStress = false,
+    nurserySoilTemperatureC = NURSERY_SOIL_TEMPERATURE_C,
   } = inputs;
 
   const spacing = FIELD_SPACING_CONFIGS.find(c => c.key === fieldSpacingKey);
@@ -91,6 +106,13 @@ function predictYield(inputs) {
     throw new Error(`predictYield: thinDay must be in [1, ${nurseryDays}] when thinning, got ${effectiveThinDay}`);
   }
 
+  const germinationDays = germinationDaysFromSoilTemperature(nurserySoilTemperatureC);
+  if (germinationDays == null) {
+    throw new Error(`predictYield: no germination at ${nurserySoilTemperatureC} °C — outside ${GERMINATION_BASE_TEMPERATURE_C}..${GERMINATION_INHIBITION_TEMPERATURE_C} °C`);
+  }
+  // Day 1 is sowing, so emergence lands this far along the same axis.
+  const emergenceDay = 1 + germinationDays;
+
   const density = fieldDensityFromConfig(spacing);
   const fieldDays = routine.fieldDays;
   const bedsPerWeek = BED_COUNT / (fieldDays / 7);
@@ -101,19 +123,19 @@ function predictYield(inputs) {
   const fieldCapG = fieldCanopyCapByDensity(density);
 
   const stepsPerDay = Math.round(1 / GROWTH_STEP_DAYS);
-  const totalSteps = totalDays * stepsPerDay;
+  const totalSteps = (totalDays - 1) * stepsPerDay;
 
-  let weightDry = W_INIT_GERMINATED_G;
+  let weightDry = EMERGENCE_DRY_MASS_G;
   let daysClosed = 0;
-  // Day 0 is in the nursery → plug DM.
-  const trajectory = [{ day: 0, weight_g: weightDry / PLUG_DRY_MATTER_FRACTION, regime: 'nursery' }];
+  // Day 1 is the sowing day, in the nursery → plug DM.
+  const trajectory = [{ day: 1, weight_g: weightDry / PLUG_DRY_MATTER_FRACTION, regime: 'nursery' }];
   let transplantWeightG = null;
   let peakWeightG = weightDry / PLUG_DRY_MATTER_FRACTION;
-  let peakDay = 0;
+  let peakDay = 1;
   let nurseryPeakWeightG = weightDry / PLUG_DRY_MATTER_FRACTION;
 
   for (let step = 1; step <= totalSteps; step++) {
-    const day = step / stepsPerDay;
+    const day = 1 + step / stepsPerDay;
     const inNursery = day <= nurseryDays + 1e-9;
     const thinned = effectiveThinDay != null && day >= effectiveThinDay - 1e-9 && inNursery;
 
@@ -132,9 +154,14 @@ function predictYield(inputs) {
     const leafAreaIndex = weightDry * SPECIFIC_LEAF_AREA / areaGround;
     const interceptedFraction = 1 - Math.exp(-LEAF_AREA_EXTINCTION_K * leafAreaIndex);
     // Light the plant can actually use at its age — cotyledon/true-leaf stages
-    // saturate below the target (#3). Field ages sit at the full target.
-    const effectiveDli = Math.min(DLI_TARGET, nurseryLightCeiling(day));
-    const gain = radiationUseEfficiency * effectiveDli * areaGround * interceptedFraction;
+    // saturate below the target (#3), a hardened plug above it. Field ages sit
+    // at the target.
+    const effectiveDli = inNursery ? nurseryLightCeiling(day) : DLI_TARGET;
+    // Before emergence the seed is heterotrophic: no light-driven gain. The
+    // day it fires comes from thermal time, not a constant.
+    const gain = day < emergenceDay
+      ? 0
+      : radiationUseEfficiency * effectiveDli * areaGround * interceptedFraction;
     const canopyClosed = leafAreaIndex >= LAI_CLOSURE;
     daysClosed = canopyClosed ? daysClosed + GROWTH_STEP_DAYS : 0;
 
@@ -152,7 +179,7 @@ function predictYield(inputs) {
     if (inNursery && weightFresh > nurseryPeakWeightG) nurseryPeakWeightG = weightFresh;
 
     if (step % stepsPerDay === 0) {
-      const dayInt = step / stepsPerDay;
+      const dayInt = 1 + step / stepsPerDay;
       trajectory.push({ day: dayInt, weight_g: weightFresh, regime: dayInt <= nurseryDays ? 'nursery' : 'field' });
       if (dayInt === nurseryDays) transplantWeightG = weightFresh;
     }
@@ -194,6 +221,8 @@ function predictYield(inputs) {
     harvestWeightG,
     peakWeightG,
     peakDay: Math.round(peakDay),
+    germinationDays,
+    emergenceDay,
     nurseryPeakWeightG,
     senescingAtHarvest,
     senescingAtTransplant,

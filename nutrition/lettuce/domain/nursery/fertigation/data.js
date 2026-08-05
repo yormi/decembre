@@ -158,32 +158,35 @@
   // bucket vol) is sister-subproject scope; this file owns the weekly tray
   // delivery only.
   const NURSERY_FERTIGATION_DEFAULTS = {
-    trayVolumeL: 1.25,                           // cert 4 — observed at Décembre
+    trayVolumeL: 3.84,                           // cert 2 — 32 pots × ~120 mL/plant (2.5"-pot step-up); was 1.25 (50 cells × 25 mL). Pending pot-brim measure.
     applicationsPerWeek: 1,                      // cert 4 — observed
   };
 
-  // ─── Default recipe at 20 g target / 35-day cycle ─────────────────────
+  // ─── Default recipe at 50 g target / 35-day cycle / 2.5"-pot ──────────
   //
-  // Re-derived 2026-06-20 for the salt-control phase (target 20 g, 1 feed/wk).
-  // Old recipe (Ocean 7 / Acadie 6 / kelp 2, CE 2.6) was sized to a 90 g plug
-  // and sat just under a 3.0 cap that assumed substrate 1.5–2.5 — a band the
-  // domain (root-zone 1.0–1.2, hold > 1.5) and the field (leachate 5+, Na
-  // 3166, tip-burn) both reject. Lowering the plug target to 20 g halves N
-  // demand, which lets the feed drop into the salt-safe band.
-  // Math walked in derivation.md. Doses are concentration in the watering
-  // bucket (mL/L for liquids, g/L for the powder).
+  // Concentrations unchanged from the 2026-06-20 salt-control recipe
+  // (Ocean 2 / Acadie 1.5 / kelp 1 / Fe 0.015). The 2026-07-19 step-up to a
+  // 50 g plug delivers the higher demand through **more feed volume**
+  // (trayVolumeL 1.25 → 3.84, i.e. 32 pots × ~120 mL vs 50 cells × 25 mL),
+  // NOT a hotter bucket — so predicted CE stays at the salt-safe 0.85. The
+  // ~5× substrate volume of the 2.5"-deep pot drops salt density per mL, so
+  // the bigger plug sits inside the same CE band. Math walked in derivation.md.
+  // Doses are concentration in the watering bucket (mL/L for liquids, g/L for
+  // the powder).
   //
-  // Numbers per product (per tray, per week, in mg of element):
-  //   Ocean 2.0 g/L     × 1.25 L × 0.15 N          ×1000 = 375 mg N
-  //   AcadiePoisson 1.5 g/L × 1.25 × 0.02          ×1000 =  37 mg N
-  //   IronSulfate 0.015 g/L × 1.25 × 0.20 Fe       ×1000 = 3.75 mg Fe (~3 ppm in feed)
+  // Numbers per product (per tray of 32 pots, per week, in mg of element):
+  //   Ocean 2.0 g/L     × 3.84 L × 0.15 N          ×1000 = 1152 mg N
+  //   AcadiePoisson 1.5 g/L × 3.84 × 0.02          ×1000 =  115 mg N
+  //   AcadieKelp 1.0 g/L × 3.84 × 0.006 N          ×1000 =   23 mg N
+  //   IronSulfate 0.015 g/L × 3.84 × 0.20 Fe       ×1000 = 11.5 mg Fe (~3 ppm in feed, unchanged)
   //   ────────────────────────────────────────────────────
-  //   Total                                              ≈ 412 mg N/tray (≥ 350 floor at 20 g)
+  //   Total                                              ≈ 1290 mg N/tray (≥ 560 floor AND ≥ 1120 full demand at 50 g / 32 pots)
   //
   // Predicted CE: 0.1 + 0.20×2 + 0.15×1.5 + 0.10×1 + 1.2×0.015 = 0.85 mS/cm → predicted-ce-under-nursery-cap ✓
   // Predicted pH: 6.26 + (-0.15)×2 + (-0.10)×1.5 + (0.02)×1 + (-0.10)×0.015 = 5.83 → predicted-tank-ph-in-nursery-envelope ✓
-  // (CE is the bucket feed; the cell concentrates ~1.5× as it dries between
-  //  weekly feeds → cell peak ~1.2, held by per-feed leaching. See salt-flush
+  // (CE is the bucket feed; the pot concentrates less than the old 50-cell as
+  //  it dries — ~5× the buffer volume. Hold pour-through in band by watering
+  //  each feed to ~15 % visible runoff; drainage is not passive. See salt-flush
   //  protocol + derivation.md.)
   //
   // Note: per-product dose units below are kept in **g/L** (label-native for
@@ -201,7 +204,7 @@
   //
   // predicted-ce-under-nursery-cap — bucket feed CE ≤ 1.0 mS/cm. Cert 2.
   // Rationale: domain seedling root-zone band is target 1.0–1.2, hold feed
-  // > 1.5 (young roots salt-sensitive; nutrition/lettuce/domain/domain.md). The cell
+  // > 1.5 (young roots salt-sensitive; domain/lettuce/model.md). The cell
   // concentrates ~1.5× above the bucket feed as it dries between weekly feeds
   // (cert 2 — dry-down estimate), so a 1.0 bucket cap keeps the cell peak near
   // the 1.5 hold line, targeting ~1.2. Per-feed leaching (salt-flush protocol)

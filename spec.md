@@ -12,7 +12,7 @@ code under `nutrition/**/spec.md` and `yield-range/**/spec.md`.
 | `nutrition/spec.md` | Cross-crop nutrition: mass-balance, channel cascade, pH-aware efficiency, lockout gates, crop-level channel-role coverage |
 | `nutrition/chemistry/spec.md` | Cross-crop chemistry: product catalog, pH-response, mixing compatibility (Ksp / tags / mix order / incompatible recipes / stock stability), tank-level CE + pH predictions |
 | `nutrition/tomato/domain/spec.md` | Tomato nutrition: per-stage demand, fruit export, biomass, mass-balance coupling |
-| `app/admin/nutrition/bilan/tomato/spec.md` | Tomato Nutrition admin page chrome (header inputs, ceiling, recipe-mode toggle, drift block, single-source-of-truth read) |
+| `app/admin/nutrition/bilan/tomato.backup/spec.md` | Tomato Nutrition admin page chrome (header inputs, ceiling, recipe-mode toggle, drift block, single-source-of-truth read) |
 | `app/admin/nutrition/builder/plant-needs/tomato/user-stories.md` | Plant-needs builder block on the admin page (Block 1) |
 | `app/admin/nutrition/builder/foliar/tomato/user-stories.md` | Foliar builder block on the admin page (Block 5/6) |
 | `app/admin/nutrition/builder/fertigation/tomato/user-stories.md` | Fertigation builder block on the admin page (supply vs demand + drift sub-block) |
