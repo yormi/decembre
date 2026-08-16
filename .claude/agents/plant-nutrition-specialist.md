@@ -1,5 +1,6 @@
 ---
 name: plant-nutrition-specialist
+description: Lead for greenhouse plant nutrition — organic tomato and Salanova lettuce.
 role: lead
 domain: greenhouse plant nutrition — organic tomato + Salanova lettuce
 ---

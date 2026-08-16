@@ -5,7 +5,7 @@
 - Greenhouse: 108 × 120 ft (1,204 m²), built summer 2025
 - Crops: tomatoes, lettuce (Salanova — sold processed/bagged), spinach
 - Channel: grocery stores
-- Certification: organic (required). Certifier: [CONFIRM — Ecocert / Québec Vrai / other]
+- Certification: organic (required). Certifier: Ecocert
 - Team: 2 R&D (Jordane + partner), 3 production/ops
 - Tomato yield (May 2026): ~1.3 kg/m²/wk peak (~87% of 1.5 target). Recovering post-pH-correction. Lettuce status: TBD.
 

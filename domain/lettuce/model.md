@@ -247,7 +247,7 @@ plug, ~4 wk propagation.
 
 | Factor | Target | Band | Edge |
 |---|---|---|---|
-| DLI | 14–16 mol/m²/d | 12–17 | >17 → tipburn |
+| DLI | 25 mol/m²/d | 14–25 | >25 → tipburn |
 | Soil water tension | 15–25 kPa | 10–30 | >30 → growth check; <10 → waterlogged |
 | Soil pH (1:1) | 6.0–6.5 | 5.8–6.8 | <5.5 → Mn/Al; >7 → Fe/Mn/P lockout |
 | Soil EC (1:1 slurry) | ≤ 0.65 mS/cm | 0.65–1.6 | > 1.6 → ≥25% loss, salt gate (band below) |

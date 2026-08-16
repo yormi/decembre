@@ -14,3 +14,11 @@ EnvironeX cert 4016171 (July 2024). Heavy-metals (As/Cd/Cr/Hg/Ni/Pb/Se) — pre-
 
 ### `Logo - Décembre.png`
 Brand asset.
+
+
+## Aphids — shareable PDF
+
+Rendered from the live markdown. Regenerate after any edit — it does not update itself.
+
+### `aphid-biocontrol-protocol.pdf`
+The weekly routine (Micromus, rendered 2026-08-16): setup, weekly steps, release, harvest-day counts, dose adjustment, triggers, efficiency losses. Source: `protocol/aphids-biocontrol.md`. **Reach for:** handing the routine to an operator or a supplier.

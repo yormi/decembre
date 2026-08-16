@@ -129,7 +129,7 @@ const SKY_CONDITION_FACTORS = [
 // growth engine's effective DLI — the photosynthetic optimum where the
 // old f_light plateau sat, so the light response folds into ε·DLI without a
 // separate saturation multiplier (derivation.md carbon-balance-growth).
-const DLI_TARGET = 17;
+const DLI_TARGET = 25;
 
 // Usable DLI ceiling by age from sowing (day 1 = sowing).
 // Young tissue saturates low:

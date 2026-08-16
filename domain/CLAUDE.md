@@ -15,6 +15,14 @@ in its crop; shared soil chemistry + methods live here.
   **Reach for this when:** changing germination temp/EC bands,
   container sizing, or substrate cost.
 
+- `aphids/` — aphid control. `aphids.md` holds the pest and the
+  program; `predators-comparison.md` decides between agents; one
+  file per beneficial holds its biology, rates and prices.
+  Index in `aphids/CLAUDE.md`.
+  **Reach for this when:** anything about aphids — rates, cadence,
+  agent choice, spray compatibility, supplier prices.
+  Protocol: `../protocol/aphids-biocontrol.md`.
+
 - `spinach.md` — spinach irrigation domain.
   **Reach for this when:** working spinach water scheduling.
 
