@@ -2,6 +2,15 @@
   {
     "date": "2026-08-16",
     "date_fr": "16 août 2026",
+    "title": "Note avertissement rinçage table innondante",
+    "changes": "- Procédure pour rincer table innondante après fertigation. _Nutriments -> Fertigation -> Semis laitue_",
+    "url": "https://main--decembre-staging.netlify.app",
+    "pr": 12,
+    "sha": "c074ae8b2c7c9c93c4a65c7dbe855ce6f1f65c4b"
+  },
+  {
+    "date": "2026-08-16",
+    "date_fr": "16 août 2026",
     "title": "Procédure rincer table innondante après fertigation",
     "changes": "- Procédure pour rincer table innondante après fertigation. _Nutriments -> Fertigation -> Semis laitue_",
     "url": "https://main--decembre-staging.netlify.app",
