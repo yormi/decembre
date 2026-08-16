@@ -1,5 +1,14 @@
 [
   {
+    "date": "2026-08-16",
+    "date_fr": "16 août 2026",
+    "title": "Procédure rincer table innondante après fertigation",
+    "changes": "- Procédure pour rincer table innondante après fertigation. *Nutriments -> Fertigation -> Semis laitue*\n🤖 Generated with [Claude Code](https://claude.com/claude-code)",
+    "url": "https://main--decembre-staging.netlify.app",
+    "pr": 11,
+    "sha": "cc064b1a6fa71d799a3a57b4f4cbfd0c980bd454"
+  },
+  {
     "date": "2026-08-05",
     "date_fr": "5 août 2026",
     "title": "Page Laitue, transplant et potassium tomate",
