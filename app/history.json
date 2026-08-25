@@ -1,5 +1,14 @@
 [
   {
+    "date": "2026-08-25",
+    "date_fr": "25 août 2026",
+    "title": "Zn en fertigation tomate/laitue + nouvelle fertigation semis",
+    "changes": "- Correction racinaire enlevée de l'app\n- Ajout de Zn à la fertigation Tomate et Laitue selon les résultats de laboratoire\n- Nouvelle approche de fertigation des semis pour augmenter rendements, résistance aux pucerons & aux maladies et réduire le choc de transplant",
+    "url": "https://main--decembre-staging.netlify.app",
+    "pr": 13,
+    "sha": "665bc4a697d0d709bed1eef1676bd8a5fa783d58"
+  },
+  {
     "date": "2026-08-16",
     "date_fr": "16 août 2026",
     "title": "Note avertissement rinçage table innondante",
