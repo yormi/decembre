@@ -1,8 +1,11 @@
 # Nursery weekly fertigation — specs
 
-Salanova lettuce nursery, 50-cell trays, weekly fertigation in the watering
-bucket. Three Ecocert products: EZ-GRO Ocean 15-1-1 (powder), Acadie Poisson
-Hydrolysé 2-4-0.5 (liquid), Acadie Algues liquides (liquid). Owned data:
+Salanova lettuce nursery, trays of 32 × 2.5"-deep pots, fertigation in the
+watering bucket 5×/week (2026-08-25 rebalance). Products (all
+CAN/CGSB-32.311; micro salts allowed-with-conditions): EZ-GRO Ocean 15-1-1
+(powder), Acadie Poisson Hydrolysé 2-4-0.5 (liquid), potassium sulfate,
+gypsum, magnesium sulfate, iron sulfate, MicroStock bottle (Mn/Zn/B/Cu).
+Owned data:
 `NURSERY_PRODUCTS`, `NURSERY_FERTIGATION_DEFAULTS`, `NURSERY_RECIPE_DEFAULT`,
 `NURSERY_CE_CAP_MS_CM`, `NURSERY_TANK_PH_RANGE`. Owned functions:
 `nurseryRecipeSupply`, `nurseryRecipeCE`, `nurseryRecipeTankPh`.
@@ -56,36 +59,35 @@ is what holds the tank in band (predicted 5.83).
 
 ## n-supply-half-demand-floor
 
-**Statement:** `nurseryRecipeSupply(NURSERY_RECIPE_DEFAULT, NURSERY_FERTIGATION_DEFAULTS.trayVolumeL).perTray_mg.N`
-≥ `0.5 × demandPerTray_N_mg`.
+**Statement:** `nurseryRecipeSupply(NURSERY_RECIPE_DEFAULT, NURSERY_FERTIGATION_DEFAULTS.trayVolumeL, NURSERY_FERTIGATION_DEFAULTS.applicationsPerWeek).perTray_mg.N`
+≥ `0.5 × residualDemandPerTray_N_mg`, where residual = demand − credited
+front-load (feather meal at 75 % mineralization + OM2 charge at its stored
+placeholder). At the 50 g default: demand ~1120 mg N/tray/wk, credited
+front-load ~609 mg/wk → residual ~511 mg/wk, floor ~256 mg; weekly supply
+~511 mg sits at **exact residual** by design (2026-08-25 rebalance,
+`nursery-5wk-balance.md`). Cert 3.
 
-`demandPerTray_N_mg` from `window.PlantNeedsNursery.demandPerTray('N')`, which
-reads `targetG_default` (= 50 g since 2026-07-19) → demand ~1120 mg N/tray/wk
-(35 mg/plant × 32 pots), floor ~560 mg. If namespace not loaded, verifier falls
-back to inline 3 150 mg (90 g reference — stale vs the live 50 g default; only
-hit if the namespace is absent). Cert 3 — `LETTUCE_NURSERY_TISSUE_DW.N` × DW
-per plant × 32.
-
-**Rationale:** N is rate-limiting macro for seedling growth on peat. <50 %
-from bucket means plant eats peat starter charge (variable batch-to-batch)
-or slows. 50 % is soft floor; full demand is goal once tissue tests come
-back. At the 50 g target on the ~120 mL/pot feed volume the salt-safe feed
-clears **full** demand (supply ~1290 mg ≥ 1120), not just the floor — the
-extra feed volume of the 2.5"-pot format delivers the higher N at unchanged
-bucket CE.
+**Rationale (rewritten 2026-08-25 — basis changed from gross to residual):**
+The original floor demanded the bucket alone carry ≥ 50 % of gross demand,
+written when the substrate charge was an unquantified batch-to-batch unknown.
+The front-load is now quantified (substrate-contribution subproject), so the
+honest target is the residual: bucket tops up exactly what potting doesn't
+supply. Feeding to gross demand on top of the front-load is what produced the
+1.9× N surplus (soft aphid-prone tissue) diagnosed in the 5-week balance.
 
 ---
 
 ## default-recipe-p-supply-half-demand
 
-**Statement:** `nurseryRecipeSupply(NURSERY_RECIPE_DEFAULT, NURSERY_FERTIGATION_DEFAULTS.trayVolumeL).perTray_mg.P`
-≥ `0.5 × demandPerTray_P_mg`. Live demand at the 50 g default ~112 mg P/tray/wk
-(3.5 mg/plant × 32 pots) → floor ~56 mg; supply ~138 mg clears **full** demand.
-Inline fallback 315 mg (90 g reference) only if namespace absent. Cert 3.
+**Statement:** `nurseryRecipeSupply(NURSERY_RECIPE_DEFAULT, NURSERY_FERTIGATION_DEFAULTS.trayVolumeL, NURSERY_FERTIGATION_DEFAULTS.applicationsPerWeek).perTray_mg.P`
+≥ `0.5 × residualDemandPerTray_P_mg` (residual basis as `n-supply-half-demand-floor`).
+At the 50 g default: demand ~112 mg P/tray/wk, credited front-load ~32 mg/wk →
+residual ~80 mg/wk, floor ~40 mg; weekly supply ~80 mg is exact residual by
+design. Cert 3.
 
 **Rationale:** P is second-most-important seedling macro (root
-development); peat starter charge unreliable post-2-3 waterings. Acadie
-poisson 2-4-0.5 is P workhorse — 1.75 % P (label 4 % P₂O₅) is 4× Ocean's.
+development). Acadie poisson 2-4-0.5 is P workhorse — 1.75 % P (label 4 %
+P₂O₅) is 4× Ocean's. Residual basis per `n-supply-half-demand-floor`.
 
 ---
 
@@ -160,9 +162,9 @@ question answered by `minApplicationsPerWeek` (`min-applications-solves-full-cov
 dose-bound elements).
 
 **Rationale:** Two distinct failure modes need different interventions:
-- **sourced + dose-bound** (e.g. K at default — Ocean + Acadie + kelp all
-  carry K, but per-fert × 7 < demand): increase dose (until EC binds) or
-  add another K source.
+- **sourced + dose-bound** (an element with a carrier in the recipe whose
+  per-fert supply × 7 < demand): increase dose (until EC binds) or add
+  another source.
 - **unsourced** (e.g. Mo at default — no product carries it): frequency
   and dose irrelevant; recipe needs a new product.
 

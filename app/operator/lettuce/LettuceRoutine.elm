@@ -402,7 +402,7 @@ mercredi : List Step
 mercredi =
     [ Step "m-mesure"
         ""
-        [ L GrowthRack ]
+        [ E "👩‍🔬" ]
         "Mesurer chaque génération en plateau"
         "Pour les générations agées de 0 à 4 semaines :"
         [ "Peser un semis représentatif"

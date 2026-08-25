@@ -73,7 +73,6 @@ function setCrop(crop) {
 
     // Lettuce uses fixed 'normal' vigor — no slider needed for a 2-week cycle
     if (crop === 'lettuce') currentVigor = 'normal';
-    applyFertRecipeUI();
     recalc();
     buildFoliar();
     if (window.buildAmf) buildAmf();
@@ -92,24 +91,6 @@ function setCropBtn(id, isActive, cropType) {
   } else {
     element.className = 'crop-btn';
   }
-}
-
-// Tomato fertigation recipe selector. Two recipes share the page: the per-stage
-// nutrient barrel and a fixed Ocean root-fix drench. Stage selector is only
-// meaningful for the nutrient recipe, so it hides under root-fix.
-function setFertRecipe(mode) {
-  currentFertRecipe = mode;
-  applyFertRecipeUI();
-  buildSteps();
-}
-
-function applyFertRecipeUI() {
-  const nutrientBtn = document.getElementById('fert-recipe-nutrient');
-  const rootfixBtn = document.getElementById('fert-recipe-rootfix');
-  const stageBlock = document.getElementById('fert-stage-block');
-  if (nutrientBtn) nutrientBtn.classList.toggle('active', currentFertRecipe === 'nutrient');
-  if (rootfixBtn) rootfixBtn.classList.toggle('active', currentFertRecipe === 'rootfix');
-  if (stageBlock) stageBlock.style.display = currentFertRecipe === 'rootfix' ? 'none' : 'block';
 }
 
 function setVigor(v) {
@@ -437,7 +418,6 @@ window.sectionOf = sectionOf;
 window.setCrop = setCrop;
 window.setCropBtn = setCropBtn;
 window.setVigor = setVigor;
-window.setFertRecipe = setFertRecipe;
 window.syncHash = syncHash;
 window.cropFor = cropFor;
 window.toggleAdmin = toggleAdmin;

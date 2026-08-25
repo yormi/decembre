@@ -2,11 +2,13 @@
 //
 // Nursery weekly fertigation — product list, defaults, default recipe, caps.
 //
-// Three Ecocert products, all CAN/CGSB-32.311 listed:
+// Products, all CAN/CGSB-32.311 listed (micro salts allowed with conditions):
 //   - EZ-GRO Ocean 15-1-1 (Higrocorp; fish-protein hydrolysate, dry powder,
 //     fully water-soluble). Primary N source. Cert 3 — manufacturer label.
 //   - Acadie Poisson Hydrolysé 2-4-0.5 (Acadian Seaplants; liquid). P workhorse.
-//   - Acadie Algues liquides (Acadian Seaplants; kelp extract). K + micros baseline.
+//   - Sulfate de potasse 0-0-50, gypse, sulfate de magnésium (mined salts) —
+//     K / Ca / Mg (2026-08-25 rebalance).
+//   - Sulfate de fer (Fe) + MicroStock bottle (Mn/Zn/B/Cu).
 //
 // Mirrors the global `PRODUCT` schema shape (mode, base, ions, chemistryTags,
 // ecFactor, phContribution, organicAllowed, phClass) so recipe-mode-per-product,
@@ -80,51 +82,98 @@
       cert: 3,
     },
 
-    'AcadieKelp': {
-      // Acadie Fresh Seaweed Concentrate (= Acadie Algues liquides) —
-      // Ascophyllum nodosum extract from Nova Scotia. Acti-Sol datasheet
-      // 2025-01: pH 7.4-8.2 (alkaline), 100% water-soluble, 13-16% organic
-      // matter (amino acids, alginic acid, mannitol, fucoidan).
-      // Source: nutrition/doc/Acadie Fresh Seaweed Concentrate.pdf
-      // Density ~1.05 g/mL (cert 3, viscous brownish-black liquid).
-      mode: 'concentration',                     // recipe-mode-per-product — concentration-driven biostimulant + nutrient blend
+    // AcadieKelp removed from the registry 2026-08-25 — dominant Na source
+    // (555 of 960 mg Na per tray per cycle) for 2-18 % micro coverage; its K
+    // taken over by KSulfate, micros by MicroStock. Entry in git history.
+
+    'KSulfate': {
+      // Sulfate de potasse 0-0-50 (mined; same product as tomato channel).
+      // 50 % K₂O × 0.83 = 41.5 % K element.
+      mode: 'flux',
       ch: 'nursery',
-      // Element mass fractions from datasheet typical analysis (w/w).
-      // K₂O 6.0% × 0.83 = 4.98% K element. P₂O₅ <0.2% × 0.437 = <0.087% P
-      // (use upper bound conservatively). Ca/Mg datasheet midpoint 0.10%.
-      // Micros datasheet midpoint per element. Cert 4 — manufacturer label.
+      base: { K: 0.415 },                        // cert 4 — label
+      phClass: { K: 'soluble-cation' },          // cert 4
+      ions: { 'K+': 0.415, 'SO4-2': 0.54 },      // cert 4
+      chemistryTags: ['sulfate'],                // cert 4
+      organicAllowed: true,                      // CAN/CGSB-32.311 — mined potassium sulfate; cert 4
+      ecFactor: 1.5,                             // mS/cm per g/L; cert 2 — verify with CE meter on first bucket
+      solubilityCap_g_per_L: 110,                // cert 4
+      phContribution: 0,                         // neutral salt; cert 3
+      maximumStableHours: 168,                   // stable mineral salt; cert 4
+      cert: 4,
+    },
+
+    'Gypsum': {
+      // Gypse (CaSO₄·2H₂O), 23.2 % Ca. Continuous solution Ca — the tip-burn
+      // lever (better than a one-time pulse; nursery-5wk-balance decision
+      // 2026-08-25). Dose 0.14 g/L sits far under the 2.4 g/L solubility and
+      // the Ca2+ × SO4-2 KSP threshold (2.4 g/L combined). Slow to dissolve —
+      // add first, stir.
+      mode: 'flux',
+      ch: 'nursery',
+      base: { Ca: 0.232 },                       // cert 4 — stoichiometry
+      phClass: { Ca: 'soluble-cation' },         // cert 3
+      ions: { 'Ca2+': 0.232, 'SO4-2': 0.558 },   // cert 4
+      chemistryTags: ['sulfate'],                // cert 4
+      organicAllowed: true,                      // CAN/CGSB-32.311 — mined gypsum; cert 4
+      ecFactor: 0.9,                             // mS/cm per g/L; cert 2 — verify with CE meter on first bucket
+      solubilityCap_g_per_L: 2.4,                // cert 4
+      phContribution: 0,                         // neutral salt; cert 3
+      maximumStableHours: 168,                   // cert 4
+      cert: 4,
+    },
+
+    'MgSulfate': {
+      // Sulfate de magnésium (MgSO₄·7H₂O), 9.9 % Mg (same product as tomato
+      // channel).
+      mode: 'flux',
+      ch: 'nursery',
+      base: { Mg: 0.099 },                       // cert 4 — stoichiometry
+      phClass: { Mg: 'soluble-cation' },         // cert 4
+      ions: { 'Mg2+': 0.099, 'SO4-2': 0.39 },    // cert 4
+      chemistryTags: ['sulfate'],                // cert 4
+      organicAllowed: true,                      // CAN/CGSB-32.311 — mined magnesium sulfate; cert 4
+      ecFactor: 0.75,                            // mS/cm per g/L; cert 2 — verify with CE meter on first bucket
+      solubilityCap_g_per_L: 700,                // cert 4
+      phContribution: 0,                         // neutral salt; cert 3
+      maximumStableHours: 168,                   // cert 4
+      cert: 4,
+    },
+
+    'MicroStock': {
+      // Bouteille stock micros — 1 L of water holding MnSO₄·H₂O 3.3 g,
+      // ZnSO₄·7H₂O 3.7 g, Solubor 3.1 g, CuSO₄·5H₂O 0.7 g. Dosed as a liquid
+      // (mL/L ≈ g/L at density ~1.0). Per-bucket micro needs are sub-milligram
+      // per tray — unweighable directly; the stock bottle is the only
+      // practical gesture. Base fractions = salt g/L × element fraction ÷ 1000.
+      // CAN/CGSB-32.311: Mn/Zn/Cu sulfates + sodium borate allowed WITH
+      // CONDITIONS (documented deficiency) — documentation = August tissue
+      // (Zn under floor) + nursery-5wk-balance; Cu logged in the copper
+      // registry. Deliberately NOT tagged free-Cu2+: the Cu-protein-gel
+      // incompatibility is a concentrated-foliar failure mode; at 0.07 mg/L
+      // CuSO₄ in the feed the gel chemistry cannot express (trace, cert 3).
+      mode: 'concentration',
+      ch: 'nursery',
       base: {
-        N:  0.006,     // 0.6% total N; cert 4
-        P:  0.0009,    // <0.2% P₂O₅ → ~0.09% P element; cert 4
-        K:  0.0498,    // 6.0% K₂O → 4.98% K element; cert 4
-        Ca: 0.001,     // 0.05-0.15% midpoint; cert 4
-        Mg: 0.001,     // 0.05-0.15% midpoint; cert 4
-        Fe: 60e-6,     // 30-90 ppm midpoint; cert 4
-        Mn:  7e-6,     // 3-11 ppm midpoint; cert 4
-        Zn: 10e-6,     // 4-17 ppm midpoint; cert 4
-        B:  30e-6,     // 20-40 ppm midpoint; cert 4
-        Cu:  4e-6,     // <4 ppm upper bound; cert 4
+        Mn: 0.00106,   // 3.3 g/L MnSO₄·H₂O × 32 % Mn; cert 3
+        Zn: 0.00085,   // 3.7 g/L ZnSO₄·7H₂O × 23 % Zn; cert 3
+        B:  0.00064,   // 3.1 g/L Solubor × 20.5 % B; cert 3
+        Cu: 0.000175,  // 0.7 g/L CuSO₄·5H₂O × 25 % Cu; cert 3
       },
-      phClass: {
-        N: 'soluble-cation', P: 'soluble-cation', K: 'soluble-cation',
-        Ca: 'soluble-cation', Mg: 'soluble-cation',
-        Fe: 'sulfate-metal', Mn: 'sulfate-metal', Zn: 'sulfate-metal',
-        B: 'non-ionic-soil', Cu: 'sulfate-metal',
-      },
+      phClass: { Mn: 'sulfate-metal', Zn: 'sulfate-metal', B: 'non-ionic-soil', Cu: 'sulfate-metal' },
       ions: {
-        'K+': 0.0498, 'Ca2+': 0.001, 'Mg2+': 0.001,
-        'Fe2+': 60e-6, 'Mn2+': 7e-6, 'Zn2+': 10e-6, 'Cu2+': 4e-6,
-        'B(OH)4-': 30e-6,
-        'SO4-2': 0.013,                         // S 0.3-0.6% midpoint, treated as sulfate-equivalent
-        'organic-matrix': 0.93,                 // remainder (alginate, amino acids, mannitol, fucoidan)
+        'Mn2+': 0.00106, 'Zn2+': 0.00085, 'Cu2+': 0.000175,
+        'B(OH)4-': 0.00064,
+        'Na+': 0.00034,                          // Solubor sodium (11 % of 3.1 g/L); cert 3
+        'SO4-2': 0.0034,                         // summed sulfate of the three metal salts; cert 3
       },
-      chemistryTags: ['organic-matrix', 'biostimulant', 'sulfate'],
-      organicAllowed: true,                      // Acti-Sol Acadie line CETAB+ / CAN/CGSB-32.311 listed; cert 4
-      ecFactor: 0.10,                            // mS/cm per g/L; cert 2 (calibrated from production-solution measurement window)
-      solubilityCap_g_per_L: 1000,               // miscible; cert 4
-      phContribution: 0.02,                     // alkaline (datasheet pH 7.4-8.2) — small positive shift; cert 2
-      maximumStableHours: 24,                        // cert 3
-      cert: 4,                                   // datasheet-anchored
+      chemistryTags: ['sulfate'],                // cert 3 (free-Cu2+ deliberately omitted — see header note)
+      organicAllowed: true,                      // all four salts CAN/CGSB-32.311 (with conditions); cert 4
+      ecFactor: 0.01,                            // ~8.8 mg dissolved salt per g of stock; cert 2
+      solubilityCap_g_per_L: 1000,               // dilute aqueous stock, miscible; cert 4
+      phContribution: 0,                         // trace; cert 3
+      maximumStableHours: 2160,                  // mineral salts in water, shaded bottle ~3 months; cert 2
+      cert: 3,
     },
 
     'IronSulfate': {
@@ -158,46 +207,38 @@
   // bucket vol) is sister-subproject scope; this file owns the weekly tray
   // delivery only.
   const NURSERY_FERTIGATION_DEFAULTS = {
-    trayVolumeL: 3.84,                           // cert 2 — 32 pots × ~120 mL/plant (2.5"-pot step-up); was 1.25 (50 cells × 25 mL). Pending pot-brim measure.
-    applicationsPerWeek: 1,                      // cert 4 — observed
+    trayVolumeL: 2,                              // cert 3 — RETAINED volume: operator observes 120 mL/pot mostly drips to the floor; ~62 mL/pot × 32 is what the pots hold. Refine by weighing a tray before/after a feed.
+    applicationsPerWeek: 5,                      // cert 3 — weekday-daily; forced by the CE cap at 2 L (3 buckets predict ~1.35 mS/cm)
   };
 
   // ─── Default recipe at 50 g target / 35-day cycle / 2.5"-pot ──────────
   //
-  // Concentrations unchanged from the 2026-06-20 salt-control recipe
-  // (Ocean 2 / Acadie 1.5 / kelp 1 / Fe 0.015). The 2026-07-19 step-up to a
-  // 50 g plug delivers the higher demand through **more feed volume**
-  // (trayVolumeL 1.25 → 3.84, i.e. 32 pots × ~120 mL vs 50 cells × 25 mL),
-  // NOT a hotter bucket — so predicted CE stays at the salt-safe 0.85. The
-  // ~5× substrate volume of the 2.5"-deep pot drops salt density per mL, so
-  // the bigger plug sits inside the same CE band. Math walked in derivation.md.
-  // Doses are concentration in the watering bucket (mL/L for liquids, g/L for
-  // the powder).
+  // 2026-08-25 rebalance (nursery-5wk-balance.md): N/P doses solved to exact
+  // against RESIDUAL need (demand − credited front-load: feather meal 75 %
+  // mineralization, OM2 charge 50 % of placeholder); K/Ca/Mg by mined salts;
+  // micros by the MicroStock bottle; kelp dropped (dominant Na source).
+  // 5 buckets/week at 2 L/tray retained volume — the week's K in fewer
+  // buckets breaches the CE cap. Weekly clean-water flush to runoff replaces
+  // the per-feed leach (nothing runs off at 62 mL/pot). Doses are bucket
+  // concentrations (g/L powders, mL/L ≈ g/L liquids at density ~1).
   //
-  // Numbers per product (per tray of 32 pots, per week, in mg of element):
-  //   Ocean 2.0 g/L     × 3.84 L × 0.15 N          ×1000 = 1152 mg N
-  //   AcadiePoisson 1.5 g/L × 3.84 × 0.02          ×1000 =  115 mg N
-  //   AcadieKelp 1.0 g/L × 3.84 × 0.006 N          ×1000 =   23 mg N
-  //   IronSulfate 0.015 g/L × 3.84 × 0.20 Fe       ×1000 = 11.5 mg Fe (~3 ppm in feed, unchanged)
-  //   ────────────────────────────────────────────────────
-  //   Total                                              ≈ 1290 mg N/tray (≥ 560 floor AND ≥ 1120 full demand at 50 g / 32 pots)
+  // Per bucket (per tray, 2 L): N 102 / P 16 / K 250 / Ca 65 / Mg 12 mg
+  // → weekly ×5: N 511 / P 80 / K 1 248 / Ca 325 / Mg 58 mg — each ≈ the
+  // residual weekly need at the 50 g / 32-pot target. Math in derivation.md.
   //
-  // Predicted CE: 0.1 + 0.20×2 + 0.15×1.5 + 0.10×1 + 1.2×0.015 = 0.85 mS/cm → predicted-ce-under-nursery-cap ✓
-  // Predicted pH: 6.26 + (-0.15)×2 + (-0.10)×1.5 + (0.02)×1 + (-0.10)×0.015 = 5.83 → predicted-tank-ph-in-nursery-envelope ✓
-  // (CE is the bucket feed; the pot concentrates less than the old 50-cell as
-  //  it dries — ~5× the buffer volume. Hold pour-through in band by watering
-  //  each feed to ~15 % visible runoff; drainage is not passive. See salt-flush
-  //  protocol + derivation.md.)
-  //
-  // Note: per-product dose units below are kept in **g/L** (label-native for
-  // Ocean, and we take mL/L ≈ g/L for liquids at density ~1; documented
-  // assumption). Conversion to mL/L for team-facing UI is a presentation
-  // concern — sister-subproject (recipe app card) handles it.
+  // Predicted CE: 0.1 + 0.20×0.29 + 0.15×0.39 + 1.5×0.29 + 0.9×0.14
+  //   + 0.75×0.058 + 1.2×0.015 + 0.01×0.1 = 0.84 mS/cm → predicted-ce-under-nursery-cap ✓ (headroom 0.16)
+  // Predicted pH: 6.26 − 0.15×0.29 − 0.10×0.39 − 0.10×0.015 = 6.18 → predicted-tank-ph-in-nursery-envelope ✓
+  // Key order = mixing order (slow-dissolving gypsum first; renders in this
+  // order on the operator + Bilan cards).
   const NURSERY_RECIPE_DEFAULT = {
-    Ocean_15_1_1: 2.0,                           // g/L (clears N floor at 20 g target; Ecocert allowed; cert 3)
-    AcadiePoisson: 1.5,                          // g/L (≈ 1.5 mL/L; P workhorse, clears P floor; cert 3)
-    AcadieKelp:    1.0,                          // g/L (≈ 1 mL/L; K + micro baseline; cert 3)
-    IronSulfate:   0.015,                        // g/L (≈ 1.4 g / 94 L bench; ~3 ppm Fe; cert 3)
+    Gypsum:        0.14,                         // g/L — continuous solution Ca; dissolve FIRST, stir; cert 3
+    Ocean_15_1_1:  0.29,                         // g/L — N, exact-solved on residual; cert 3
+    AcadiePoisson: 0.39,                         // g/L (≈ mL/L) — P, exact-solved on residual; cert 3
+    KSulfate:      0.29,                         // g/L — K workhorse (93 % of K need); cert 3
+    MgSulfate:     0.058,                        // g/L — Mg residual; cert 3
+    IronSulfate:   0.015,                        // g/L (≈ 1.4 g / 94 L bench; ~3 ppm Fe); cert 3
+    MicroStock:    0.1,                          // g/L (≈ 10 mL / 94 L bench) — Mn/Zn/B/Cu; cert 3
   };
 
   // ─── Caps + envelopes ─────────────────────────────────────────────────

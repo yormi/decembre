@@ -259,8 +259,11 @@ const NURSERY_BUCKET_VOLUME_L = 94;
 const NURSERY_RECIPE_DISPLAY = {
   Ocean_15_1_1:  { name: 'EZ-GRO Océan 15-1-1', unit: 'g',  emoji: '🦀' },
   AcadiePoisson: { name: 'Acadie poisson 2-4-0.5', unit: 'mL', emoji: '🐟' },
-  AcadieKelp:    { name: 'Acadie algues', unit: 'mL', emoji: '🌿' },
+  KSulfate:      { name: 'Sulfate de potasse', unit: 'g', emoji: '🍌' },
+  Gypsum:        { name: 'Gypse', unit: 'g', emoji: '🤍' },
+  MgSulfate:     { name: 'Sulfate de magnésium', unit: 'g', emoji: '🧊' },
   IronSulfate:   { name: 'Sulfate de fer 20 %', unit: 'g', emoji: '🩶' },
+  MicroStock:    { name: 'Stock micros', unit: 'mL', emoji: '🧪' },
 };
 
 // Operator recipe card — as-poured batch for one bucket + run instructions.
@@ -298,8 +301,8 @@ function buildNurseryRecipeCard() {
   // applications/week, CE feed + cap from the model; flush trigger from the protocol.
   const runHtml = `<div style="margin-top:14px; font-size:12px; line-height:1.6;">
     <div style="font-weight:700; color:var(--text-muted); font-size:10px; text-transform:uppercase; letter-spacing:1px; margin-bottom:6px;">Application</div>
-    <div style="padding:2px 0;">• <strong>${appsPerWeek}× / semaine</strong> · viser un transplant ~20 g.</div>
-    <div style="padding:2px 0;">• <strong>Lessiver 30–50 % à chaque apport</strong> — arroser jusqu'au ruissellement.</div>
+    <div style="padding:2px 0;">• <strong>${appsPerWeek}× / semaine</strong> (mardi, mercredi, vendredi, samedi, dimanche).</div>
+    <div style="padding:2px 0;">• <strong>Rinçage hebdo à l'eau claire</strong> jusqu'au ruissellement — rien ne draine à ~62 mL/pot.</div>
     <div style="padding:2px 0;">• Vérifier au <strong>pour-through</strong> — rincer si CE &gt; 1,5 mS/cm.</div>
     <div style="padding:2px 0; color:var(--text-muted);">CE bidon prédite ${ce.toFixed(2)} mS/cm (cap ${ceCap.toFixed(1)}) · pH bidon ${tankPh.toFixed(1)}.</div>
   </div>`;

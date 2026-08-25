@@ -146,9 +146,9 @@ Same, as bench area (trays × 0,15 m²):
 
 | Zone | Holds | Trays |
 |---|---|---|
-| Nursery (4 tables + 5 packed racks) | 4 × 12 + 5 × 25 | 173 |
+| Nursery (4 tables + 5 packed racks) | 6 × 12 + 5 × 25 | 197 |
 | Greenhouse (16 tables) | 16 × 9 | 144 |
-| Nursery + greenhouse | — | 317 |
+| Nursery + greenhouse | — | 341 |
 
 
 ## Boundaries

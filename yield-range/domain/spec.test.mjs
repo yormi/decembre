@@ -1,8 +1,8 @@
 // Tests for yield-range/domain/spec.md — carbon-balance yield model.
 //
 // Pins the unified engine (ε·DLI·A·(1 − exp(−k·LAI)) → volume cap →
-// senescence), the four operator inputs (field spacing, labor routine,
-// nursery tray, thinning), and the throughput → kg/month + yearly sales +
+// senescence stall), the operator inputs (field spacing, labor routine,
+// nursery tray, thin events), and the throughput → kg/month + yearly sales +
 // trays outputs.
 
 import { test, describe } from 'node:test';
@@ -16,8 +16,7 @@ const BASE = {
   fieldSpacingKey: '5r6',
   laborRoutineKey: '2wk',
   nurseryTrayCells: 50,
-  thinning: true,
-  thinDay: 21,
+  thinEvents: [{ day: 21, areaFactor: 2 }],
   nurseryDays: 28,
 };
 const predict = (o = {}) => ns.predictYield({ ...BASE, ...o });
@@ -137,7 +136,7 @@ describe('carbon-balance-growth', () => {
 describe('nursery-stress-regime', () => {
   // Sowing day 25 — the age of the 5 g drought+heat data point (doc/data-points.md).
   const plug = (o) => {
-    const out = predict({ nurseryTrayCells: 50, nurseryDays: 28, thinning: false, thinDay: null, ...o });
+    const out = predict({ nurseryTrayCells: 50, nurseryDays: 28, thinEvents: [], ...o });
     return out.trajectory.find(p => p.day === 25).weight_g;
   };
 
@@ -163,37 +162,47 @@ describe('nursery-stress-regime', () => {
   });
 });
 
-// ─── senescence-past-closure ─────────────────────────────────
+// ─── senescence-past-closure (stall) ─────────────────────────
 describe('senescence-past-closure', () => {
-  test('2-week routine harvests near peak — not flagged senescing', () => {
-    const out = predict({ laborRoutineKey: '2wk' });
-    assert.equal(out.senescingAtHarvest, false);
-    assert.ok(out.harvestWeightG >= out.peakWeightG * 0.98);
+  test('weight never declines — stall, not loss', () => {
+    // Long packed nursery + long field hold: the harshest crowding case.
+    const out = predict({ nurseryTrayCells: 50, nurseryDays: 35, thinEvents: [], laborRoutineKey: '4wk' });
+    for (let i = 1; i < out.trajectory.length; i++) {
+      const previous = out.trajectory[i - 1];
+      const point = out.trajectory[i];
+      if (point.regime !== previous.regime) continue; // DM step at transplant
+      assert.ok(point.weight_g >= previous.weight_g - 1e-9, `day ${point.day} declined`);
+    }
   });
 
-  test('holding longer loses weight: 4wk harvest < 3wk < 2wk', () => {
+  test('holding longer never loses harvest weight: 2wk ≤ 3wk ≤ 4wk', () => {
     const h = k => predict({ laborRoutineKey: k }).harvestWeightG;
-    assert.ok(h('4wk') < h('3wk'));
-    assert.ok(h('3wk') < h('2wk'));
+    assert.ok(h('2wk') <= h('3wk') + 1e-9);
+    assert.ok(h('3wk') <= h('4wk') + 1e-9);
   });
 
-  test('over-held head is flagged senescing and sits below its peak', () => {
+  test('over-held head plateaus — 4wk harvest equals the late-trajectory weight', () => {
     const out = predict({ laborRoutineKey: '4wk' });
-    assert.equal(out.senescingAtHarvest, true);
-    assert.ok(out.harvestWeightG < out.peakWeightG);
+    const fieldPoints = out.trajectory.filter(p => p.regime === 'field');
+    const maxField = Math.max(...fieldPoints.map(p => p.weight_g));
+    assert.ok(Math.abs(out.harvestWeightG - maxField) < 1e-6);
+  });
+});
+
+// ─── thin events (absolute area factors) ─────────────────────
+describe('thin-events', () => {
+  test('a wider re-space grows a heavier transplant', () => {
+    const at = factor => predict({
+      nurseryDays: 36,
+      thinEvents: [{ day: 22, areaFactor: 2 }, { day: 29, areaFactor: factor }],
+    }).transplantWeightG;
+    assert.ok(at(5) > at(2));
   });
 
-  test('seedling held long past its nursery peak → senescingAtTransplant', () => {
-    // 50-cell packed, 5-week nursery, no thin to relieve crowding: the plug
-    // peaks in the tray then declines before transplant.
-    const out = predict({ nurseryTrayCells: 50, nurseryDays: 35, thinning: false, thinDay: null });
-    assert.equal(out.senescingAtTransplant, true);
-    assert.ok(out.transplantWeightG < out.nurseryPeakWeightG);
-  });
-
-  test('short nursery transplanted at the plug peak → not senescingAtTransplant', () => {
-    const out = predict({ nurseryTrayCells: 50, nurseryDays: 14, thinDay: 7 });
-    assert.equal(out.senescingAtTransplant, false);
+  test('factors are absolute: [2, 2] matches a single ×2 event', () => {
+    const two = predict({ thinEvents: [{ day: 14, areaFactor: 2 }, { day: 21, areaFactor: 2 }] });
+    const one = predict({ thinEvents: [{ day: 14, areaFactor: 2 }] });
+    assert.ok(Math.abs(two.transplantWeightG - one.transplantWeightG) < 1e-9);
   });
 });
 
@@ -213,30 +222,47 @@ describe('throughput-and-sales', () => {
     assert.ok(Math.abs(out.kgPerYear - kgPerWeek * 52) < 1e-6);
     assert.ok(Math.abs(out.yearlySalesDollars - out.kgPerYear * ns.PRICE_PER_KG) < 1e-6);
   });
+
+  test('trays seeded per week = headsPerWeek / cells × backup', () => {
+    const out = predict();
+    const expected = out.headsPerWeek / BASE.nurseryTrayCells * (1 + ns.NURSERY_BACKUP_FRACTION);
+    assert.ok(Math.abs(out.traysSeededPerWeek - expected) < 1e-6);
+  });
+
+  test('trays by nursery week scale with the thin factor at each week start', () => {
+    const out = predict({
+      nurseryDays: 36,
+      thinEvents: [{ day: 22, areaFactor: 2 }, { day: 29, areaFactor: 5 }],
+    });
+    assert.deepEqual(out.traysByNurseryWeek.map(w => w.week), [1, 2, 3, 4, 5]);
+    const factors = out.traysByNurseryWeek.map(w => w.trays / out.traysSeededPerWeek);
+    assert.deepEqual(factors, [1, 1, 1, 2, 5]);
+  });
 });
 
 // ─── nursery-tray-config + trays-at-a-time ───────────────────
 describe('nursery-tray-config', () => {
-  test('trays at a time = heads/day × nurseryDays / cells (no thinning)', () => {
-    const out = predict({ thinning: false, thinDay: null });
-    const expected = (out.headsPerWeek / 7) * BASE.nurseryDays / BASE.nurseryTrayCells;
+  test('trays at a time = heads/day × nurseryDays / cells × backup (no thin)', () => {
+    const out = predict({ thinEvents: [] });
+    const expected = (out.headsPerWeek / 7) * BASE.nurseryDays / BASE.nurseryTrayCells
+      * (1 + ns.NURSERY_BACKUP_FRACTION);
     assert.ok(Math.abs(out.traysInNursery - expected) < 1e-6);
   });
 
-  test('checker-thin adds trays — post-thin cohorts occupy 2× trays', () => {
-    const withThin = predict({ thinning: true, thinDay: 21 }).traysInNursery;
-    const without = predict({ thinning: false, thinDay: null }).traysInNursery;
-    assert.ok(withThin > without);
+  test('thin events add trays — re-spaced cohorts occupy areaFactor× trays', () => {
+    const trays = events => predict({ thinEvents: events }).traysInNursery;
+    assert.ok(trays([{ day: 21, areaFactor: 2 }]) > trays([]));
+    assert.ok(trays([{ day: 21, areaFactor: 3 }]) > trays([{ day: 21, areaFactor: 2 }]));
   });
 
   test('coarser tray (18-cell) → fewer trays than 50-cell at equal throughput', () => {
     // Equalize head weight influence by comparing at the same spacing/routine.
-    const t50 = predict({ nurseryTrayCells: 50, thinning: false, thinDay: null }).traysInNursery;
-    const t18 = predict({ nurseryTrayCells: 18, thinning: false, thinDay: null });
+    const t50 = predict({ nurseryTrayCells: 50, thinEvents: [] }).traysInNursery;
+    const t18 = predict({ nurseryTrayCells: 18, thinEvents: [] });
     // 18-cell holds fewer heads/tray → but heads/week differs via head weight;
     // compare tray count per head instead.
     const perHead18 = t18.traysInNursery / (t18.headsPerWeek / 7);
-    assert.ok(perHead18 > (t50 / (predict({ thinning: false, thinDay: null }).headsPerWeek / 7)));
+    assert.ok(perHead18 > (t50 / (predict({ thinEvents: [] }).headsPerWeek / 7)));
   });
 });
 
@@ -247,7 +273,10 @@ describe('input validation', () => {
     assert.throws(() => predict({ laborRoutineKey: 'nope' }));
     assert.throws(() => predict({ nurseryTrayCells: 999 }));
   });
-  test('thinDay outside [1, nurseryDays] throws when thinning', () => {
-    assert.throws(() => predict({ thinning: true, thinDay: 99 }));
+  test('thin event outside [1, nurseryDays], non-ascending, or shrinking throws', () => {
+    assert.throws(() => predict({ thinEvents: [{ day: 99, areaFactor: 2 }] }));
+    assert.throws(() => predict({ thinEvents: [{ day: 21, areaFactor: 2 }, { day: 14, areaFactor: 3 }] }));
+    assert.throws(() => predict({ thinEvents: [{ day: 14, areaFactor: 3 }, { day: 21, areaFactor: 2 }] }));
+    assert.throws(() => predict({ thinEvents: [{ day: 14, areaFactor: 0.5 }] }));
   });
 });

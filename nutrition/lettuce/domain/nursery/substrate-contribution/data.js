@@ -3,9 +3,9 @@
 // Spec:        nutrition/lettuce/domain/nursery/substrate-contribution/spec.md
 // Derivation:  nutrition/lettuce/domain/nursery/substrate-contribution/derivation.md
 //
-// Salanova nursery — 50-cell trays in Berger OM2 peat-based organic mix
-// front-loaded with feather meal at potting (current convention: 2 cups
-// feather meal per OM2 sac → ~9 g feather meal per tray).
+// Salanova nursery — trays of 32 × 2.5"-deep pots in Berger OM2 peat-based
+// organic mix front-loaded with feather meal at potting (current convention:
+// 2 cups feather meal per OM2 sac → ~34 g feather meal per tray).
 //
 // This file owns the per-tray weekly per-element NUTRIENT RELEASE math:
 //   release = (OM2 starter charge × release curve) + (feather meal × N % × mineralization × release curve)
@@ -73,27 +73,29 @@ const FEATHER_MEAL_RELEASE_CURVE_BY_WEEK = [0.10, 0.25, 0.25, 0.25, 0.15];
 
 // ─── Tray geometry & front-load convention ─────────────────────────────
 //
-// 50-cell tray, ~33 mL of substrate per cell × 50 cells = 1.65 L/tray.
-// Cert 3 — measured by operator; OM2 sac (50 L) fills ~30 trays.
-const NURSERY_TRAY_SUBSTRATE_VOL_L = 1.65;
+// 2.5"-deep pot, ~200 mL of substrate per pot × 32 pots = 6.4 L/tray.
+// Cert 2 — pot volume pending brim measure; OM2 sac (50 L) fills ~7.8 trays.
+const NURSERY_TRAY_SUBSTRATE_VOL_L = 6.4;
 
 // Convention: 2 cups feather meal per 50 L OM2 sac.
 //   2 cups ≈ 480 mL × ~0.55 g/mL bulk density ≈ 264 g per sac
-//   1 sac fills ~30 trays at 1.65 L/tray
-//   → 264 / 30 ≈ 8.8 g/tray  →  rounded to 9 g/tray
+//   1 sac fills ~7.8 trays at 6.4 L/tray
+//   → 264 / 7.8 ≈ 33.8 g/tray  →  rounded to 34 g/tray
 // Cert 3 — computed from operator convention; bulk density assumption
 // 0.5-0.6 g/mL is the only soft lever.
-const NURSERY_FEATHER_MEAL_DEFAULT_G_PER_TRAY = 9;
+const NURSERY_FEATHER_MEAL_DEFAULT_G_PER_TRAY = 34;
 
 // ─── Hard operational ceiling — germination protection ─────────────────
 //
-// Salanova germinates poorly in salty substrate. Empirical ceiling sits
-// at 9 g feather meal per tray — going higher risks germination loss
-// (per Décembre operator note + Sonneveld guidance for peat substrate
-// salt sensitivity). The model EXPOSES this so the consumer page can
-// clamp the input slider; feather-meal-front-load-cap asserts the cap stays ≤ 9.
+// Salanova germinates poorly in salty substrate. Empirical ceiling was
+// observed at 9 g per 1.65 L 50-cell tray = 5.45 g/L substrate — the
+// binding quantity is salt density per litre, so the pot-format tray cap
+// is 5.45 g/L × 6.4 L ≈ 35 g/tray (per Décembre operator note + Sonneveld
+// guidance for peat substrate salt sensitivity). The model EXPOSES this so
+// the consumer page can clamp the input slider; feather-meal-front-load-cap
+// asserts the cap stays ≤ 35.
 const LIMITS = {
-  maxFeatherMealPerTrayG: 9,  // cert 4 — operational ceiling, not a soft target
+  maxFeatherMealPerTrayG: 35,  // cert 3 — 5.45 g/L field ceiling rescaled to 6.4 L tray; not re-observed at pot format
 };
 
 // Per-element efficiency for the Efficacité column (efficacite-column-capability) — share of

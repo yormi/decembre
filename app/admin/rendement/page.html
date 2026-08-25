@@ -1,12 +1,13 @@
   <!-- ═══════════════ RENDEMENT PAGE (admin) ═══════════════ -->
   <!-- Salanova full-cycle yield model. Spec: app/admin/rendement/user-stories.md.
-       Six operator inputs (field spacing · labor routine · nursery duration ·
-       nursery tray · thinning · nursery conditions) → yearly sales, kg/week,
-       trays in nursery, heads per bed, harvest weight, + full-cycle growth chart. Engine: window.YieldRange.predictYield
-       (yield-range/domain/spec.md, carbon-balance). Inputs auto-derived from
-       FIELD_SPACING_CONFIGS / LABOR_ROUTINES / NURSERY_TRAY_CELLS — no
-       option text hardcoded here. Wired via setPage('rendement') →
-       buildYieldRange() in app/admin/rendement/logic.js. -->
+       Four operator inputs (field spacing · labor routine · thin week 4 ·
+       thin week 5) → yearly sales, kg/week, trays in nursery, heads per bed,
+       harvest weight, + full-cycle growth chart. Engine:
+       window.YieldRange.predictYield (yield-range/domain/spec.md,
+       carbon-balance). Spacing/routine options auto-derived from
+       FIELD_SPACING_CONFIGS / LABOR_ROUTINES — no option text hardcoded here.
+       Wired via setPage('rendement') → buildYieldRange() in
+       app/admin/rendement/logic.js. -->
   <div id="page-rendement-content" class="page-content" style="display:none;">
 
     <!-- Three cards side by side on desktop (see page.css .yr-row), stacked
@@ -19,20 +20,18 @@
       <div id="yr-inputs"></div>
     </div>
 
-    <!-- Headline outputs: yearly sales · kg/week · trays in nursery · heads per
-         bed, plus a secondary row (transplant + harvest weight with senescence
-         badge, peak). Rendered by renderYieldRange. No values hardcoded. -->
+    <!-- Headline outputs: yearly sales · kg/week · trays in nursery · trays
+         seeded/week · heads per bed, plus a secondary row (transplant +
+         harvest weight) and a trays-per-nursery-week table. Rendered by
+         renderYieldRange. No values hardcoded. -->
     <div class="card">
       <div class="card-title">Rendement</div>
       <div id="yr-results"></div>
     </div>
 
-    <!-- Growth chart with a two-view toggle (default full cycle):
-         · Plein cycle — full-cycle nursery→field trajectory, four thin timings
-           overlaid (no thin · 2/3/4 weeks), transplant marker, field-cap line.
-           From window.YieldRange.predictYield.
-         · Éclaircissage — four checker-thin timings overlaid (no thin · 2/3/4
-           weeks), packed-cap plateau. From window.YieldRange.seedlingTrajectory. -->
+    <!-- Growth chart: full-cycle nursery→field trajectory, selected thin
+         factors vs the default plan (×2 S4 · ×5 S5), transplant marker,
+         field-cap line. From window.YieldRange.predictYield. -->
     <div class="card">
       <div class="card-title">Trajectoire de croissance</div>
       <div id="yr-chart-container" style="width:100%; overflow:hidden;"></div>

@@ -1,3 +1,91 @@
+## 2026-08-23 — review of nutrition/lettuce/domain/nursery/substrate-contribution/derivation.md (HEAD working-tree diff)
+
+Scope: tray-format rescale 50-cell 1.65 L → 32-pot 6.4 L. Default front-load 9 → 34 g/tray, cap 9 → 35 g via new salt-per-litre basis (5.45 g/L), sensitivity band redone (`feather-meal-front-load-cap`).
+
+### Blindspots
+
+**B1 — Per-plant supply jumped ×6; demand side never re-checked** · `PENDING`
+- **What the spec assumes:** rescaling geometry per litre keeps the model consistent — salt density constant, so all is well.
+- **What might be ignored:** per-plant feather-meal N goes 17.6 → ~104 mg (877.5 mg over 50 cells → 3 315 mg over 32 pots). Substrate per plant ×6 too. The bilan credits this against per-tray demand, but nothing in the diff shows the plant-needs / luxury-cap side was re-run at the new numbers. Per [[hydroponic-cap-active-channels]], frontload counts in the active-channel sum.
+- **How to test it:** recompute nursery N balance per plant at 34 g vs hydroponic seedling supply; check the Bilan card for luxury over-supply at week 2-4 peak mineralization.
+- **Cost if real:** medium — luxury N, soft transplants, wasted input.
+
+**B2 — Stale cohort row left in Sources table (flag-don't-fix)** · `PENDING`
+- **What the spec assumes:** "50 trays/cohort (≈ 2 500 plants), surface ≈ 7.4 m²" — 50-cell arithmetic.
+- **What might be ignored:** 32 pots × 50 trays = 1 600 plants; the tray row was rescaled, the cohort row wasn't. Surface likely stale too. Anti-vestigial: amend in place.
+- **How to test it:** arithmetic; also check whether "50 trays/cohort" itself survives — cohort E was 3 trays on a bench.
+- **Cost if real:** low — doc drift, but it feeds any per-cohort roll-up downstream.
+
+**B3 — Default sits 3 % under a hard germination bound whose pot-format validity is untested** · `PENDING`
+- **What the spec assumes:** salt g/L is the binding mechanism, so 5.45 g/L transfers from 50-cell to 2.5" pots.
+- **What might be ignored:** the ammonia/salt pulse is local to the seed zone; a 2.5"-deep pot puts the seed atop 200 mL vs 33 mL — same g/L, different seed-zone exposure profile. If the pot-format threshold is even 10 % lower, the *default convention itself* (34 g) crosses it. Density 0.60 already clamps.
+- **How to test it:** cohort E (32-pot, seeded 2026-07-06, presumably 2-cups convention ≈ 34 g) — pull its germination rate. Free, already-run observation.
+- **Cost if real:** high — germination loss on every pot cohort at the standard convention.
+
+### Complexity
+
+Nothing added — pure value rescale, no new constants or branches. No findings.
+
+### Cert defense
+
+**D1 — Cap = 35 g at pot format (stated cert 3)** · `PENDING`
+- **Specialist's defense:** per-litre ceiling observed at 9 g / 1.65 L on 50-cell; salt density is the binding quantity; rescale is mechanical.
+- **What I'd need to accept cert ≥ 3:** evidence the 9 g threshold was an observed *failure* boundary, not "the 2-cups convention never failed". Cap has now tracked the convention twice (9 vs 9, 35 vs 34) — smells back-derived from the default ([[refit-not-relabel]]). A convention that works is a lower bound on the safe zone, not a ceiling. One pot-format germination read (cohort E) at ~34 g would anchor it.
+- **My read:** cert 2 at pot format until cohort E germination confirms; the derivation's own "not re-observed at pot format" concedes this.
+
+### Verdict
+
+Land after addressing B2 (stale row) and D1 (cert honesty); B3 resolves free via cohort E germination data — **Guillaume call needed** on that read. B1 goes to the specialist for a demand-side recompute.
+
+## 2026-08-23 — review of nutrition/lettuce/domain/nursery/substrate-contribution/derivation.md (HEAD working-tree diff)
+
+Scope: tray format migrated 50-cell/1.65 L → 32 × 2.5" pots/6.4 L. Default front-load 9 → 34 g/tray, cap (`feather-meal-front-load-cap`) 9 → 35 g on a salt-per-litre basis (5.45 g/L), mineralizable N 877.5 → 3315 mg/tray, refinement trigger repointed to pot-volume brim measure.
+
+### Blindspots
+
+**B1 — Per-plant N supply jumped ~6×; nobody re-checked it against seedling demand** · `PENDING`
+
+- **What the spec assumes:** the 2-cups-per-sac convention transfers to the pot format because feather meal per litre of substrate is unchanged (5.28 g/L both formats).
+
+- **What might be ignored:** substrate per plant went 33 → 200 mL, so N per plant goes ~0.18 → ~1.06 g feather meal (~6×), and weekly release ~3.5 → ~20.7 mg N/plant/wk. Concentration held; per-plant dose didn't. If the old default was roughly demand-matched per plant, the new default is 6× luxury N — wasted input at best, soft leggy seedlings + ammonium tissue signature at worst. The derivation rescales the *cap* carefully but carries the *default* on convention alone.
+
+- **How to test it:** recompute against `../plant-needs/` per-tray weekly N demand at 32 plants/tray; or first seedling tissue N on a 34 g pot-format cohort.
+
+- **Cost if real:** medium — nursery N over-supply propagates into the Bilan supply credit (663 mg N/tray/wk) and understates fertigation need post-transplant.
+
+**B2 — Default (34 g) now rides 97 % of an unverified, extrapolated hard cap** · `PENDING`
+
+- **What the spec assumes:** the germination ceiling transfers across formats via salt density per litre, so operating the default 1 g under the rescaled cap is as safe as 9-under-9 was at 50-cell.
+
+- **What might be ignored:** at 50-cell the ceiling was *observed at that format*; at pot format it's a model transfer the derivation itself flags as "not re-observed". If the binding variable is anything other than g/L (mixing homogeneity in a bigger pot, ammonia pulse near seed placement, watering regime per pot), the default itself sits in the loss zone — and the density band's upper end (36.9 g) already clamps, so real-world scooping variance has zero headroom.
+
+- **How to test it:** one 32-pot cohort at 34 g with germination count vs the 50-cell historical rate — cheap, first cohort already in production per changelog.
+
+- **Cost if real:** high — germination loss on a full cohort (≈ 1 600 plants).
+
+**B3 — Stale cohort row: 50 trays ≈ 2 500 plants is 50-cell math** · `PENDING` (doc-hygiene, flag-don't-fix)
+
+- Sources table still says "50 trays/cohort (≈ 2 500 plants), surface ≈ 7.4 m²". At 32 pots/tray, 50 trays = 1 600 plants, and 6.4 L trays almost certainly change footprint. Any per-cohort roll-up (sacs per cohort: now 50/7.8 ≈ 6.4 sacs vs 1.7 before — a real purchasing change) built on this row is wrong.
+
+### Complexity
+
+Nothing added — the diff is a rescale, no new constants or branches. No finding.
+
+### Cert defense
+
+**D1 — `feather-meal-front-load-cap` = 35 g (stated cert 3)** · `PENDING`
+
+- **Specialist's defense:** binding quantity is salt density per litre; 9 g / 1.65 L observation → 5.45 g/L → × 6.4 L = 35 g. Sonneveld & Voogt peat salt guidance is concentration-based, which supports the per-litre physics.
+
+- **What I'd need to accept cert ≥ 3:** the cert scale ties 3 to Décembre-like observation. The observation is single-format; the transfer is a mechanism assumption. Physics-first read (per pre-rank-basis-conflicts): per-litre is the right first-order basis — osmotic/EC stress is concentration — so the *rescale method* is sound, but a 6× extrapolation in absolute dose on one anchor point is cert-2 territory until one pot-format germination observation lands.
+
+- **My read:** cert 2 at pot format, back to 3 (and honestly 4) after the first 34 g cohort germinates at historical rate. The derivation already half-admits this ("per-litre ceiling not re-observed at pot format") — the caveat and the number disagree.
+
+### Verdict
+
+Land after addressing B1 and D1 — the rescale mechanics are clean, but the default inherits a convention that was never per-plant-justified, and the cap cert overstates a single-anchor extrapolation. B2 resolves itself with the first cohort's germination count.
+
+
 ## 2026-07-12 — review of nutrition/tomato/domain/foliar/model/derivation.md (HEAD working-tree diff)
 
 No-op pass — diff repoints the Implementation-map table + include-order line to the `domain/foliar/model/` layout (`calc.js`→`recipe.js`, `model.js`→`contribution.js`, adds `computeFoliarRecipeForGap`/`computeFoliarStrategy` to the owner cell). No constant, dose, cert, stage, formula, or derivation logic moved. Body carries no stale old-layout path (grep clean) — fully migrated, no doc-hygiene flag, unlike the fertigation sibling below.
@@ -1011,3 +1099,110 @@ Scope: `INITIAL_DRY_MASS_G = 0.009` introduced (fitted); `NURSERY_STRESS_RUE = 0
 
 ### Verdict
 Land after B1 — the ceiling-as-supply shortcut is now a real behaviour change (nursery out-lights the field by 47%, unbounded by season) and it is the only finding here that moves an operator number today. B3 + D1 are one lane: the wk3+ onset day is the load-bearing unknown and the three-point fit already argues against day 15. B2 redirects the pending measurement before it is taken. C1 and D2 are hygiene. The rebase itself is right and the disclosure standard in this file is unusually honest — the findings are about where the honesty stops (`spec.md` outputs, B4) and where an argument is doing a measurement's job. · `PENDING`
+
+
+## 2026-08-16 — review of yield-range/domain/derivation.md (HEAD working-tree diff)
+
+Scope: senescence decline → plateau (Guillaume decision 2026-08-16): `SENESCENCE_DECLINE_RATE` deleted, `−DECLINE·W` biomass loss replaced by net-0 stall past `SENESCENCE_ONSET_DAYS`; phase-sensitivity caveat and oscillation paragraph deleted (correctly — no shrink means no re-opening); refinement trigger reworded to plateau-vs-decline. Spec slugs touched: `senescence-past-closure`, `carbon-balance-growth` (net_dry form), intro growth-law line.
+
+### Blindspots
+
+**B1 — the model now says holding a bed is free, and the only field datum on record says the opposite** · `PENDING`
+- **What the spec assumes:** `senescence-past-closure` states "A longer labor routine therefore never *loses* yield — a bed held past closure just stops accumulating." The plateau is defended by the all-inputs-at-optimum framing: salt driven to safe, heat/bolting not modeled.
+- **What might be ignored:** the one held-cohort observation the project owns (spring, 16 g → 10 g over d28–d35) lost 37% of its mass. The derivation is right that it is confounded (crowding + salt + heat), but "confounded" cuts both ways: it does not establish net-0 any more than it established −0.066/day. In the *field*, a held bed in summer bolts and rots — those inputs are not at optimum by flushing, and the old text's "senescing plant shrinks back" clause acknowledged shrink as real. The operator-facing consequence is direct: the 4-week routine now reads as pure upside on kg/bed (only bedsPerWeek trades off), which could steer routine choice toward over-holding that the field will punish.
+- **How to test it:** the trigger already written — first salt-controlled held cohort weighed serially past closure. Until then, the spec sentence "never loses yield" deserves the same cert-1 flag the onset carries; right now the uncalibrated flag sits on the constant while the strong behavioural claim reads as fact.
+- **Cost if real:** medium-high — routine choice is one of the three inputs the operator actually sets, and a plausible mis-call (hold 4 weeks expecting plateau, get decline + quality loss) costs real season yield.
+
+**B2 — `SENESCENCE_ONSET_DAYS = 1.7` is a fossil of the mechanism that was just deleted** · `PENDING`
+- **What the spec assumes:** onset 1.7 carries over unchanged; the derivation keeps only the historical note "retuned to 1.7 when closure moved to LAI ≥ 3".
+- **What might be ignored:** 1.7 was tuned for one purpose the diff explicitly removed — "keep the labor-routine tradeoff *directional* (hold longer → lose more)" under the decline form, tangled with the oscillation phase. Under a plateau there is no oscillation and no directionality to preserve; the constant's entire justification is gone, but the two-significant-figure value survives, which will read as fitted precision. Under plateau its only effect is 1.7 extra gain-days after closure.
+- **How to test it:** recompute `harvestWeightG` for the three routines at onset 0 vs 1.7 vs 5. If the spread is inside the volume-cap clamp / smaller than the model's stated 1.34×/0.66× fit spread, the specific value is inert and should say so.
+- **Cost if real:** low — but a stale-precision constant is exactly what [[refit-not-relabel]] exists for; cert 1 is honest, the misleading part is `1.7` rather than a round placeholder with its tuning story retired to `learnings/`.
+
+### Complexity
+
+**C1 — if B2's sweep shows onset is inert, the plateau needs no onset constant at all** · `PENDING`
+- **Specialist added:** kept `SENESCENCE_ONSET_DAYS` + `daysClosed` counting machinery under the new plateau form.
+- **Test:** changes a team action only if 0-vs-1.7 days of post-closure grace moves a routine's harvest weight visibly. Near the cap it likely cannot — the clamp eats it.
+- **MVP version:** stall at closure (`onset = 0`), delete the constant; the refinement trigger becomes "does a plateau even have a lag" when the held-cohort data arrives.
+- **Why it might stay:** if the 2-week routine closes right at window end, a 0-vs-1.7 onset could flip whether it stalls at all — run the sweep before cutting.
+
+### Cert defense
+
+**D1 — plateau (net 0) as the modeled mechanism (no cert stated on the form itself)** · `PENDING`
+- **Specialist's defense:** Guillaume decision 2026-08-16; the decline anchor was never clean; salt is driven to safe so the confounded decline shouldn't be modeled.
+- **What I'd need to accept it:** the *choice* between plateau and decline is data-free in both directions and the derivation says so for decline but not for plateau. One line in `derivation.md` stating the plateau form itself is cert 1 (a floor assumption, not a finding), matching the flag already on the onset, and the symmetric trigger is already in place ([[symmetric-refinement-triggers]] satisfied — good).
+- **My read:** decision is Guillaume's and stands; the form just needs its own cert flag so the spec's "never loses yield" doesn't inherit unearned confidence. Same lane as B1.
+
+### Verdict
+Ship as-is mechanically — the plateau is a Guillaume decision, the deletions (rate constant, oscillation caveat, phase-sensitivity block) are exactly the pruning the mechanism change demands, and the refinement trigger is properly symmetric. Queue B1/D1 as one item for Guillaume: the spec's "a longer labor routine never loses yield" is the strongest operator-facing sentence in the file and rests on cert-1 ground the only datum contradicts. B2/C1 are a single cheap sweep (onset 0 vs 1.7) for the specialist. · `PENDING`
+
+
+## 2026-08-23 — review of nutrition/lettuce/domain/nursery/substrate-contribution/derivation.md (HEAD working-tree diff)
+
+Scope: tray-format rebase 50-cell/1.65 L → 32-pot/6.4 L. Default front-load 9 → 34 g, cap 9 → 35 g via per-litre salt-density rescale (5.45 g/L), total mineralizable N 877.5 → 3315 mg/tray, refinement trigger reworded (tray-format change → pot-volume measurement). Spec slug touched: `feather-meal-front-load-cap`.
+
+### Blindspots
+
+**B1 — the operating default now sits at 97 % of a HARD germination bound that was never observed at this format** · `PENDING`
+- **What the spec assumes:** 34 g default, 35 g cap — 3 % headroom. The derivation's own density band (0.50–0.60 g/mL) puts the 2-cups convention at 30.8–36.9 g; the upper half of the *stated input uncertainty* already crosses the cap, and "the slider clamps" is offered as the resolution.
+- **What might be ignored:** the cap is the level where germination *drops* — a failure threshold, not a comfort band. On the old format the same convention landed at 8.8 vs 9 (also ~97 %), which raises the suspicion the "~9 g" ceiling was observed *at* the convention dose rather than above it — a threshold discovered by operating at it. Rebasing carries that zero-margin posture into a format where the ceiling is admitted cert 3, the tray volume is an unmeasured ~200 mL/pot estimate, and per-plant salt load is 6× the observed regime (0.18 → 1.09 g/plant). Three stacked uncertainties (density, pot volume, per-litre transfer) all discharge into 3 % of margin on a cohort-killing bound.
+- **How to test it:** **Guillaume call needed:** were cohorts E/F/G (first 32-pot cohorts, 2026-07) potted at the 2-cups convention? Photos at day 17/24/31 show closed canopy — if yes, germination at ~34 g/tray at pot format is already field-observed and B1 mostly dissolves; if they were potted lighter, the default has never been germination-tested at this format and a one-tray step trial (30/34/38 g) is the cheap test before the next cohort.
+- **Cost if real:** high — a mis-call loses a cohort's germination, not a few percent.
+
+### Complexity
+
+Nothing to cut — the diff is a rescale, no new constants or branches. The pot-volume refinement trigger correctly replaces the retired tray-format one ([[no-vestigial]] respected).
+
+### Cert defense
+
+**D1 — cap 35 g/tray at pot format (stated cert 3)** · `PENDING`
+- **Specialist's defense:** binding quantity is salt density per litre of substrate; 9 g / 1.65 L field ceiling rescales to 5.45 g/L × 6.4 L ≈ 35 g. Décembre operator note + Sonneveld & Voogt converge. Flagged "not re-observed at pot format".
+- **What I'd need to accept cert ≥ 3:** the per-litre basis is the physics-first choice and I'd pre-rank it above per-plant or per-cell ([[pre-rank-basis-conflicts]]) — mineralization ammonia concentration in the wetted zone scales with substrate mass, which scales with volume. But the rescale rides a 6× extrapolation in per-plant dose AND a volume term (6.4 L) that is itself an unmeasured estimate the derivation's own trigger promises to replace. A cert-3 ceiling derived by multiplying a cert-3 per-litre value by an uncertified volume estimate is cert 2 arithmetic, not cert 3. One germination-clean cohort at ~34 g at pot format restores 3 (see B1 — may already exist).
+- **My read:** cert 2 until cohort E/F/G front-load rate is confirmed or a step trial runs; if E/F/G were at convention dose, 3 is earned and the flag should cite them.
+
+### Verdict
+Ship as-is numerically — the rescale is the right physics and the geometry arithmetic checks (663 mg N/tray/wk avg ≈ 59 % of the plant-needs tray demand at defaults, no supply blowout). Queue B1/D1 as one item: a single question to Guillaume (front-load rate of the July 32-pot cohorts) either closes both or converts them into a cheap step trial before the next potting. · `PENDING`
+
+## 2026-08-23 — review of nutrition/lettuce/domain/nursery/substrate-contribution/derivation.md (working-tree diff vs HEAD)
+
+Scope: tray-format migration 50-cell/1.65 L → 32-pot/6.4 L. Default front-load 9 g → 34 g, cap (`feather-meal-front-load-cap`) 9 g → 35 g via per-litre salt-density rescale, total-N block 877.5 → 3315 mg/tray, refinement trigger swapped (tray-format-change → pot-volume-measured).
+
+### Blindspots
+
+**B1 — cohort row left stale: "50 trays ≈ 2 500 plants" is 50-cell math in a 32-pot file** · `PENDING`
+- **What the spec assumes:** Sources table updated the tray-format row but kept "Cohort default: 50 trays/cohort (≈ 2 500 plants), surface ≈ 7.4 m²" untouched.
+- **What might be ignored:** 50 trays × 32 pots = 1 600 plants, not 2 500 — and the real cohorts on record (2026-07-22 photos) are 3-tray benches, not 50. Anything reading the cohort row for per-cohort scaling (Bilan cohort totals, sac-count planning: 50 trays now consume 6.4 servings of a 50 L sac vs 1.65 before → sac budget ×3.9) inherits a number from the retired format. Surface 7.4 m² also unverified for the pot footprint.
+- **How to test it:** recompute the row from the pot format + actual bench counts; grep downstream consumers for the 2 500 / 7.4 figures.
+- **Cost if real:** low-medium — wrong sac purchasing and per-cohort Bilan totals; caught at first potting, but the file contradicts itself today.
+
+**B2 — default 34 g sits 1 g under a hard germination cap, with input uncertainty wider than the margin** · `PENDING`
+- **What the spec assumes:** the 2-cups-per-sac convention carries over; density band 0.50-0.60 gives 30.8-36.9 g/tray; the slider clamps the top end at 35.
+- **What might be ignored:** the clamp protects the *model input*, not the bench. The team doses by cups-per-sac, not grams-per-tray — if true flake density is 0.60, every tray gets ~37 g of real feather meal while the model reports a clamped 35 and the Bilan credits N for mass that (per the cap's own mechanism) is suppressing germination. Under the old format the density band lived comfortably inside the cap; the rescale silently moved routine practice onto the cap edge. Pot volume (~200 mL, unmeasured) pushes the same direction: if pots hold 180 mL, trays/sac rises and per-tray grams fall — but if 220 mL, the default itself crosses 35.
+- **How to test it:** one scale reading — weigh 2 cups of the actual feather meal (kills the 0.50-0.60 band); one brim-fill of a pot with water into a measuring cup (kills the 200 mL estimate). Both < 5 minutes at next potting.
+- **Cost if real:** medium — germination loss on entire cohorts is the exact failure mode the cap exists to prevent, and the default now has no headroom against it.
+
+**B3 — per-plant N supply jumped ~6× and the demand side may not have moved with it** · `PENDING`
+- **What the spec assumes:** rescale is supply-side only; gap chain (`gap-chain-order`) handles whatever the substrate now credits.
+- **What might be ignored:** feather-meal N went 17.5 → 104 mg/plant over the cycle (877.5/50 vs 3315/32), plus OM2 starter ×3.9 per tray on 36 % fewer plants. If nursery `plant-needs` per-tray demand still assumes 50 plants/tray — or its per-plant demand was calibrated on 50-cell seedlings — Block 2 now shows N fully covered and fertigation-N sizes to ~0 on a supply number that is cert 2-3 placeholder stack. The old format never stress-tested that branch because substrate N was small against demand.
+- **How to test it:** open the Semis Bilan at defaults and check whether N's manque sortant flipped from 🔴/🟡 to ✅ purely from this diff; confirm `plant-needs` tray basis is 32.
+- **Cost if real:** medium — an N-starved nursery cycle if the placeholder starter/mineralization stack overstates supply and fertigation stands down.
+
+### Complexity
+
+Nothing added — the diff is a parameter rescale on existing structure; the retired trigger was correctly swapped, not accumulated. No finding.
+
+### Cert defense
+
+**D1 — cap 35 g/tray via per-litre rescale (stated cert 3)** · `PENDING`
+- **Specialist's defense:** binding quantity is salt density per litre (5.45 g/L from the 9 g / 1.65 L field ceiling); Sonneveld & Voogt converge; per-litre ceiling not re-observed at pot format — flagged in-file.
+- **What I'd need to accept cert ≥ 3:** (a) evidence the 9 g figure was an *observed germination failure*, not the old 2-cups convention default read back as a ceiling — under the old derivation 9 g was simultaneously the convention default AND the cap, which smells like [[refit-not-relabel]] circularity: where is the operator note, and at what rate did germination actually drop? (b) an argument the per-litre basis survives the geometry change — a 33 mL cell puts the seed in intimate contact with its whole substrate volume; a 200 mL × 2.5"-deep pot stratifies (seed at surface, week-1 ammonia pulse distributed through 6× the volume with different surface-evaporation concentration). Per-litre may even be conservative here, but "same g/L therefore same risk" is a transferred mechanism, not an observation.
+- **My read:** cert 2 until either the original 9 g observation is documented as a real failure event or one pot-format germination check exists. **Guillaume call needed:** does the operator note behind the 9 g ceiling describe an actual germination drop, or was 9 g just the historical standard rate?
+
+**D2 — per-tray geometry 34 g (stated cert 3) rests on two cert-2 inputs** · `PENDING`
+- **Specialist's defense:** arithmetic from 2 cups/sac, density 0.55 (cert 2), pot volume ~200 mL (estimate, own refinement trigger pending).
+- **What I'd need to accept cert ≥ 3:** the product of a cert-2 density and an unmeasured volume shouldn't outrank its weakest input. One direct measurement (weigh 2 cups; count trays actually filled per sac at next potting) makes this cert 4 for free.
+- **My read:** cert 2 today; same 5-minute measurements as B2 resolve both.
+
+### Verdict
+Land after B1 (stale cohort row — in-file contradiction, specialist fix) and the B2/D2 measurements (one scale + one pot fill at next potting — cheapest cert lift available). Queue D1 to Guillaume: whether the 9 g ceiling was an observed failure decides if the 35 g cap is field-anchored or convention echoed back as evidence. B3 is one Bilan look-over for the specialist. · `PENDING`

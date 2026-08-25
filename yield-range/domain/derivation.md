@@ -285,52 +285,38 @@ Closure = the step where `LAI ≥ 3` (`fi ≥ 0.88`) — the canopy fully shades
 ground and growth is light-limited. (The old cliff bound at `LAI = 1/k ≈ 1.4`,
 an artifact of the `min()`; the Beer–Lambert form lets closure sit at the
 physical LAI≈3 the domain names.) `daysClosed` counts consecutive closed days
-and resets when the canopy re-opens — a checker-thin or transplant
-doubles/swaps `A_ground` and drops `LAI` back below 3, and a senescing plant
-shrinks back below the closure LAI. So thinning *early* (before the plant
-outgrows even the doubled area) delays senescence; thinning a plant already
-large past closure does not rescue it.
+and resets when the canopy re-opens — a thin event or transplant
+multiplies/swaps `A_ground` and drops `LAI` back below 3. So thinning *early*
+(before the plant outgrows even the widened area) delays the stall; thinning
+a plant already large past closure does not rescue it.
 
-`SENESCENCE_ONSET_DAYS = 1.7` and `SENESCENCE_DECLINE_RATE = 0.04 /day` —
-**UNCALIBRATED, cert 1.**
+`SENESCENCE_ONSET_DAYS = 1.7` — **UNCALIBRATED, cert 1.**
 
-Mechanism modeled: **crowding self-shading only.** Once the canopy holds
-`LAI ≥ 3` long enough, its lower/inner leaves sit below the light compensation
-point, respire net-negative, senesce and die. Loose-leaf Salanova is picked
-leaf-by-leaf, so each dead leaf is lost sellable mass — the `−DECLINE·W`
-biomass-loss form is correct for this product (not a whole-head marketability
-haircut). Crowding recurs in the field (a held bed self-shades the same way),
-so this is the durable driver the labor-routine tradeoff needs.
+Mechanism modeled: **crowding self-shading only, as a STALL.** Once the
+canopy holds `LAI ≥ 3` long enough, its lower/inner leaves sit below the
+light compensation point, respire net-negative and senesce; the modeled net
+effect is new-leaf gain offset by lower-leaf loss → net 0, a plateau
+(Guillaume decision 2026-08-16, replacing the earlier `−DECLINE·W` biomass
+loss). The head never loses mass in the model; a bed held past closure just
+stops accumulating.
 
 Salt is deliberately **excluded**: it is being driven to safe (nursery
-salt-flush, CE cap 1.0), so it is an input at optimum, not a modeled decline.
+salt-flush, CE cap 1.0), so it is an input at optimum, not a modeled term.
 
-Anchor is an **upper bound, not a clean fit.** The only decline datum is the
-spring cohort: 16 g → 10 g over d28–d35 = ~−0.066/day — but that is crowding
-**+ salt (Na 3166 ppm, leachate EC 5+) + heat/bolting** combined. With no
-clean-salt cohort to decompose it, the crowding-only rate is unknown, bounded
-above by 0.066/day. `0.04` is held as a placeholder below that ceiling.
+The old decline anchor (spring cohort 16 g → 10 g over d28–d35, ~−0.066/day)
+was crowding **+ salt + heat/bolting** combined — never a clean crowding
+datum, one reason the decline form was dropped.
 
-Onset was `7` under the old `min()` cliff (closure at effective LAI≈1.4).
-Moving closure to the physical `LAI ≥ 3` pushes field closure to the very end
-of the 2-week window, so the plant then oscillates around LAI 3 (senescence
-shrink re-opens the canopy, growth resumes). Onset was retuned `7 → 1.7` to
-keep the labor-routine tradeoff *directional* (hold longer → lose more).
-
-**Caveat — the strict 2wk<3wk<4wk ordering is now phase-sensitive.** With
-closure at the end of the 2-week window and the LAI-3 oscillation, the
-directional signal is robust only for *over-holding past the closure peak*
-(4wk < 3wk). Whether the 2-week harvest reads below the 3-week one depends on
-where the oscillation phase falls, which `1.7` tunes. Together onset + rate
-keep the tradeoff directional, not quantitative.
+Onset was `7` under the old `min()` cliff (closure at effective LAI≈1.4);
+retuned to `1.7` when closure moved to the physical `LAI ≥ 3`.
 
 **Refinement triggers:**
 
 - First **salt-controlled** held cohort (nursery 50-cell or field bed) weighed
-  serially past closure → sets the crowding-only `SENESCENCE_DECLINE_RATE` and
-  `SENESCENCE_ONSET_DAYS`, replacing the salt-contaminated upper bound.
+  serially past closure → tests plateau-vs-decline and sets
+  `SENESCENCE_ONSET_DAYS`.
 - First field cohort at harvest vs `harvestWeightG` at the operational spacing
-  + routine → cross-checks the rate.
+  + routine → cross-checks the ceiling.
 
 ---
 

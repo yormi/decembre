@@ -23,11 +23,6 @@
         <span class="param-label">Dosatron</span>
         <span class="param-value">2%</span>
       </div>
-      <div class="card-title" style="margin-bottom:10px; margin-top:14px;">Recette</div>
-      <div class="stage-selector" style="grid-template-columns:1fr 1fr;">
-        <button class="stage-btn" id="fert-recipe-nutrient" onclick="setFertRecipe('nutrient')"><span class="stage-label">Nutriments</span></button>
-        <button class="stage-btn" id="fert-recipe-rootfix" onclick="setFertRecipe('rootfix')"><span class="stage-label">Correction racinaire</span></button>
-      </div>
       <div id="fert-stage-block" style="font-size:12px; color:var(--text-muted); line-height:1.5; margin-top:14px;">
         <div class="card-title" style="margin-bottom:10px;">Stade de croissance</div>
         <div class="stage-selector">
@@ -139,7 +134,14 @@
       </div>
 
       <div class="card">
-        <div class="card-title">Nombre de plateaux</div>
+        <div class="card-title">À faire</div>
+        <div style="display:flex; flex-wrap:wrap; gap:6px; justify-content:center; margin-bottom:14px;">
+          <span style="font-size:12px; font-weight:600; padding:4px 10px; border-radius:12px; background:var(--accent-active-light); border:1px solid var(--accent-active-border);">Mardi</span>
+          <span style="font-size:12px; font-weight:600; padding:4px 10px; border-radius:12px; background:var(--accent-active-light); border:1px solid var(--accent-active-border);">Mercredi</span>
+          <span style="font-size:12px; font-weight:600; padding:4px 10px; border-radius:12px; background:var(--accent-active-light); border:1px solid var(--accent-active-border);">Vendredi</span>
+          <span style="font-size:12px; font-weight:600; padding:4px 10px; border-radius:12px; background:var(--accent-active-light); border:1px solid var(--accent-active-border);">Samedi</span>
+          <span style="font-size:12px; font-weight:600; padding:4px 10px; border-radius:12px; background:var(--accent-active-light); border:1px solid var(--accent-active-border);">Dimanche</span>
+        </div>
         <div style="display:flex; justify-content:center;">
           <div style="width:140px;">
             <input type="number" id="tray-count" value="75" min="1" max="200" oninput="recalcNursery()" style="width:100%; padding:12px 14px; border:1.5px solid var(--border); border-radius:var(--radius-sm); font-family:'DM Mono',monospace; font-size:18px; font-weight:600; background:var(--input-bg); color:var(--text); text-align:center; -webkit-appearance:none;">
@@ -149,36 +151,88 @@
       </div>
 
       <div class="card">
-        <div class="card-title">Recette de la semaine</div>
+        <div class="card-title">Recette de la semaine — par arrosage</div>
         <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:8px;">
           <div style="background:var(--accent-active-light); border:1.5px solid var(--accent-active-border); border-radius:var(--radius-sm); padding:14px 10px; text-align:center;">
             <div style="font-size:20px; margin-bottom:6px;">💧</div>
             <div style="font-size:10px; font-weight:600; text-transform:uppercase; letter-spacing:1.5px; color:var(--text-muted); margin-bottom:6px;">Eau</div>
-            <div style="font-family:'DM Mono',monospace; font-size:20px; font-weight:700; color:var(--text);" id="out-water">94</div>
+            <div style="font-family:'DM Mono',monospace; font-size:20px; font-weight:700; color:var(--text);" id="out-water">150</div>
             <div style="font-family:'DM Mono',monospace; font-size:12px; color:var(--text-muted); margin-top:2px;">litres</div>
+          </div>
+          <div style="background:var(--accent-active-light); border:1.5px solid var(--accent-active-border); border-radius:var(--radius-sm); padding:14px 10px; text-align:center;">
+            <div style="font-size:20px; margin-bottom:6px;">🤍</div>
+            <div style="font-size:10px; font-weight:600; text-transform:uppercase; letter-spacing:1.5px; color:var(--text-muted); margin-bottom:6px;">Gypse</div>
+            <div style="font-family:'DM Mono',monospace; font-size:20px; font-weight:700; color:var(--text);" id="out-gypsum">21</div>
+            <div style="font-family:'DM Mono',monospace; font-size:12px; color:var(--text-muted); margin-top:2px;">g — dissoudre en premier, brasser</div>
           </div>
           <div style="background:var(--accent-active-light); border:1.5px solid var(--accent-active-border); border-radius:var(--radius-sm); padding:14px 10px; text-align:center;">
             <div style="font-size:20px; margin-bottom:6px;">🦀</div>
             <div style="font-size:10px; font-weight:600; text-transform:uppercase; letter-spacing:1.5px; color:var(--text-muted); margin-bottom:6px;">Océan 15-1-1</div>
-            <div style="font-family:'DM Mono',monospace; font-size:20px; font-weight:700; color:var(--text);" id="out-ocean">190</div>
+            <div style="font-family:'DM Mono',monospace; font-size:20px; font-weight:700; color:var(--text);" id="out-ocean">44</div>
             <div style="font-family:'DM Mono',monospace; font-size:12px; color:var(--text-muted); margin-top:2px;">g</div>
           </div>
           <div style="background:var(--accent-active-light); border:1.5px solid var(--accent-active-border); border-radius:var(--radius-sm); padding:14px 10px; text-align:center;">
             <div style="font-size:20px; margin-bottom:6px;">🐟</div>
             <div style="font-size:10px; font-weight:600; text-transform:uppercase; letter-spacing:1.5px; color:var(--text-muted); margin-bottom:6px;">Poisson</div>
-            <div style="font-family:'DM Mono',monospace; font-size:20px; font-weight:700; color:var(--text);" id="out-fish">140</div>
+            <div style="font-family:'DM Mono',monospace; font-size:20px; font-weight:700; color:var(--text);" id="out-fish">59</div>
             <div style="font-family:'DM Mono',monospace; font-size:12px; color:var(--text-muted); margin-top:2px;">mL</div>
           </div>
           <div style="background:var(--accent-active-light); border:1.5px solid var(--accent-active-border); border-radius:var(--radius-sm); padding:14px 10px; text-align:center;">
-            <div style="font-size:20px; margin-bottom:6px;">🌿</div>
-            <div style="font-size:10px; font-weight:600; text-transform:uppercase; letter-spacing:1.5px; color:var(--text-muted); margin-bottom:6px;">Algue</div>
-            <div style="font-family:'DM Mono',monospace; font-size:20px; font-weight:700; color:var(--text);" id="out-kelp">94</div>
-            <div style="font-family:'DM Mono',monospace; font-size:12px; color:var(--text-muted); margin-top:2px;">mL</div>
+            <div style="font-size:20px; margin-bottom:6px;">🍌</div>
+            <div style="font-size:10px; font-weight:600; text-transform:uppercase; letter-spacing:1.5px; color:var(--text-muted); margin-bottom:6px;">Sulfate de potasse</div>
+            <div style="font-family:'DM Mono',monospace; font-size:20px; font-weight:700; color:var(--text);" id="out-ksulfate">44</div>
+            <div style="font-family:'DM Mono',monospace; font-size:12px; color:var(--text-muted); margin-top:2px;">g</div>
+          </div>
+          <div style="background:var(--accent-active-light); border:1.5px solid var(--accent-active-border); border-radius:var(--radius-sm); padding:14px 10px; text-align:center;">
+            <div style="font-size:20px; margin-bottom:6px;">🧊</div>
+            <div style="font-size:10px; font-weight:600; text-transform:uppercase; letter-spacing:1.5px; color:var(--text-muted); margin-bottom:6px;">Sulfate de magnésium</div>
+            <div style="font-family:'DM Mono',monospace; font-size:20px; font-weight:700; color:var(--text);" id="out-mgsulfate">8.7</div>
+            <div style="font-family:'DM Mono',monospace; font-size:12px; color:var(--text-muted); margin-top:2px;">g</div>
           </div>
           <div style="background:var(--accent-active-light); border:1.5px solid var(--accent-active-border); border-radius:var(--radius-sm); padding:14px 10px; text-align:center;">
             <div style="font-size:20px; margin-bottom:6px;">🩶</div>
             <div style="font-size:10px; font-weight:600; text-transform:uppercase; letter-spacing:1.5px; color:var(--text-muted); margin-bottom:6px;">Sulfate de fer</div>
-            <div style="font-family:'DM Mono',monospace; font-size:20px; font-weight:700; color:var(--text);" id="out-fe">1.4</div>
+            <div style="font-family:'DM Mono',monospace; font-size:20px; font-weight:700; color:var(--text);" id="out-fe">2.3</div>
+            <div style="font-family:'DM Mono',monospace; font-size:12px; color:var(--text-muted); margin-top:2px;">g</div>
+          </div>
+          <div style="background:var(--accent-active-light); border:1.5px solid var(--accent-active-border); border-radius:var(--radius-sm); padding:14px 10px; text-align:center;">
+            <div style="font-size:20px; margin-bottom:6px;">🧪</div>
+            <div style="font-size:10px; font-weight:600; text-transform:uppercase; letter-spacing:1.5px; color:var(--text-muted); margin-bottom:6px;">Stock micros</div>
+            <div style="font-family:'DM Mono',monospace; font-size:20px; font-weight:700; color:var(--text);" id="out-microstock">15</div>
+            <div style="font-family:'DM Mono',monospace; font-size:12px; color:var(--text-muted); margin-top:2px;">mL — agiter la bouteille avant</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Bouteille stock micros</div>
+        <div style="font-size:12px; color:var(--text-muted); margin-bottom:14px;">
+          Préparer 1 bouteille de <strong style="color:var(--text);">1 litre d'eau</strong> avec les 4 sels ci-dessous.
+          Conserver à l'ombre, agiter avant chaque dose. Refaire quand vide.
+        </div>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+          <div style="background:var(--accent-active-light); border:1.5px solid var(--accent-active-border); border-radius:var(--radius-sm); padding:14px 10px; text-align:center;">
+            <div style="font-size:20px; margin-bottom:6px;">🟣</div>
+            <div style="font-size:10px; font-weight:600; text-transform:uppercase; letter-spacing:1.5px; color:var(--text-muted); margin-bottom:6px;">Sulfate de manganèse</div>
+            <div style="font-family:'DM Mono',monospace; font-size:20px; font-weight:700; color:var(--text);">3.3</div>
+            <div style="font-family:'DM Mono',monospace; font-size:12px; color:var(--text-muted); margin-top:2px;">g</div>
+          </div>
+          <div style="background:var(--accent-active-light); border:1.5px solid var(--accent-active-border); border-radius:var(--radius-sm); padding:14px 10px; text-align:center;">
+            <div style="font-size:20px; margin-bottom:6px;">⚪</div>
+            <div style="font-size:10px; font-weight:600; text-transform:uppercase; letter-spacing:1.5px; color:var(--text-muted); margin-bottom:6px;">Sulfate de zinc</div>
+            <div style="font-family:'DM Mono',monospace; font-size:20px; font-weight:700; color:var(--text);">3.7</div>
+            <div style="font-family:'DM Mono',monospace; font-size:12px; color:var(--text-muted); margin-top:2px;">g</div>
+          </div>
+          <div style="background:var(--accent-active-light); border:1.5px solid var(--accent-active-border); border-radius:var(--radius-sm); padding:14px 10px; text-align:center;">
+            <div style="font-size:20px; margin-bottom:6px;">🔷</div>
+            <div style="font-size:10px; font-weight:600; text-transform:uppercase; letter-spacing:1.5px; color:var(--text-muted); margin-bottom:6px;">Solubore</div>
+            <div style="font-family:'DM Mono',monospace; font-size:20px; font-weight:700; color:var(--text);">3.1</div>
+            <div style="font-family:'DM Mono',monospace; font-size:12px; color:var(--text-muted); margin-top:2px;">g</div>
+          </div>
+          <div style="background:var(--accent-active-light); border:1.5px solid var(--accent-active-border); border-radius:var(--radius-sm); padding:14px 10px; text-align:center;">
+            <div style="font-size:20px; margin-bottom:6px;">🟠</div>
+            <div style="font-size:10px; font-weight:600; text-transform:uppercase; letter-spacing:1.5px; color:var(--text-muted); margin-bottom:6px;">Sulfate de cuivre</div>
+            <div style="font-family:'DM Mono',monospace; font-size:20px; font-weight:700; color:var(--text);">0.7</div>
             <div style="font-family:'DM Mono',monospace; font-size:12px; color:var(--text-muted); margin-top:2px;">g</div>
           </div>
         </div>

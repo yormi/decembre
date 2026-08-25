@@ -129,21 +129,16 @@ function autoStage() {
 }
 
 // Nursery (semis laitue) — per-tray watering recipe.
-// Step-up recipe (2026-07-19): target plug ~50 g in 2.5"-deep pots (32/tray),
-// 1 feed/week. Doses read from the model
+// 2026-08-25 rebalance: exact-solved N/P, K/Ca/Mg mined salts, MicroStock
+// bottle; 5 buckets/week at 2 L/tray RETAINED volume (operator observed
+// 120 mL/pot drips to the floor). Doses read from the model
 // `window.FertigationNursery.NURSERY_RECIPE_DEFAULT` (g/L; for liquids mL/L ≈
 // g/L) × water litres — no hardcoded recipe numbers, so this operator card and
 // the model can't drift apart. Per-tray water litres come from the admin
 // tray-type picker (NURSERY_TRAY_TYPES); the 32-pot default reads the model's
-// trayVolumeL so the card follows the step-up. Recipe concentrations are
-// unchanged from the 2026-06-20 salt-control feed — a bigger plug is fed by
-// more volume, not a hotter bucket.
-// Derivation: nutrition/lettuce/domain/nursery/fertigation/. Leaching + pour-through flush:
-// protocol/salt-flush/seedlings.md.
-//   Ocean 15-1-1 (powder, g) — N. Acadie poisson (liquid, mL) — P.
-//   Acadie kelp (liquid, mL) — K + micros. Sulfate de fer 20 % (powder, g) — Fe,
-//   stays available in the acidic peat (cell pH ~5.8) where field pH 7.48 would
-//   precipitate it. Feed CE ~0.85 mS/cm, tank pH ~5.8.
+// trayVolumeL. Bucket CE ~0.84 mS/cm, tank pH ~6.2.
+// Derivation: nutrition/lettuce/domain/nursery/fertigation/. Weekly clean-water
+// flush to runoff replaces the per-feed leach: protocol/salt-flush/seedlings.md.
 
 // Per-tray water litres by container. The 32-pot-2.5in default resolves to the
 // model's NURSERY_FERTIGATION_DEFAULTS.trayVolumeL (null sentinel) so the live
@@ -152,7 +147,7 @@ function autoStage() {
 const NURSERY_TRAY_TYPES = {
   '50-cell':      { trayVolumeL: 1.25 },   // retired 50-cell (historical, 25 mL/cell)
   '18-pot-3in':   { trayVolumeL: 2.70 },   // ~150 mL/pot × 18; cert 2 estimate
-  '32-pot-2.5in': { trayVolumeL: null  },  // null → model default (~120 mL/pot × 32 = 3.84 L)
+  '32-pot-2.5in': { trayVolumeL: null  },  // null → model default (retained ~62 mL/pot × 32 = 2 L)
 };
 
 function recalcNursery() {
@@ -160,15 +155,18 @@ function recalcNursery() {
   if (!element) return;
   const trays = parseInt(element.value) || 1;
   const modelVol = (window.FertigationNursery && window.FertigationNursery.NURSERY_FERTIGATION_DEFAULTS
-    && window.FertigationNursery.NURSERY_FERTIGATION_DEFAULTS.trayVolumeL) || 3.84;
+    && window.FertigationNursery.NURSERY_FERTIGATION_DEFAULTS.trayVolumeL) || 2;
   const trayType = NURSERY_TRAY_TYPES[window.__nurseryTrayId || '32-pot-2.5in'] || {};
   const trayVolumeL = (trayType.trayVolumeL != null) ? trayType.trayVolumeL : modelVol;
   const water = trays * trayVolumeL;                               // L (per-tray volume × trays)
   const sig2 = (v) => Number(v.toPrecision(2));                     // 2 significant figures
   const recipe = (window.FertigationNursery && window.FertigationNursery.NURSERY_RECIPE_DEFAULT) || {};
-  document.getElementById('out-water').textContent = sig2(water);
-  document.getElementById('out-ocean').textContent = sig2(water * (recipe.Ocean_15_1_1 || 0));  // g
-  document.getElementById('out-fish').textContent  = sig2(water * (recipe.AcadiePoisson || 0)); // mL
-  document.getElementById('out-kelp').textContent  = sig2(water * (recipe.AcadieKelp   || 0));  // mL
-  document.getElementById('out-fe').textContent    = sig2(water * (recipe.IronSulfate  || 0));  // g
+  document.getElementById('out-water').textContent  = sig2(water);
+  document.getElementById('out-ocean').textContent  = sig2(water * (recipe.Ocean_15_1_1 || 0));  // g
+  document.getElementById('out-fish').textContent   = sig2(water * (recipe.AcadiePoisson || 0)); // mL
+  document.getElementById('out-ksulfate').textContent = sig2(water * (recipe.KSulfate || 0));    // g
+  document.getElementById('out-gypsum').textContent  = sig2(water * (recipe.Gypsum   || 0));     // g
+  document.getElementById('out-mgsulfate').textContent = sig2(water * (recipe.MgSulfate || 0));  // g
+  document.getElementById('out-fe').textContent     = sig2(water * (recipe.IronSulfate  || 0));  // g
+  document.getElementById('out-microstock').textContent = sig2(water * (recipe.MicroStock || 0)); // mL
 }

@@ -10,7 +10,7 @@
 
 // ── Carbon-balance growth engine ─────────────────────────────────────
 // dW_dry/dt = ε·DLI·A_ground·(1 − exp(−k·LAI)), LAI = W_dry·SLA/A_ground,
-// clamped to the volume cap; flips to −DECLINE·W once the canopy has been
+// clamped to the volume cap; net gain stalls to 0 once the canopy has been
 // closed past the onset. One Beer–Lambert interception term (no min knee).
 // No weight anchor is currently reproduced. 5 g biggest @ d25 (50-cell,
 // drought+heat) is a recorded datum only — biggest-plant basis, assumed DLI 17
@@ -54,18 +54,13 @@ const GERMINATION_INHIBITION_TEMPERATURE_C = 24;
 const NURSERY_SOIL_TEMPERATURE_C = 19.5;
 const GROWTH_STEP_DAYS = 0.05;           // integration step (days)
 
-// Senescence — CROWDING decline once the canopy is held closed too long.
+// Senescence — growth STALL once the canopy is held closed too long.
 // Mechanism: self-shading past over-closure drops lower/inner leaves below
-// the light compensation point → they die → mass lost. Loose-leaf Salanova
-// is picked leaf-by-leaf, so a dead leaf is real yield lost. Salt is NOT
-// modeled (assumed driven to safe — nursery salt-flush protocol).
-// UNCALIBRATED cert 1: the only decline datum (16→10 g, d28–d35) is
-// crowding + salt + heat combined (~0.066/day) → an UPPER bound on the
-// crowding-only rate, not a clean anchor. 0.04 held below that ceiling;
-// makes the labor-routine tradeoff directional, not exact. See derivation.md
-// senescence-past-closure.
-const SENESCENCE_ONSET_DAYS = 1.7;       // days canopy held closed before crowding decline starts (retuned from 7 when closure moved to LAI 3)
-const SENESCENCE_DECLINE_RATE = 0.04;    // fraction of mass lost per day past onset (crowding only; ≤ 0.066 combined ceiling)
+// the light compensation point; new-leaf gain is offset by lower-leaf loss →
+// net 0 (weight plateaus, never declines). Salt is NOT modeled (assumed
+// driven to safe — nursery salt-flush protocol). UNCALIBRATED cert 1 — no
+// clean crowding-only datum. See derivation.md senescence-past-closure.
+const SENESCENCE_ONSET_DAYS = 1.7;       // days canopy held closed before the stall starts (retuned from 7 when closure moved to LAI 3)
 
 // Canopy mass-loading geometry (fresh). volume cap = area × height × density.
 const FOLIAGE_HEIGHT_M = 0.10;               // packed nursery
@@ -106,6 +101,10 @@ const LABOR_ROUTINES = [
 
 // Nursery tray options — cells per 1020 transport tray.
 const NURSERY_TRAY_CELLS = [50, 32, 18];
+
+// Backup sown on top of the field need — covers germination misses and culls.
+// All tray counts (seeded, on-bench, per-week) carry this margin.
+const NURSERY_BACKUP_FRACTION = 0.10;
 
 // ── Supplemental-lighting feasibility (Lumière page) ─────────────────
 const LED_PPFD = 200;

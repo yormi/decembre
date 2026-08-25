@@ -44,10 +44,10 @@ function getNutrients() {
   // Tomato fertigation page reads the locked STORED_RECIPE for the selected
   // stage — exactly what the team weighs. computeStageRecipe() is the FP target
   // generator (Block 7 drift gauge), not the operational source.
-  const s = STORED_RECIPE.tomato.fertigation[currentStage] || { mgSulfate: 0, kSulfate: 0, borax: 0, naMolybdate: 0 };
+  const s = STORED_RECIPE.tomato.fertigation[currentStage] || { mgSulfate: 0, kSulfate: 0, mnSulfate: 0, znSulfate: 0, borax: 0, naMolybdate: 0 };
   const mK = getMultK(), mM = getMultMg();
-  // Bore (Solubore) + Mo (NaMolybdate) are unscaled — no multiplier, mirroring drift.js.
-  return { mgSulfate: s.mgSulfate * mM, kSulfate: s.kSulfate * mK, borax: s.borax || 0, naMolybdate: s.naMolybdate || 0 };
+  // Bore (Solubore) + Mo (NaMolybdate) + Mn/Zn are unscaled — no multiplier, mirroring drift.js.
+  return { mgSulfate: s.mgSulfate * mM, kSulfate: s.kSulfate * mK, mnSulfate: s.mnSulfate || 0, znSulfate: s.znSulfate || 0, borax: s.borax || 0, naMolybdate: s.naMolybdate || 0 };
 }
 
 // Lettuce weekly prep — fixed hand-set recipe (LETTUCE_FERTIGATION_RECIPE),
@@ -70,7 +70,6 @@ function buildLettuceSteps() {
 
 function buildSteps() {
   if (currentCrop === 'lettuce') { buildLettuceSteps(); return; }
-  if (currentFertRecipe === 'rootfix') { buildRootFixSteps(); return; }
   document.getElementById('steps-card-title').textContent = '🌅 Vendredi matin';
   const stockVol = getStockVol();
   const ratio = getRatio();
@@ -83,21 +82,25 @@ function buildSteps() {
   const bucketsString = Number.isInteger(buckets) ? String(buckets) : buckets.toString().replace('.', ',');
   const bucketUnit = (buckets === 1 ? 'chaudière' : 'chaudières') + ' de 20 L';
 
-  // K + Mg + Bore + Molybdène collapsed into a single weighing-table step
+  // All stored products collapsed into a single weighing-table step
   // (2026-05-28), matching the foliar spray sheet pattern. Weighing tiles: big
   // number + 'g' on its own line (uniform with the water tile).
-  const formatNumber = v => Math.round(v).toLocaleString('fr-CA');
-  // Hide any nutrient tile that weighs out to exactly 0 g (rounds to 0) — e.g.
-  // K₂SO₄ + MgSO₄ since the 2026-06-05 cut. Filter on the raw gram value, not
-  // the formatted string. Eau (volume) is added after the filter, never hidden.
+  // Doses under 10 g keep one decimal (Zn 1,5 g, Mo 0,5 g must be weighed as-is,
+  // not rounded); larger doses round to the gram.
+  const formatNumber = v => (v < 10 ? (Math.round(v * 10) / 10) : Math.round(v)).toLocaleString('fr-CA');
+  // Hide any nutrient tile that weighs out to exactly 0 g — e.g. K₂SO₄ + MgSO₄
+  // since the 2026-06-05 cut. Filter on the raw gram value, not the formatted
+  // string. Eau (volume) is added after the filter, never hidden.
   const nutrientTiles = [
     { name: 'Potassium', value: n.kSulfate,  emoji: '🍌' },
     { name: 'Magnésium', value: n.mgSulfate, emoji: '🧊' },
+    { name: 'Manganèse', value: n.mnSulfate, emoji: '🟣' },
+    { name: 'Zinc', value: n.znSulfate, emoji: '⚪' },
     { name: 'Solubore', value: n.borax, emoji: '🔷' },
     { name: 'Molybdène', value: n.naMolybdate, emoji: '🔶' },
   ];
   const ingredients = nutrientTiles
-    .filter(t => Math.round(t.value) !== 0)
+    .filter(t => t.value > 0)
     .map(t => ({ name: t.name, amount: formatNumber(t.value), unit: 'g', emoji: t.emoji }));
   // Water fill as the first tile (💧, big bucket count + unit line).
   ingredients.unshift({ name: 'Eau', amount: bucketsString, unit: bucketUnit, emoji: '💧' });
@@ -141,23 +144,6 @@ function renderStepsList(steps) {
       ${s.noteAfter ? `<div style="font-size:11.5px; color:var(--text-muted); margin-top:8px; line-height:1.4;">${s.noteAfter}</div>` : ''}
     </li>`;
   }).join('');
-}
-
-// Root-fix drench (tomato only): fixed 15 g Ocean in 4 L, injected at 2 % on
-// chapelle 1. No stage, no area/solar scaling — single fixed recipe.
-function buildRootFixSteps() {
-  document.getElementById('steps-card-title').textContent = 'Tout les matins avant 10am';
-  const ingredients = [
-    { name: 'Eau', amount: '4', unit: 'L', emoji: '💧' },
-    { name: 'Ocean', amount: '15', unit: 'g', emoji: '🦀' },
-  ];
-  renderStepsList([
-    { number: 1, title: 'Dissoudre dans un seau', ingredients, noteAfter: '⚠️ Résidu non dissous bouche les driptapes', acid: false },
-    { number: 2, title: 'Mettre la ligne du dosatron dans le seau', acid: false },
-    { number: 3, title: 'Partir valve <em>chapelle 1</em> — 10 min sur Orisha', acid: false },
-    { number: 4, title: 'Remettre la ligne du dosatron dans le baril de fertigation', acid: false },
-    { number: 5, title: 'Rincer le seau pour le lendemain', acid: false },
-  ]);
 }
 
 // Admin-only nursery tray-type picker (#nursery-admin-block). Flips the active

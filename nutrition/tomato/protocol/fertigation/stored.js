@@ -6,7 +6,14 @@
 // le verrouillage racinaire des sulfates cationiques est levé (courbe
 // sulfate-metal 0,10 à pH 7,4 → 0,75 à pH 6,5). Doses = demande pleine de la
 // plante à efficacité canal 0,75 (aucun rabais crédit-sol, décision Guillaume) ;
-// ramp par stade. Fe NON fertigé : le sol le couvre (banque 310 ppm, tissu
+// ramp par stade.
+// 2026-08-23 : correctif de livraison — les lignes Mn/Zn du 2026-07-11 n'ont
+// jamais paru sur la fiche opérateur (rendu 4 produits) → jamais pesées.
+// Mn coupé à 0 : tissu août tenu à livraison zéro, le sol couvre à pH 6,5
+// (tripwire : tissu Mn vers le plancher → réintroduire). Zn triplé (5-20 g,
+// arrondis balance) : eff. 0,75 jamais mesurée + SME Zn 0,01 → essai drip
+// généreux, arbitré au prochain SME + tissu (feuille remonte → drip viable ;
+// SME toujours 0,01 → canal mort, bascule foliaire). Fe NON fertigé : le sol le couvre (banque 310 ppm, tissu
 // suff) et le FeSO₄ s'oxyde dans la cuve maître 5 jours (Fe²⁺→Fe³⁺, colmatage
 // goutteurs) — Fe routé passif ; fallback = FeSO₄ granulaire en sidedress si
 // un tissu montre une carence. Cu non rendu (tissu élevé + sol normal).
@@ -32,8 +39,9 @@
 // EDITS REQUIRE /retire-recipe SKILL FIRST. Path `STORED_RECIPE.tomato.fertigation`
 // preserved verbatim; the skill greps for this identifier.
 window.STORED_RECIPE.tomato.fertigation = {
-  // Oligos cationiques Mn/Zn (rendus 2026-07-11) + B (Solubore 10 g, clé `borax`)
-  // + Mo (NaMolybdate 0,5 g). Mg toujours 0. Fe passif (sol). Area 382,9 m² (7 planches).
+  // Zn en essai drip 3× (2026-08-23) + B (Solubore 10 g, clé `borax`)
+  // + Mo (NaMolybdate 0,5 g). Mg toujours 0. Mn 0 (sol couvre à pH 6,5).
+  // Fe passif (sol). Area 382,9 m² (7 planches).
   // MgSO₄ coupé à 0 le 2026-06-05 (/retire-recipe) : surplus confirmé sur les deux pools —
   // SME 2026-06-04 solution Mg 158,4 (~1,6× plafond) / CE 3,96 (>3,5) ; Mehlich-3 2026-04-10
   // Mg 18,3 % saturation CEC, banque pluri-saisonnière. Reprise d'entretien Mg gated sur
@@ -53,9 +61,9 @@ window.STORED_RECIPE.tomato.fertigation = {
   // rampe de rendement.
   // Déclencheurs de révision : SME K solution (dimensionne le plancher précisément, bande
   // admise 10-25 %) ; CE qui grimpe → baisser ; tissu-K qui décroche → monter.
-  T1: { mgSulfate: 0, kSulfate: 406,  mnSulfate: 3,  znSulfate: 1.5, borax: 10, naMolybdate: 0.5 },
-  T2: { mgSulfate: 0, kSulfate: 544,  mnSulfate: 6,  znSulfate: 2.5, borax: 10, naMolybdate: 0.5 },
-  T3: { mgSulfate: 0, kSulfate: 989,  mnSulfate: 8,  znSulfate: 4,   borax: 10, naMolybdate: 0.5 },
-  T4: { mgSulfate: 0, kSulfate: 819,  mnSulfate: 9,  znSulfate: 5,   borax: 10, naMolybdate: 0.5 },
-  T5: { mgSulfate: 0, kSulfate: 1100, mnSulfate: 12, znSulfate: 6.5, borax: 10, naMolybdate: 0.5 },
+  T1: { mgSulfate: 0, kSulfate: 406,  mnSulfate: 0, znSulfate: 5,  borax: 10, naMolybdate: 0.5 },
+  T2: { mgSulfate: 0, kSulfate: 544,  mnSulfate: 0, znSulfate: 8,  borax: 10, naMolybdate: 0.5 },
+  T3: { mgSulfate: 0, kSulfate: 989,  mnSulfate: 0, znSulfate: 12, borax: 10, naMolybdate: 0.5 },
+  T4: { mgSulfate: 0, kSulfate: 819,  mnSulfate: 0, znSulfate: 15, borax: 10, naMolybdate: 0.5 },
+  T5: { mgSulfate: 0, kSulfate: 1100, mnSulfate: 0, znSulfate: 20, borax: 10, naMolybdate: 0.5 },
 };

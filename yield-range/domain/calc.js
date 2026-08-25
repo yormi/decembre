@@ -52,36 +52,38 @@ function fieldCanopyCapByDensity(fieldDensityHeadsPerM2) {
 }
 
 // Per-plant volume cap (fresh g) in the nursery tray, packed (pre-thin) and
-// spaced (post checker-thin: area doubled, canopy re-loads at field geometry).
+// spaced (post-thin: area × areaFactor, canopy re-loads at field geometry).
 function nurseryCapPackedFresh(cellsPerTray) {
   return (TRAY_FRAME_M2 / cellsPerTray) * FOLIAGE_HEIGHT_M * FOLIAGE_DENSITY_KG_PER_M3 * 1000;
 }
-function nurseryCapSpacedFresh(cellsPerTray) {
-  return (2 * TRAY_FRAME_M2 / cellsPerTray) * FIELD_CANOPY_HEIGHT_M * FIELD_FOLIAGE_DENSITY_KG_PER_M3 * 1000;
+function nurseryCapSpacedFresh(cellsPerTray, areaFactor) {
+  return (areaFactor * TRAY_FRAME_M2 / cellsPerTray) * FIELD_CANOPY_HEIGHT_M * FIELD_FOLIAGE_DENSITY_KG_PER_M3 * 1000;
 }
 
 // ── predictYield — carbon-balance full cycle + throughput + sales ────
 //
 // Inputs (all required): fieldSpacingKey, laborRoutineKey, nurseryTrayCells,
-// thinning (bool), thinDay (int|null when thinning), nurseryDays (int).
-// Throws on unknown keys or out-of-range days.
+// thinEvents ([{ day, areaFactor }], days ascending in [1, nurseryDays],
+// factors ≥ 1 non-decreasing; [] = no thin), nurseryDays (int).
+// Throws on unknown keys or out-of-range events.
 //
 // Growth law per step: net_dry = ε·DLI·A_ground·(1 − exp(−k·LAI)),
 // LAI = W_dry·SLA/A_ground, clamped to the volume cap; once the canopy has
-// been closed ≥ SENESCENCE_ONSET_DAYS, net flips to −SENESCENCE_DECLINE_RATE·W
-// (senescence). Canopy "closed" = LAI ≥ LAI_CLOSURE; area jumps (checker-thin,
-// transplant) and senescence shrink re-open it and reset the closed-day clock.
-// ε and dry-matter fraction are STAGE-SPECIFIC: the nursery uses the plug DM
-// and, when nurseryStress, the drought+heat ε (unanchored, see data.js); the
-// field uses the field DM and clean ε. The DM step up at transplant is the
-// rehydration lift.
+// been closed ≥ SENESCENCE_ONSET_DAYS, net stalls to 0 (senescence: new-leaf
+// gain offset by lower-leaf loss). Canopy "closed" = LAI ≥ LAI_CLOSURE; area
+// jumps (thin events, transplant) re-open it and reset the closed-day clock.
+// Nursery ground area = areaFactor × base cell area, areaFactor = the latest
+// thin event's factor (1 before any event) — factors are absolute, not
+// compounding. ε and dry-matter fraction are STAGE-SPECIFIC: the nursery uses
+// the plug DM and, when nurseryStress, the drought+heat ε (unanchored, see
+// data.js); the field uses the field DM and clean ε. The DM step up at
+// transplant is the rehydration lift.
 function predictYield(inputs) {
   const {
     fieldSpacingKey,
     laborRoutineKey,
     nurseryTrayCells,
-    thinning,
-    thinDay,
+    thinEvents = [],
     nurseryDays,
     nurseryStress = false,
     nurserySoilTemperatureC = NURSERY_SOIL_TEMPERATURE_C,
@@ -101,9 +103,15 @@ function predictYield(inputs) {
   if (!Number.isFinite(nurseryDays) || nurseryDays < 1) {
     throw new Error(`predictYield: nurseryDays must be ≥ 1, got ${nurseryDays}`);
   }
-  const effectiveThinDay = thinning ? thinDay : null;
-  if (effectiveThinDay != null && (!Number.isFinite(effectiveThinDay) || effectiveThinDay < 1 || effectiveThinDay > nurseryDays)) {
-    throw new Error(`predictYield: thinDay must be in [1, ${nurseryDays}] when thinning, got ${effectiveThinDay}`);
+  let previousEvent = { day: 0, areaFactor: 1 };
+  for (const event of thinEvents) {
+    if (!Number.isFinite(event.day) || event.day < 1 || event.day > nurseryDays || event.day <= previousEvent.day) {
+      throw new Error(`predictYield: thinEvents days must ascend within [1, ${nurseryDays}], got ${event.day}`);
+    }
+    if (!Number.isFinite(event.areaFactor) || event.areaFactor < previousEvent.areaFactor) {
+      throw new Error(`predictYield: thinEvents areaFactor must be ≥ 1 and non-decreasing, got ${event.areaFactor}`);
+    }
+    previousEvent = event;
   }
 
   const germinationDays = germinationDaysFromSoilTemperature(nurserySoilTemperatureC);
@@ -118,8 +126,19 @@ function predictYield(inputs) {
   const bedsPerWeek = BED_COUNT / (fieldDays / 7);
   const totalDays = nurseryDays + fieldDays;
 
+  // Area factor at a nursery day: the latest thin event's factor, absolute.
+  const areaFactorAtDay = day => {
+    let factor = 1;
+    for (const event of thinEvents) if (day >= event.day - 1e-9) factor = event.areaFactor;
+    return factor;
+  };
+  const finalAreaFactor = areaFactorAtDay(nurseryDays);
+
   const nurseryCapPackedG = nurseryCapPackedFresh(nurseryTrayCells);
-  const nurseryCapSpacedG = nurseryCapSpacedFresh(nurseryTrayCells);
+  // Operative nursery cap at the final thin factor; packed when never re-spaced.
+  const nurseryCapSpacedG = finalAreaFactor > 1
+    ? nurseryCapSpacedFresh(nurseryTrayCells, finalAreaFactor)
+    : nurseryCapPackedG;
   const fieldCapG = fieldCanopyCapByDensity(density);
 
   const stepsPerDay = Math.round(1 / GROWTH_STEP_DAYS);
@@ -130,14 +149,11 @@ function predictYield(inputs) {
   // Day 1 is the sowing day, in the nursery → plug DM.
   const trajectory = [{ day: 1, weight_g: weightDry / PLUG_DRY_MATTER_FRACTION, regime: 'nursery' }];
   let transplantWeightG = null;
-  let peakWeightG = weightDry / PLUG_DRY_MATTER_FRACTION;
-  let peakDay = 1;
-  let nurseryPeakWeightG = weightDry / PLUG_DRY_MATTER_FRACTION;
 
   for (let step = 1; step <= totalSteps; step++) {
     const day = 1 + step / stepsPerDay;
     const inNursery = day <= nurseryDays + 1e-9;
-    const thinned = effectiveThinDay != null && day >= effectiveThinDay - 1e-9 && inNursery;
+    const areaFactor = inNursery ? areaFactorAtDay(day) : 1;
 
     const dmFraction = inNursery ? PLUG_DRY_MATTER_FRACTION : DRY_MATTER_FRACTION;
     const radiationUseEfficiency = inNursery && nurseryStress
@@ -145,10 +161,10 @@ function predictYield(inputs) {
       : RADIATION_USE_EFFICIENCY;
 
     const areaGround = inNursery
-      ? (thinned ? 2 : 1) * TRAY_FRAME_M2 / nurseryTrayCells
+      ? areaFactor * TRAY_FRAME_M2 / nurseryTrayCells
       : 1 / density;
     const capDry = (inNursery
-      ? (thinned ? nurseryCapSpacedG : nurseryCapPackedG)
+      ? (areaFactor > 1 ? nurseryCapSpacedFresh(nurseryTrayCells, areaFactor) : nurseryCapPackedG)
       : fieldCapG) * dmFraction;
 
     const leafAreaIndex = weightDry * SPECIFIC_LEAF_AREA / areaGround;
@@ -165,18 +181,13 @@ function predictYield(inputs) {
     const canopyClosed = leafAreaIndex >= LAI_CLOSURE;
     daysClosed = canopyClosed ? daysClosed + GROWTH_STEP_DAYS : 0;
 
-    const netDry = daysClosed >= SENESCENCE_ONSET_DAYS
-      ? -SENESCENCE_DECLINE_RATE * weightDry
-      : gain;
+    // Senescence stall: held closed past onset, net gain drops to 0 — the
+    // head plateaus, it does not lose mass.
+    const netDry = daysClosed >= SENESCENCE_ONSET_DAYS ? 0 : gain;
 
     weightDry = Math.max(0, Math.min(weightDry + netDry * GROWTH_STEP_DAYS, capDry));
 
     const weightFresh = weightDry / dmFraction;
-    if (weightFresh > peakWeightG) {
-      peakWeightG = weightFresh;
-      peakDay = day;
-    }
-    if (inNursery && weightFresh > nurseryPeakWeightG) nurseryPeakWeightG = weightFresh;
 
     if (step % stepsPerDay === 0) {
       const dayInt = 1 + step / stepsPerDay;
@@ -186,12 +197,6 @@ function predictYield(inputs) {
   }
 
   const harvestWeightG = weightDry / DRY_MATTER_FRACTION;
-  // Harvesting meaningfully past the peak — the head has lost >2% of its top
-  // weight to senescence. Near-peak harvests (the 2-week routine) read false.
-  const senescingAtHarvest = harvestWeightG < peakWeightG * 0.98;
-  // Same test for the seedling: transplanted after it peaked in the tray
-  // (a long/crowded nursery declines before transplant).
-  const senescingAtTransplant = transplantWeightG < nurseryPeakWeightG * 0.98;
 
   // Throughput — steady weekly rotation of the beds (Little's law).
   const headsPerBed = BED_AREA_M2 * density;
@@ -203,11 +208,32 @@ function predictYield(inputs) {
   const yearlySalesDollars = kgPerYear * PRICE_PER_KG;
 
   // Trays at a time in the nursery = heads/day × Σ (trays-per-head over age).
-  // Post-thin cohorts occupy 2× trays (re-spaced into more trays).
-  const trayDayIntegral = effectiveThinDay != null
-    ? effectiveThinDay / nurseryTrayCells + (nurseryDays - effectiveThinDay) * 2 / nurseryTrayCells
-    : nurseryDays / nurseryTrayCells;
-  const traysInNursery = headsPerDay * trayDayIntegral;
+  // A cohort re-spaced to areaFactor× occupies areaFactor× trays from that day.
+  let trayDayIntegral = 0;
+  let segmentStart = 0;
+  let segmentFactor = 1;
+  for (const event of thinEvents) {
+    trayDayIntegral += (event.day - segmentStart) * segmentFactor;
+    segmentStart = event.day;
+    segmentFactor = event.areaFactor;
+  }
+  trayDayIntegral += (nurseryDays - segmentStart) * segmentFactor;
+  trayDayIntegral /= nurseryTrayCells;
+  // All tray counts carry the sowing backup margin (germination misses, culls).
+  const backupFactor = 1 + NURSERY_BACKUP_FRACTION;
+  const traysInNursery = headsPerDay * trayDayIntegral * backupFactor;
+  // Trays sown each week to feed the rotation (pre-thin, packed cells).
+  const traysSeededPerWeek = headsPerWeek / nurseryTrayCells * backupFactor;
+  // Trays on the bench per cohort age week (steady rotation: one cohort per
+  // week; a re-spaced cohort holds areaFactor× its sown trays).
+  const nurseryWeeks = Math.ceil((nurseryDays - 1) / 7);
+  const traysByNurseryWeek = [];
+  for (let week = 1; week <= nurseryWeeks; week++) {
+    traysByNurseryWeek.push({
+      week,
+      trays: traysSeededPerWeek * areaFactorAtDay((week - 1) * 7 + 1),
+    });
+  }
 
   return {
     density,
@@ -219,13 +245,8 @@ function predictYield(inputs) {
     fieldCapG,
     transplantWeightG,
     harvestWeightG,
-    peakWeightG,
-    peakDay: Math.round(peakDay),
     germinationDays,
     emergenceDay,
-    nurseryPeakWeightG,
-    senescingAtHarvest,
-    senescingAtTransplant,
     trajectory,
     headsPerWeek,
     kgPerWeek,
@@ -233,5 +254,7 @@ function predictYield(inputs) {
     kgPerYear,
     yearlySalesDollars,
     traysInNursery,
+    traysSeededPerWeek,
+    traysByNurseryWeek,
   };
 }
