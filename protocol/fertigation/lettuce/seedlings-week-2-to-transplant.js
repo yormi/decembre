@@ -15,10 +15,13 @@
   window.STORED_RECIPE = window.STORED_RECIPE || {};
   window.STORED_RECIPE.nursery = {
     fertigation: {
-      Ocean_15_1_1:  2.0,    // g/L
-      AcadiePoisson: 1.5,    // mL/L
-      AcadieKelp:    1.0,    // mL/L
+      Gypsum:        0.14,   // g/L — dissolve first, stir
+      Ocean_15_1_1:  0.29,   // g/L
+      AcadiePoisson: 0.39,   // mL/L
+      KSulfate:      0.29,   // g/L
+      MgSulfate:     0.058,  // g/L
       IronSulfate:   0.015,  // g/L (≈ 15 mg/L → ~3 ppm Fe)
+      MicroStock:    0.1,    // mL/L (stock bottle: MnSO₄ 3.3 / ZnSO₄ 3.7 / Solubor 3.1 / CuSO₄ 0.7 g per L)
     },
   };
 })();

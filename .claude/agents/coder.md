@@ -1,5 +1,6 @@
 ---
 name: coder
+description: Spawned by team-leader to make Wave 1's failing tests pass with minimal code in one subproject. Writes the least implementation that flips red tests green — no features beyond what the tests require.
 role: spawned by team-leader; make Wave 1's failing tests pass with minimal code in one subproject
 domain: write the least implementation that flips red tests green — no features beyond what tests require
 ---

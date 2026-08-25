@@ -166,7 +166,7 @@ window.
 
 | Factor | Target | Band | Edge |
 |---|---|---|---|
-| DLI — production head | ~17 mol/m²/d | 14–20 | > ~20 → tipburn / bolting unless airflow + Ca + cool keep pace |
+| DLI — production head | 25 mol/m²/d | 14–25 | > ~25 → tipburn / bolting unless airflow + Ca + cool keep pace |
 | DLI — propagation wk 1 (cotyledon) | ~8–10 mol/m²/d | 6–10 | > ~12 → tipburn / stress on tender cotyledons |
 | DLI — nursery plug (wk 2–3) | 12–14 mol/m²/d | 8–14 | limited by small-cell water/EC buffering + tipburn, not light tolerance |
 | Photoperiod | 16 h | 14–18 | > 18 → chlorosis; > ~14–16 → bolting clock runs |

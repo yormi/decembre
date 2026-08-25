@@ -2,7 +2,8 @@
 
 Specs for the model that estimates the **weekly per-element nutrient
 release from the seedling substrate** (Berger OM2 peat-based organic mix
-front-loaded with feather meal at potting; 50-cell trays, ~1.65 L/tray).
+front-loaded with feather meal at potting; trays of 32 × 2.5"-deep pots,
+~6.4 L/tray).
 
 Spec only. Formulas, source tables, per-element rationale, label values,
 current cert per element, and refinement triggers live in `derivation.md`.
@@ -22,7 +23,7 @@ substrate/product selection (operational).
 
 - `week` (1-5).
 - `featherMealPerTrayG` — front-load rate g/tray. Defaults to
-  `NURSERY_FEATHER_MEAL_DEFAULT_G_PER_TRAY` (= 9 g). Capped by
+  `NURSERY_FEATHER_MEAL_DEFAULT_G_PER_TRAY` (= 34 g). Capped by
   `LIMITS.maxFeatherMealPerTrayG` (`feather-meal-front-load-cap`).
 
 ### Output
@@ -76,10 +77,12 @@ contributes only the `N` channel.
 
 ## feather-meal-front-load-cap
 
-`LIMITS.maxFeatherMealPerTrayG ≤ 9`. Substrate front-load capped at
-9 g feather meal per tray; higher risks germination loss in Salanova.
+`LIMITS.maxFeatherMealPerTrayG ≤ 35`. Substrate front-load capped at
+35 g feather meal per tray (5.45 g/L × 6.4 L — salt-density basis of the
+9 g / 1.65 L 50-cell field ceiling); higher risks germination loss in
+Salanova.
 
-**Cert:** 4 (operational ceiling, observed by team + Sonneveld).
+**Cert:** 3 (field ceiling rescaled to pot format; not re-observed at 32-pot).
 
 ---
 

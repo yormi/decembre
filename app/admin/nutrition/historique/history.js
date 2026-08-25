@@ -49,6 +49,68 @@
 // It also serves as the team-visible audit trail for organic certification.
 const RECIPE_HISTORY = [
   {
+    retired: '2026-08-25',
+    recipe: 'STORED_RECIPE.nursery.fertigation',
+    summary: 'Semis rééquilibré — kelp retiré, K/Ca/Mg + stock micros ajoutés, 5 arrosages/sem à 2 L/plateau',
+    reason: 'Bilan 5 semaines à la cible 50 g (working files/nursery-5wk-balance.md) : la recette poisson-dominante livrait N/P en surplus mais K −65 %, Ca −42 %, Mg −24 %, micros quasi absents, avec Na:Ca ≈ 70:1 au seau. Rééquilibrage : doses N/P résolues à l\'exact sur le besoin résiduel (crédits front-load conservateurs — farine 75 %, charge OM2 50 %) ; K/Mg par sels miniers ; Ca en gypse au seau ; kelp retiré (source Na dominante pour 2-18 % des micros) remplacé par bouteille stock Mn/Zn/Cu/Solubor. Volume corrigé à 2 L/plateau (l\'opérateur observe que 120 mL/pot dégoutte au sol — ~62 mL/pot est le volume retenu), ce qui impose 5 seaux/sem sous le plafond CE 1,0 (seau prédit 0,84). K₂SO₄, MgSO₄, gypse, FeSO₄ Ecocert CAN/CGSB-32.311 ; MnSO₄/ZnSO₄/CuSO₄/Solubor permis avec conditions (carence documentée : tissu août + bilan). Décision Guillaume.',
+    replacedBy: 'STORED_RECIPE.nursery.fertigation — Ocean 0,29 g/L, poisson 0,39 mL/L, K₂SO₄ 0,29 g/L, gypse 0,14 g/L, MgSO₄ 0,058 g/L, FeSO₄ 0,015 g/L, stock micros 0,1 mL/L.',
+    fullSnapshot: {
+      nursery: { Ocean_15_1_1: 2.0, AcadiePoisson: 1.5, AcadieKelp: 1.0, IronSulfate: 0.015 },
+    },
+  },
+  {
+    retired: '2026-08-23',
+    recipe: 'STORED_RECIPE.lettuce.fertigation',
+    summary: 'ZnSO₄ réintroduit en cuve laitue — 8 g/sem (essai drip généreux, 3× la dose pré-coupe)',
+    reason: 'La coupe du 2026-07-11 (Mg/Fe/Mn/Zn/Cu retirés sur le pari « le sol resupplie à pH 6,5 ») a perdu sur le Zn : panel d\'août — tissu Zn sous le plancher, SME Zn 0,01 mg/L, aucun apport Zn d\'aucun canal depuis la coupe. Même essai que la tomate du même jour : dose généreuse 3× l\'ancienne (2,7 → 8 g ZnSO₄/sem, bloc 136,8 m²) parce que l\'efficacité canal 0,75 n\'a jamais été mesurée et que la fixation calcaire semble plus dure pour Zn que pour Mn (Mn/Fe tenus sans dose). Coût CE nul (~8 g vs 400 g K₂SO₄). Arbitrage au prochain panel : feuille remonte → drip viable ; SME toujours 0,01 → canal mort, bascule foliaire. Caveat : rotation laitue ~6 sem — le SME sera la moitié la plus informative. ZnSO₄ Ecocert CAN/CGSB-32.311. Décision Guillaume.',
+    replacedBy: 'STORED_RECIPE.lettuce.fertigation — K₂SO₄ 400 g + Solubore 1,3 g + ZnSO₄ 8 g par cuve hebdo.',
+    fullSnapshot: {
+      lettuce: { Potassium: 400, Bore: 1.3 },
+    },
+  },
+  {
+    retired: '2026-08-23',
+    recipe: 'STORED_RECIPE.tomato.fertigation',
+    summary: 'MnSO₄ coupé à 0 (le sol couvre le Mn à pH 6,5) ; ZnSO₄ triplé (essai drip généreux)',
+    reason: 'Deux suites du correctif de livraison du même jour (aucun Mn/Zn livré du 2026-07-11 au 2026-08-23). (1) Fertigation Mn : le tissu Mn d\'août a tenu sans aucun apport (élevé 132 ppm en mai sous foliaire, toujours suffisant en août à livraison zéro) — à pH 6,5 la voie sol couvre le Mn seule, la dose drip du 2026-07-11 (demande pleine à efficacité 0,75) nourrissait un besoin que le sol comble déjà ; coupée à 0. Tripwire : tissu Mn qui glisse vers le plancher → réintroduire la ligne. (2) Fertigation Zn : dose triplée par rapport au 2026-07-11 (1,5-6,5 → 5-20 g, arrondis balance). L\'efficacité canal 0,75 est une lecture de courbe jamais mesurée, et le SME Zn 0,01 mg/L suggère une fixation calcaire plus dure pour Zn que pour Mn ; avec une feuille déjà déficiente (tissu août divisé par 2), une dose généreuse répare la feuille ET teste le canal avec marge : feuille remonte → drip viable ; SME toujours 0,01 à 3× → canal mort, bascule foliaire assumée. Toxicité négligeable (~18 mg Zn/m²/sem à T5). Seule ligne nouvelle en cuve — essai mono-variable au prochain SME + tissu. MnSO₄ et ZnSO₄ Ecocert CAN/CGSB-32.311. Décision Guillaume.',
+    replacedBy: 'STORED_RECIPE.tomato.fertigation mnSulfate = 0 tous stades ; znSulfate T1 5 / T2 8 / T3 12 / T4 15 / T5 20 g (3× le 2026-07-11, arrondis balance).',
+    fullSnapshot: {
+      fertigation: {
+        T1: { mgSulfate: 0, kSulfate: 406,  mnSulfate: 3,  znSulfate: 1.5, borax: 10, naMolybdate: 0.5 },
+        T2: { mgSulfate: 0, kSulfate: 544,  mnSulfate: 6,  znSulfate: 2.5, borax: 10, naMolybdate: 0.5 },
+        T3: { mgSulfate: 0, kSulfate: 989,  mnSulfate: 8,  znSulfate: 4,   borax: 10, naMolybdate: 0.5 },
+        T4: { mgSulfate: 0, kSulfate: 819,  mnSulfate: 9,  znSulfate: 5,   borax: 10, naMolybdate: 0.5 },
+        T5: { mgSulfate: 0, kSulfate: 1100, mnSulfate: 12, znSulfate: 6.5, borax: 10, naMolybdate: 0.5 },
+      },
+      sidedress: {
+        T1: { actisol_g: 0, farine_g:  84  },
+        T2: { actisol_g: 0, farine_g:  267 },
+        T3: { actisol_g: 0, farine_g:  695 },
+        T4: { actisol_g: 0, farine_g: 1125 },
+        T5: { actisol_g: 0, farine_g: 2000 },
+      },
+      foliaire: { masterVol: 15, backpacks: 1, area: '383 m²', A: [], B: [] },
+    },
+  },
+  {
+    retired: '2026-08-23',
+    recipe: 'STORED_RECIPE.tomato.fertigation — correctif de livraison Mn/Zn',
+    summary: 'Mn/Zn stockés depuis le 2026-07-11 jamais affichés à l\'opérateur → jamais pesés (2026-07-11 → 2026-08-23)',
+    reason: 'La page fertigation opérateur ne rendait que 4 produits (K, Mg, Solubore, Molybdène) : les lignes MnSO₄ et ZnSO₄ ajoutées au STORED le 2026-07-11 (retrait des sprays A+B) n\'ont jamais paru sur la fiche de pesée — donc très probablement jamais été mises en cuve. Le tissu d\'août (Mn tenu, Zn divisé par 2, SME Zn 0,01 mg/L) se lit donc SANS apport Zn d\'aucun canal depuis le 2026-07-11 : le verdict « le Zn fertigé se fait fixer par le sol » n\'a jamais été testé, tandis que le maintien du Mn sans dose confirme que la voie sol s\'est ouverte pour Mn à pH 6,5. Correctif : la page rend désormais toutes les lignes du STORED (Mn/Zn inclus, doses < 10 g affichées à la décimale). Aucune valeur de recette ne change. Produits inchangés côté cert : MnSO₄ et ZnSO₄ Ecocert CAN/CGSB-32.311.',
+    replacedBy: 'Page opérateur corrigée (rend toutes les lignes du STORED). Doses Mn/Zn révisées le même jour à la lumière du gap — voir l\'entrée du 2026-08-23 « MnSO₄ coupé à 0 ; ZnSO₄ triplé ».',
+    fullSnapshot: {
+      // Telle qu'appliquée (rendu opérateur) entre le 2026-08-02 et le
+      // correctif — Mn/Zn effectifs 0.
+      fertigation: {
+        T1: { mgSulfate: 0, kSulfate: 406,  mnSulfate: 0, znSulfate: 0, borax: 10, naMolybdate: 0.5 },
+        T2: { mgSulfate: 0, kSulfate: 544,  mnSulfate: 0, znSulfate: 0, borax: 10, naMolybdate: 0.5 },
+        T3: { mgSulfate: 0, kSulfate: 989,  mnSulfate: 0, znSulfate: 0, borax: 10, naMolybdate: 0.5 },
+        T4: { mgSulfate: 0, kSulfate: 819,  mnSulfate: 0, znSulfate: 0, borax: 10, naMolybdate: 0.5 },
+        T5: { mgSulfate: 0, kSulfate: 1100, mnSulfate: 0, znSulfate: 0, borax: 10, naMolybdate: 0.5 },
+      },
+    },
+  },
+  {
     retired: '2026-08-02',
     recipe: 'STORED_RECIPE.tomato.fertigation',
     summary: 'K₂SO₄ remis au plancher d\'intensité 20 % (0 g → 406-1100 g/sem selon stade)',

@@ -7,9 +7,11 @@
 // against the live one on the Historique des nutriments page, keeping the
 // organic-cert audit trail intact.
 //
-// Both products Ecocert CAN/CGSB-32.311 : K₂SO₄ (sulfate de potasse minier),
+// Tous produits Ecocert CAN/CGSB-32.311 : K₂SO₄ (sulfate de potasse minier),
 // Solubore (acide borique, micronutriment — carence B sol < détection au
-// dossier).
+// dossier), ZnSO₄ (réintroduit 2026-08-23 — essai drip généreux 3×, tissu Zn
+// sous plancher + SME 0,01 après la coupe du 2026-07-11 ; arbitrage au
+// prochain panel).
 //
 // Changing the lettuce fertigation feed: go through /retire-recipe — snapshot
 // the OLD values into RECIPE_HISTORY (app/admin/nutrition/historique/history.js)
@@ -22,6 +24,7 @@
     fertigation: {
       Potassium: 400,   // g/sem — Sulfate de potassium 0-0-50 (K₂SO₄)
       Bore:      1.3,   // g/sem — Solubore 20,5 % B
+      Zinc:      8,     // g/sem — ZnSO₄ 35,5 % Zn
     },
   };
 })();

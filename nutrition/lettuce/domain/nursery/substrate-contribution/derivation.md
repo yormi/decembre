@@ -15,12 +15,12 @@ Rationale for each constant in `spec.md`. Rejected alternatives in
 | Front-load product            | Feather meal (farine de plumes), 13-0-0                               |
 | Feather meal cert listing     | CAN/CGSB-32.311 (animal by-product, allowed organic input)            |
 | Front-load convention         | 2 cups feather meal per OM2 sac, mixed in at potting                  |
-| Tray format                   | 50-cell × ~33 mL/cell = 1.65 L substrate/tray                         |
+| Tray format                   | 32 × 2.5"-deep pots × ~200 mL/pot = 6.4 L substrate/tray              |
 | Cohort default                | 50 trays/cohort (≈ 2 500 plants), surface ≈ 7.4 m² per cohort          |
 
 ---
 
-## Per-tray geometry — 2 cups/sac → 9 g/tray
+## Per-tray geometry — 2 cups/sac → 34 g/tray
 
 ```
 2 cups        ≈ 480 mL
@@ -28,25 +28,29 @@ density       ~ 0.55 g/mL  (cert 2 — feather meal flake bulk density 0.5-0.6)
 total per sac ≈ 480 × 0.55 = 264 g
 
 OM2 sac       = 50 L
-trays per sac = 50 L / 1.65 L/tray ≈ 30 trays
+trays per sac = 50 L / 6.4 L/tray ≈ 7.8 trays
 
-per-tray feather meal = 264 g / 30 trays ≈ 8.8 g  →  rounded to 9 g
+per-tray feather meal = 264 g / 7.8 trays ≈ 33.8 g  →  rounded to 34 g
 ```
 
-Cert 3. Density 0.50 → 8 g/tray, 0.60 → 9.6 g/tray; both round to 9 g
-for slider purposes.
+Cert 3. Density 0.50 → 30.8 g/tray, 0.60 → 36.9 g/tray — the upper end
+crosses the 35 g cap; the slider clamps.
 
 ---
 
-## Why the front-load cap = 9 g (germination protection)
+## Why the front-load cap = 35 g (germination protection)
 
 Codified as `LIMITS.maxFeatherMealPerTrayG` (`feather-meal-front-load-cap`). Salanova
-germination drops above ~9 g/tray (salt + ammonia pulse from week-1
-mineralization inhibits radicle emergence in peat). Empirical Décembre
-operator note + Sonneveld & Voogt peat salt-sensitivity guidance
-converge on the threshold. HARD UPPER bound, not a soft target — model
-exposes `LIMITS` so the Semis page slider clamps to it; raising
-requires a documented germination-trial sign-off.
+germination drops above ~5.45 g feather meal per litre of substrate
+(salt + ammonia pulse from week-1 mineralization inhibits radicle
+emergence in peat) — observed as 9 g on the retired 1.65 L 50-cell tray.
+The binding quantity is salt density per litre, so the pot-format tray
+cap is 5.45 g/L × 6.4 L ≈ 35 g/tray. Empirical Décembre operator note +
+Sonneveld & Voogt peat salt-sensitivity guidance converge on the
+threshold. HARD UPPER bound, not a soft target — model exposes `LIMITS`
+so the Semis page slider clamps to it; raising requires a documented
+germination-trial sign-off. Cert 3 — per-litre ceiling not re-observed
+at pot format.
 
 ---
 
@@ -114,11 +118,11 @@ Sonneveld & Voogt cool-greenhouse mineralization profile:
 Sum = 1.00. Cert 3 — Sonneveld curve scaled to 5-week cycle; refine if
 seedling tissue-test N timing disagrees.
 
-### Total mineralizable N per tray at 9 g front-load
+### Total mineralizable N per tray at 34 g front-load
 
 ```
-9 g × 0.13 N × 0.75 mineralization × 1000 mg/g = 877.5 mg N total
-                                                = 175.5 mg N/tray/wk avg
+34 g × 0.13 N × 0.75 mineralization × 1000 mg/g = 3315 mg N total
+                                                 = 663 mg N/tray/wk avg
 ```
 
 Bilan supply credit against per-tray weekly N demand.
@@ -192,9 +196,9 @@ peat plug; < 10 % leaching loss absorbed within cert-2 band.
 - **PourThru EC time-series collected.** Refit
   `OM2_RELEASE_CURVE_BY_WEEK` against no-fertigation control week-by-week
   EC drop. Cert 2 → 3 (or 4 across multiple cohorts).
-- **Tray format change** (50-cell → 32-cell). Update
-  `NURSERY_TRAY_SUBSTRATE_VOL_L` from 1.65 to measured volume. Re-derive
-  `NURSERY_FEATHER_MEAL_DEFAULT_G_PER_TRAY` from 2-cups-per-sac convention.
+- **Pot volume measured** (brim measure of the 2.5"-deep pot). Update
+  `NURSERY_TRAY_SUBSTRATE_VOL_L` from the ~200 mL/pot estimate; re-derive
+  `NURSERY_FEATHER_MEAL_DEFAULT_G_PER_TRAY` and the 35 g cap from it.
 
 ---
 

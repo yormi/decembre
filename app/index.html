@@ -134,7 +134,7 @@
     <!-- ═════════ SALANOVA POST-TRANSPLANT NUTRITION ═════════ -->
     <!-- @include app/admin/nutrition/bilan/lettuce/page.html -->
 
-    <!-- ═════════ SEMIS LAITUE — NURSERY (50-cell trays) ═════════ -->
+    <!-- ═════════ SEMIS LAITUE — NURSERY (32 × 2.5" pots) ═════════ -->
     <!-- @include app/admin/nutrition/bilan/nursery/page.html -->
 
   </div>
@@ -364,7 +364,7 @@ const FP_RECIPE_T5 = {
 <!-- @include nutrition/lettuce/domain/plant-needs/model.js -->
 
 // ═══════════════ SEMIS LAITUE — NURSERY NUTRITION MODEL ═══════════════
-// 50-cell trays in Berger OM2 + feather meal substrate. Seed → target weight
+// Trays of 32 × 2.5"-deep pots in Berger OM2 + feather meal substrate. Seed → target weight
 // over the cycle (default 35 d / 5 wk). Demand = mass × DM × tissue conc.,
 // expressed per-plant and per-tray (operational unit).
 //
@@ -575,7 +575,6 @@ const ACCEPTED_EXCESSES = [
 <!-- @include yield-range/domain/data.js -->
 <!-- @include yield-range/domain/calc.js -->
 <!-- @include yield-range/domain/model.js -->
-<!-- @include yield-range/domain/seedling-thinning.js -->
 
 // ── 9. Bilan supply orchestrator + Block 7 drift renderer ─────────────────
 // nutrStage + nutrRecipeMode page-local state + LUXURY_FACTOR demand cap +

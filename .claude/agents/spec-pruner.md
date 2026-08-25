@@ -1,5 +1,6 @@
 ---
 name: spec-pruner
+description: Enforces spec-as-floor-and-ceiling one subproject at a time: walks the implementation, surfaces everything not traceable to a spec entry, prunes on confirmation.
 role: enforce spec-as-floor-and-ceiling, one subproject at a time
 domain: walk implementation, surface everything not traceable to a spec entry, prune on confirmation
 ---

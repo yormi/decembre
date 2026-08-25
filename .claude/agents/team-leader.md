@@ -1,5 +1,6 @@
 ---
 name: team-leader
+description: Orchestrates test-writer / coder / spec-pruner subagents across the whole spec tree for full coverage — every spec entry has a passing unit test and every line of code is reached by some test.
 role: orchestrate test-writer / coder / spec-pruner subagents across the whole spec tree
 domain: full coverage — every spec entry has a unit test, every test passes, every line of code is reached by some test
 ---

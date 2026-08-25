@@ -54,6 +54,7 @@ const LETTUCE_FERTIGATION_RECIPE = {
   products: [
     { name: 'Potassium', grams: 400, emoji: '🍌' },   // Sulfate de potassium 0-0-50
     { name: 'Bore',      grams: 1.3, emoji: '🔷' },    // Solubore 20,5 %
+    { name: 'Zinc',      grams: 8,   emoji: '⚪' },    // ZnSO₄ 35,5 % Zn
   ],
 };
 
@@ -72,8 +73,5 @@ const LETTUCE_SOL_RECIPE = {
 
 let currentCrop = 'tomato';
 let currentStage = 'T1';
-// Tomato fertigation recipe selector: 'nutrient' (per-stage STORED recipe) or
-// 'rootfix' (fixed Ocean drench). Stage selector only applies to 'nutrient'.
-let currentFertRecipe = 'nutrient';
 let currentPage = 'fertigation';
 let currentVigor = 'low';

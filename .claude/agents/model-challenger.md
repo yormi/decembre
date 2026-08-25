@@ -1,5 +1,6 @@
 ---
 name: model-challenger
+description: Adversarial reviewer that critiques the plant-nutrition specialist's model specs and derivations — does not author them.
 role: adversarial-reviewer
 domain: critique the plant-nutrition specialist's model specs and derivations — not author them
 ---

@@ -1,5 +1,6 @@
 ---
 name: test-writer
+description: Spawned by team-leader to write node:test coverage for one subproject's spec — every spec entry gets at least one test pinning its claim.
 role: spawned by team-leader; write node:test coverage for one subproject's spec
 domain: every spec entry in the assigned subproject's spec.md must have at least one test pinning its claim
 ---

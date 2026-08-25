@@ -186,6 +186,8 @@ async function resolveIncludes(content, sourcePath, depth = 0) {
   return content;
 }
 
+let photosCopied = false;
+
 async function build() {
   const t0 = Date.now();
   await mkdir(DIST_DIR, { recursive: true });
@@ -216,7 +218,10 @@ async function build() {
   // (so recursion descends) and .jpg / .MP.jpg files; skips the doc dir's .md /
   // .json / .html / .js. Source-absent → skip without failing the build.
   const practiceSource = resolve(PROJECT_ROOT, PRACTICE_PHOTO_SOURCE);
-  try {
+  // Copy once per process: photos are large and rewriting them every
+  // rebuild floods live-server's watcher and the disk.
+  if (!photosCopied) try {
+    photosCopied = true;
     await stat(practiceSource);
     await cp(practiceSource, resolve(DIST_DIR, PRACTICE_PHOTO_DEST), {
       recursive: true,
@@ -248,7 +253,7 @@ if (process.argv.includes('--watch')) {
     clearTimeout(timeout);
     timeout = setTimeout(() => {
       build().catch(e => console.error(`[build] error: ${e.message}`));
-    }, 30);
+    }, 300);
   };
   for (const dir of WATCH_DIRS) {
     const path = resolve(PROJECT_ROOT, dir);

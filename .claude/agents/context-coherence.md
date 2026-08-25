@@ -1,5 +1,6 @@
 ---
 name: context-coherence
+description: Structural auditor for cross-file coherence and single-responsibility hygiene across the spec / code / index / memory graph.
 role: structural-auditor
 domain: cross-file coherence + single-responsibility hygiene across the spec / code / index / memory graph
 ---

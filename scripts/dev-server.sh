@@ -47,7 +47,7 @@ echo "Starting build watcher..."
 BUILD_PID=$!
 
 echo "Starting live-server on http://localhost:${PORT} ..."
-( exec npx --yes live-server "${PROJECT_ROOT}/dist" --port="${PORT}" --no-browser --quiet ) &
+( exec npx --yes live-server "${PROJECT_ROOT}/dist" --port="${PORT}" --no-browser --quiet --wait=500 ) &
 SERVE_PID=$!
 
 # Kill the survivor whenever this script exits.

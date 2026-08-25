@@ -2824,9 +2824,9 @@ if (!SCN) {
   }
 }
 
-// ─── feather-meal-front-load-cap — Front-load cap ≤ 9 g feather meal/tray + INV-2 mass balance
+// ─── feather-meal-front-load-cap — Front-load cap ≤ 35 g feather meal/tray + INV-2 mass balance
 
-header('feather-meal-front-load-cap — Substrate front-load cap ≤ 9 g + INV-2 release-curve mass balance');
+header('feather-meal-front-load-cap — Substrate front-load cap ≤ 35 g + INV-2 release-curve mass balance');
 
 if (!SCN) {
   fail('SubstrateContributionNursery namespace available',
@@ -2835,11 +2835,11 @@ if (!SCN) {
   const cap = SCN.LIMITS && SCN.LIMITS.maxFeatherMealPerTrayG;
   if (typeof cap !== 'number') {
     fail('LIMITS.maxFeatherMealPerTrayG est un nombre', `got ${typeof cap}`);
-  } else if (cap > 9) {
-    fail('LIMITS.maxFeatherMealPerTrayG ≤ 9 (germination protection)',
-         `cap = ${cap} (max allowed = 9)`);
+  } else if (cap > 35) {
+    fail('LIMITS.maxFeatherMealPerTrayG ≤ 35 (germination protection, 5.45 g/L × 6.4 L)',
+         `cap = ${cap} (max allowed = 35)`);
   } else {
-    pass(`LIMITS.maxFeatherMealPerTrayG = ${cap} (≤ 9, germination protection)`);
+    pass(`LIMITS.maxFeatherMealPerTrayG = ${cap} (≤ 35, germination protection)`);
   }
 
   // INV-2 — release curves sum to ~1.0 ± 0.05 (mass balance).
@@ -2905,7 +2905,7 @@ if (!SCN || typeof SCN.cycleAverageReleasePerTray !== 'function'
   fail('cycleAverageReleasePerTray + feather meal constants exposed',
        substrateLoadError || 'one or more globals missing');
 } else {
-  const fmG = SCN.NURSERY_FEATHER_MEAL_DEFAULT_G_PER_TRAY || 9;
+  const fmG = SCN.NURSERY_FEATHER_MEAL_DEFAULT_G_PER_TRAY || 34;
   const W   = (SCN.OM2_RELEASE_CURVE_BY_WEEK || []).length || 5;
   const result = SCN.cycleAverageReleasePerTray(fmG);
   // contribution-channel-details-payload — function now returns { perTray_mg, details }; legacy callers
@@ -2919,7 +2919,7 @@ if (!SCN || typeof SCN.cycleAverageReleasePerTray !== 'function'
   const fmTotalN_mg   = fmG * SCN.FEATHER_MEAL_LABEL_PCT.N
                             * SCN.FEATHER_MEAL_MINERALIZATION_FRAC * 1000;
   const om2NperTray   = (SCN.OM2_STARTER_CHARGE_PPM.N || 0)
-                      * (SCN.NURSERY_TRAY_SUBSTRATE_VOL_L || 1.65);
+                      * (SCN.NURSERY_TRAY_SUBSTRATE_VOL_L || 6.4);
   const om2Sum        = (SCN.OM2_RELEASE_CURVE_BY_WEEK || []).reduce((a, b) => a + b, 0);
   const expectedN     = (fmTotalN_mg + om2NperTray * om2Sum) / W;
 

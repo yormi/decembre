@@ -27,6 +27,16 @@ Report 39580, lettuce-under-lamps root-zone SME (sample "laitue 15 juin", reques
 **Reach for:** lettuce root-zone salinity climb April → June; whether the salt is leachable (SAR check) before recommending a flush vs a program cut; corroboration of field tip-burn; pH-drawdown progress on the lettuce side.
 **Caveat:** SME spec ranges are soilless/hydroponic — Ca/Mg/CE "high" flags partly reflect calcareous soil. pH 6.68 is a secondary guardrail, **not** a new anchor. P read via Mehlich-3 + tissue, not SME.
 
+### `mehlich-3 - 2026-08-05.pdf`
+Agro-Enviro-Lab SO-0923478 (**Laitue-sol**) + SO-0923479 (**Tomate-sol**), sampled 2026-08-04, received 08-05, report 08-14. First Mehlich-3 retest since April 2026. Laitue/Tomate: P **608/524** TR (April 558-678 — vault unchanged), K 597 TR / 394 R, Ca **9227/9869** TR (April ~10,600-10,989 — slight drawdown), Mg 1021/1182 TR, S 201/532 TR (S program visible on tomato side), Zn 12.3/11.8 TR, Mn 61/53 TR, B **1.16 P / 1.73 MB** (only non-rich macro/micro), Na 62/137, P/Al 53.3/53.5 (riche env.).
+**Reach for:** April → August Mehlich-3 trend (Ca drawdown pace, P vault, S accumulation), B-is-the-only-lean-element read, pairing with same-date tissue panel.
+**Caveat:** pH, pH tampon, OM, CEC and base-saturation cells came back **blank** on text extraction — verify against the PDF before claiming a pH trend from this report; the same-soil SME below carries the August pH read.
+
+### `SME - 2026-08-05.pdf`
+Agro-Enviro-Lab SSE on the **same samples** as the August Mehlich-3 (SO-0923478 Laitue-sol / SO-0923479 Tomate-sol), sampled 2026-08-04, report 08-19. First same-day paired SME on both crops. Laitue/Tomate: pH **6.65/6.62** (lettuce June 6.68 → holding; tomato June 6.90 → still drifting down), CE **2.30/3.75** (lettuce June 4.01 → **halved**; tomato June 3.96 → flat), P-PO4 **3/2** mg/L (June 1.7/0.9 — inching up, still low), Nitrate 111/125, Sulfate 264/579, Ca 332/597, Mg 78/163, K 75/61, Na **67/161** (lettuce June 124 → down), **RAS 5/8** (June lettuce 1.29 — sodicity ratio up as Ca/CE fell), Fe 0.31/0.58, Mn 0.03/0.12, Zn ≤0.03 (micros still pH-locked), B 0.12/0.33.
+**Reach for:** August root-zone pH + salinity state; lettuce CE-halving after the June salinity alarm; whether P availability is finally moving; RAS trend check before any flush/gypsum debate; pairing plant-available vs the same-day Mehlich-3 bank.
+**Caveat:** SME spec ranges are soilless/hydroponic — read pH, CE, P and trends, not absolute Ca/Mg/K flags. P recovery still judged on tissue first.
+
 ## Soil tests — pre-greenhouse (Agriquanta, July 2024)
 
 ### `Analyse de sol avant installation serre.pdf`
@@ -37,7 +47,7 @@ Report SOL-26419 (sample 2024_18052), tabular. pH 6.09, P 1,071, K 335, Ca 5,956
 Same SOL-26419 in graphical form (richesse bars: very low → very high).
 **Reach for:** presenting baseline to non-technical viewers.
 
-## Tissue analysis (Agro-Enviro-Lab, May 2026)
+## Tissue analysis (Agro-Enviro-Lab)
 
 ### `tissus - 2026-05-22.pdf`
 Lab IDs TI-0025330 / 0025331 / 0025332. Sampling 14 mai 26, report 22 mai 26. Three samples — LAIT #1 + LAIT #2 (Laitue, feuilles), TOM #1 (Tomate, feuilles); digestion acide + ICP. First post-crisis tissue read for both crops.
@@ -55,6 +65,14 @@ Lab's per-element déficience / faible flags:
 ⚠️ Three samples but no in-PDF map to which bed / which cohort / which sampling date by cultivar; cross-reference Catherine's sampling log if downstream decisions hinge on which lettuce cohort is which.
 **Lettuce reads (LAIT #1/#2) interpreted for the salanova yield diagnostic:** `domain/lettuce/doc/diagnostic-2026-06-06/diagnosis.md` (Ca/Mg/K low, Na very high → salinity/cation antagonism; N sufficient).
 
+
+### `tissus - 2026-08-05.pdf`
+Lab IDs TI-0026059 (**Tomate**, feuilles) + TI-0026060 (**Laitue**, feuilles), sampled 2026-08-04 — same date as the August Mehlich-3 + SME soil pair — report 08-12. Second tissue read (first was 2026-05-22). Apparence "Normale" both crops.
+- **Tomate** — N 3.26 / P 0.26 / K 3.34 / Ca 2.37 / Mg 0.50 / S 1.38 %; Zn 23 / Mn 76 / Fe 56 / B 45 ppm; Na 744. Lab flags: probablement déficient **P / Ca / Zn**; faible N / K / B / Fe.
+- **Laitue** — N 3.32 / P 0.41 / K 3.99 / Ca 1.19 / Mg 0.37 / S 0.31 %; Zn 31 / Mn 77 / Fe 107 / B 26 ppm; **Na 3116** ppm. Lab flags: probablement déficient **P / K / Ca / Mg / Zn**; faible S / Cu.
+
+**Reach for:** May → August tissue trend per element (did foliar Mn/Zn + Mo moves land? Ca still déficient under saturation?); lettuce Na 3116 as the leaf-side signature of the salinity story; cross-checking the same-day SME "P inching up" against what leaves actually got.
+⚠️ Same generic-norm caveat as May: lab thresholds aren't Salanova / cultivar-specific — cross-check FAO-217 before acting on a flag. No in-PDF bed/cohort map; check Catherine's sampling log if it matters.
 
 ### `FAO-217-tissue-sufficiency-ranges.png`
 Appendix C of FAO Plant Production & Protection Paper 217 (Gianquinto, Muñoz, Pardossi, Ramazzotti & Savvas 2013) — optimal tissue macro (% DM) + micro (mg/kg DM) ranges for greenhouse crops, Mediterranean climate. Tomato + lettuce rows highlighted. **Second, independent source** of tissue sufficiency targets alongside the Agro-Enviro-Lab panel's own floor/ceiling norms.

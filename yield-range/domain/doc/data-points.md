@@ -161,16 +161,22 @@ limit precision.
 ## Field head — 2026-07-09
 
 File: `field-head-180g-aphids-2026-07-09.jpeg`. Single scale photo, CAS scale.
-One large green-leaf/butterhead head off a light-supplemented bed.
+One large green-leaf/butterhead head off a light-supplemented bed. Bed photos
+~10 days before harvest: `field-bed-5r6-mixed-2026-06-29/`.
 
 | Quantity | Value |
 |---|---|
 | Fresh weight | **180 g** |
+| Bed configuration | 5 rangs × 6 po (~232 cm²/plant) ⚠ |
+| Transplant weight | 10–20 g, weak seedlings ⚠ |
 | Time in bed | ~6 weeks ⚠ |
+| Season | July sun (harvest 2026-07-09) |
+| Condition | healthy head ⚠ |
 
-⚠ Time in bed is a Guillaume estimate, not read from a logged transplant date.
-Heavy aphid pressure on that bed. The only mature field-harvest weight recorded;
-every other weight here is a nursery seedling.
+⚠ Time in bed and transplant weight are Guillaume estimates, not logged;
+configuration confirmed by Guillaume 2026-08-12. Heavy aphid pressure on that
+bed; the head itself read healthy. The only mature field-harvest weight
+recorded; every other weight here is a nursery seedling.
 
 
 ## Field cut yield — 2026-07-26

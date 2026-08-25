@@ -125,14 +125,33 @@ logged date. Weight is in `data-points.md`.
 
 ### `field-head-180g-aphids-2026-07-09.jpeg`
 Scale photo: one mature green-leaf/butterhead head, 180 g on the CAS scale, off a
-light-supplemented bed under heavy aphid pressure.
+light-supplemented 5 rangs × 6 po bed under heavy aphid pressure.
 
 **Reach for:**
 - Sanity-checking `fieldCapG` / `harvestWeightG` at the mature end — the only
   field-harvest weight recorded; everything else is a nursery seedling.
+- The refuting bound on the crowding-senescence parameters — a head held
+  closed ~4 weeks, still healthy. See
+  `../learnings/180g-head-bounds-crowding-senescence.md`.
 
 Stressed, and time-in-bed is estimated rather than logged → a lower-ish bound.
-Weight is in `data-points.md`.
+Weight, configuration, and transplant context are in `data-points.md`.
+
+---
+
+### `field-bed-5r6-mixed-2026-06-29/`
+Two photos, 2026-06-29 20:01 (EXIF), the mixed green/red Salanova beds the
+180 g head came off, ~10 days before its harvest: view along the bed with the
+tomato row and nursery tables to the left, and a wider two-bed view. Canopy
+closed within rows, rows distinct.
+
+**Reach for:**
+- What the 180 g head's bed looked like pre-harvest — closure state, row
+  structure, weed pressure.
+- Visual cross-check of 5-row bed geometry against the density table in
+  `domain/lettuce/sequence.md`.
+
+No weights; context photos for `data-points.md` § Field head.
 
 ---
 

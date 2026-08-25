@@ -46,3 +46,7 @@ quantitative — no decomposition number was invented.
 First salt-controlled held cohort (nursery 50-cell or field bed) weighed
 serially past closure → sets the crowding-only rate + onset, replacing the
 upper bound. See `doc/yield-range-calibration-2026-spring.md`.
+
+**2026-08-12:** the 180 g healthy head refutes the placeholder onset + rate
+as whole-head dynamics — see `180g-head-bounds-crowding-senescence.md` for
+the bound any refit must pass.
