@@ -46,14 +46,16 @@
 
 ### ×4 layout per 1020 tray
 
-8 pots — two staggered pots per row:
+8 pots — double checker, rows A + C offset by one column.
+Uniform in tiling (trays edge-to-edge): 5 in within rows and
+across tray edges, 5.6 in on A↔C diagonals:
 
 | | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 |
 |---|---|---|---|---|---|---|---|---|
-| **A** | · | ● | · | · | · | ● | · | · |
-| **B** | · | · | · | ● | · | · | · | ● |
-| **C** | · | ● | · | · | · | ● | · | · |
-| **D** | · | · | · | ● | · | · | · | ● |
+| **A** | ● | · | ● | · | ● | · | ● | · |
+| **B** | · | · | · | · | · | · | · | · |
+| **C** | · | ● | · | ● | · | ● | · | ● |
+| **D** | · | · | · | · | · | · | · | · |
 
 
 ### ×5 layout per 1020 tray

@@ -12,7 +12,7 @@ View + static data only. No model math.
 -}
 
 import Browser
-import Html exposing (Html, a, button, div, span, text)
+import Html exposing (Html, a, button, div, span, table, tbody, td, text, th, thead, tr)
 import Html.Attributes exposing (class, classList, href, id, style)
 import Html.Events exposing (onClick, stopPropagationOn)
 import Json.Decode as Decode
@@ -80,6 +80,9 @@ type alias Model =
     , pinned : Bool
     , expanded : Set String
     , done : Set String
+
+    -- Instruction modal currently open, keyed by modal slug ("drench").
+    , modal : Maybe String
     }
 
 
@@ -117,6 +120,7 @@ init flags =
       , pinned = fromUrl /= Nothing
       , expanded = Set.empty
       , done = Set.fromList flags.done
+      , modal = Nothing
       }
     , Task.perform GotZoneTime (Task.map2 Tuple.pair Time.here Time.now)
     )
@@ -160,6 +164,7 @@ type Msg
     | Select Day
     | ToggleExpand String
     | ToggleDone String
+    | SetModal (Maybe String)
     | NoOp
 
 
@@ -205,6 +210,9 @@ update msg model =
                     toggle k model.done
             in
             ( { model | done = done }, persistDone (Set.toList done) )
+
+        SetModal m ->
+            ( { model | modal = m }, Cmd.none )
 
         NoOp ->
             ( model, Cmd.none )
@@ -304,8 +312,8 @@ vendredi =
         [ "Irriguer 1h avec Orisha avant transplant."
         , "Mesurer CE 1:1 + pH 1:1."
         , "[Frontload fertilisant](#sol/lettuce)"
-        , "Drench pots 2,5 po."
-        , "Transplanter en 4 rangs × 6 po **en quinconce**."
+        , "[Drench plateau](modal:drench)"
+        , "Transplanter en 3 rangs × 8 po **en quinconce**."
         ]
         []
     , Step "v-damier"
@@ -404,11 +412,8 @@ mercredi =
         ""
         [ E "👩‍🔬" ]
         "Mesurer chaque génération en plateau"
-        "Pour les générations agées de 0 à 4 semaines :"
-        [ "Peser un semis représentatif"
-        , "Pour-through CE"
-        , "Pour-through pH"
-        ]
+        ""
+        []
         []
     ]
 
@@ -429,10 +434,80 @@ journey =
 view : Model -> Html Msg
 view model =
     div []
-        [ journeyPath
-        , dayTabs model
-        , div [] (List.map (stepCard model) (stepsFor model.selected))
-        ]
+        ([ journeyPath
+         , dayTabs model
+         , div [] (List.map (stepCard model) (stepsFor model.selected))
+         ]
+            ++ modalView model.modal
+        )
+
+
+{-| Modal content, keyed by slug: ( title, intro, lines ). -}
+modalContent : String -> Maybe ( String, String, List String )
+modalContent slug =
+    case slug of
+        "drench" ->
+            Just
+                ( "Drench plateau"
+                , "Sur Orisha,"
+                , [ "Semis Laitue - Eau → Mettre à ON 5 min"
+                  , "Semis Laitue - Vidange → Mettre à ON 60 min"
+                  ]
+                )
+
+        _ ->
+            Nothing
+
+
+modalView : Maybe String -> List (Html Msg)
+modalView modal =
+    case Maybe.andThen modalContent modal of
+        Nothing ->
+            []
+
+        Just ( title, intro, lines ) ->
+            [ div
+                [ onClick (SetModal Nothing)
+                , style "position" "fixed"
+                , style "inset" "0"
+                , style "background" "rgba(0,0,0,0.5)"
+                , style "display" "flex"
+                , style "align-items" "center"
+                , style "justify-content" "center"
+                , style "z-index" "1000"
+                ]
+                [ div
+                    [ stopPropagationOn "click" (Decode.succeed ( NoOp, True ))
+                    , class "card"
+                    , style "max-width" "420px"
+                    , style "width" "calc(100% - 32px)"
+                    , style "padding" "16px"
+                    ]
+                    (div
+                        [ style "display" "flex"
+                        , style "align-items" "center"
+                        , style "justify-content" "space-between"
+                        , style "margin-bottom" "8px"
+                        ]
+                        [ span
+                            [ style "font-size" "14px"
+                            , style "font-weight" "700"
+                            , style "color" "var(--text)"
+                            ]
+                            [ text title ]
+                        , span
+                            [ onClick (SetModal Nothing)
+                            , style "cursor" "pointer"
+                            , style "font-size" "18px"
+                            , style "color" "var(--text-muted)"
+                            ]
+                            [ text "✕" ]
+                        ]
+                        :: introView intro
+                        ++ List.map lineView lines
+                    )
+                ]
+            ]
 
 
 {-| Short label for the circle node (the long form lives in the modal).
@@ -1299,6 +1374,7 @@ hasDetail s =
         || not (List.isEmpty s.lines)
         || not (List.isEmpty s.targets)
         || not (List.isEmpty (stepLinks s.key))
+        || not (List.isEmpty (stepTable s.key))
         || not (List.isEmpty (hostSlot s.key))
 
 
@@ -1506,10 +1582,86 @@ detailPanel s =
         ]
         (introView s.intro
             ++ List.map lineView s.lines
+            ++ measureTable (stepTable s.key)
             ++ List.map targetView s.targets
             ++ List.map linkButton (stepLinks s.key)
             ++ hostSlot s.key
         )
+
+
+{-| Per-step measure table: ( measure, generations it applies to ).
+Keyed by step key so the Step constructor stays flat. -}
+stepTable : String -> List ( String, String )
+stepTable key =
+    case key of
+        "m-mesure" ->
+            [ ( "Pour-through CE", "0 à 4 semaines" )
+            , ( "Pour-through pH", "0 à 4 semaines" )
+            , ( "Peser un semis représentatif", "2 à 4 semaines" )
+            ]
+
+        _ ->
+            []
+
+
+measureTable : List ( String, String ) -> List (Html Msg)
+measureTable rows =
+    if List.isEmpty rows then
+        []
+
+    else
+        [ table
+            [ style "border-collapse" "collapse"
+            , style "font-size" "13px"
+            , style "margin" "4px 0 2px"
+            ]
+            [ thead []
+                [ tr []
+                    [ measureCell True "Mesure"
+                    , measureCell True "Âge des semis"
+                    ]
+                ]
+            , tbody []
+                (List.map
+                    (\( measure, generations ) ->
+                        tr []
+                            [ measureCell False measure
+                            , measureCell False generations
+                            ]
+                    )
+                    rows
+                )
+            ]
+        ]
+
+
+measureCell : Bool -> String -> Html Msg
+measureCell isHeader label =
+    (if isHeader then
+        th
+
+     else
+        td
+    )
+        [ style "border" "1px solid var(--border)"
+        , style "padding" "6px 10px"
+        , style "text-align" "left"
+        , style "color"
+            (if isHeader then
+                "var(--text-muted)"
+
+             else
+                "var(--text)"
+            )
+        , style "font-weight"
+            (if isHeader then
+                "600"
+
+             else
+                "400"
+            )
+        ]
+        [ text label ]
 
 
 {-| Step key whose body hosts the JS-rendered LED-hours table. -}
@@ -1580,13 +1732,26 @@ inline : String -> List (Html Msg)
 inline line =
     case linkParts line of
         Just ( label, target ) ->
-            [ a
-                [ href target
-                , style "color" "var(--accent, #2563eb)"
-                , style "font-weight" "600"
-                ]
-                [ text label ]
-            ]
+            case modalSlug target of
+                Just slug ->
+                    [ span
+                        [ onClick (SetModal (Just slug))
+                        , style "color" "var(--accent, #2563eb)"
+                        , style "font-weight" "600"
+                        , style "cursor" "pointer"
+                        , style "text-decoration" "underline"
+                        ]
+                        [ text label ]
+                    ]
+
+                Nothing ->
+                    [ a
+                        [ href target
+                        , style "color" "var(--accent, #2563eb)"
+                        , style "font-weight" "600"
+                        ]
+                        [ text label ]
+                    ]
 
         Nothing ->
             String.split "**" line
@@ -1598,6 +1763,17 @@ inline line =
                         else
                             text part
                     )
+
+
+{-| `modal:<slug>` link targets open an instruction modal instead of
+navigating. -}
+modalSlug : String -> Maybe String
+modalSlug target =
+    if String.startsWith "modal:" target then
+        Just (String.dropLeft 6 target)
+
+    else
+        Nothing
 
 
 {-| Whole-line `[label](href)`.

@@ -8,19 +8,22 @@
 | Week 2 | Nursery | Racks week 2 | 31 |
 | Week 3 | Nursery | Racks week 3 | 31 |
 | Week 4 | Nursery | HPS table | 62 |
-| Week 5 | Greenhouse | Nursery table | 141 |
+| Week 5 | Greenhouse | Nursery table | 124 |
 
 
 
-### Thinning 7 pot per trays for week 5
+### Thinning 8 pot per trays for week 5
 
 
 | | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 |
 |---|---|---|---|---|---|---|---|---|
 | **A** | ● | · | ● | · | ● | · | ● | · |
 | **B** | · | · | · | · | · | · | · | · |
-| **C** | · | ● | · | · | ● | · | · | ● |
+| **C** | · | ● | · | ● | · | ● | · | ● |
 | **D** | · | · | · | · | · | · | · | · |
+
+Uniform in tiling (trays edge-to-edge): 5 in within rows and
+across tray edges, 5.6 in on A↔C diagonals.
 
 
 ### Light fixtures
