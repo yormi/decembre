@@ -31,7 +31,7 @@ station, floor drain: `nursery-common.md`.
 |---|---|---|
 | [Boyau PE standard ¾ po × 100 pi, 75 psi (BO CO-075-75-1)](https://duboisag.com/ca_fr/boyau-flexible-standard-en-polyethylene-bobine.html) | 75 pi | |
 | [Coude 90 insertion ¾ po — cédule 40](https://duboisag.com/ca_fr/insert-ell-90-1399.html) | 5 + 1 | |
-| Té insertion ¾ po | 2 | |
+| [Té insertion ¾ po — cédule 40 (II 1401007)](https://duboisag.com/ca_fr/te-insertion.html) | 2 | |
 | [Collier de serrage inox](https://duboisag.com/ca_fr/collet-acier-inoxydable.html) ¾ po | 23 | 125 % of barbs (6 coudes × 2 + 2 tés × 3 = 18) |
 | Tray fill drop (`tray-drop.md`) | 8 (9 in zone 3) | 1/tray, punched in the branch |
 
@@ -43,8 +43,8 @@ station, floor drain: `nursery-common.md`.
 | [Adaptateur mâle réduit 1 po MPT × ¾ po insert](https://duboisag.com/ca_fr/adaptateur-male-reduit-mpt-x-insert.html) | 2 | valve in + out, PE on the barbs |
 | [Boyau PE standard ¾ po × 100 pi, 75 psi (BO CO-075-75-1)](https://duboisag.com/ca_fr/boyau-flexible-standard-en-polyethylene-bobine.html) | 10 pi | |
 | [Coude 90 insertion ¾ po — cédule 40](https://duboisag.com/ca_fr/insert-ell-90-1399.html) | 1 | |
-| [Adaptateur mâle ¾ po MPT × ¾ po insert](https://duboisag.com/ca_fr/adaptateur-male-mpt-x-insert.html) | 1 | branch-end closure |
-| [Bouchon galvanisé ¾ po FPT (IG GP-07)](https://duboisag.com/ca_fr/bouchon-galvanise.html) | 1 | screws on the end adapter, unscrew to flush |
+| [Adaptateur femelle ¾ po FPT × ¾ po insert (II 1435007)](https://duboisag.com/ca_fr/adaptateur-femelle-fpt-x-insert.html) | 1 | branch-end closure |
+| [Bouchon galvanisé ¾ po MPT (IG GP-07, male plug)](https://duboisag.com/ca_fr/bouchon-galvanise.html) | 1 | screws into the end adapter, unscrew to flush |
 | [Collier de serrage inox](https://duboisag.com/ca_fr/collet-acier-inoxydable.html) ¾ po | 5 | 1/barb: 2 adapters, coude × 2, end adapter |
 
 ## Waste
@@ -60,9 +60,9 @@ station, floor drain: `nursery-common.md`.
 | Item | Qty | Note |
 |---|---|---|
 | [Vinyl ¾ po ID (Active Aqua)](https://indoorfarmer.ca/products/active-aqua-black-vinyl-tubing-3-4-id) | ~0,6 m | port → adapter, adapter → tee; BOUGHT 100 pi |
-| [Adaptateur mâle réduit 1 po MPT × ¾ po insert](https://duboisag.com/ca_fr/adaptateur-male-reduit-mpt-x-insert.html) | 2 | valve in + out, vinyl on the barbs |
-| [U.S. Solid motorized ball valve 1" SS, normally open](https://www.amazon.ca/Motorized-Valve-Normally-U-S-Solid/dp/B0993GKRLT) | 1 | wired parallel on one Orisha output |
-| [Collier de serrage inox ½–¾ po, 25-pack Amazon](https://www.amazon.ca/Stainless-Steel-Clamps-Repair-Tubing/dp/B09BM21R92) | 4 | port barb, both adapter barbs, tee ¾ branch |
+| [Adaptateur mâle ¾ po MPT × ¾ po insert](https://duboisag.com/ca_fr/adaptateur-male-mpt-x-insert.html) | 2 | valve in + out, vinyl on the barbs |
+| [U.S. Solid motorized ball valve ¾ po SS full port, 2-wire auto-return, NO](https://www.amazon.ca/dp/B0993GHNJT) | 1 | wired parallel on one Orisha output |
+| [Collier inox 304 19–29 mm, 20-pack Amazon](https://www.amazon.ca/dp/B091GJWGHQ) | 4 | port barb, both adapter barbs, tee ¾ branch |
 
 **Drain power**
 
@@ -76,7 +76,7 @@ station, floor drain: `nursery-common.md`.
 |---|---|---|
 | [PE 1½ po × 100 pi (BO CO-150-75-1)](https://duboisag.com/ca_fr/boyau-flexible-standard-en-polyethylene-bobine.html) | ~2 m | clamped straight down the corner; self-venting ~50 L/min = 5 trays draining |
 | [Té réduit insertion 1½ × 1½ × ¾ po](https://duboisag.com/ca_fr/te-reduit-insertion.html) | 10 | 2/shelf: drain below, overflow above |
-| Collier de serrage inox #24 (1-1/16–2 po), 25-pack | 20 | 2/tee on the 1½ po PE (OD ~1,9 po) |
+| [Glarks collier inox 304 40–63 mm, 20-pack Amazon](https://www.amazon.ca/dp/B07HL4TZWJ) | 20 | 2/tee on the 1½ po PE (OD ~48 mm) |
 
 **Waste collection** (downpipes → floor drain)
 
@@ -88,14 +88,14 @@ station, floor drain: `nursery-common.md`.
 | [Pro-Connect raccord flexible 1½ po (Home Depot)](https://www.homedepot.ca/product/pro-connect-flexible-coupling-11-2/1000119990) | 5 | on the stub; 1½ PE downpipe (OD 1,9 po = 1½ ABS pipe) comes down into it — no glue, removable |
 | [LESSO adaptateur cleanout ABS 3 po SPIG × FIPT (Home Depot)](https://www.homedepot.ca/product/lesso-3-in-abs-cleanout-adapter-spig-x-fipt/1000116166) | 1 | high-end flush port |
 | [LESSO bouchon mâle ABS 3 po MIPT (Home Depot)](https://www.homedepot.ca/product/lesso-3-in-abs-male-plug-mipt/1000116111) | 1 | unscrew to flush |
-| [Oatey colle ABS jaune 236 mL (Home Depot)](https://www.homedepot.ca/product/oatey-236-ml-abs-cement-yellow-c-/1000118513) | 1 | DWV joints; no primer needed |
+| [Oatey colle ABS jaune 473 mL (Home Depot)](https://www.homedepot.ca/product/oatey-473-ml-abs-cement-yellow-c-/1000118514) | 1 | DWV joints; no primer needed |
 
 **Overflow** (port → downpipe tee, above the drain tee)
 
 | Item | Qty | Note |
 |---|---|---|
 | [Vinyl ¾ po ID (Active Aqua)](https://indoorfarmer.ca/products/active-aqua-black-vinyl-tubing-3-4-id) | ~0,4 m | port → tee; BOUGHT 100 pi |
-| [Collier de serrage inox ½–¾ po, 25-pack Amazon](https://www.amazon.ca/Stainless-Steel-Clamps-Repair-Tubing/dp/B09BM21R92) | 2 | port barb, tee ¾ branch |
+| [Collier inox 304 19–29 mm, 20-pack Amazon](https://www.amazon.ca/dp/B091GJWGHQ) | 2 | port barb, tee ¾ branch |
 
 
 ## Total

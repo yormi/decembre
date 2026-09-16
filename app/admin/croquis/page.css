@@ -1,0 +1,14 @@
+/* Croquis pépinière admin page. Dark drawing surface inside the standard card;
+   container goes wide (.container-wide, core/logic.js setPage). */
+#page-croquis-content .croquis-toolbar { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 8px; }
+#page-croquis-content .croquis-toolbar button { padding: 5px 10px; border: none; border-radius: 3px; font-family: inherit; font-size: 12px; font-weight: 600; cursor: pointer; background: #c9d64f; color: #1c2408; }
+#page-croquis-content .croquis-toolbar button:disabled { background: #2a332d; color: #5a665e; cursor: default; }
+#page-croquis-content .croquis-toolbar .croquis-save-message { font-size: 12px; align-self: center; }
+#page-croquis-content .croquis-table-size { display: flex; gap: 8px; align-items: center; margin-bottom: 8px; font-size: 12px; color: var(--text-muted); }
+#page-croquis-content .croquis-table-size:empty { display: none; }
+#page-croquis-content .croquis-table-size input { width: 54px; padding: 3px 6px; border: 1px solid var(--border); border-radius: 3px; font-family: inherit; font-size: 12px; }
+#page-croquis-content .croquis-canvas { background: #101613; padding: 16px; border-radius: 6px; overflow-x: auto; user-select: none; -webkit-user-select: none; }
+#page-croquis-content .croquis-canvas svg { display: block; margin: 0 auto; background: #1a231e; border: 1px solid #243029; border-radius: 4px; touch-action: none; }
+#page-croquis-content .croquis-stats { display: flex; gap: 16px; margin-top: 8px; font-size: 13px; flex-wrap: wrap; }
+#page-croquis-content .croquis-stats .croquis-stat-value { font-size: 18px; font-weight: 700; }
+#page-croquis-content .croquis-stats .croquis-stat-label { font-size: 11px; color: var(--text-muted); margin-left: 4px; }

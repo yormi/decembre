@@ -22,8 +22,8 @@ fill drops: `tray-drop.md`; drain + overflow ports:
 
 - Header × 1
 
-- Fill valve fed from the same 10 psi regulator as the racks
-  (`nursery-common.md` manifold). Header along the table,
+- Fill valve fed by the table line off the main té
+  (`nursery-common.md` § Main → table line). Header along the table,
   mirror of the greenhouse; dimensions TBD with the nursery
   plumbing design.
 
@@ -60,7 +60,7 @@ fill drops: `tray-drop.md`; drain + overflow ports:
 | [Vinyl ¾ po ID (Active Aqua)](https://indoorfarmer.ca/products/active-aqua-black-vinyl-tubing-3-4-id) | ~0,6 m | port → tee |
 | Té réduit PVC sch 40 2 × 2 × ¾ po, slip × slip × FPT (quincaillerie) | 1 | on the drain main |
 | [Adaptateur mâle ¾ po MPT × ¾ po insert](https://duboisag.com/ca_fr/adaptateur-male-mpt-x-insert.html) | 1 | screws in the tee FPT, vinyl on the barb |
-| [Collier de serrage inox ½–¾ po, 25-pack Amazon](https://www.amazon.ca/Stainless-Steel-Clamps-Repair-Tubing/dp/B09BM21R92) | 2 | port barb, adapter barb |
+| [Collier inox 304 19–29 mm, 20-pack Amazon](https://www.amazon.ca/dp/B091GJWGHQ) | 2 | port barb, adapter barb |
 
 **Drain main**
 
@@ -78,7 +78,7 @@ fill drops: `tray-drop.md`; drain + overflow ports:
 | [Vinyl ¾ po ID (Active Aqua)](https://indoorfarmer.ca/products/active-aqua-black-vinyl-tubing-3-4-id) | ~0,4 m | port → tee |
 | Té réduit PVC sch 40 2 × 2 × ¾ po, slip × slip × FPT (quincaillerie) | 1 | on the overflow main |
 | [Adaptateur mâle ¾ po MPT × ¾ po insert](https://duboisag.com/ca_fr/adaptateur-male-mpt-x-insert.html) | 1 | screws in the tee FPT, vinyl on the barb |
-| [Collier de serrage inox ½–¾ po, 25-pack Amazon](https://www.amazon.ca/Stainless-Steel-Clamps-Repair-Tubing/dp/B09BM21R92) | 2 | port barb, adapter barb |
+| [Collier inox 304 19–29 mm, 20-pack Amazon](https://www.amazon.ca/dp/B091GJWGHQ) | 2 | port barb, adapter barb |
 
 **Overflow main**
 
@@ -86,3 +86,15 @@ fill drops: `tray-drop.md`; drain + overflow ports:
 |---|---|---|
 | Tuyau PVC sch 40 2 po × 10 pi (quincaillerie) | ~2 sticks | unvalved, straight to the floor drain |
 | Adaptateur PVC 2 po slip × FPT + bouchon MPT (quincaillerie) | 1 | high end, unscrew to flush |
+
+
+## Total
+
+- **~1 600 $ CA** — trays ~1 180, port kits ~80, drops +
+  header ~80, drain + overflow drops ~90, mains + valve
+  ~165.
+
+- Shared kit (Orisha zone, tensiometer), supply line,
+  fertigation station, floor drain: `common.md`,
+  `nursery-common.md`.
+

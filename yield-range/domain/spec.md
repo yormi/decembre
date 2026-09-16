@@ -39,7 +39,7 @@ page: `light/`.
   never re-spaced
 - `transplantWeightG` — fresh weight at day `nurseryDays` (g/plant)
 - `harvestWeightG` — fresh weight at day `nurseryDays + fieldDays` (g/plant)
-- `trajectory` — `{ day, weight_g, regime }` from day 1 to `nurseryDays + fieldDays` (`carbon-balance-growth`)
+- `trajectory` — `{ day, weight_g, regime, closed }` from day 1 to `nurseryDays + fieldDays`; `closed` = canopy closed on that day's last step (`canopy-closure-detection`)
 - `headsPerWeek`, `kgPerWeek`, `kgPerMonth`, `kgPerYear`, `yearlySalesDollars`, `traysInNursery`, `traysSeededPerWeek`, `traysByNurseryWeek` (`throughput-and-sales`)
 
 ### Assumptions
@@ -107,7 +107,8 @@ The canopy is "closed" on any step where `LAI ≥ LAI_CLOSURE` (= 3, `fi ≈
 0.88`) — leaves fully shade the ground and growth is light-limited.
 `daysClosed` accumulates while closed and **resets to 0** when the canopy
 re-opens — which happens when ground area jumps (a thin event multiplies it;
-transplant swaps tray area for field spacing).
+transplant swaps tray area for field spacing). Each `trajectory` point
+carries `closed` for that day.
 
 ---
 

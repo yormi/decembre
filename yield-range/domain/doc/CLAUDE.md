@@ -16,8 +16,10 @@ on the same axis, so no conversion is needed.
 The register. Nursery cohorts A–D (Salanova 50-cell): 2026 spring weights and its
 second cohort, the 2026-07 drought+heat **biggest-plant** 5 g, and the 2026-07
 **representative-plant** series 0.5 / 1.4 / 9.2 g with the only measured light
-reading at Décembre (12 226 J/cm² over 7 days, pyranometer). Plus canopy
-coverage, the 180 g field head, and the spring nursery leachate figures.
+reading at Décembre (12 226 J/cm² over 7 days, pyranometer). The 2026 summer
+weekly weighing log, cohorts H–S (50-cell and 3 po pots, nursery weeks 3–5 →
+field weeks 1–2, the only nursery→field series). Plus canopy coverage, the
+180 g field head, and the spring nursery leachate figures.
 
 **Reach for:**
 - Any Décembre number. Start here; this is the only place a weight or a light

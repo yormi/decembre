@@ -106,9 +106,23 @@ station, floor drain): `nursery-common.md`.
 
 ## Total
 
-**~23 000 $ CA** (rack supply + distribution + drain +
-overflow + floor drain ~3 500 specced; nursery-table
-plumbing still TBD — expect a few hundred more).
+**~25 500 $ CA**, all zones.
+
+| File | Est. ($ CA) |
+|---|---|
+| `nursery-racks.md` (hardware only) | ~6 150 |
+| `nursery-common.md` (supply, fertigation station, floor drain) | ~6 585 |
+| `nursery-table.md` | ~1 600 |
+| `greenhouse-table.md` (incl. its station) | ~6 950 |
+| Shared purchases above | ~4 260 |
+
+
+## Just in case
+
+| Item | Qty | Note |
+|---|---|---|
+| Coude 45 insertion ¾ po | 3 | |
+| Mamelon insertion ¾ × ¾ po (PE coupling) | 2 | joins 2 PE lengths; 2 clamps each |
 
 
 ## Bonus

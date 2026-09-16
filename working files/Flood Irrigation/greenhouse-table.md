@@ -109,7 +109,7 @@ pump + inline pressure controller.
 | [Vinyl ¾ po ID (Active Aqua)](https://indoorfarmer.ca/products/active-aqua-black-vinyl-tubing-3-4-id) | ~0,6 m | port → tee |
 | Té réduit PVC sch 40 2 × 2 × ¾ po, slip × slip × FPT (quincaillerie) | 1 | on the drain main |
 | [Adaptateur mâle ¾ po MPT × ¾ po insert](https://duboisag.com/ca_fr/adaptateur-male-mpt-x-insert.html) | 1 | screws in the tee FPT, vinyl on the barb |
-| [Collier de serrage inox ½–¾ po, 25-pack Amazon](https://www.amazon.ca/Stainless-Steel-Clamps-Repair-Tubing/dp/B09BM21R92) | 2 | port barb, adapter barb |
+| [Collier inox 304 19–29 mm, 20-pack Amazon](https://www.amazon.ca/dp/B091GJWGHQ) | 2 | port barb, adapter barb |
 
 **Drain main**
 
@@ -128,10 +128,22 @@ pump + inline pressure controller.
 | [Vinyl ¾ po ID (Active Aqua)](https://indoorfarmer.ca/products/active-aqua-black-vinyl-tubing-3-4-id) | ~0,4 m | port → tee |
 | Té réduit PVC sch 40 1½ × 1½ × ¾ po, slip × slip × FPT (quincaillerie) | 1 | on the overflow line |
 | [Adaptateur mâle ¾ po MPT × ¾ po insert](https://duboisag.com/ca_fr/adaptateur-male-mpt-x-insert.html) | 1 | screws in the tee FPT, vinyl on the barb |
-| [Collier de serrage inox ½–¾ po, 25-pack Amazon](https://www.amazon.ca/Stainless-Steel-Clamps-Repair-Tubing/dp/B09BM21R92) | 2 | port barb, adapter barb |
+| [Collier inox 304 19–29 mm, 20-pack Amazon](https://www.amazon.ca/dp/B091GJWGHQ) | 2 | port barb, adapter barb |
 
 **Overflow main**
 
 | Item | Qty | Note |
 |---|---|---|
 | Overflow line: 1½ po PVC sch 40 | ~30 m (100 pi) | merges into waste run after the drain valve |
+
+
+## Total
+
+- **~6 950 $ CA** — trays ~2 950, port kits ~195, station
+  ~2 900 (Dosatrons ~2 750 landed, quote Dubois), header +
+  drops ~160, drain drops + main + waste run ~480, overflow
+  drops + line ~245.
+
+- Shared kit (Orisha zone, tensiometer, pump on hand):
+  `common.md`.
+

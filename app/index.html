@@ -19,6 +19,7 @@
 <!-- @include app/admin/week/page.css -->
 <!-- @include app/admin/diagnostic/page.css -->
 <!-- @include app/admin/rendement/page.css -->
+<!-- @include app/admin/croquis/page.css -->
 </style>
 </head>
 <body>
@@ -146,6 +147,7 @@
        app/admin/rendement/page.html; wired via setPage('rendement') →
        buildYieldRange() in app/admin/rendement/logic.js. -->
   <!-- @include app/admin/rendement/page.html -->
+  <!-- @include app/admin/croquis/page.html -->
 
   <!-- @include app/operator/lettuce/page.html -->
 
@@ -612,6 +614,7 @@ const ACCEPTED_EXCESSES = [
 <!-- @include app/admin/nutrition/bilan/lettuce/logic.js -->
 
 <!-- @include app/admin/rendement/logic.js -->
+<!-- @include app/admin/croquis/logic.js -->
 // Supplemental-LED-hours table. No page of its own: buildLight() renders
 // into the slot the Laitue routine's light card draws.
 <!-- @include app/operator/lumiere/lettuce/logic.js -->

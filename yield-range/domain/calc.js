@@ -147,7 +147,7 @@ function predictYield(inputs) {
   let weightDry = EMERGENCE_DRY_MASS_G;
   let daysClosed = 0;
   // Day 1 is the sowing day, in the nursery → plug DM.
-  const trajectory = [{ day: 1, weight_g: weightDry / PLUG_DRY_MATTER_FRACTION, regime: 'nursery' }];
+  const trajectory = [{ day: 1, weight_g: weightDry / PLUG_DRY_MATTER_FRACTION, regime: 'nursery', closed: false }];
   let transplantWeightG = null;
 
   for (let step = 1; step <= totalSteps; step++) {
@@ -191,7 +191,7 @@ function predictYield(inputs) {
 
     if (step % stepsPerDay === 0) {
       const dayInt = 1 + step / stepsPerDay;
-      trajectory.push({ day: dayInt, weight_g: weightFresh, regime: dayInt <= nurseryDays ? 'nursery' : 'field' });
+      trajectory.push({ day: dayInt, weight_g: weightFresh, regime: dayInt <= nurseryDays ? 'nursery' : 'field', closed: canopyClosed });
       if (dayInt === nurseryDays) transplantWeightG = weightFresh;
     }
   }

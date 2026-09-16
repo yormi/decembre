@@ -72,6 +72,7 @@ describe('carbon-balance-growth', () => {
     assert.equal(out.trajectory.length, BASE.nurseryDays + 14);
     for (const p of out.trajectory) {
       assert.equal(p.regime, p.day <= BASE.nurseryDays ? 'nursery' : 'field');
+      assert.equal(typeof p.closed, 'boolean');
     }
   });
 

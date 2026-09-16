@@ -158,6 +158,69 @@ basis was not recorded. Reads coverage, not grams; resolution and camera angle
 limit precision.
 
 
+## Weekly weighing log — 2026 summer (Poids des têtes de laitue sheet)
+
+Source: Décembre sheet « Poids des têtes de laitue », screenshot 2026-09-14.
+One weight per cohort per week — nursery weeks 3, 4, 5, then field weeks 1
+and 2 after transplant. Salanova. Two nursery regimes, split by the sheet's
+own rule: 50-cell trays (June sowings, field 4 rangs × 6 po) and 3 po pots
+(July–August sowings, field 3 rangs × 8 po).
+
+**Day axis.** Sowing = day 1. Transplant day = sowing → transplant date on the
+sheet. Nursery week N read ≈ day 7N + 1, field week N ≈ transplant day + 7N.
+
+⚠ **Read days are not logged** — the sheet has week columns, not dates.
+Nursery week 5 and the transplant day coincide for the 3 po cohorts (all
+transplanted at day 36–38).
+⚠ Plant-selection basis not recorded (representative vs biggest); n per cell
+not recorded (assume 1).
+⚠ Shoot-only vs whole cut head not recorded for the field weights.
+⚠ Weights in g, integers as written on the sheet.
+
+**Growing conditions across the series** (Guillaume, 2026-09-14):
+
+- Watering problems persisted through all cohorts logged here — not a clean
+  well-watered regime.
+
+- Nursery fertigation moved to 5× per week with the 2026-08-25 recipe change,
+  in effect from ~2026-08-31 — only cohorts P–S saw it, and only in their last
+  nursery weeks.
+
+- Bolting observed across the period (cohort N noted on the sheet; others
+  not attributed).
+
+- Re-spacing 2:1 happened at nursery week 4 for these cohorts. Regime change
+  decided 2026-09-14: re-space 2:1 at week 3 from cohort S on.
+
+### Cohorts H–K — 50-cell, field 4 rangs × 6 po
+
+| Cohort | Sown | Transplant (day) | Nur wk 3 | Nur wk 4 | Nur wk 5 | Field wk 1 | Field wk 2 | Sheet note |
+|---|---|---|---|---|---|---|---|---|
+| H | 2026-06-08 | 2026-07-10 (33) | — | 6 | transplanted | — | 21 | |
+| I | 2026-06-15 | 2026-07-21 (37) | below scale (⚠ « trop petit ») | 6 | transplanted | — | 23 | |
+| J | 2026-06-22 | 2026-07-24 (33) | 1 | 9 | transplanted | 24 | 26 | « Very very hot » |
+| K | 2026-07-03 | 2026-08-07 (36) | 1 | 5 | 13 | 20 | 32 | ⚠ « Semis pas beau et gros choc de transplant, en 72-cell » — tray type 72-cell, not 50 |
+
+### Cohorts L–S — 3 po pots, field 3 rangs × 8 po
+
+| Cohort | Sown | Transplant (day) | Nur wk 3 | Nur wk 4 | Nur wk 5 | Field wk 1 | Field wk 2 | Sheet note |
+|---|---|---|---|---|---|---|---|---|
+| L | 2026-07-10 | 2026-08-14 (36) | 2 | 5 | 23 | 20 | 34 | |
+| M | 2026-07-15 | 2026-08-21 (38) | 5 | 12 | 18 | 31 | 34 | « Le semis était pas beau » |
+| N | 2026-07-24 | 2026-08-28 (36) | 2 | 10 | 18 | 24 | 32 | « semis monté en fleurs, espacement semaine 4 = trop tard » |
+| O | 2026-07-31 | 2026-09-04 (36) | 3 | 9 | 26 | 32 | 47 | « plus beau semis jusqu'à maintenant, pas monté en fleurs & table inondante » |
+| P | 2026-08-07 | 2026-09-11 (36) | 2 | 10 | 25 | pending | pending | |
+| Q | 2026-08-14 | pending | 5 | 24 | pending | | | |
+| R | 2026-08-21 | pending | 8 | pending | | | | |
+| S | 2026-08-28 | pending | pending | | | | | |
+
+Sheet header targets (Guillaume's, not observations): nursery wk 3 10–14 g ·
+wk 4 22–30 g · wk 5 40–60 g.
+
+⚠ Sheet has « Max » and « Average » columns cut off in the screenshot — not
+transcribed.
+
+
 ## Field head — 2026-07-09
 
 File: `field-head-180g-aphids-2026-07-09.jpeg`. Single scale photo, CAS scale.

@@ -6,7 +6,7 @@ Layout mirrors the navigation:
 
 - `core/` — app-wide chrome: router (`setPage`/`setCrop`/`toggleAdmin`), session state + greenhouse constants, page-recalc, Bilan dispatch, top tool-bar. Powers both operator and admin.
 - `operator/` — operator-facing pages, `<section>/<function>/<crop>/` (e.g. `operator/nutrition/foliar/tomato/`, `operator/effeuillage/lettuce/`, `operator/lumiere/lettuce/`). A page that serves all crops from one shared toggle drops the `<crop>` level (e.g. `operator/nutrition/fertigation/`).
-- `admin/` — admin pages: `nutrition/{bilan,builder,historique}/`, `irrigation/<crop>/`, `diagnostic/`, `week/`, `rendement/`.
+- `admin/` — admin pages: `nutrition/{bilan,builder,historique}/`, `irrigation/<crop>/`, `diagnostic/`, `week/`, `rendement/`, `croquis/`.
 - `lib/` — shared styles + cross-cutting primitives (`global.css`, `admin.css`, `sun.js`, `spec-strings.js`, `tomato.css`).
 
 Elm island: `admin/nutrition/bilan/tomato/Main.elm` is the tomato Bilan (`elm.json` at repo root; `build.mjs` compiles it to `dist/elm-bilan-tomato.js` every build, watches `.elm`). The legacy JS Bilan lives in `admin/nutrition/bilan/tomato.backup/`, reachable via the « Tomates (backup) » crop button; verifier + `loadTomatoApp` target it (jsdom doesn't load the external Elm script).

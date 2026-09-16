@@ -10,10 +10,11 @@
        app/admin/rendement/logic.js. -->
   <div id="page-rendement-content" class="page-content" style="display:none;">
 
-    <!-- Three cards side by side on desktop (see page.css .yr-row), stacked
-         under 1100px. -->
+    <!-- Desktop (see page.css .yr-row): narrow side column (Configuration over
+         Rendement) + chart filling the rest of the viewport. Stacked under 1000px. -->
     <div class="yr-row">
 
+    <div class="yr-side">
     <!-- Four input toggle groups, rendered from data by renderYieldRangeInputs. -->
     <div class="card">
       <div class="card-title">Configuration</div>
@@ -28,10 +29,11 @@
       <div class="card-title">Rendement</div>
       <div id="yr-results"></div>
     </div>
+    </div><!-- end .yr-side -->
 
-    <!-- Growth chart: full-cycle nursery→field trajectory, selected thin
-         factors vs the default plan (×2 S4 · ×5 S5), transplant marker,
-         field-cap line. From window.YieldRange.predictYield. -->
+    <!-- Growth chart: full-cycle nursery→field trajectory, selected pots/tray
+         vs the default plan (16/8/8), transplant marker, canopy-closure dots.
+         From window.YieldRange.predictYield. -->
     <div class="card">
       <div class="card-title">Trajectoire de croissance</div>
       <div id="yr-chart-container" style="width:100%; overflow:hidden;"></div>
