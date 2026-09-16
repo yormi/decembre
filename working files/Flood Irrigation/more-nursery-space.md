@@ -77,4 +77,3 @@ per rack ~1 200 $ hardware → phase 1 ~17 000 $, phase 2 ~8 400 $.
 - Add-on shelf price on uline.ca not confirmed.
 - Tray lip clearance on 24" deep shelf (drawn for 18") → check on unit 1.
 - Bottom-row collector crossing the corridor.
-- Croquis default (15 / 6) ≠ sketch (14 / 7) → align croquis to sketch.
