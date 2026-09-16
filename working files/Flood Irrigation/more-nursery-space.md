@@ -16,7 +16,7 @@ count). Supply + fertigation station: `nursery-common.md`. Drain:
 | 1 | 14 | 70 | 70 | both 80 × 22 tables |
 | 2 | +7 → 21 | 105 | 105 | both 80 × 22 tables |
 
-## Layout (sketch 2026-09-16)
+## Layout (sketch 2026-09-16 — `more-nursery-space-layout.png`)
 
 Room 16'3" × 27'. Door 38" top-left, corridor 36" across the room, Hot Dawg
 top-right (keep-out ring + heat cone → no rack under it).
