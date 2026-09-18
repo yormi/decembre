@@ -16,7 +16,8 @@
 | -- v1 (LEGACY) |  | SunBlaster T5HO 54W + reflector | 4 | 216 | ~216 µmol/m²/s | 14 |
 | -- v2 |  | Barrina T8 42W, 6" pitch | 4 | 168 | 240 µmol/m²/s (measured) | 15.6 |
 | Nursery week 3 rack | 20 | Barrina T8 42W, 5" pitch | 5 | 210 | ~300 µmol/m²/s | 19.4 |
-| HPS tables (nursery wk4) | 25 | DE HPS 1100 W, dim 85 % | 3 |  | ~385 µmol/m²/s avg (est. @ 3.5 ft — re-measure at 4 ft) | ~25 |
+| Nursery week 4 rack | 25 | Barrina T8 42W, 4" pitch | 6 | 252 | ~360 µmol/m²/s | 23.3 |
+| HPS tables (nursery wk4) | 25 | DE HPS 1100 W, dim 85 % | 3 |  | ~385 µmol/m²/s avg (at 4 ft) | ~25 |
 | Greenhouse table (nursery use) | 25 | LED |  |  | 280 µmol/m²/s |  |
 | Lettuce beds |  | LED |  |  | 200 µmol/m²/s |  |
 | Tomato beds |  | none (sun-only) |  |  |  |  |
