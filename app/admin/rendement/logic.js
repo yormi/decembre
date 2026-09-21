@@ -174,10 +174,14 @@ function renderYieldResults(m) {
     + row('Poids tête récolte', `${fmtInt(m.harvestWeightG)} g`)
     + `</div>`;
 
-  // Trays on the bench per cohort age week, from the model, + shelves needed.
+  // Trays on the bench per cohort age week, from the model, + full racks-extra shelves needed.
   const weekCell = value => `<td style="text-align:center; font-family:'DM Mono',monospace; padding:5px 4px;">${value}</td>`;
   const weekCells = m.traysByNurseryWeek.map(w => weekCell(fmtInt(w.trays))).join('');
-  const shelfCells = m.traysByNurseryWeek.map(w => weekCell(Math.ceil(w.trays / YR_TRAYS_PER_SHELF))).join('');
+  const racksAndShelves = trays => {
+    const fullRacks = Math.floor(trays / YR_TRAYS_PER_RACK);
+    return `${fullRacks}-${Math.ceil((trays - fullRacks * YR_TRAYS_PER_RACK) / YR_TRAYS_PER_SHELF)}`;
+  };
+  const shelfCells = m.traysByNurseryWeek.map(w => weekCell(racksAndShelves(w.trays))).join('');
   const weekHeaders = m.traysByNurseryWeek.map(w =>
     `<th style="text-align:center; font-weight:600; color:var(--text-muted); padding:5px 4px;">${w.week}</th>`).join('');
   const weekTable = `<div style="margin-top:16px; font-size:12px;">`
@@ -185,7 +189,7 @@ function renderYieldResults(m) {
     + `<table style="width:100%; border-collapse:collapse; border:1px solid var(--border);">`
     + `<tr style="border-bottom:1px solid var(--border);">${weekHeaders}</tr>`
     + `<tr>${weekCells}</tr><tr style="border-top:1px solid var(--border); color:var(--text-muted);">${shelfCells}</tr></table>`
-    + `<div style="font-size:10px; color:var(--text-muted); margin-top:4px;">2ᵉ ligne : tablettes de ${YR_TRAYS_PER_SHELF} plateaux</div></div>`;
+    + `<div style="font-size:10px; color:var(--text-muted); margin-top:4px;">2ᵉ ligne : racks pleins de ${YR_TRAYS_PER_RACK} plateaux - tablettes de ${YR_TRAYS_PER_SHELF} en plus</div></div>`;
 
   const inputs = readYieldRangeInputs();
   const note = `<div style="margin-top:12px; font-size:10.5px; color:var(--text-muted); line-height:1.5;">`

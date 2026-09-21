@@ -49,8 +49,9 @@ Rendered from `predictYield(inputs)`:
 - Detail rows: seedling (transplant) weight, harvest weight
 - **Plateaux par semaine de pépinière** table: one column per nursery week
   (headers `1`..`5`, bare numbers); row 1 trays on the bench for that cohort
-  age (`traysByNurseryWeek`), row 2 shelves = `ceil(trays / 4)`, caption
-  **`2ᵉ ligne : tablettes de 4 plateaux`**
+  age (`traysByNurseryWeek`), row 2 `<floor(trays / 20)>-<ceil(remainder / 4)>` (full racks of 20,
+  then extra shelves of 4), caption
+  **`2ᵉ ligne : racks pleins de 20 plateaux - tablettes de 4 en plus`**
 - Assumptions note: transplant day, pots/tray + days, tray, sowing backup
   % (tray counts), bed geometry, price/kg
 
