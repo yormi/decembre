@@ -287,13 +287,13 @@ function renderYieldChart(inputs, selectedDay = null) {
     svg += `<text x="${ML + 40}" y="${ly}" text-anchor="start" font-size="${FS_LEGEND}" fill="var(--text)">${s.label} · ${reading}</text>`;
     ly += 21;
   });
-  svg += `<circle cx="${ML + 23}" cy="${ly - 4}" r="4" fill="#c0392b" stroke="var(--card)" stroke-width="1.5"/>`;
-  svg += `<text x="${ML + 40}" y="${ly}" text-anchor="start" font-size="${FS_LEGEND}" fill="var(--text)">Fermeture de la canopée</text>`;
 
   // Axis titles.
   svg += `<text x="${ML + plotW / 2}" y="${H - 8}" text-anchor="middle" font-size="${FS_TITLE}" fill="${axisColor}" font-weight="600">Jours depuis semis</text>`;
   svg += `<text x="16" y="${MT + plotH / 2}" text-anchor="middle" font-size="${FS_TITLE}" fill="${axisColor}" font-weight="600" transform="rotate(-90 16 ${MT + plotH / 2})">Poids tête (g)</text>`;
 
   svg += `</svg>`;
-  return svg;
+  // Red-dot legend, HTML below the chart.
+  return svg + `<div style="display:flex; align-items:center; gap:8px; margin-top:8px; font-size:12.5px; color:var(--text);">`
+    + `<span style="display:inline-block; width:9px; height:9px; border-radius:50%; background:#c0392b;"></span>Fermeture de la canopée</div>`;
 }
