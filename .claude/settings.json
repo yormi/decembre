@@ -30,6 +30,23 @@
           }
         ]
       }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "Edit|Write|MultiEdit|NotebookEdit|Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/home/guillaume/Documents/Random_Projects/decembre/scripts/frozen-files-hook.sh"
+          }
+        ]
+      }
+    ]
+  },
+  "permissions": {
+    "deny": [
+      "Edit(working files/Flood Irrigation/prototype.md)",
+      "Write(working files/Flood Irrigation/prototype.md)"
     ]
   }
 }

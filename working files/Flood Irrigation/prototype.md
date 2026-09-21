@@ -1,3 +1,5 @@
+<!-- FROZEN 2026-09-21 — as-built record of the ordered prototype. Do not edit (enforced: .claude/settings.json deny + scripts/frozen-files-hook.sh). Design changes go to nursery-racks.md / more-nursery-space.md. -->
+
 # Prototype — 4 trays on 2 racks + supply line
 
 Water only (phase 1), one zone branch, 2 trays per rack.
