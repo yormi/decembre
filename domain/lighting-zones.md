@@ -17,7 +17,6 @@
 | -- v2 |  | Barrina T8 42W, 6" pitch | 4 | 168 | 240 µmol/m²/s (measured) | 15.6 |
 | Nursery week 3 rack | 20 | Barrina T8 42W, 5" pitch | 5 | 210 | ~300 µmol/m²/s | 19.4 |
 | Nursery week 4 rack | 25 | Barrina T8 42W, 4" pitch | 6 | 252 | ~360 µmol/m²/s | 23.3 |
-| HPS tables (nursery wk4) | 25 | DE HPS 1100 W, dim 85 % | 3 |  | ~385 µmol/m²/s avg (at 4 ft) | ~25 |
 | Greenhouse table (nursery use) | 25 | LED |  |  | 280 µmol/m²/s |  |
 | Lettuce beds |  | LED |  |  | 200 µmol/m²/s |  |
 | Tomato beds |  | none (sun-only) |  |  |  |  |
@@ -25,11 +24,6 @@
 - All rack + HPS zones run **18 h/d** ; mol/m²/d assume 18 h
 
 - Rack zones: 24" Uline shelf, Barrina strips 9" above canopy
-
-- HPS tables: 6 tables 3'×6' under 3 fixtures @ 4 ft; ~25 mol/m²/d is the wk3+ ceiling (max wk4 can take)
-    - full power would land ~450–460 µmol/m²/s avg (~30 mol/m²/d) → over ceiling
-    - 4 ft cuts radiant heat vs 3.5 ft but spills more light off table edges → avg at plug height likely below the 3.5 ft estimate
-    - estimate from fixture PPF; confirm with pyranometer pass at plug height (center vs table edge — edges can run half of center)
 
 
 ### Fixture output (PPF)

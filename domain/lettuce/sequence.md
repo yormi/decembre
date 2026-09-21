@@ -143,7 +143,6 @@ Same, as bench area (trays × 0,15 m²):
 |---|---|
 | Uline rack, normally filled | 20 |
 | Uline rack, packed | 25 |
-| Nursery table | 12 |
 | Greenhouse table | 9 |
 
 | Zone | Holds | Trays |

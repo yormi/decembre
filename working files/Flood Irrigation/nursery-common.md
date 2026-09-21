@@ -1,7 +1,7 @@
-# Nursery — common infrastructure (racks + table, weeks 1–4)
+# Nursery — common infrastructure (racks, weeks 1–4)
 
-Shared design for all zones: `common.md`. Served zones:
-`nursery-racks.md`, `nursery-table.md`.
+Shared design for all zones: `common.md`. Served zone:
+`nursery-racks.md`.
 
 
 ## Nursery water supply (bib → fill valves, weeks 1–4)
@@ -21,10 +21,8 @@ Shared design for all zones: `common.md`. Served zones:
     calibration; 0,5–15 GPM covers one zone at a time,
     racks ≤ 9 drops ≈ 30 L/min)
   → adaptateur ¾ MPT × ¾ insert → ¾ PE 10 pi
-  → main ¾ PE 50 pi along the racks → té
-    → racks distribution (`nursery-racks.md` § Fill)
-    → table line ¾ PE 5 pi → table Orisha valve
-      (`nursery-table.md`).
+  → main ¾ PE 50 pi along the racks
+    → racks distribution (`nursery-racks.md` § Fill).
   GHT threads half-way into NPT and leaks — never mix them.
 
 - Buried ¾ PE 6 po deep, 2 pi inside the exterior wall is
@@ -53,28 +51,18 @@ Shared design for all zones: `common.md`. Served zones:
 | [Coude 90 insertion ¾ po — cédule 40](https://duboisag.com/ca_fr/insert-ell-90-1399.html) | 2 | |
 | [Collier inox 304 19–29 mm, 20-pack Amazon](https://www.amazon.ca/dp/B091GJWGHQ) | 5 | 1/barb: adapter + 2 coudes × 2 |
 
-**Main** (along the racks, tee splits to the table line)
+**Main** (along the racks)
 
 | Item | Qty | Note |
 |---|---|---|
 | [Boyau PE standard ¾ po × 100 pi, 75 psi (BO CO-075-75-1)](https://duboisag.com/ca_fr/boyau-flexible-standard-en-polyethylene-bobine.html) | 50 pi | |
 | [Coude 90 insertion ¾ po — cédule 40](https://duboisag.com/ca_fr/insert-ell-90-1399.html) | 2 | |
-| [Té insertion ¾ po — cédule 40 (II 1401007)](https://duboisag.com/ca_fr/te-insertion.html) | 1 | racks / table split |
-| [Collier inox 304 19–29 mm, 20-pack Amazon](https://www.amazon.ca/dp/B091GJWGHQ) | 7 | 1/barb: 2 coudes × 2 + té × 3 |
-
-**Main → table line**
-
-| Item | Qty | Note |
-|---|---|---|
-| [Boyau PE standard ¾ po × 100 pi, 75 psi (BO CO-075-75-1)](https://duboisag.com/ca_fr/boyau-flexible-standard-en-polyethylene-bobine.html) | 5 pi | |
-| [Coude 90 insertion ¾ po — cédule 40](https://duboisag.com/ca_fr/insert-ell-90-1399.html) | 1 | |
-| [Adaptateur mâle réduit 1 po MPT × ¾ po insert](https://duboisag.com/ca_fr/adaptateur-male-reduit-mpt-x-insert.html) | 1 | table Orisha valve inlet; teflon on MPT, gear clamp on barb |
-| [Collier inox 304 19–29 mm, 20-pack Amazon](https://www.amazon.ca/dp/B091GJWGHQ) | 3 | 1/barb: coude × 2 + adapter |
+| [Collier inox 304 19–29 mm, 20-pack Amazon](https://www.amazon.ca/dp/B091GJWGHQ) | 4 | 1/barb: 2 coudes × 2 |
 
 ## Nursery fertigation (station, weeks 1–4 — phase 2)
 
-- Lives at the HPS table off the heated line; serves the
-  racks + HPS table. Inserts between the bib adapter and the
+- Lives in the nursery room off the heated line; serves
+  the racks. Inserts between the bib adapter and the
   10 psi regulator: bib adapter → dual check → 50 psi
   regulator → Dosatron A → B → inline filter → 10 psi
   regulator (already installed in phase 1).
@@ -99,8 +87,8 @@ On hand: 1× 200 L lidded drum (stock A).
 ## Nursery floor drain
 
 See `nursery-floor-drain.md` — sewer tie-in, ~3 500 $ CA
-turnkey. Rack collector + nursery-table drains discharge
-above its grate (air gap).
+turnkey. Rack collectors discharge above its grate (air
+gap).
 
 
 ## Total

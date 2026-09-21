@@ -1,7 +1,6 @@
 # Nursery floor drain — sewer tie-in
 
-Destination for the rack collector + nursery-table drains
-(`nursery-racks.md`, `nursery-table.md`). Ties into the existing
+Destination for the rack collectors (`nursery-racks.md`). Ties into the existing
 greenhouse → property sanitary sewer line, ~15 pi from the
 nursery, invert ~5 pi below grade. Municipal sewer: no
 volume limit.
@@ -18,7 +17,7 @@ volume limit.
   cycle → no insulation. Trap indoors, heated. Off-season:
   jug of water weekly or plug the drain.
 
-- Collector + table drains discharge ABOVE the grate — air
+- Collectors discharge ABOVE the grate — air
   gap, never sealed in.
 
 - Dig before ground freeze (October).

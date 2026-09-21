@@ -2,7 +2,7 @@
 
 Two bulkhead ports per tray, both Active Aqua ¾ po
 fill/drain fittings through the tray floor. The drop below the
-port (vinyl, valve, tee into the zone line) is zone-specific: `nursery-racks.md`, `nursery-table.md`,
+port (vinyl, valve, tee into the zone line) is zone-specific: `nursery-racks.md`,
 `greenhouse-table.md`.
 
 - **Drain port**: fitting + screen (inside). Flush with the

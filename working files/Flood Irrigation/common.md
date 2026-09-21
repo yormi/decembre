@@ -6,8 +6,8 @@ the nursery feed (`STORED_RECIPE.nursery.fertigation`).
 Builds on `flood-tray-salinity-handoff.md` (high-rise flood
 trays, drain-to-waste, leach schedule).
 
-Per-zone files: `nursery-racks.md` (weeks 1–3),
-`nursery-table.md` (week 4), `greenhouse-table.md` (week 5).
+Per-zone files: `nursery-racks.md` (weeks 1–4),
+`greenhouse-table.md` (week 5).
 Tray fill drop, identical in all zones: `tray-drop.md`.
 Tray drain + overflow ports, identical: `tray-ports.md`.
 Nursery-only infrastructure (water supply, fertigation
@@ -21,7 +21,7 @@ station, floor drain): `nursery-common.md`.
 | 1 | Germination rack (Uline) | 31 |
 | 2 | Racks week 2 (Uline) | 31 |
 | 3 | Racks week 3 (Uline) | 31 |
-| 4 | HPS table (nursery) | 62 |
+| 4 | Racks week 4 (Uline) | 62 |
 | 5 | Greenhouse nursery table | 124 |
 
 
@@ -74,7 +74,7 @@ station, floor drain): `nursery-common.md`.
   light flood every 2-3 d (overwatering = damping-off).
   Week 2: feed every 1-2 d, ~15-20 min contact. Weeks 3-5:
   daily feed, 20-30 min contact. Tensiometers (1/rack zone
-  + tables) tune frequency from data.
+  + greenhouse table) tune frequency from data.
 
 - **Fill times** @50 L/min: 1 po feed ~250 L ≈ 5 min; 2 po
   water ~500 L ≈ 10 min. Daily delivered: nursery ~285 L,
@@ -106,13 +106,12 @@ station, floor drain): `nursery-common.md`.
 
 ## Total
 
-**~25 500 $ CA**, all zones.
+**~23 900 $ CA**, all zones.
 
 | File | Est. ($ CA) |
 |---|---|
 | `nursery-racks.md` (hardware only) | ~6 150 |
 | `nursery-common.md` (supply, fertigation station, floor drain) | ~6 585 |
-| `nursery-table.md` | ~1 600 |
 | `greenhouse-table.md` (incl. its station) | ~6 950 |
 | Shared purchases above | ~4 260 |
 

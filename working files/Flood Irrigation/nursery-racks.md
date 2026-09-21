@@ -1,11 +1,11 @@
-# Nursery racks (weeks 1–3)
+# Nursery racks (weeks 1–4)
 
 Shared design: `common.md`. Water supply (bib → fill valves), fertigation
 station, floor drain: `nursery-common.md`.
 
 ## Trays
 
-- Tray × 25 (1/shelf: zone 1 = 8, zone 2 = 8, zone 3 = 9)
+- Tray × 1/shelf, 5/rack. Rack count per phase: `more-nursery-space.md`.
 
 **Tray**
 
@@ -15,10 +15,24 @@ station, floor drain: `nursery-common.md`.
 | Tray port kit (`tray-ports.md`) | 1 | a few fittings/extensions/screens BOUGHT |
 
 
+## Levelling (soil floor)
+
+- Slab under each post → rack roughly level → shim each tray, not the rack.
+
+| Item | Qty | Note |
+|---|---|---|
+| Dalle de patio béton 12 × 12 po (quincaillerie) | 4 | 1/post; bed on 2–3 cm compacted stone dust; level slab-to-slab with a 4 pi level or string line |
+| Poussière de pierre, sac 30 kg (quincaillerie) | 1 | ~1 sac / rack |
+| Uline levelling feet | 4 | ship with the unit; take the last 1–2 cm |
+| Cales caoutchouc 1/16–1/8 po | ~10 | under the high tray corners per tier; check with 5 L poured in, water at the drain port corner |
+
+- Never shim on bare soil: heaves in spring, settles under a flooded tray.
+
+
 ## Fill
 
 - Distribution × 1
-- Zone branch × 3 (1/zone)
+- Zone branch × 4 (1/week-zone, weeks 1–4)
 
 - Buried ¾ PE 6 po deep, 2 pi inside the exterior wall is
   safe with the room at 15 °C 24/7. Only a multi-day heat

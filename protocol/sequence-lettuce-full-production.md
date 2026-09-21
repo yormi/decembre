@@ -7,7 +7,7 @@
 | Week 1 | Nursery | Germination rack | 31 |
 | Week 2 | Nursery | Racks week 2 | 31 |
 | Week 3 | Nursery | Racks week 3 | 31 |
-| Week 4 | Nursery | HPS table | 62 |
+| Week 4 | Nursery | Racks week 4 | 62 |
 | Week 5 | Greenhouse | Nursery table | 124 |
 
 
@@ -37,5 +37,5 @@ across tray edges, 5.6 in on A↔C diagonals.
 | -- v3 | Barrina T8 42W | 3 |
 | Nursery week 2 rack | Barrina T8 42W | 4 |
 | Nursery week 3 rack | Barrina T8 42W | 5 |
-| HPS tables (nursery wk4) | HPS 1100 W, dim 85 % | 3 |
+| Nursery week 4 rack | Barrina T8 42W | 6 |
 | Greenhouse table (nursery use) | LED |  |

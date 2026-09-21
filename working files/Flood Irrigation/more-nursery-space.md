@@ -1,7 +1,8 @@
-# More nursery space — tables → racks, 2 phases
+# More nursery space — racks only, 2 phases
 
-Replace the nursery tables with flood-tray racks. 5 tiers per rack, one
-2×4 rack tray per tier. Room plan: app `admin/croquis`.
+No nursery flood table: weeks 1–4 all on flood-tray racks; the HPS table is
+retired. Week 5 stays on the greenhouse table (`greenhouse-table.md`).
+5 tiers per rack, one 2×4 rack tray per tier. Room plan: app `admin/croquis`.
 
 Why: seedlings pack and stretch by week 3 in the current footprint;
 re-spacing 2:1 at week 3 needs ~2× the shelf area. Rack design, water path,
@@ -11,10 +12,22 @@ count). Supply + fertigation station: `nursery-common.md`. Drain:
 
 ## Phases
 
-| Phase | Racks | Tiers | Trays | Keeps |
-|---|---|---|---|---|
-| 1 | 14 | 70 | 70 | both 80 × 22 tables |
-| 2 | +7 → 21 | 105 | 105 | both 80 × 22 tables |
+| Phase | Racks | Tiers | Rack trays | 1020 flats (× 4) | Keeps |
+|---|---|---|---|---|---|
+| 1 | 14 | 70 | 70 | 280 | both 80 × 22 work tables |
+| 2 | +7 → 21 | 105 | 105 | 420 | both 80 × 22 work tables |
+
+## Flats budget (weeks 1–4 on racks)
+
+| Week | Flats (+10 %) | Rack trays | Racks |
+|---|---|---|---|
+| 1 | 31 | 8 | 1.6 |
+| 2 | 31 | 8 | 1.6 |
+| 3, spaced 2:1 | 62 | 16 | 3.1 |
+| 4 | 62 | 16 | 3.1 |
+| **Total** | **186** | **47** | **~10** |
+
+Phase 1 (14 racks) covers weeks 1–4 with ~4 racks spare. Phase 2 (21) could also absorb week 5 (124 flats → 31 rack trays → 7 racks) if the greenhouse table is ever dropped.
 
 ## Layout (sketch 2026-09-16 — `more-nursery-space-layout.png`)
 
@@ -39,8 +52,7 @@ Bottom row long side against the wall, corridor side open.
 |---|---|---|
 | [Uline epoxy wire shelving 48 × 24 × 72, green (H-3819G)](https://www.uline.ca/Product/Detail/H-3819G) | 1 | 426 $ at 3+ ; ships with 4 shelves |
 | Uline add-on epoxy shelf 48 × 24, green | 1 | 5th tier ; ~90 $ (estimate) |
-| Patio slab 12 × 12 po + stone dust | 4 | one under each post, levelled to each other |
-| Rubber shims | ~10 | under high tray corners, per tier — level the tray, not the rack |
+| Levelling (slabs, shims) | 1 set | `nursery-racks.md` § Levelling |
 | Rack tray + port kit + fill drop + drain/overflow drops | 5 | `nursery-racks.md` per-shelf tables |
 | Downpipe + collector tee | 1 | `nursery-racks.md` § Waste |
 
@@ -69,7 +81,7 @@ per rack ~1 200 $ hardware → phase 1 ~17 000 $, phase 2 ~8 400 $.
 ## Order
 
 1. Phase 1 shells + slabs → level → install collector → trays + drops.
-2. Move week 1–3 cohorts to racks → free both tables for week 4–5.
+2. Move weeks 1–4 to racks → HPS table retired.
 3. Phase 2 when week-3 spacing 2:1 fills phase 1.
 
 ## Open
