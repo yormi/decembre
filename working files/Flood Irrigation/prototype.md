@@ -1,4 +1,4 @@
-<!-- FROZEN 2026-09-21 — as-built record of the ordered prototype. Do not edit (enforced: .claude/settings.json deny + scripts/frozen-files-hook.sh). Design changes go to nursery-racks.md / more-nursery-space.md. -->
+<!-- FROZEN 2026-09-21 — as-built record of the ordered prototype. Do not edit (enforced: .claude/settings.json deny). Design changes go to nursery-racks.md / more-nursery-space.md. -->
 
 # Prototype — 4 trays on 2 racks + supply line
 
