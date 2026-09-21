@@ -287,6 +287,8 @@ function renderYieldChart(inputs, selectedDay = null) {
     svg += `<text x="${ML + 40}" y="${ly}" text-anchor="start" font-size="${FS_LEGEND}" fill="var(--text)">${s.label} · ${reading}</text>`;
     ly += 21;
   });
+  svg += `<circle cx="${ML + 23}" cy="${ly - 4}" r="4" fill="#c0392b" stroke="var(--card)" stroke-width="1.5"/>`;
+  svg += `<text x="${ML + 40}" y="${ly}" text-anchor="start" font-size="${FS_LEGEND}" fill="var(--text)">Fermeture de la canopée</text>`;
 
   // Axis titles.
   svg += `<text x="${ML + plotW / 2}" y="${H - 8}" text-anchor="middle" font-size="${FS_TITLE}" fill="${axisColor}" font-weight="600">Jours depuis semis</text>`;

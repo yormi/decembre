@@ -87,7 +87,8 @@ Full-cycle fresh-weight trajectories from `predictYield().trajectory`:
   (`closed` flips false → true), i.e. once per packed stretch: tray,
   after each thin, in the field
 - vertical marker at the transplant day, labeled **`Transplant J<day>`**
-- legend shows each curve's harvest weight
+- legend shows each curve's harvest weight, then a red-dot entry
+  **`Fermeture de la canopée`**
 
 - press anywhere on the plot → vertical cursor at the nearest whole day,
   labeled **`J<day>`** at its foot, a dot on each curve at that day, and the
