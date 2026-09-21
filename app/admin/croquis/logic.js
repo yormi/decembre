@@ -19,6 +19,13 @@ const CROQUIS_COLORS = {
   grid: '#243029', rack: '#c9d64f', rackEdge: '#8a9a2e', rack2: '#5fc9a8', rack2Edge: '#3a8a70',
   rackBad: '#e06c4f', text: '#e8eee6', dim: '#7d8a80', heat: '#e0904f', table: '#9ab8c9', measure: '#8fd0e8',
 };
+// Cohort week a rack holds (1-4); fill + edge per week, overrides phase color.
+const CROQUIS_WEEK_COLORS = {
+  1: { fill: '#7fb3e6', edge: '#3f78b0' },
+  2: { fill: '#c49be8', edge: '#8a5cc2' },
+  3: { fill: '#f0b35a', edge: '#b87a1e' },
+  4: { fill: '#f08cb0', edge: '#b8497a' },
+};
 
 const CROQUIS_CORRIDOR_WIDTH = 36;
 const CROQUIS_CORRIDOR_Y1 = CROQUIS_ROOM_HEIGHT - 48 - CROQUIS_CORRIDOR_WIDTH;
@@ -114,6 +121,11 @@ function croquisRotate() {
 function croquisTogglePhase() {
   CROQUIS.items = CROQUIS.items.map(item => CROQUIS.selected.has(item.id) && item.kind !== 'table'
     ? { ...item, phase: item.phase === 2 ? 1 : 2 } : item);
+  renderCroquis();
+}
+function croquisSetWeek(week) {
+  CROQUIS.items = CROQUIS.items.map(item => CROQUIS.selected.has(item.id) && item.kind !== 'table'
+    ? { ...item, week: week || undefined } : item);
   renderCroquis();
 }
 function croquisAddRack() {
@@ -228,6 +240,7 @@ function croquisWire() {
   document.getElementById('croquis-toolbar').addEventListener('click', event => {
     const button = event.target.closest('button[data-action]');
     if (!button) return;
+    if (button.dataset.action === 'week') { croquisSetWeek(parseInt(button.dataset.week, 10)); return; }
     ({ addRack: croquisAddRack, addTable: croquisAddTable, rotate: croquisRotate, phase: croquisTogglePhase,
        remove: croquisRemove, reset: croquisReset, save: croquisSave })[button.dataset.action]();
   });
@@ -289,7 +302,10 @@ function renderCroquisToolbar() {
     `<button data-action="addRack">+ rack</button><button data-action="addTable">+ table</button>`
     + `<button data-action="rotate"${none}>Pivoter</button><button data-action="phase"${none}>Phase 1/2</button>`
     + `<button data-action="remove"${none}>Retirer</button><button data-action="reset">Réinitialiser</button>`
-    + `<button data-action="save">Enregistrer par défaut</button>${message}`;
+    + `<button data-action="save">Enregistrer par défaut</button>${message}`
+    + `<span class="croquis-toolbar-label">Semaine :</span>`
+    + [1, 2, 3, 4].map(week => `<button data-action="week" data-week="${week}" style="background:${CROQUIS_WEEK_COLORS[week].fill};"${none}>S${week}</button>`).join('')
+    + `<button data-action="week" data-week="0"${none}>Aucune</button>`;
 }
 
 function renderCroquisTableSize() {
@@ -332,9 +348,10 @@ function renderCroquisCanvas() {
     const d = croquisDimensions(item);
     const isTable = item.kind === 'table', isPhase2 = item.phase === 2 && !isTable;
     const isBlocked = blocked.has(item.id), isSelected = CROQUIS.selected.has(item.id);
-    const fill = isBlocked ? C.rackBad : isTable ? C.table : isPhase2 ? C.rack2 : C.rack;
-    const stroke = isSelected ? C.text : isTable ? '#5c7a8a' : isPhase2 ? C.rack2Edge : C.rackEdge;
-    const label = isTable ? `table ${item.tableLength ?? 72}×${item.tableDepth ?? 30}` : isPhase2 ? 'P2' : 'P1';
+    const weekColor = !isTable && CROQUIS_WEEK_COLORS[item.week];
+    const fill = isBlocked ? C.rackBad : isTable ? C.table : weekColor ? weekColor.fill : isPhase2 ? C.rack2 : C.rack;
+    const stroke = isSelected ? C.text : isTable ? '#5c7a8a' : weekColor ? weekColor.edge : isPhase2 ? C.rack2Edge : C.rackEdge;
+    const label = isTable ? `table ${item.tableLength ?? 72}×${item.tableDepth ?? 30}` : (item.week ? `S${item.week} · ` : '') + (isPhase2 ? 'P2' : 'P1');
     return `<g data-rack="${item.id}" style="cursor:grab;">`
       + `<rect x="${item.x * PX}" y="${item.y * PX}" width="${d.w * PX}" height="${d.h * PX}" fill="${fill}" stroke="${stroke}" stroke-width="${isSelected ? 2.5 : 1.2}" rx="2"/>`
       + `<text x="${(item.x + d.w / 2) * PX}" y="${(item.y + d.h / 2) * PX + 3}" text-anchor="middle" font-size="9" fill="${isTable ? '#1c2c36' : '#22300e'}" font-weight="700">${label}</text></g>`;
@@ -361,5 +378,6 @@ function renderCroquisStats() {
   document.getElementById('croquis-stats').innerHTML =
     stat(phase1, 'racks phase 1', CROQUIS_COLORS.rackEdge) + stat(phase2, 'racks phase 2', CROQUIS_COLORS.rack2Edge)
     + stat(racks.length, 'total', 'var(--text)') + stat(racks.length * CROQUIS_TRAYS_PER_RACK, 'plateaux', 'var(--text)')
-    + stat(blockedCount, 'bloqués', blockedCount > 0 ? CROQUIS_COLORS.rackBad : 'var(--text)');
+    + stat(blockedCount, 'bloqués', blockedCount > 0 ? CROQUIS_COLORS.rackBad : 'var(--text)')
+    + [1, 2, 3, 4].map(week => stat(racks.filter(item => item.week === week).length, `racks S${week}`, CROQUIS_WEEK_COLORS[week].edge)).join('');
 }

@@ -11,8 +11,8 @@ Admin page. Floor-plan sketch of the nursery room. French UI text.
   33 × 26 in at (138, 10) tilted 15°, 6 in clearance ring, 15 ft cone
   aimed 15° off straight-down
 
-- **Items**: rack 48 × 28 in (phase 1 or 2) · table L × D in (default
-  72 × 30, editable 12–120). Rotation 0 / 90°.
+- **Items**: rack 48 × 28 in (phase 1 or 2, optional cohort week 1–4) ·
+  table L × D in (default 72 × 30, editable 12–120). Rotation 0 / 90°.
 
 - **Default layout**: 21 racks (2 top wall, 4 left, 4 right, 6 central
   island 2 × 3, 5 below corridor) + 2 tables 80 × 22 above and below the
@@ -35,12 +35,17 @@ Admin page. Floor-plan sketch of the nursery room. French UI text.
 - Table size inputs (L × D) show when a table is selected; apply to all
   selected tables
 
+- **Semaine** buttons S1–S4 + **Aucune** (enabled with a selection) set /
+  clear the cohort week on selected racks; tables ignored
+
 
 ## drawing
 
 - Item colors: phase 1 `#c9d64f` · phase 2 `#5fc9a8` · table `#9ab8c9` ·
-  blocked `#e06c4f`; selected = white 2.5 px stroke; label `P1` / `P2` /
-  `table L×D`
+  blocked `#e06c4f`; a rack with a week takes the week color instead of
+  the phase color: S1 `#7fb3e6` · S2 `#c49be8` · S3 `#f0b35a` · S4
+  `#f08cb0`; selected = white 2.5 px stroke; label `P1` / `P2`, prefixed
+  `S<week> · ` when set / `table L×D`
 
 - **Blocked** = overlaps another item, or touches corridor / door zone
 
@@ -49,4 +54,4 @@ Admin page. Floor-plan sketch of the nursery room. French UI text.
   when nothing sits between; shown only when 8–60 in; de-duplicated
 
 - Stats: racks phase 1 · phase 2 · total · plateaux (racks × 20) ·
-  bloqués (red when > 0)
+  bloqués (red when > 0) · racks S1..S4 (count per week, week color)

@@ -4,6 +4,8 @@
 #page-croquis-content .croquis-toolbar button { padding: 5px 10px; border: none; border-radius: 3px; font-family: inherit; font-size: 12px; font-weight: 600; cursor: pointer; background: #c9d64f; color: #1c2408; }
 #page-croquis-content .croquis-toolbar button:disabled { background: #2a332d; color: #5a665e; cursor: default; }
 #page-croquis-content .croquis-toolbar .croquis-save-message { font-size: 12px; align-self: center; }
+#page-croquis-content .croquis-toolbar .croquis-toolbar-label { font-size: 12px; color: var(--text-muted); align-self: center; margin-left: 8px; }
+#page-croquis-content .croquis-toolbar button[data-action="week"]:disabled { background: #2a332d; }
 #page-croquis-content .croquis-table-size { display: flex; gap: 8px; align-items: center; margin-bottom: 8px; font-size: 12px; color: var(--text-muted); }
 #page-croquis-content .croquis-table-size:empty { display: none; }
 #page-croquis-content .croquis-table-size input { width: 54px; padding: 3px 6px; border: 1px solid var(--border); border-radius: 3px; font-family: inherit; font-size: 12px; }
