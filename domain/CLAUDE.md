@@ -23,6 +23,11 @@ in its crop; shared soil chemistry + methods live here.
   agent choice, spray compatibility, supplier prices.
   Protocol: `../protocol/aphids-biocontrol.md`.
 
+- `nursery-room.md` — nursery room geometry: floor, door, corridor,
+  Hot Dawg position + clear height (measured). Feeds `app/admin/croquis`.
+  **Reach for this when:** placing anything in the nursery room or
+  changing the croquis fixed zones.
+
 - `spinach.md` — spinach irrigation domain.
   **Reach for this when:** working spinach water scheduling.
 

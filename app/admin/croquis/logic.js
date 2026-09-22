@@ -32,13 +32,14 @@ const CROQUIS_CORRIDOR_Y1 = CROQUIS_ROOM_HEIGHT - 48 - CROQUIS_CORRIDOR_WIDTH;
 const CROQUIS_CORRIDOR_Y2 = CROQUIS_ROOM_HEIGHT - 48;
 const CROQUIS_DOOR = { x: 0, y: 0, w: 36, h: 36 };
 
-// Hot Dawg HD60 to scale, hung 10 in off the top wall, aimed 15° off
-// straight-down. ~15 ft throw.
-const CROQUIS_HEATER_WIDTH = 33, CROQUIS_HEATER_DEPTH = 26, CROQUIS_HEATER_ANGLE = 15;
+// Hot Dawg HD60 placed from wall measurements (domain/nursery-room.md):
+// corner nearest the east wall at (160, 30), tilted 25° clockwise, ~15 ft
+// throw along the tilt. Footprint (unrotated) top-left below.
+const CROQUIS_HEATER_WIDTH = 33, CROQUIS_HEATER_DEPTH = 17, CROQUIS_HEATER_ANGLE = 25;
 const CROQUIS_HEATER_CLEARANCE = 6;
-const CROQUIS_HEATER = { x: 138, y: 10 };
+const CROQUIS_HEATER = { x: 125, y: 22 };
 const CROQUIS_HEATER_CENTER = { x: CROQUIS_HEATER.x + CROQUIS_HEATER_WIDTH / 2, y: CROQUIS_HEATER.y + CROQUIS_HEATER_DEPTH / 2 };
-const CROQUIS_HEATER_DIRECTION = { x: -0.2588, y: 0.9659 };
+const CROQUIS_HEATER_DIRECTION = { x: -0.4226, y: 0.9063 };
 const CROQUIS_CONE = (() => {
   const apex = {
     x: CROQUIS_HEATER_CENTER.x + CROQUIS_HEATER_DIRECTION.x * (CROQUIS_HEATER_DEPTH / 2),

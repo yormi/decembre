@@ -8,8 +8,9 @@ Admin page. Floor-plan sketch of the nursery room. French UI text.
 
 - **Fixed zones** (drawn, keep-out for racks/tables): corridor 36 in deep
   across the room at y 240–276 · door 36 × 36 in top-left · Hot Dawg heater
-  33 × 26 in at (138, 10) tilted 15°, 6 in clearance ring, 15 ft cone
-  aimed 15° off straight-down
+  33 × 17 in, unrotated top-left (125, 22), tilted 25° so its east corner
+  sits at (160, 30), 6 in clearance ring, 15 ft cone along the tilt. Source:
+  `domain/nursery-room.md`
 
 - **Items**: rack 48 × 28 in (phase 1 or 2, optional cohort week 1–4) ·
   table L × D in (default 72 × 30, editable 12–120). Rotation 0 / 90°.
