@@ -35,3 +35,33 @@ west wall, y from the north wall, inches.
 
 - 67 in clear height < 72 in rack post → no rack fits under the unit.
   The keep-out ring (6 in) and the heat cone (~15 ft, along the tilt) stay.
+
+
+### Hot Dawg HD60 — manual figures
+
+Source: [Modine Hot Dawg HD/HDB installation manual](https://www.modinehvac.com/wp-content/uploads/2020/01/Hot-Dawg-Power-Vented.pdf), tables 4.1 / 18.2 / 19.1.
+
+| Clearance to combustibles (HD) | Value |
+|---|---|
+| Top, bottom, access side, non-access side | 1 in |
+| Rear (or 6 in past the motor) | 18 in |
+| Vent connector | 4 in |
+| Front / discharge | no listed clearance; rule = "no obstruction of intake or discharge", combustible surfaces ≤ 160 °F |
+
+| Performance (HD60) | Value |
+|---|---|
+| Output | 49 200 BTU/h |
+| Airflow | 990 CFM, outlet 653 ft/min |
+| Air temperature rise | 45 °F (25 °C) |
+| Max mounting height | 12 ft |
+| Heat throw at max height | 36 ft |
+
+| Dimensions (HD60, in) | Value |
+|---|---|
+| A width | 26.8 |
+| I overall length | 34.5 |
+| J | 25 |
+| C height | 16.5 |
+
+- Footprint per manual ≈ 26.8 × 34.5 in → the sketch's 33 × 17 is off;
+  re-measure the sides and redo the tilt fit.
