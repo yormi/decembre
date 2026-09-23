@@ -37,5 +37,5 @@ across tray edges, 5.6 in on A↔C diagonals.
 | -- v3 | Barrina T8 42W | 3 |
 | Nursery week 2 rack | Barrina T8 42W | 4 |
 | Nursery week 3 rack | Barrina T8 42W | 5 |
-| Nursery week 4 rack | Barrina T8 42W | 6 |
+| Nursery week 4 rack | Barrina T8 42W | 5 |
 | Greenhouse table (nursery use) | LED |  |

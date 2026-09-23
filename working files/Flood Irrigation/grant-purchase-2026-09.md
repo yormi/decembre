@@ -10,8 +10,7 @@ supplier. Prices before tax, checked 2026-09-23 unless noted.
 | 1 | Uline epoxy racks 48 × 24 × 72, casters, 6 shelves (5 growing + top for LED) | 7 | 8 on hand → 15 |
 | 2 | xTrays 3×6 flood tables, greenhouse week 5 | 15 | `greenhouse-table.md` |
 | 3 | Flood trays 2×4, rack tiers | 70 | 7 × 10-pack; 15 racks × 5 tiers = 75, 4 on hand from prototype → 1 short, accepted |
-| 4 | Lighting — week 3 shelves, 5 × T8 each | 8 shelves → 40 strips | `domain/lighting-zones.md` |
-| 4 | Lighting — week 4 shelves, 6 × T8 each | 31 shelves → 186 strips | idem |
+| 4 | Lighting — 5 × T8 per shelf, weeks 3 + 4 | 39 shelves → 195 strips | `domain/lighting-zones.md` |
 | 5 | Drain valves ¾ SS NO, 1 per tray | 70 | one per 2×4 tray |
 
 Not in this phase: port fittings, fill drops, downpipes,
@@ -63,17 +62,16 @@ shelf (measured, `domain/lighting-zones.md`).
 | Zone | Shelves | Strips / shelf | Strips | PPFD | mol/d @18 h |
 |---|---|---|---|---|---|
 | Week 3 | 8 | 5 | 40 | ~300 | 19,4 |
-| Week 4 | 31 | 6 | 186 | ~360 | 23,3 |
-| **Total** | 39 | | **226** | | |
+| Week 4 | 31 | 5 | 155 | ~300 | 19,4 (target 25 — accepted, or 21 h photoperiod → 22,7) |
+| **Total** | 39 | | **195** | | |
 
 | Item | Qty | Unit | Total |
 |---|---|---|---|
-| [Barrina T8 42 W 4 pi 5000 K, 6-pack](https://www.amazon.ca/dp/B0B3CCLW5D) | 38 packs = 228 strips | 132,59 | 5 038 |
-| **Lighting** | | | **~5 040** |
+| [Barrina T8 42 W 4 pi 5000 K, 6-pack](https://www.amazon.ca/dp/B0B3CCLW5D) | 33 packs = 198 strips | 132,59 | 4 375 |
+| **Lighting** | | | **~4 380** |
 
-Power: week 3 shelf 210 W · week 4 shelf 252 W → 8 × 210 + 31 × 252 =
-9 490 W ≈ 79 A at 120 V continuous (PF 1) — electrician quote needed,
-outside this phase.
+Power: 210 W/shelf → 39 × 210 = 8 190 W ≈ 68 A at 120 V continuous (PF 1);
+~9,7 A per rack — electrician quote needed, outside this phase.
 
 ## 5 — Drain valves (Amazon.ca, free shipping)
 
@@ -91,11 +89,11 @@ Adapters, vinyl, clamps, PSUs per valve: `nursery-racks.md` § Drain, outside th
 | 1 Racks | 5 550 | 5 550 |
 | 2 xTrays | 3 250 | 3 250 |
 | 3 Flood trays 2×4 | 9 300 | 10 000 |
-| 4 Lighting | 5 040 | 5 040 |
+| 4 Lighting | 4 380 | 4 380 |
 | 5 Drain valves | 4 920 | 4 920 |
-| **Total** | **~28 060** | **~28 760** |
+| **Total** | **~27 400** | **~28 100** |
 
-Gap to 29 000: ~250 – 950. Top-up candidates (free ship / pickup):
+Gap to 29 000: ~900 – 1 600. Top-up candidates (free ship / pickup):
 85 port kits ~1 100 (Indoor Farmer), 3 PSU 24 V ~105 (Amazon).
 
 ## Before ordering
