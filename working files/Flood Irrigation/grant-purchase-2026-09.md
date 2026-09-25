@@ -29,15 +29,15 @@ collector, Orisha zones, fertigation station, floor drain, electrician.
 
 Existing 8 racks already have 6 shelves. Open: caster option/price on H-3819G.
 
-## 2 — xTrays (Trimleaf, one order)
+## 2 — xTrays (Trimleaf) — PURCHASED 2026-09-25
 
 | Item | Qty | Unit | Total |
 |---|---|---|---|
-| [xTrays Classic flood table 3×6, Canadian ABS](https://www.trimleaf.ca/products/xtrays-classic-flood-table-canadian-abs), MOQ 10 | 15 | 196,95 | 2 954 |
-| Shipping | | | ~300 |
-| **xTrays** | | | **~3 250** |
+| [xTrays Classic flood table 3×6, white, Canadian ABS](https://www.trimleaf.ca/products/xtrays-classic-flood-table-canadian-abs) | 15 | 196,95 | 2 954,25 |
+| Shipping | | | 145,00 |
+| **xTrays** | | | **3 099,25** |
 
-## 3 — Flood trays 2×4 (Indoor Farmer, same order as block 6)
+## 3 — Flood trays 2×4 (Indoor Farmer, same order as block 6) — PURCHASED 2026-09-25
 
 Quoted by Indoor Farmer 2026-09-25: 100 $/tray, 150 $ shipping for 60.
 Beats Bootstrap (~121 $ CAD + US freight) and keeps it domestic.
@@ -78,7 +78,7 @@ Power: 210 W/shelf → 47 × 210 = 9 870 W ≈ 82 A at 120 V continuous (PF 1);
 
 Adapters, vinyl, clamps, PSUs per valve: `nursery-racks.md` § Drain, outside this phase.
 
-## 6 — Tray ports + vinyl (Indoor Farmer, same order as block 3)
+## 6 — Tray ports + vinyl (Indoor Farmer, same order as block 3) — PURCHASED 2026-09-25
 
 | Item | Per tray | Qty | Unit | Total |
 |---|---|---|---|---|
@@ -95,18 +95,18 @@ Skip the combo kit (½ + ¾, not two ¾). Clamps: Amazon. Adapters, réduits, fi
 | Block | Low | High |
 |---|---|---|
 | 1 Racks | 5 550 | 5 550 |
-| 2 xTrays | 3 250 | 3 250 |
+| 2 xTrays | 3 099 | 3 099 |
 | 3 Flood trays 2×4 | 6 150 | 6 150 |
 | 4 Lighting | 5 300 | 5 300 |
 | 5 Drain valves | 4 220 | 4 220 |
 | 6 Ports + vinyl | 1 275 | 1 275 |
-| **Total** | **~25 700** | **~25 700** |
+| **Total** | **~25 550** | **~25 550** |
 
-Gap to 29 000: ~3 300. Top-up candidates (free ship / pickup):
+Purchased so far (blocks 2, 3, 6): ~10 520. Remaining to order: racks,
+lighting, drain valves ~15 070. Gap to 29 000: ~3 450. Top-up candidates (free ship / pickup):
 3 PSU 24 V ~105 (Amazon), electrician subpanel + load-shed relay quote
 ~2 200 – 3 000.
 
 ## Before ordering
 
-- Indoor Farmer: confirm ship date on the 60-tray quote.
 - Grant: does a dated PO + deposit count, or final invoice only?
