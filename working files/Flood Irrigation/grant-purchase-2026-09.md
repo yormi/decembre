@@ -9,7 +9,7 @@ supplier. Prices before tax, checked 2026-09-23 unless noted.
 |---|---|---|---|
 | 1 | Uline epoxy racks 48 × 24 × 72, casters, 6 shelves (5 growing + top for LED) | 7 | 8 on hand → 15 |
 | 2 | xTrays 3×6 flood tables, greenhouse week 5 | 15 | `greenhouse-table.md` |
-| 3 | Flood trays 2×4, rack tiers | 60 | 6 × 10-pack; 63 shelves used (wk 1 8 · wk 2 8 · wk 3 at 2:1 16 · wk 4 at 4:1 31), 4 on hand → 59 needed, 1 spare; 12 of 75 shelves empty |
+| 3 | Flood trays 2×4, rack tiers | 60 | Indoor Farmer quote 100 $/tray + 150 $ shipping (2026-09-25); 63 shelves used (wk 1 8 · wk 2 8 · wk 3 at 2:1 16 · wk 4 at 4:1 31), 4 on hand → 59 needed, 1 spare; 12 of 75 shelves empty |
 | 4 | Lighting — 5 × T8 per shelf, weeks 3 + 4 | 47 shelves → 235 strips | `domain/lighting-zones.md`; weeks 1–2 (16 shelves) lit by the existing racks' strips |
 | 5 | Drain valves ¾ SS NO, 1 per tray | 60 | one per new 2×4 tray; 4 on hand |
 | 6 | Tray port kits + vinyl ¾ | 75 trays | 60 rack + 15 xTrays; prototype's 4 kits already used |
@@ -37,23 +37,18 @@ Existing 8 racks already have 6 shelves. Open: caster option/price on H-3819G.
 | Shipping | | | ~300 |
 | **xTrays** | | | **~3 250** |
 
-## 3 — Flood trays 2×4 (Bootstrap Farmer, one US freight order)
+## 3 — Flood trays 2×4 (Indoor Farmer, same order as block 6)
 
-Botanicare 2×4 is sold out at every Canadian retailer checked
-2026-09-23 (Indoor Farmer, Grow Depot, Urban Grow, Mr. Fertilizer,
-Garden FX, IncrediGrow, Hydro-Lite). Same footprint 45,5 × 25,5 po.
+Quoted by Indoor Farmer 2026-09-25: 100 $/tray, 150 $ shipping for 60.
+Beats Bootstrap (~121 $ CAD + US freight) and keeps it domestic.
 
-| Item | Qty | Unit (USD) | Total (USD) | CAD (×1,36) |
-|---|---|---|---|---|
-| [Grow Rack Flood Tray 2×4, 10-pack](https://www.bootstrapfarmer.com/products/rack-tray-2-ft-x-4-ft) | 6 packs = 60 | 892,99 | 5 358 | ~7 290 |
-| Freight, ~40 kg/pack, pallet | | | | ~700 – 1 300 |
-| Duty | | | | ~0 (US-made, CUSMA) — confirm |
-| **Flood trays** | | | | **~8 000 – 8 600** |
+| Item | Qty | Unit | Total |
+|---|---|---|---|
+| [Grow Rack Shallow Rack Tray 45,5 × 25,5 × 4,5 po](https://indoorfarmer.ca/products/grow-rack-shallow-flood-tray-for-wire-shelving), quoted price | 60 | 100 | 6 000 |
+| Shipping, quoted | | | 150 |
+| **Flood trays** | | | **6 150** |
 
-Open: stock flag inconsistent on their site (collection feed OK, product
-JSON sold out) → add to cart with Canadian address, or email for a quote
-and ship date. Ask whether Hawthorne Canada can commit 60 Botanicare
-before choosing.
+Fallback if they can't deliver 60: [Bootstrap Farmer 10-packs](https://www.bootstrapfarmer.com/products/rack-tray-2-ft-x-4-ft), 892,99 USD each, US freight.
 
 ## 4 — Lighting (Amazon.ca, free shipping)
 
@@ -83,7 +78,7 @@ Power: 210 W/shelf → 47 × 210 = 9 870 W ≈ 82 A at 120 V continuous (PF 1);
 
 Adapters, vinyl, clamps, PSUs per valve: `nursery-racks.md` § Drain, outside this phase.
 
-## 6 — Tray ports + vinyl (Indoor Farmer, free shipping over 125 $)
+## 6 — Tray ports + vinyl (Indoor Farmer, same order as block 3)
 
 | Item | Per tray | Qty | Unit | Total |
 |---|---|---|---|---|
@@ -101,18 +96,17 @@ Skip the combo kit (½ + ¾, not two ¾). Clamps: Amazon. Adapters, réduits, fi
 |---|---|---|
 | 1 Racks | 5 550 | 5 550 |
 | 2 xTrays | 3 250 | 3 250 |
-| 3 Flood trays 2×4 | 8 000 | 8 600 |
+| 3 Flood trays 2×4 | 6 150 | 6 150 |
 | 4 Lighting | 5 300 | 5 300 |
 | 5 Drain valves | 4 220 | 4 220 |
 | 6 Ports + vinyl | 1 275 | 1 275 |
-| **Total** | **~27 550** | **~28 150** |
+| **Total** | **~25 700** | **~25 700** |
 
-Gap to 29 000: ~850 – 1 450. Top-up candidates (free ship / pickup):
+Gap to 29 000: ~3 300. Top-up candidates (free ship / pickup):
 3 PSU 24 V ~105 (Amazon), electrician subpanel + load-shed relay quote
 ~2 200 – 3 000.
 
 ## Before ordering
 
-- Bootstrap: cart test with Canadian address → freight + stock.
-- Hawthorne Canada / Indoor Farmer: can they commit 72 Botanicare by a date?
+- Indoor Farmer: confirm ship date on the 60-tray quote.
 - Grant: does a dated PO + deposit count, or final invoice only?
