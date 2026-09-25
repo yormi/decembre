@@ -12,8 +12,9 @@ supplier. Prices before tax, checked 2026-09-23 unless noted.
 | 3 | Flood trays 2×4, rack tiers | 60 | 6 × 10-pack; 63 shelves used (wk 1 8 · wk 2 8 · wk 3 at 2:1 16 · wk 4 at 4:1 31), 4 on hand → 59 needed, 1 spare; 12 of 75 shelves empty |
 | 4 | Lighting — 5 × T8 per shelf, weeks 3 + 4 | 47 shelves → 235 strips | `domain/lighting-zones.md`; weeks 1–2 (16 shelves) lit by the existing racks' strips |
 | 5 | Drain valves ¾ SS NO, 1 per tray | 60 | one per new 2×4 tray; 4 on hand |
+| 6 | Tray port kits + vinyl ¾ | 75 trays | 60 rack + 15 xTrays; prototype's 4 kits already used |
 
-Not in this phase: port fittings, fill drops, downpipes,
+Not in this phase: fill drops, downpipes,
 collector, Orisha zones, fertigation station, floor drain, electrician.
 
 ## 1 — Racks (Uline, one freight order)
@@ -82,6 +83,18 @@ Power: 210 W/shelf → 47 × 210 = 9 870 W ≈ 82 A at 120 V continuous (PF 1);
 
 Adapters, vinyl, clamps, PSUs per valve: `nursery-racks.md` § Drain, outside this phase.
 
+## 6 — Tray ports + vinyl (Indoor Farmer, free shipping over 125 $)
+
+| Item | Per tray | Qty | Unit | Total |
+|---|---|---|---|---|
+| [Active Aqua fill/drain fitting ¾](https://indoorfarmer.ca/products/active-aqua-fill-drain-fitting-3-4) | 2 (drain + overflow) | 150 | 3,95 | 592,50 |
+| [Active Aqua screen fitting](https://indoorfarmer.ca/products/active-aqua-fill-drain-screen-fitting) | 2 | 150 | 1,25 | 187,50 |
+| [Active Aqua extension fitting](https://indoorfarmer.ca/products/active-aqua-fill-drain-extension-fitting-copy) | 2 (overflow standpipe) | 150 | 1,15 | 172,50 |
+| [Active Aqua vinyl ¾ ID, 100 pi roll](https://indoorfarmer.ca/products/active-aqua-black-vinyl-tubing-3-4-id) | ~1 m → 246 pi, ~96 pi left from the prototype roll | 2 | 134,95 | 269,90 |
+| **Ports + vinyl** | | | | **~1 220** |
+
+Skip the combo kit (½ + ¾, not two ¾). Clamps: Amazon. Adapters, réduits, fill-drop valves: Dubois.
+
 ## Phase total
 
 | Block | Low | High |
@@ -91,11 +104,12 @@ Adapters, vinyl, clamps, PSUs per valve: `nursery-racks.md` § Drain, outside th
 | 3 Flood trays 2×4 | 8 000 | 8 600 |
 | 4 Lighting | 5 300 | 5 300 |
 | 5 Drain valves | 4 220 | 4 220 |
-| **Total** | **~26 300** | **~26 900** |
+| 6 Ports + vinyl | 1 220 | 1 220 |
+| **Total** | **~27 500** | **~28 100** |
 
-Gap to 29 000: ~2 100 – 2 700. Top-up candidates (free ship / pickup):
-75 port kits ~975 (Indoor Farmer), 3 PSU 24 V ~105 (Amazon), electrician
-subpanel + load-shed relay quote ~2 200 – 3 000.
+Gap to 29 000: ~900 – 1 500. Top-up candidates (free ship / pickup):
+3 PSU 24 V ~105 (Amazon), electrician subpanel + load-shed relay quote
+~2 200 – 3 000.
 
 ## Before ordering
 
