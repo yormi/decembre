@@ -9,9 +9,9 @@ supplier. Prices before tax, checked 2026-09-23 unless noted.
 |---|---|---|---|
 | 1 | Uline epoxy racks 48 × 24 × 72, casters, 6 shelves (5 growing + top for LED) | 7 | 8 on hand → 15 |
 | 2 | xTrays 3×6 flood tables, greenhouse week 5 | 15 | `greenhouse-table.md` |
-| 3 | Flood trays 2×4, rack tiers | 70 | 7 × 10-pack; 15 racks × 5 tiers = 75, 4 on hand from prototype → 1 short, accepted |
-| 4 | Lighting — 5 × T8 per shelf, weeks 3 + 4 | 39 shelves → 195 strips | `domain/lighting-zones.md` |
-| 5 | Drain valves ¾ SS NO, 1 per tray | 70 | one per 2×4 tray |
+| 3 | Flood trays 2×4, rack tiers | 60 | 6 × 10-pack; 63 shelves used (wk 1 8 · wk 2 8 · wk 3 at 2:1 16 · wk 4 at 4:1 31), 4 on hand → 59 needed, 1 spare; 12 of 75 shelves empty |
+| 4 | Lighting — 5 × T8 per shelf, weeks 3 + 4 | 47 shelves → 235 strips | `domain/lighting-zones.md`; weeks 1–2 (16 shelves) lit by the existing racks' strips |
+| 5 | Drain valves ¾ SS NO, 1 per tray | 60 | one per new 2×4 tray; 4 on hand |
 
 Not in this phase: port fittings, fill drops, downpipes,
 collector, Orisha zones, fertigation station, floor drain, electrician.
@@ -44,14 +44,14 @@ Garden FX, IncrediGrow, Hydro-Lite). Same footprint 45,5 × 25,5 po.
 
 | Item | Qty | Unit (USD) | Total (USD) | CAD (×1,36) |
 |---|---|---|---|---|
-| [Grow Rack Flood Tray 2×4, 10-pack](https://www.bootstrapfarmer.com/products/rack-tray-2-ft-x-4-ft) | 7 packs = 70 | 892,99 | 6 251 | ~8 500 |
-| Freight, ~40 kg/pack, pallet | | | | ~800 – 1 500 |
+| [Grow Rack Flood Tray 2×4, 10-pack](https://www.bootstrapfarmer.com/products/rack-tray-2-ft-x-4-ft) | 6 packs = 60 | 892,99 | 5 358 | ~7 290 |
+| Freight, ~40 kg/pack, pallet | | | | ~700 – 1 300 |
 | Duty | | | | ~0 (US-made, CUSMA) — confirm |
-| **Flood trays** | | | | **~9 300 – 10 000** |
+| **Flood trays** | | | | **~8 000 – 8 600** |
 
 Open: stock flag inconsistent on their site (collection feed OK, product
 JSON sold out) → add to cart with Canadian address, or email for a quote
-and ship date. Ask whether Hawthorne Canada can commit 72 Botanicare
+and ship date. Ask whether Hawthorne Canada can commit 60 Botanicare
 before choosing.
 
 ## 4 — Lighting (Amazon.ca, free shipping)
@@ -61,24 +61,24 @@ shelf (measured, `domain/lighting-zones.md`).
 
 | Zone | Shelves | Strips / shelf | Strips | PPFD | mol/d @18 h |
 |---|---|---|---|---|---|
-| Week 3 | 8 | 5 | 40 | ~300 | 19,4 |
-| Week 4 | 31 | 5 | 155 | ~300 | 19,4 (target 25 — accepted, or 21 h photoperiod → 22,7) |
-| **Total** | 39 | | **195** | | |
+| Week 3 at 2:1 | 16 | 5 | 80 | ~300 | 19,4 |
+| Week 4 at 4:1 | 31 | 5 | 155 | ~300 | 19,4 (target 25 — accepted, or 21 h photoperiod → 22,7) |
+| **Total** | 47 | | **235** | | |
 
 | Item | Qty | Unit | Total |
 |---|---|---|---|
-| [Barrina T8 42 W 4 pi 5000 K, 6-pack](https://www.amazon.ca/dp/B0B3CCLW5D) | 33 packs = 198 strips | 132,59 | 4 375 |
-| **Lighting** | | | **~4 380** |
+| [Barrina T8 42 W 4 pi 5000 K, 6-pack](https://www.amazon.ca/dp/B0B3CCLW5D) | 40 packs = 240 strips | 132,59 | 5 304 |
+| **Lighting** | | | **~5 300** |
 
-Power: 210 W/shelf → 39 × 210 = 8 190 W ≈ 68 A at 120 V continuous (PF 1);
+Power: 210 W/shelf → 47 × 210 = 9 870 W ≈ 82 A at 120 V continuous (PF 1);
 ~9,7 A per rack — electrician quote needed, outside this phase.
 
 ## 5 — Drain valves (Amazon.ca, free shipping)
 
 | Item | Qty | Unit | Total |
 |---|---|---|---|
-| [U.S. Solid motorized ball valve ¾ SS full port, 9–24 V, 2-wire auto-return, NO](https://www.amazon.ca/dp/B0993GHNJT) | 70 | 70,28 | 4 920 |
-| **Drain valves** | | | **~4 920** |
+| [U.S. Solid motorized ball valve ¾ SS full port, 9–24 V, 2-wire auto-return, NO](https://www.amazon.ca/dp/B0993GHNJT) | 60 | 70,28 | 4 217 |
+| **Drain valves** | | | **~4 220** |
 
 Adapters, vinyl, clamps, PSUs per valve: `nursery-racks.md` § Drain, outside this phase.
 
@@ -88,13 +88,14 @@ Adapters, vinyl, clamps, PSUs per valve: `nursery-racks.md` § Drain, outside th
 |---|---|---|
 | 1 Racks | 5 550 | 5 550 |
 | 2 xTrays | 3 250 | 3 250 |
-| 3 Flood trays 2×4 | 9 300 | 10 000 |
-| 4 Lighting | 4 380 | 4 380 |
-| 5 Drain valves | 4 920 | 4 920 |
-| **Total** | **~27 400** | **~28 100** |
+| 3 Flood trays 2×4 | 8 000 | 8 600 |
+| 4 Lighting | 5 300 | 5 300 |
+| 5 Drain valves | 4 220 | 4 220 |
+| **Total** | **~26 300** | **~26 900** |
 
-Gap to 29 000: ~900 – 1 600. Top-up candidates (free ship / pickup):
-85 port kits ~1 100 (Indoor Farmer), 3 PSU 24 V ~105 (Amazon).
+Gap to 29 000: ~2 100 – 2 700. Top-up candidates (free ship / pickup):
+75 port kits ~975 (Indoor Farmer), 3 PSU 24 V ~105 (Amazon), electrician
+subpanel + load-shed relay quote ~2 200 – 3 000.
 
 ## Before ordering
 

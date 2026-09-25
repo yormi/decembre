@@ -23,11 +23,11 @@ count). Supply + fertigation station: `nursery-common.md`. Drain:
 |---|---|---|---|
 | 1 | 31 | 8 | 1.6 |
 | 2 | 31 | 8 | 1.6 |
-| 3, spaced 2:1 | 62 | 16 | 3.1 |
-| 4 | 62 | 16 | 3.1 |
-| **Total** | **186** | **47** | **~10** |
+| 3, spaced 2:1 | 62 | 16 | 3.2 |
+| 4, spaced 4:1 | 124 | 31 | 6.2 |
+| **Total** | **248** | **63** | **~13** |
 
-Phase 1 (14 racks) covers weeks 1–4 with ~4 racks spare. Phase 2 (21) could also absorb week 5 (124 flats → 31 rack trays → 7 racks) if the greenhouse table is ever dropped.
+Spacing schedule is fixed: 2:1 at week 3, 4:1 at week 4. 15 racks (8 on hand + 7) = 75 shelves → 12 spare. Phase 2 (21) could also absorb week 5 (124 flats → 31 rack trays → 7 racks) if the greenhouse table is ever dropped.
 
 ## Layout (sketch 2026-09-16 — `more-nursery-space-layout.png`)
 
