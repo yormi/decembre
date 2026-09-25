@@ -87,11 +87,11 @@ Adapters, vinyl, clamps, PSUs per valve: `nursery-racks.md` § Drain, outside th
 
 | Item | Per tray | Qty | Unit | Total |
 |---|---|---|---|---|
-| [Active Aqua fill/drain fitting ¾](https://indoorfarmer.ca/products/active-aqua-fill-drain-fitting-3-4) | 2 (drain + overflow) | 150 | 3,95 | 592,50 |
-| [Active Aqua screen fitting](https://indoorfarmer.ca/products/active-aqua-fill-drain-screen-fitting) | 2 | 150 | 1,25 | 187,50 |
-| [Active Aqua extension fitting](https://indoorfarmer.ca/products/active-aqua-fill-drain-extension-fitting-copy) | 2 (overflow standpipe) | 150 | 1,15 | 172,50 |
+| [Active Aqua fill/drain fitting ¾](https://indoorfarmer.ca/products/active-aqua-fill-drain-fitting-3-4) | 2 (drain + overflow) | 158 (150 + 8 spare) | 3,95 | 624,10 |
+| [Active Aqua screen fitting](https://indoorfarmer.ca/products/active-aqua-fill-drain-screen-fitting) | 2 | 158 | 1,25 | 197,50 |
+| [Active Aqua extension fitting](https://indoorfarmer.ca/products/active-aqua-fill-drain-extension-fitting-copy) | 2 (overflow standpipe) | 158 | 1,15 | 181,70 |
 | [Active Aqua vinyl ¾ ID, 100 pi roll](https://indoorfarmer.ca/products/active-aqua-black-vinyl-tubing-3-4-id) | ~1 m → 246 pi, ~96 pi left from the prototype roll | 2 | 134,95 | 269,90 |
-| **Ports + vinyl** | | | | **~1 220** |
+| **Ports + vinyl** | | | | **~1 275** |
 
 Skip the combo kit (½ + ¾, not two ¾). Clamps: Amazon. Adapters, réduits, fill-drop valves: Dubois.
 
@@ -104,10 +104,10 @@ Skip the combo kit (½ + ¾, not two ¾). Clamps: Amazon. Adapters, réduits, fi
 | 3 Flood trays 2×4 | 8 000 | 8 600 |
 | 4 Lighting | 5 300 | 5 300 |
 | 5 Drain valves | 4 220 | 4 220 |
-| 6 Ports + vinyl | 1 220 | 1 220 |
-| **Total** | **~27 500** | **~28 100** |
+| 6 Ports + vinyl | 1 275 | 1 275 |
+| **Total** | **~27 550** | **~28 150** |
 
-Gap to 29 000: ~900 – 1 500. Top-up candidates (free ship / pickup):
+Gap to 29 000: ~850 – 1 450. Top-up candidates (free ship / pickup):
 3 PSU 24 V ~105 (Amazon), electrician subpanel + load-shed relay quote
 ~2 200 – 3 000.
 
