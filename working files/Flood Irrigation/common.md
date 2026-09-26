@@ -20,9 +20,11 @@ station, floor drain): `nursery-common.md`.
 |---|---|---|
 | 1 | Germination rack (Uline) | 31 |
 | 2 | Racks week 2 (Uline) | 31 |
-| 3 | Racks week 3 (Uline) | 31 |
-| 4 | Racks week 4 (Uline) | 62 |
+| 3 | Racks week 3 (Uline), spaced 2:1 | 62 |
+| 4 | Racks week 4 (Uline), spaced 4:1 | 124 |
 | 5 | Greenhouse nursery table | 124 |
+
+Rack trays (4 flats each): wk 1 8 · wk 2 8 · wk 3 16 · wk 4 31 = 63 of 75.
 
 
 ## Shared design (all zones)
@@ -63,8 +65,9 @@ station, floor drain): `nursery-common.md`.
   200 L — stir warm, dissolves slowly; mineral stock keeps).
 
 - **Week 1 exception**: germination is water-only,
-  pour-through CE < 1, low volume — hand-mist or a single
-  light flood; automation optional here.
+  pour-through CE < 1. Own zone on a dedicated water-only
+  line that tees off before the fertigation kit
+  (`nursery-common.md`) — never sees feed.
 
 - **Per-zone irrigation programs** (draft — to validate with
   tensiometer data): water demand differs per week, so each
@@ -76,9 +79,16 @@ station, floor drain): `nursery-common.md`.
   daily feed, 20-30 min contact. Tensiometers (1/rack zone
   + greenhouse table) tune frequency from data.
 
-- **Fill times** @50 L/min: 1 po feed ~250 L ≈ 5 min; 2 po
-  water ~500 L ≈ 10 min. Daily delivered: nursery ~285 L,
-  greenhouse ~250 L.
+- **Fill times** @50 L/min: 1 po feed ≈ 12 L/rack tray net of
+  pots → wk 2 ~100 L (2 min), wk 3 ~190 L (4 min), wk 4 ~370 L
+  (7,5 min); 2 po water doubles. Daily delivered: nursery
+  ~660 L feed + wk 1 water, greenhouse ~250 L.
+
+- **Week-4 zone flow**: 31 drops × 3,3 L/min ≈ 100 L/min
+  exceeds the 10 psi regulator (15 GPM ≈ 57 L/min) and the
+  53 L/min Dosatron ceiling → split week 4 into two valves
+  (≤ 16 drops each) on the same schedule, run back to back.
+  Orisha zones: 6 (wk 1 · wk 2 · wk 3 · wk 4a · wk 4b · greenhouse).
 
 - **Fill drops (every tray, all zones)**: one design,
   `tray-drop.md` — 10 psi regulator pins header at 0,7 bar,

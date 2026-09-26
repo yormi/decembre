@@ -6,8 +6,8 @@
 |---|---|---|---|
 | Week 1 | Nursery | Germination rack | 31 |
 | Week 2 | Nursery | Racks week 2 | 31 |
-| Week 3 | Nursery | Racks week 3 | 31 |
-| Week 4 | Nursery | Racks week 4 | 62 |
+| Week 3 | Nursery | Racks week 3, spaced 2:1 | 62 |
+| Week 4 | Nursery | Racks week 4, spaced 4:1 | 124 |
 | Week 5 | Greenhouse | Nursery table | 124 |
 
 

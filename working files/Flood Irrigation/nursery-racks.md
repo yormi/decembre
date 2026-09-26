@@ -32,7 +32,7 @@ station, floor drain: `nursery-common.md`.
 ## Fill
 
 - Distribution × 1
-- Zone branch × 4 (1/week-zone). Week 1's branch is fed by the water-only line (`nursery-common.md`), weeks 2–4 by the manifold.
+- Zone branch × 5 (wk 1 · wk 2 · wk 3 · wk 4a · wk 4b; week 4 split at ≤ 16 drops per valve). Week 1's branch is fed by the water-only line (`nursery-common.md`), the rest by the manifold.
 
 - Buried ¾ PE 6 po deep, 2 pi inside the exterior wall is
   safe with the room at 15 °C 24/7. Only a multi-day heat

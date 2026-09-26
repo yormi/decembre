@@ -14,7 +14,7 @@ tax, checked 2026-09-23 unless noted.
 | 4 | Lighting, 5 × T8 per shelf, weeks 3 + 4 | 47 shelves | 235 strips; wk 1–2 already lit |
 | 5 | Drain valves ¾ SS NO | 60 | 1 per new tray; 4 on hand |
 | 6 | Tray port kits + vinyl ¾ | 75 trays | 60 rack + 15 xTrays |
-| 7 | Orisha zones + tensiometers | 4 + 4 | 5 week-zones, 1 on hand |
+| 7 | Orisha zones + tensiometers | 5 + 4 | 6 zones (wk 4 split), 1 on hand |
 | 8 | Fertigation stations, nursery + greenhouse | 2 | 2 Dosatrons each |
 | 9 | Floor drain + sewer tie-in, plumber turnkey | 1 | `nursery-floor-drain.md` |
 | 10 | Subpanel, 1 × 15 A per rack, load-shed relay | 15 circuits | main tripped winter; no 400 A |
@@ -100,9 +100,9 @@ Skip the combo kit (½ + ¾, not two ¾). Clamps: Amazon. Adapters, réduits, fi
 
 | Item | Qty | Unit | Total |
 |---|---|---|---|
-| Irrigation zone, fill valve included | 4 | ~1 200 | 4 800 |
+| Irrigation zone, fill valve included | 5 | ~1 200 | 6 000 |
 | Tensiometer 6" mini | 4 | ~100 | 400 |
-| **Orisha** | | | **~5 200** |
+| **Orisha** | | | **~6 400** |
 
 ## 8 — Fertigation stations (Dubois, free shipping ≥ 200 $)
 
@@ -169,15 +169,15 @@ service stays out of this phase.
 | 4 Lighting | 5 300 | 5 300 |
 | 5 Drain valves | 4 220 | 4 220 |
 | 6 Ports + vinyl | 1 275 | 1 275 |
-| 7 Orisha | 5 200 | 5 200 |
+| 7 Orisha | 6 400 | 6 400 |
 | 8 Fertigation stations | 5 850 | 5 850 |
 | 9 Floor drain | 5 900 | 5 900 |
 | 10 Electrical | 2 800 | 3 700 |
 | 11 Drops + plumbing | 5 360 | 5 360 |
 | 12 Valve power | 205 | 205 |
-| **Total** | **~50 860** | **~51 710** |
+| **Total** | **~52 060** | **~52 910** |
 
-Purchased (blocks 2, 3, 6): ~10 520. Gap to 61 500: ~9 800 – 10 650.
+Purchased (blocks 2, 3, 6): ~10 520. Gap to 61 500: ~8 600 – 9 450.
 Top-ups that are real project needs, in order: phase 2 racks (7 × Uline +
 shelves + casters ~5 550), lighting for their 35 shelves (30 × 6-pack
 ~3 980), fill-water heater (~600), spare rack trays (10 × 100).
@@ -188,5 +188,5 @@ shelves + casters ~5 550), lighting for their 35 shelves (30 × 6-pack
 - Electrician: one visit → load calc + subpanel + 15 circuits + relay quote, dated.
 - Plumber: quote in hand (5 900), pay the deposit.
 - Dubois: Dosatron pair quote × 2.
-- Orisha: 4 zones + 4 tensiometers, invoice.
+- Orisha: 5 zones (week 4 split in two) + 4 tensiometers, invoice.
 - Uline, Amazon: order now, ship in days.
