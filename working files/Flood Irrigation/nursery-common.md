@@ -22,8 +22,14 @@ Shared design for all zones: `common.md`. Served zone:
     racks ≤ 9 drops ≈ 30 L/min)
   → adaptateur ¾ MPT × ¾ insert → ¾ PE 10 pi
   → main ¾ PE 50 pi along the racks
-    → racks distribution (`nursery-racks.md` § Fill).
+    → racks distribution, week-zones 2–4 (`nursery-racks.md` § Fill).
   GHT threads half-way into NPT and leaks — never mix them.
+
+- **Water-only line (week 1):** tees off the bib PE **before**
+  the fertigation kit (after the dual check) → its own 10 psi
+  regulator → ¾ PE 75 pi → week-1 Orisha valve. Germination
+  never sees feed (EC < 1, `domain/propagation.md`), no Dosatron
+  bypass to remember. Week 1 keeps its own zone + schedule.
 
 - Buried ¾ PE 6 po deep, 2 pi inside the exterior wall is
   safe with the room at 15 °C 24/7. Only a multi-day heat
@@ -51,7 +57,19 @@ Shared design for all zones: `common.md`. Served zone:
 | [Coude 90 insertion ¾ po — cédule 40](https://duboisag.com/ca_fr/insert-ell-90-1399.html) | 2 | |
 | [Collier inox 304 19–29 mm, 20-pack Amazon](https://www.amazon.ca/dp/B091GJWGHQ) | 5 | 1/barb: adapter + 2 coudes × 2 |
 
-**Main** (along the racks)
+**Water-only line** (bib PE → tee → regulator → 75 pi → week-1 valve)
+
+| Item | Qty | Note |
+|---|---|---|
+| [Té insertion ¾ po — cédule 40 (II 1401007)](https://duboisag.com/ca_fr/te-insertion.html) | 1 | in the bib PE, upstream of the kit |
+| [Senninger PSR-2 10 psi, ¾ po FPT (IV PR-075-L-10)](https://duboisag.com/ca_fr/regulateur-de-pression-senninger.html) | 1 | this line bypasses the main regulator |
+| [Adaptateur mâle ¾ po MPT × ¾ po insert](https://duboisag.com/ca_fr/adaptateur-male-mpt-x-insert.html) | 2 | regulator in + out |
+| [Boyau PE standard ¾ po × 100 pi, 75 psi (BO CO-075-75-1)](https://duboisag.com/ca_fr/boyau-flexible-standard-en-polyethylene-bobine.html) | 75 pi | |
+| [Coude 90 insertion ¾ po — cédule 40](https://duboisag.com/ca_fr/insert-ell-90-1399.html) | 6 | |
+| [Adaptateur mâle réduit 1 po MPT × ¾ po insert](https://duboisag.com/ca_fr/adaptateur-male-reduit-mpt-x-insert.html) | 1 | week-1 Orisha valve inlet (moved off the manifold) |
+| [Collier inox 304 19–29 mm, 20-pack Amazon](https://www.amazon.ca/dp/B091GJWGHQ) | 18 | té × 3, coudes × 12, adapters × 3 |
+
+**Main** (along the racks, week-zones 2–4)
 
 | Item | Qty | Note |
 |---|---|---|
@@ -94,6 +112,8 @@ gap).
 ## Total
 
 - **~135 $ CA** — water supply (phase 1).
+
+- **~110 $ CA** — week-1 water-only line (75 pi PE, té, 6 coudes, PSR-2, adapters, clamps).
 
 - **~2 950 $ CA** — fertigation station (phase 2); Dosatrons
   ~1 800 + ~950 landed, quote Dubois.

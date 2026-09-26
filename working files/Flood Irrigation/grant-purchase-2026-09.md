@@ -146,9 +146,10 @@ service stays out of this phase.
 | Downpipes, glued ABS, 10 branches each | 13 × ~145 | ~1 900 |
 | 3 po collector extension + tees | | ~500 |
 | Zone branches + distribution PE, 4 zones | | ~440 |
+| Week-1 water-only line: 75 pi PE, té, 6 coudes, PSR-2, adapters, clamps | | ~110 |
 | Greenhouse: 1½ header, 2 po drain main + NO valve + waste run, 1½ overflow line | | ~885 |
 | Patio slabs, stone dust, shims, 15 racks | 15 × ~31 | ~465 |
-| **Drops + plumbing** | | **~5 250** |
+| **Drops + plumbing** | | **~5 360** |
 
 ## 12 — Drain-valve power (Amazon)
 
@@ -172,11 +173,11 @@ service stays out of this phase.
 | 8 Fertigation stations | 5 850 | 5 850 |
 | 9 Floor drain | 5 900 | 5 900 |
 | 10 Electrical | 2 800 | 3 700 |
-| 11 Drops + plumbing | 5 250 | 5 250 |
+| 11 Drops + plumbing | 5 360 | 5 360 |
 | 12 Valve power | 205 | 205 |
-| **Total** | **~50 750** | **~51 600** |
+| **Total** | **~50 860** | **~51 710** |
 
-Purchased (blocks 2, 3, 6): ~10 520. Gap to 61 500: ~10 000 – 10 750.
+Purchased (blocks 2, 3, 6): ~10 520. Gap to 61 500: ~9 800 – 10 650.
 Top-ups that are real project needs, in order: phase 2 racks (7 × Uline +
 shelves + casters ~5 550), lighting for their 35 shelves (30 × 6-pack
 ~3 980), fill-water heater (~600), spare rack trays (10 × 100).
