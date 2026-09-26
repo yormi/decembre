@@ -8,16 +8,16 @@ tax, checked 2026-09-23 unless noted.
 
 | # | Item | Qty | Basis |
 |---|---|---|---|
-| 1 | Uline epoxy racks 48 × 24 × 72, casters, 6 shelves (5 growing + LED) | 7 | 8 on hand → 15 |
+| 1 | Uline epoxy racks 48 × 24 × 72, casters, 6 shelves | 7 | 8 on hand → 15 |
 | 2 | xTrays 3×6, greenhouse week 5 | 15 | `greenhouse-table.md` |
-| 3 | Flood trays 2×4, rack tiers | 60 | 63 shelves (8 · 8 · 16 · 31), 4 on hand; 12 of 75 spare |
-| 4 | Lighting, 5 × T8 per shelf, weeks 3 + 4 | 47 shelves, 235 strips | wk 1–2 lit by existing strips |
+| 3 | Flood trays 2×4, rack tiers | 60 | 63 shelves (8 · 8 · 16 · 31), 4 on hand |
+| 4 | Lighting, 5 × T8 per shelf, weeks 3 + 4 | 47 shelves | 235 strips; wk 1–2 already lit |
 | 5 | Drain valves ¾ SS NO | 60 | 1 per new tray; 4 on hand |
 | 6 | Tray port kits + vinyl ¾ | 75 trays | 60 rack + 15 xTrays |
 | 7 | Orisha zones + tensiometers | 4 + 4 | 5 week-zones, 1 on hand |
 | 8 | Fertigation stations, nursery + greenhouse | 2 | 2 Dosatrons each |
 | 9 | Floor drain + sewer tie-in, plumber turnkey | 1 | `nursery-floor-drain.md` |
-| 10 | Subpanel, 1 × 15 A per rack, load-shed relay | 15 circuits | main tripped winter 2025–26; no 400 A |
+| 10 | Subpanel, 1 × 15 A per rack, load-shed relay | 15 circuits | main tripped winter; no 400 A |
 | 11 | Per-tray drops + rack plumbing | 75 trays / 15 racks | Dubois + Home Depot |
 | 12 | Drain-valve power | 3 PSU + wire | `nursery-racks.md` § Drain power |
 
