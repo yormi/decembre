@@ -6,10 +6,10 @@ Absolute quantities for 14 racks, 6 zones. Per-rack parts: `rack.md`. Waste side
 ## Path
 
 - **Feed line (weeks 2–4):** bib (¾ MHT) → accouplement pivotant ¾ FHT × FPT →
-  adaptateur ¾ MPT × insert → ¾ PE 10 pi → dual check → PMR 50 psi → Dosatron A (1:10)
-  → Dosatron B (1:100) → inline filter → PSR-2 10 psi (pins header at 0,7 bar → fixed-orifice
-  fill, no calibration) → adaptateur → ¾ PE 10 pi → main ¾ PE 50 pi along the racks →
-  manifold → zone branches wk 2 · wk 3 · wk 4a · wk 4b.
+  adaptateur ¾ MPT × insert → ¾ PE 10 pi → fertigation station (`fertigation-station.md`,
+  ends on a PSR-2 10 psi that pins the header at 0,7 bar → fixed-orifice fill, no
+  calibration) → adaptateur → ¾ PE 10 pi → main ¾ PE 50 pi along the racks → manifold →
+  zone branches wk 2 · wk 3 · wk 4a · wk 4b.
 - **Water-only line (week 1):** tee in the bib PE after the dual check, before the
   Dosatrons → own PSR-2 10 psi → ¾ PE 75 pi → week-1 Orisha valve. Germination never
   sees feed (EC < 1, `domain/propagation.md`). Own zone + schedule.
@@ -18,7 +18,6 @@ Absolute quantities for 14 racks, 6 zones. Per-rack parts: `rack.md`. Waste side
 - GHT threads half-way into NPT and leaks — never mix them.
 - Buried ¾ PE 6 po deep, 2 pi inside the exterior wall is safe at 15 °C 24/7; drain the
   line (unscrew the end bouchon) if heat goes down in winter.
-- Verify heated-line pressure ≥ 0,5 bar at the injectors.
 - Week 4 is two valves: 31 drops × 3,3 L/min ≈ 100 L/min exceeds the PSR-2 (57 L/min) and
   the Dosatron ceiling (53 L/min) → ≤ 16 drops per valve, same schedule, back to back.
 
@@ -33,21 +32,9 @@ Absolute quantities for 14 racks, 6 zones. Per-rack parts: `rack.md`. Waste side
 | [Coude 90 insertion ¾ po — cédule 40](https://duboisag.com/ca_fr/insert-ell-90-1399.html) | 3 | |
 | [Collier inox 304 19–29 mm, 20-pack Amazon](https://www.amazon.ca/dp/B091GJWGHQ) | 8 | 1/barb |
 
-## Fertigation station (phase 2)
+## Fertigation station
 
-| Item | Qty | Note |
-|---|---|---|
-| Dual check valve (backflow preventer) ¾ po | 1 | first after the bib adapter (potable line) |
-| [Senninger PMR 50 psi, ¾ po FPT, 2–20 GPM (IV PR-075-M-50)](https://duboisag.com/ca_fr/regulateur-de-pression-senninger.html) | 1 | Dosatron guard; 3,45 bar preset under the 85 psi ceiling; 35 psi option if house pressure runs low |
-| Dosatron D14MZ10VFBPHY | 1 | stock A @10 %; ~1 800 landed, quote Dubois |
-| Dosatron 1:100-class (D25RE2 / D14MZ2) | 1 | stock B @1 %; ~950 landed, quote Dubois |
-| 100-mesh suction strainer | 1 | stock B suction line |
-| Inline filter | 1 | post-injector |
-| [Senninger PSR-2 10 psi, ¾ po FPT, 0,5–15 GPM (IV PR-075-L-10)](https://duboisag.com/ca_fr/regulateur-de-pression-senninger.html) | 1 | last of the station; phase 1 = at the bib |
-| [Adaptateur mâle ¾ po MPT × ¾ po insert](https://duboisag.com/ca_fr/adaptateur-male-mpt-x-insert.html) | 1 | regulator outlet → PE |
-| 20 L bucket with lid | 1 | stock B, daily mix |
-
-On hand: 1× 200 L lidded drum (stock A).
+`fertigation-station.md` — dual check → PMR 50 → Dosatron A → B → filter → PSR-2 10 psi. Phase 2.
 
 ## Water-only line (week 1)
 
@@ -93,15 +80,13 @@ Fill drops (1/tray, punched in the branch): `rack.md` § Fill drops.
 |---|---|---|
 | Coude 45 insertion ¾ po | 3 | |
 | Mamelon insertion ¾ × ¾ po (PE coupling) | 2 | joins 2 PE lengths; 2 clamps each |
-| Dosatron rebuild / seal kit | 1 | warranty-distance hedge |
 
 ## Total
 
 | Block | $ CA |
 |---|---|
 | Bib → station | ~135 |
-| Fertigation station | ~2 950 (Dosatrons quoted by Dubois) |
 | Water-only line | ~110 |
 | Station → main → manifold | ~120 |
 | Zone branches, less Orisha | ~250 |
-| **Nursery supply** | **~3 570** |
+| **Nursery supply** | **~620** (station in `fertigation-station.md`) |
