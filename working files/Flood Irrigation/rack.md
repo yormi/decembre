@@ -1,7 +1,7 @@
 # Rack — everything in one nursery rack (5 tray tiers, 6 shelves)
 
 One rack = shell + 5 flooded tiers + one downpipe into the shared collector.
-Multiply by rack count (`more-nursery-space.md`). Shared kit (zone branches,
+Multiply by rack count (`project.md`). Shared kit (zone branches,
 distribution, drain PSU, collector): `nursery-racks.md`. Port design:
 `tray-ports.md`. Fill-drop design: `tray-drop.md`.
 

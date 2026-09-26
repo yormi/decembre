@@ -1,7 +1,7 @@
 # Nursery room — geometry
 
 Physical facts the room plan (app `admin/croquis`) and the rack layout
-(`working files/Flood Irrigation/more-nursery-space.md`) build on.
+(`working files/Flood Irrigation/project.md`) build on.
 Sketch axes: top wall = **north**, right wall = **east**, x from the
 west wall, y from the north wall, inches.
 

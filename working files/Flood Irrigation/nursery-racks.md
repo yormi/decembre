@@ -2,7 +2,7 @@
 
 Shared kit only — one rack's full contents: `rack.md`. Shared design:
 `common.md`. Water supply (bib → fill valves), fertigation station, floor
-drain: `nursery-common.md`. Rack count per phase: `more-nursery-space.md`.
+drain: `nursery-common.md`. Rack count: `project.md`.
 
 ## Fill
 
