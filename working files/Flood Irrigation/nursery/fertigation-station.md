@@ -22,16 +22,16 @@ stock B) → inline filter → PSR-2 10 psi → main.
 
 | Item | Qty | Note |
 |---|---|---|
-| Dual check valve (backflow preventer) ¾ po | 1 | first after the bib adapter (potable line) |
+| [Watts LF7 dual check valve ¾ po](https://www.watts.com/products/plumbing-flow-control-solutions/backflow-preventers/dual-checksdual-checks-with-atmospheric-vent/lf7) (plumbing supply) | 1 | first after the bib adapter (potable line) |
 | [Senninger PMR 50 psi, ¾ po FPT, 2–20 GPM (IV PR-075-M-50)](https://duboisag.com/ca_fr/regulateur-de-pression-senninger.html) | 1 | Dosatron guard; 3,45 bar preset under the 85 psi ceiling; 35 psi option if house pressure runs low |
-| Dosatron D14MZ10VFBPHY | 1 | stock A @10 %; ~1 800 landed, quote Dubois |
-| Dosatron 1:100-class (D25RE2 / D14MZ2) | 1 | stock B @1 %; ~950 landed, quote Dubois |
-| 100-mesh suction strainer | 1 | stock B suction line |
-| Inline filter | 1 | post-injector |
+| [Dosatron D14MZ10VFBPHY](https://duboisag.com/ca_fr/marques/a-d/dosatron.html) (Dubois Dosatron line, not listed online — quote; [Amazon.ca D14MZ10VAFII](https://www.amazon.ca/dp/B0DLPWRZKL) as reference) | 1 | stock A @10 %; ~1 800 landed |
+| [Dosatron D14MZ2VFBPHY, 14 GPM, 0,2–2 % (IE DND14MZ2VFBPHY)](https://duboisag.com/ca_fr/injecteur-d14mz2-14-gpm-dosatron.html) | 1 | stock B @1 %; ~1 200 ([Amazon.ca 1 199 $](https://www.amazon.ca/dp/B08LP2XSTD)) |
+| [100-mesh suction strainer](https://duboisag.com/ca_fr/injecteur-d14mz2-14-gpm-dosatron.html) | 1 | stock B suction line; ships with the injector |
+| [Filtre à tamis plastique ¾ po MPT, 150 mesh (Dubois)](https://duboisag.com/ca_fr/filtre-a-tamis-en-plastique-mpt-150-mesh.html) | 1 | post-injector |
 | [Senninger PSR-2 10 psi, ¾ po FPT, 0,5–15 GPM (IV PR-075-L-10)](https://duboisag.com/ca_fr/regulateur-de-pression-senninger.html) | 1 | last of the station; phase 1 = at the bib |
 | [Adaptateur mâle ¾ po MPT × ¾ po insert](https://duboisag.com/ca_fr/adaptateur-male-mpt-x-insert.html) | 1 | regulator outlet → PE |
-| 20 L bucket with lid | 1 | stock B |
-| Dosatron rebuild / seal kit | 1 | warranty-distance hedge |
+| [Seau 19 L (Home Depot)](https://www.homedepot.ca/product/the-home-depot-orange-home-depot-logo-bucket-19-l/1000143871) + couvercle | 1 | stock B |
+| [Ensemble de joints de maintenance Dosatron (Dubois)](https://duboisag.com/ca_fr/ensemble-de-joints-de-maintenance-pour-les-injecteurs-d-engrais-dosatron-d8mz2.html) | 1 | ask for the D14 variant; warranty-distance hedge |
 
 On hand: 1× 200 L lidded drum (stock A).
 

@@ -21,15 +21,15 @@ PSR-2 10 psi → fill valve.
 
 | Item | Qty | Note |
 |---|---|---|
-| Foot strainer | 1 | tank pickup |
-| [Dosatron D14MZ10VFBPHY](https://www.kleen-ritecorp.com/p-35374-dosatron-injector-14gpm-1-100-1-10.aspx) | 1 | stock A @10 % |
-| Dosatron 1:100-class (D25RE2 / D14MZ2) | 1 | stock B @1 %; landed price TBC |
-| 100-mesh suction strainer | 1 | stock B suction line |
-| Inline filter | 1 | post-injector |
-| Check valve 1 po, spring | 1 | after the filter, before the fill valve |
+| [Panier à aspiration avec clapet à pied (Dubois)](https://duboisag.com/ca_fr/panier-a-aspiration-avec-clapet-a-pied.html) | 1 | tank pickup |
+| [Dosatron D14MZ10VFBPHY](https://duboisag.com/ca_fr/marques/a-d/dosatron.html) (Dubois Dosatron line, not listed online — quote; [Amazon.ca D14MZ10VAFII](https://www.amazon.ca/dp/B0DLPWRZKL) as reference) | 1 | stock A @10 % |
+| [Dosatron D14MZ2VFBPHY, 14 GPM, 0,2–2 % (IE DND14MZ2VFBPHY)](https://duboisag.com/ca_fr/injecteur-d14mz2-14-gpm-dosatron.html) | 1 | stock B @1 %; ~1 200 ([Amazon.ca 1 199 $](https://www.amazon.ca/dp/B08LP2XSTD)) |
+| [100-mesh suction strainer](https://duboisag.com/ca_fr/injecteur-d14mz2-14-gpm-dosatron.html) | 1 | stock B suction line; ships with the injector |
+| [Filtre à tamis plastique ¾ po MPT, 150 mesh (Dubois)](https://duboisag.com/ca_fr/filtre-a-tamis-en-plastique-mpt-150-mesh.html) | 1 | post-injector |
+| [Clapet anti-retour PVC 1 po (IV 1710-10, Dubois)](https://duboisag.com/ca_fr/clapet-anti-retour-pvc.html) | 1 | after the filter, before the fill valve |
 | [Senninger PSR-2 10 psi, ¾ po FPT, 0,5–15 GPM (IV PR-075-L-10)](https://duboisag.com/ca_fr/regulateur-de-pression-senninger.html) | 1 | bush ¾ into the 1 po line |
-| Water-hammer arrestor or flex section | 1 | |
-| 20 L bucket with lid | 1 | stock B |
+| [NDS LO-FLO ¾ po water-hammer arrestor kit (Dubois)](https://duboisag.com/ca_fr/nds-lo-flo-series-3-4-water-hammer-arrestor-kit-dilution-solutions.html) | 1 | between fill valve and injectors |
+| [Seau 19 L (Home Depot)](https://www.homedepot.ca/product/the-home-depot-orange-home-depot-logo-bucket-19-l/1000143871) + couvercle | 1 | stock B |
 
 On hand: 200 L lidded drum (stock A), Franklin Turf Boss pump + inline pressure controller.
 
