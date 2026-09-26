@@ -8,7 +8,7 @@ trays, drain-to-waste, leach schedule).
 
 Per-zone files: `nursery-racks.md` (weeks 1–4),
 `greenhouse-table.md` (week 5).
-Tray fill drop, identical in all zones: `tray-drop.md`.
+Tray fill drop, identical in all zones: `tray-fill-drop.md`.
 Tray drain + overflow ports, identical: `tray-ports.md`.
 Nursery-only infrastructure (water supply, fertigation
 station, floor drain): `nursery-common.md`.
@@ -91,7 +91,7 @@ Rack trays (4 flats each): wk 1 8 · wk 2 8 · wk 3 16 · wk 4 31 = 63 of 75.
   Orisha zones: 6 (wk 1 · wk 2 · wk 3 · wk 4a · wk 4b · greenhouse).
 
 - **Fill drops (every tray, all zones)**: one design,
-  `tray-drop.md` — 10 psi regulator pins header at 0,7 bar,
+  `tray-fill-drop.md` — 10 psi regulator pins header at 0,7 bar,
   fixed-length ¼ po tube = orifice, ~3,3 L/min.
 
 **Open (shared):**

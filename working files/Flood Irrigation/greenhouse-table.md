@@ -33,7 +33,7 @@ vessels, Orisha, fill drops, shared purchases):
   dead-head risk) → Dosatron A → Dosatron B → inline filter
   → check valve → 10 psi preset regulator → Orisha fill
   valve → 1½ po feed header (100 pi) → one tray fill drop per
-  tray (`tray-drop.md`, ~3,3 L/min). Water-hammer
+  tray (`tray-fill-drop.md`, ~3,3 L/min). Water-hammer
   arrestor or flex section between fill valve and
   injectors.
 
@@ -47,7 +47,7 @@ vessels, Orisha, fill drops, shared purchases):
   loss ≥ 10× header end-to-end loss (1½ po header @50 L/min
   loses ~0,04 bar over the 100 pi run → 1,4 m tubes
   qualify; a 1 po header would lose ~0,25 bar and fail the
-  rule). Timer set from one measured drop (`tray-drop.md`).
+  rule). Timer set from one measured drop (`tray-fill-drop.md`).
 
 **Station** (tank → fill valve)
 
@@ -71,7 +71,7 @@ pump + inline pressure controller.
 | Item | Qty | Note |
 |---|---|---|
 | Feed header: 1½ po poly line, capped far end | ~30 m (100 pi) | fed by Orisha fill valve |
-| Tray fill drop (`tray-drop.md`) | 15 | 1/tray, punched in the header |
+| Tray fill drop (`tray-fill-drop.md`) | 15 | 1/tray, punched in the header |
 
 Header size: 1 po loses ~0,25 bar @50 L/min over 100 pi (breaks ≥10× orifice rule vs 0,7 bar); 1½ po ~0,04 bar.
 

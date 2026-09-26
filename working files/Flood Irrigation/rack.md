@@ -3,7 +3,7 @@
 One rack = shell + 5 flooded tiers + one downpipe into the shared collector.
 Multiply by rack count (`project.md`). Shared kit (zone branches,
 distribution, drain PSU, collector): `nursery-racks.md`. Port design:
-`tray-ports.md`. Fill-drop design: `tray-drop.md`.
+`tray-ports.md`. Fill-drop design: `tray-fill-drop.md`.
 
 ## Shell
 
@@ -42,10 +42,7 @@ Never shim on bare soil: heaves in spring, settles under a flooded tray.
 
 | Item | Qty | Note |
 |---|---|---|
-| [Valve barbée 0,18 po pour micro-tube (IS 42155)](https://duboisag.com/ca_fr/valve-barbee-en-plastique-0-18-pour-micro-tube-4-7.html) | 5 | punched in the zone branch |
-| [MIXC drip tubing ¼ po OD noir](https://www.amazon.ca/MIXC-Distribution-Tubing-Irrigation-Watering/dp/B07NZTJ29D) | 7 m | 1,4 m/drop, no trim |
-| [HORTIPOTS top-hat grommet ¼ po OD](https://www.amazon.ca/HORTIPOTS-Grommet-Hydroponic-Systems-Irrigation/dp/B07MDNB45Y) | 5 | 3/8 po hole, above flood line |
-| [Coude ¼ po barbé (Dubois)](https://duboisag.com/ca_fr/barb-elbow-1-4.html) | 5 | inside the tray, aimed down |
+| Tray fill drop (`tray-fill-drop.md`) | 5 | 1/tray, punched in the zone branch |
 | Attaches zip UV 8 po | ~10 | tube strain relief on the shelf |
 
 ## Drain drops (5)
