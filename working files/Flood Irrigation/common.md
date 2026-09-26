@@ -30,7 +30,7 @@ Rack trays (4 flats each): wk 1 8 · wk 2 8 · wk 3 16 · wk 4 31 = 63 of 75.
 ## Shared design (all zones)
 
 - **Delivery: flood everywhere**, one fill valve + one drain
-  valve per week-zone — 5 zones. Not per-shelf, not
+  valve per week-zone — 6 zones (week 4 split in two). Not per-shelf, not
   per-rack. Cycle: timed fill → hold 20–30 min → drain.
 
 - **Flood depths**: feed = 1 po (timed, stops short of

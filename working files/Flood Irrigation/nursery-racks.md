@@ -119,7 +119,7 @@ station, floor drain: `nursery-common.md`.
 - **6 000 $ CA** — rack hardware only (trays, ports, valves,
   downpipes, collector, fill, PSU).
 
-- **8 000 $ CA** — + share of shared kit: Orisha 3 zones
+- **8 000 $ CA** — + share of shared kit: Orisha zones
   ~1 200, tensiometers ~200, wire ~100, bib → manifold
   supply ~200.
 
