@@ -1,7 +1,8 @@
 # Purchase list — grant phase, order by 2026-09-30
 
-Target ~29 000 $ CA invoiced by 2026-09-30. One order per shipping
-supplier. Prices before tax, checked 2026-09-23 unless noted.
+Target **61 500 $ CA** invoiced (or dated quote + deposit, if the grant
+accepts it) by 2026-09-30. One order per shipping supplier. Prices before
+tax, checked 2026-09-23 unless noted.
 
 ## Scope of this phase
 
@@ -13,9 +14,14 @@ supplier. Prices before tax, checked 2026-09-23 unless noted.
 | 4 | Lighting — 5 × T8 per shelf, weeks 3 + 4 | 47 shelves → 235 strips | `domain/lighting-zones.md`; weeks 1–2 (16 shelves) lit by the existing racks' strips |
 | 5 | Drain valves ¾ SS NO, 1 per tray | 60 | one per new 2×4 tray; 4 on hand |
 | 6 | Tray port kits + vinyl ¾ | 75 trays | 60 rack + 15 xTrays; prototype's 4 kits already used |
+| 7 | Orisha irrigation zones + tensiometers | 4 + 4 | 5 week-zones, 1 on hand (`common.md`) |
+| 8 | Fertigation stations, nursery + greenhouse | 2 | 2 Dosatrons each (`nursery-common.md`, `greenhouse-table.md`) |
+| 9 | Floor drain + sewer tie-in, plumber turnkey | 1 | `nursery-floor-drain.md` |
+| 10 | Electrical: 400 A service upgrade + nursery subpanel + load-shed relay | 1 | main breaker tripped winter 2025–26; 15 rack circuits |
+| 11 | Per-tray drops + rack plumbing (Dubois + Home Depot) | 75 trays / 15 racks | fill drops, drain/overflow drops, downpipes, collector, slabs |
+| 12 | Power for drain valves | 3 PSU + wire | `nursery-racks.md` § Drain power |
 
-Not in this phase: fill drops, downpipes,
-collector, Orisha zones, fertigation station, floor drain, electrician.
+Nothing deferred: this phase is the whole flood-irrigation build.
 
 ## 1 — Racks (Uline, one freight order)
 
@@ -90,6 +96,67 @@ Adapters, vinyl, clamps, PSUs per valve: `nursery-racks.md` § Drain, outside th
 
 Skip the combo kit (½ + ¾, not two ¾). Clamps: Amazon. Adapters, réduits, fill-drop valves: Dubois.
 
+## 7 — Orisha (local)
+
+| Item | Qty | Unit | Total |
+|---|---|---|---|
+| Irrigation zone, fill valve included | 4 | ~1 200 | 4 800 |
+| Tensiometer 6" mini | 4 | ~100 | 400 |
+| **Orisha** | | | **~5 200** |
+
+## 8 — Fertigation stations (Dubois, free shipping ≥ 200 $)
+
+| Item | Qty | Total |
+|---|---|---|
+| Nursery station: Dosatron D14MZ10 + 1:100-class, dual check, PMR 50 psi, PSR-2 10 psi, filter, strainer, bucket | 1 | ~2 950 |
+| Greenhouse station: same pair + regulators + filter | 1 | ~2 900 |
+| **Stations** | | **~5 850** |
+
+Quote Dubois for both Dosatron pairs; the ~2 750/pair landed figure is an estimate.
+
+## 9 — Floor drain (plumber, turnkey)
+
+| Item | Total |
+|---|---|
+| Floor drain + P-trap, 3 po ABS run, wye tie-in, clapet, excavation, backfill | 3 000 – 4 500 |
+| **Floor drain** | **~3 500** |
+
+Dated quote + deposit before the 30th; the dig must beat ground freeze.
+
+## 10 — Electrical (electrician + Hydro-Québec)
+
+| Item | Total |
+|---|---|
+| 400 A service: meter base, CT metering, HQ request, transformer if required | 6 000 – 15 000 |
+| Nursery subpanel 100 A, 15 × 15 A circuits, receptacles | ~2 000 – 2 500 |
+| Load-shed relay + 2 CT + contactor on the rack feed | ~800 – 1 200 |
+| Load calculation (Code s. 8) | included |
+| **Electrical** | **~9 000 – 18 500** |
+
+HQ timeline 2–4 months; the subpanel + relay can go in first and carry the racks through winter with the 05:00–23:00 photoperiod.
+
+## 11 — Per-tray drops + rack plumbing (Dubois + Home Depot)
+
+| Item | Basis | Total |
+|---|---|---|
+| Fill drops: valve barbée, ¼ tube, grommet, coude ¼ | 75 × ~3 | ~270 |
+| Drain drops: 2 × ¾ MPT×insert, clamps | 75 × ~7 | ~620 |
+| Overflow drops: clamp | 75 × ~2 | ~170 |
+| Downpipes, glued ABS, 10 branches each | 13 × ~145 | ~1 900 |
+| 3 po collector extension + tees | | ~500 |
+| Zone branches + distribution PE, 4 zones | | ~440 |
+| Greenhouse: 1½ header, 2 po drain main + NO valve + waste run, 1½ overflow line | | ~885 |
+| Patio slabs, stone dust, shims, 15 racks | 15 × ~31 | ~465 |
+| **Drops + plumbing** | | **~5 250** |
+
+## 12 — Drain-valve power (Amazon)
+
+| Item | Qty | Total |
+|---|---|---|
+| PSU 24 V / 10 A | 3 | ~105 |
+| Wire 18/3, WAGO | | ~100 |
+| **Power** | | **~205** |
+
 ## Phase total
 
 | Block | Low | High |
@@ -100,13 +167,25 @@ Skip the combo kit (½ + ¾, not two ¾). Clamps: Amazon. Adapters, réduits, fi
 | 4 Lighting | 5 300 | 5 300 |
 | 5 Drain valves | 4 220 | 4 220 |
 | 6 Ports + vinyl | 1 275 | 1 275 |
-| **Total** | **~25 550** | **~25 550** |
+| 7 Orisha | 5 200 | 5 200 |
+| 8 Fertigation stations | 5 850 | 5 850 |
+| 9 Floor drain | 3 000 | 4 500 |
+| 10 Electrical | 9 000 | 18 500 |
+| 11 Drops + plumbing | 5 250 | 5 250 |
+| 12 Valve power | 205 | 205 |
+| **Total** | **~54 050** | **~65 000** |
 
-Purchased so far (blocks 2, 3, 6): ~10 520. Remaining to order: racks,
-lighting, drain valves ~15 070. Gap to 29 000: ~3 450. Top-up candidates (free ship / pickup):
-3 PSU 24 V ~105 (Amazon), electrician subpanel + load-shed relay quote
-~2 200 – 3 000.
+Purchased (blocks 2, 3, 6): ~10 520. Target 61 500 sits inside the range;
+the electrical quote decides where it lands. If electrical comes in low,
+top-ups that are real project needs: phase 2 racks (7 × Uline + shelves +
+casters ~5 550), warm-water heater for the fill line (~600), spare rack
+trays (10 × 100).
 
-## Before ordering
+## Before 2026-09-30
 
-- Grant: does a dated PO + deposit count, or final invoice only?
+- Grant: does a dated PO + deposit count, or final invoice only? Decides blocks 9 and 10.
+- Electrician: one visit → load calc + 400 A quote + subpanel + relay quote, all dated.
+- Plumber: dated quote + deposit.
+- Dubois: Dosatron pair quote × 2.
+- Orisha: 4 zones + 4 tensiometers, invoice.
+- Uline, Amazon: order now, ship in days.
