@@ -8,18 +8,18 @@ tax, checked 2026-09-23 unless noted.
 
 | # | Item | Qty | Basis |
 |---|---|---|---|
-| 1 | Uline epoxy racks 48 × 24 × 72, casters, 6 shelves (5 growing + top for LED) | 7 | 8 on hand → 15 |
-| 2 | xTrays 3×6 flood tables, greenhouse week 5 | 15 | `greenhouse-table.md` |
-| 3 | Flood trays 2×4, rack tiers | 60 | Indoor Farmer quote 100 $/tray + 150 $ shipping (2026-09-25); 63 shelves used (wk 1 8 · wk 2 8 · wk 3 at 2:1 16 · wk 4 at 4:1 31), 4 on hand → 59 needed, 1 spare; 12 of 75 shelves empty |
-| 4 | Lighting — 5 × T8 per shelf, weeks 3 + 4 | 47 shelves → 235 strips | `domain/lighting-zones.md`; weeks 1–2 (16 shelves) lit by the existing racks' strips |
-| 5 | Drain valves ¾ SS NO, 1 per tray | 60 | one per new 2×4 tray; 4 on hand |
-| 6 | Tray port kits + vinyl ¾ | 75 trays | 60 rack + 15 xTrays; prototype's 4 kits already used |
-| 7 | Orisha irrigation zones + tensiometers | 4 + 4 | 5 week-zones, 1 on hand (`common.md`) |
-| 8 | Fertigation stations, nursery + greenhouse | 2 | 2 Dosatrons each (`nursery-common.md`, `greenhouse-table.md`) |
+| 1 | Uline epoxy racks 48 × 24 × 72, casters, 6 shelves (5 growing + LED) | 7 | 8 on hand → 15 |
+| 2 | xTrays 3×6, greenhouse week 5 | 15 | `greenhouse-table.md` |
+| 3 | Flood trays 2×4, rack tiers | 60 | 63 shelves (8 · 8 · 16 · 31), 4 on hand; 12 of 75 spare |
+| 4 | Lighting, 5 × T8 per shelf, weeks 3 + 4 | 47 shelves, 235 strips | wk 1–2 lit by existing strips |
+| 5 | Drain valves ¾ SS NO | 60 | 1 per new tray; 4 on hand |
+| 6 | Tray port kits + vinyl ¾ | 75 trays | 60 rack + 15 xTrays |
+| 7 | Orisha zones + tensiometers | 4 + 4 | 5 week-zones, 1 on hand |
+| 8 | Fertigation stations, nursery + greenhouse | 2 | 2 Dosatrons each |
 | 9 | Floor drain + sewer tie-in, plumber turnkey | 1 | `nursery-floor-drain.md` |
-| 10 | Electrical: nursery subpanel, 1 × 15 A circuit per rack, load-shed relay | 15 circuits | main breaker tripped winter 2025–26 → relay sheds the racks before the main; 400 A service NOT in this phase |
-| 11 | Per-tray drops + rack plumbing (Dubois + Home Depot) | 75 trays / 15 racks | fill drops, drain/overflow drops, downpipes, collector, slabs |
-| 12 | Power for drain valves | 3 PSU + wire | `nursery-racks.md` § Drain power |
+| 10 | Subpanel, 1 × 15 A per rack, load-shed relay | 15 circuits | main tripped winter 2025–26; no 400 A |
+| 11 | Per-tray drops + rack plumbing | 75 trays / 15 racks | Dubois + Home Depot |
+| 12 | Drain-valve power | 3 PSU + wire | `nursery-racks.md` § Drain power |
 
 Nothing deferred: this phase is the whole flood-irrigation build.
 
