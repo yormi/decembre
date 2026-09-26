@@ -17,7 +17,7 @@ tax, checked 2026-09-23 unless noted.
 | 7 | Orisha irrigation zones + tensiometers | 4 + 4 | 5 week-zones, 1 on hand (`common.md`) |
 | 8 | Fertigation stations, nursery + greenhouse | 2 | 2 Dosatrons each (`nursery-common.md`, `greenhouse-table.md`) |
 | 9 | Floor drain + sewer tie-in, plumber turnkey | 1 | `nursery-floor-drain.md` |
-| 10 | Electrical: 400 A service upgrade + nursery subpanel + load-shed relay | 1 | main breaker tripped winter 2025–26; 15 rack circuits |
+| 10 | Electrical: nursery subpanel, 1 × 15 A circuit per rack, load-shed relay | 15 circuits | main breaker tripped winter 2025–26 → relay sheds the racks before the main; 400 A service NOT in this phase |
 | 11 | Per-tray drops + rack plumbing (Dubois + Home Depot) | 75 trays / 15 racks | fill drops, drain/overflow drops, downpipes, collector, slabs |
 | 12 | Power for drain valves | 3 PSU + wire | `nursery-racks.md` § Drain power |
 
@@ -123,17 +123,18 @@ Quote Dubois for both Dosatron pairs; the ~2 750/pair landed figure is an estima
 
 Quote in hand. Deposit before the 30th; the dig must beat ground freeze.
 
-## 10 — Electrical (electrician + Hydro-Québec)
+## 10 — Electrical (electrician, no Hydro-Québec)
 
 | Item | Total |
 |---|---|
-| 400 A service: meter base, CT metering, HQ request, transformer if required | 6 000 – 15 000 |
-| Nursery subpanel 100 A, 15 × 15 A circuits, receptacles | ~2 000 – 2 500 |
-| Load-shed relay + 2 CT + contactor on the rack feed | ~800 – 1 200 |
+| Nursery subpanel 100 A fed from the 200 A main, 15 × 15 A circuits, 1 receptacle per rack | ~2 000 – 2 500 |
+| Load-shed relay + 2 CT + contactor on the subpanel feed, threshold ~170 A | ~800 – 1 200 |
 | Load calculation (Code s. 8) | included |
-| **Electrical** | **~9 000 – 18 500** |
+| **Electrical** | **~2 800 – 3 700** |
 
-HQ timeline 2–4 months; the subpanel + relay can go in first and carry the racks through winter with the 05:00–23:00 photoperiod.
+No service upgrade. The relay drops the racks before the main trips; racks
+run 05:00–23:00 so they are dark during the night heating peak. 400 A
+service stays out of this phase.
 
 ## 11 — Per-tray drops + rack plumbing (Dubois + Home Depot)
 
@@ -170,21 +171,20 @@ HQ timeline 2–4 months; the subpanel + relay can go in first and carry the rac
 | 7 Orisha | 5 200 | 5 200 |
 | 8 Fertigation stations | 5 850 | 5 850 |
 | 9 Floor drain | 5 900 | 5 900 |
-| 10 Electrical | 9 000 | 18 500 |
+| 10 Electrical | 2 800 | 3 700 |
 | 11 Drops + plumbing | 5 250 | 5 250 |
 | 12 Valve power | 205 | 205 |
-| **Total** | **~56 950** | **~66 400** |
+| **Total** | **~50 750** | **~51 600** |
 
-Purchased (blocks 2, 3, 6): ~10 520. Target 61 500 sits inside the range;
-the electrical quote decides where it lands. If electrical comes in low,
-top-ups that are real project needs: phase 2 racks (7 × Uline + shelves +
-casters ~5 550), warm-water heater for the fill line (~600), spare rack
-trays (10 × 100).
+Purchased (blocks 2, 3, 6): ~10 520. Gap to 61 500: ~10 000 – 10 750.
+Top-ups that are real project needs, in order: phase 2 racks (7 × Uline +
+shelves + casters ~5 550), lighting for their 35 shelves (30 × 6-pack
+~3 980), fill-water heater (~600), spare rack trays (10 × 100).
 
 ## Before 2026-09-30
 
 - Grant: does a dated PO + deposit count, or final invoice only? Decides blocks 9 and 10.
-- Electrician: one visit → load calc + 400 A quote + subpanel + relay quote, all dated.
+- Electrician: one visit → load calc + subpanel + 15 circuits + relay quote, dated.
 - Plumber: quote in hand (5 900), pay the deposit.
 - Dubois: Dosatron pair quote × 2.
 - Orisha: 4 zones + 4 tensiometers, invoice.
