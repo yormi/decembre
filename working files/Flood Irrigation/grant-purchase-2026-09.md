@@ -29,11 +29,10 @@ Nothing deferred: this phase is the whole flood-irrigation build.
 |---|---|---|---|---|
 | [Epoxy wire shelving unit 48 × 24 × 72, green, 4 shelves](https://www.uline.ca/Product/Detail/H-3819G) | H-3819G | 7 | 426 | 2 982 |
 | [Add-on epoxy shelves 48 × 24, green, pack of 2](https://www.uline.ca/Product/Detail/H-6781G) — new racks 4 → 6 | H-6781G | 7 packs | 190 | 1 330 |
-| Casters, set of 4 | on the unit page | 7 | ~90 | ~630 |
+| [Casters 5 po PU locking, set of 4](https://www.uline.ca/Product/Detail/H-1205WH-BL) | H-1205WH-BL | 7 | 100 | 700 |
 | Freight | | | | ~600 |
-| **Racks** | | | | **~5 550** |
 
-Existing 8 racks already have 6 shelves. Open: caster option/price on H-3819G.
+Existing 8 racks already have 6 shelves and casters.
 
 ## 2, 3 — xTrays, flood trays 2×4 — PURCHASED 2026-09-25 → `purchased.md`
 
@@ -46,12 +45,10 @@ shelf (measured, `domain/lighting-zones.md`).
 |---|---|---|---|---|---|
 | Week 3 at 2:1 | 16 | 5 | 80 | ~300 | 19,4 |
 | Week 4 at 4:1 | 31 | 5 | 155 | ~300 | 19,4 (target 25 — accepted, or 21 h photoperiod → 22,7) |
-| **Total** | 47 | | **235** | | |
 
 | Item | Qty | Unit | Total |
 |---|---|---|---|
 | [Barrina T8 42 W 4 pi 5000 K, 6-pack](https://www.amazon.ca/dp/B0B3CCLW5D) | 40 packs = 240 strips | 132,59 | 5 304 |
-| **Lighting** | | | **~5 300** |
 
 Power: 210 W/shelf → 47 × 210 = 9 870 W ≈ 82 A at 120 V continuous (PF 1);
 ~9,7 A per rack — electrician quote needed, outside this phase.
@@ -61,9 +58,8 @@ Power: 210 W/shelf → 47 × 210 = 9 870 W ≈ 82 A at 120 V continuous (PF 1);
 | Item | Qty | Unit | Total |
 |---|---|---|---|
 | [U.S. Solid motorized ball valve ¾ SS full port, 9–24 V, 2-wire auto-return, NO](https://www.amazon.ca/dp/B0993GHNJT) | 60 | 70,28 | 4 217 |
-| **Drain valves** | | | **~4 220** |
 
-Adapters, vinyl, clamps, PSUs per valve: `nursery-racks.md` § Drain, outside this phase.
+Adapters, vinyl, clamps: `rack.md` § Drain drops; PSU: `nursery-racks.md` § Drain power. Outside this phase.
 
 ## 6 — Tray ports + vinyl — PURCHASED 2026-09-25 → `purchased.md`
 
@@ -73,15 +69,13 @@ Adapters, vinyl, clamps, PSUs per valve: `nursery-racks.md` § Drain, outside th
 |---|---|---|---|
 | Irrigation zone, fill valve included | 5 | ~1 200 | 6 000 |
 | Tensiometer 6" mini | 4 | ~100 | 400 |
-| **Orisha** | | | **~6 400** |
 
 ## 8 — Fertigation stations (Dubois, free shipping ≥ 200 $)
 
 | Item | Qty | Total |
 |---|---|---|
-| Nursery station: Dosatron D14MZ10 + 1:100-class, dual check, PMR 50 psi, PSR-2 10 psi, filter, strainer, bucket | 1 | ~2 950 |
+| Nursery station: 2 Dosatrons, dual check, PMR 50, PSR-2 10, filter, strainer, bucket | 1 | ~2 950 |
 | Greenhouse station: same pair + regulators + filter | 1 | ~2 900 |
-| **Stations** | | **~5 850** |
 
 Quote Dubois for both Dosatron pairs; the ~2 750/pair landed figure is an estimate.
 
@@ -90,7 +84,6 @@ Quote Dubois for both Dosatron pairs; the ~2 750/pair landed figure is an estima
 | Item | Total |
 |---|---|
 | Floor drain + P-trap, 3 po ABS run, wye tie-in, clapet, excavation, backfill | 5 900 |
-| **Floor drain** | **5 900** |
 
 Quote in hand. Deposit before the 30th; the dig must beat ground freeze.
 
@@ -101,7 +94,6 @@ Quote in hand. Deposit before the 30th; the dig must beat ground freeze.
 | Nursery subpanel 100 A fed from the 200 A main, 15 × 15 A circuits, 1 receptacle per rack | ~2 000 – 2 500 |
 | Load-shed relay + 2 CT + contactor on the subpanel feed, threshold ~170 A | ~800 – 1 200 |
 | Load calculation (Code s. 8) | included |
-| **Electrical** | **~2 800 – 3 700** |
 
 No service upgrade. The relay drops the racks before the main trips; racks
 run 05:00–23:00 so they are dark during the night heating peak. 400 A
@@ -120,7 +112,6 @@ service stays out of this phase.
 | Week-1 water-only line: 75 pi PE, té, 6 coudes, PSR-2, adapters, clamps | | ~110 |
 | Greenhouse: 1½ header, 2 po drain main + NO valve + waste run, 1½ overflow line | | ~885 |
 | Patio slabs, stone dust, shims, 15 racks | 15 × ~31 | ~465 |
-| **Drops + plumbing** | | **~5 360** |
 
 ## 12 — Drain-valve power (Amazon)
 
@@ -128,30 +119,12 @@ service stays out of this phase.
 |---|---|---|
 | PSU 24 V / 10 A | 3 | ~105 |
 | Wire 18/3, WAGO | | ~100 |
-| **Power** | | **~205** |
 
-## Phase total
+## Top-ups if under target
 
-| Block | Low | High |
-|---|---|---|
-| 1 Racks | 5 550 | 5 550 |
-| 2 xTrays — purchased | 3 099 | 3 099 |
-| 3 Flood trays 2×4 — purchased | 6 150 | 6 150 |
-| 4 Lighting | 5 300 | 5 300 |
-| 5 Drain valves | 4 220 | 4 220 |
-| 6 Ports + vinyl — purchased | 1 275 | 1 275 |
-| 7 Orisha | 6 400 | 6 400 |
-| 8 Fertigation stations | 5 850 | 5 850 |
-| 9 Floor drain | 5 900 | 5 900 |
-| 10 Electrical | 2 800 | 3 700 |
-| 11 Drops + plumbing | 5 360 | 5 360 |
-| 12 Valve power | 205 | 205 |
-| **Total** | **~52 060** | **~52 910** |
-
-Purchased (blocks 2, 3, 6, detail in `purchased.md`): ~10 520. Remaining to order: ~41 500 – 42 400. Gap to 61 500: ~8 600 – 9 450.
-Top-ups that are real project needs, in order: phase 2 racks (7 × Uline +
-shelves + casters ~5 550), lighting for their 35 shelves (30 × 6-pack
-~3 980), fill-water heater (~600), spare rack trays (10 × 100).
+In order: phase 2 racks (7 × Uline + shelves + casters), lighting for
+their 35 shelves (30 × 6-pack), fill-water heater (~600), spare rack
+trays (10 × 100).
 
 ## Before 2026-09-30
 

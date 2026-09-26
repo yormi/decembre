@@ -40,9 +40,9 @@ Shared design for all zones: `common.md`. Served zone:
 
 | Item | Qty | Note |
 |---|---|---|
-| [Accouplement laiton pivotant ¾ FHT × ¾ FPT (Dubois)](https://duboisag.com/ca_fr/fht-x-fpt-swivel-brass-coupling.html) | 1 | swivel = threads onto the bib without rotating the chain |
-| [Mamelon fileté ¾ po MPT × MPT, SCH 80 (Dubois)](https://duboisag.com/ca_fr/mamelon-pvc-filete-2211.html) | 1 | only if the regulator/kit threads directly on the swivel (FPT × FPT); skip when PE runs between |
-| [Adaptateur mâle ¾ po MPT × ¾ po insert](https://duboisag.com/ca_fr/adaptateur-male-mpt-x-insert.html) | 2 | swivel FPT → PE, PE → kit inlet (phase 2) or regulator FPT (phase 1); teflon on MPT |
+| [Accouplement laiton pivotant ¾ FHT × ¾ FPT (Dubois)](https://duboisag.com/ca_fr/fht-x-fpt-swivel-brass-coupling.html) | 1 | threads onto the bib without rotating the chain |
+| [Mamelon fileté ¾ po MPT × MPT, SCH 80 (Dubois)](https://duboisag.com/ca_fr/mamelon-pvc-filete-2211.html) | 1 | only if kit threads directly on the swivel |
+| [Adaptateur mâle ¾ po MPT × ¾ po insert](https://duboisag.com/ca_fr/adaptateur-male-mpt-x-insert.html) | 2 | swivel → PE, PE → kit (ph. 2) / regulator (ph. 1) |
 | [Boyau PE standard ¾ po × 100 pi, 75 psi (BO CO-075-75-1)](https://duboisag.com/ca_fr/boyau-flexible-standard-en-polyethylene-bobine.html) | 10 pi | |
 | [Coude 90 insertion ¾ po — cédule 40](https://duboisag.com/ca_fr/insert-ell-90-1399.html) | 3 | |
 | [Collier inox 304 19–29 mm, 20-pack Amazon](https://www.amazon.ca/dp/B091GJWGHQ) | 8 | 1/barb: 2 adapters + 3 coudes × 2 |
@@ -51,7 +51,7 @@ Shared design for all zones: `common.md`. Served zone:
 
 | Item | Qty | Note |
 |---|---|---|
-| [Senninger PSR-2 10 psi, ¾ po FPT, 0,5–15 GPM (IV PR-075-L-10)](https://duboisag.com/ca_fr/regulateur-de-pression-senninger.html) | 1 | last element of the kit; phase 1 = directly at the bib |
+| [Senninger PSR-2 10 psi, ¾ po FPT, 0,5–15 GPM (IV PR-075-L-10)](https://duboisag.com/ca_fr/regulateur-de-pression-senninger.html) | 1 | last of the kit; phase 1 = at the bib |
 | [Adaptateur mâle ¾ po MPT × ¾ po insert](https://duboisag.com/ca_fr/adaptateur-male-mpt-x-insert.html) | 1 | regulator outlet → PE |
 | [Boyau PE standard ¾ po × 100 pi, 75 psi (BO CO-075-75-1)](https://duboisag.com/ca_fr/boyau-flexible-standard-en-polyethylene-bobine.html) | 10 pi | |
 | [Coude 90 insertion ¾ po — cédule 40](https://duboisag.com/ca_fr/insert-ell-90-1399.html) | 2 | |
@@ -93,11 +93,13 @@ Shared design for all zones: `common.md`. Served zone:
 |---|---|---|
 | Dosatron D14MZ10VFBPHY | 1 | stock A @10 %; ~1 800 landed, quote Dubois |
 | Dosatron 1:100-class (D25RE2 / D14MZ2) | 1 | stock B @1 %; ~950 landed, quote Dubois |
-| Dual check valve (backflow preventer) 3/4 po | 1 | first element after the bib adapter — fertilizer injection into potable line |
-| [Senninger PMR 50 psi, ¾ po FPT, 2–20 GPM (IV PR-075-M-50)](https://duboisag.com/ca_fr/regulateur-de-pression-senninger.html) | 1 | Dosatron guard, after dual check; 3,45 bar preset, under the 85 psi ceiling; 35 psi option if house pressure runs low |
+| Dual check valve (backflow preventer) 3/4 po | 1 | first after the bib adapter (potable line) |
+| [Senninger PMR 50 psi, ¾ po FPT, 2–20 GPM (IV PR-075-M-50)](https://duboisag.com/ca_fr/regulateur-de-pression-senninger.html) | 1 | Dosatron guard, after dual check |
 | 100-mesh suction strainer | 1 | stock B suction line |
 | Inline filter | 1 | post-injector |
 | 20 L bucket with lid | 1 | stock B, daily mix |
+
+PMR 50: 3,45 bar preset under the 85 psi Dosatron ceiling; 35 psi option if house pressure runs low.
 
 On hand: 1× 200 L lidded drum (stock A).
 
@@ -107,15 +109,3 @@ On hand: 1× 200 L lidded drum (stock A).
 See `nursery-floor-drain.md` — sewer tie-in, 5 900 $ CA
 turnkey. Rack collectors discharge above its grate (air
 gap).
-
-
-## Total
-
-- **~135 $ CA** — water supply (phase 1).
-
-- **~110 $ CA** — week-1 water-only line (75 pi PE, té, 6 coudes, PSR-2, adapters, clamps).
-
-- **~2 950 $ CA** — fertigation station (phase 2); Dosatrons
-  ~1 800 + ~950 landed, quote Dubois.
-
-- **5 900 $ CA** — floor drain (`nursery-floor-drain.md`, quote 2026-09-26).

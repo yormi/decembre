@@ -25,7 +25,6 @@ perceuse, scie-cloche 1⅛, mèche 3/8, pâte téflon, scie à métaux, fil 18/3
 | [Coude ¼ barbé](https://duboisag.com/ca_fr/barb-elbow-1-4.html) | IB MI4-FEL250 | 4 | ~1 |
 | [Bouchon réparateur](https://duboisag.com/ca_fr/bouchon-reparateur.html) | IB 31-AGP250 | 10 | ~10 |
 | [Té réduit insertion 1½ × 1½ × ¾](https://duboisag.com/ca_fr/te-reduit-insertion.html) | II 1401210 | 8 | ~44 |
-| **Dubois** | | | **~380** |
 
 Not ordered: adaptateur femelle ¾ FPT × ¾ insert (II 1435007) — the GP-07 plug is male.
 
@@ -41,7 +40,6 @@ Not ordered: adaptateur femelle ¾ FPT × ¾ insert (II 1435007) — the GP-07 p
 | WAGO 221 splicing connectors, 90-pack | 1 | ~64 |
 | [PSU 24 V / 10 A](https://www.amazon.ca/Adapter-100-240V-Portable-Transformers-Security/dp/B0CDWHH2T3) | 1 | ~35 |
 | [Libraton 2½ po ratcheting cutter](https://www.amazon.ca/s?k=LIBRATON+2-1%2F2+ratchet+PVC+pipe+cutter+adjustable+ranges) | 1 | ~42 |
-| **Amazon.ca** | | **~500** |
 
 ## 2026-09-08 — Home Depot Lebourgneuf, pickup (prototype)
 
@@ -59,7 +57,6 @@ Not ordered: adaptateur femelle ¾ FPT × ¾ insert (II 1435007) — the GP-07 p
 | [Oatey colle ABS 473 mL](https://www.homedepot.ca/product/oatey-473-ml-abs-cement-yellow-c-/1000118514) | 1 | 15,30 |
 | [Seau 19 L](https://www.homedepot.ca/product/the-home-depot-orange-home-depot-logo-bucket-19-l/1000143871) | 2 | 8,94 |
 | [Attaches zip UV 8 po, 100-pack](https://www.homedepot.ca/product/commercial-electric-8-inch-uv-cable-tie-black-100-pack-/1000762529) | 3 | 21,45 |
-| **Home Depot** | | **440,51** |
 
 ## 2026-09-25 — Trimleaf
 
@@ -67,7 +64,6 @@ Not ordered: adaptateur femelle ¾ FPT × ¾ insert (II 1435007) — the GP-07 p
 |---|---|---|---|
 | [xTrays Classic flood table 3×6, white, Canadian ABS](https://www.trimleaf.ca/products/xtrays-classic-flood-table-canadian-abs) | 15 | 196,95 | 2 954,25 |
 | Shipping | | | 145,00 |
-| **Trimleaf** | | | **3 099,25** |
 
 ## 2026-09-25 — Indoor Farmer
 
@@ -79,15 +75,3 @@ Not ordered: adaptateur femelle ¾ FPT × ¾ insert (II 1435007) — the GP-07 p
 | [Active Aqua extension fitting](https://indoorfarmer.ca/products/active-aqua-fill-drain-extension-fitting-copy) | 158 | 1,15 | 181,70 |
 | [Active Aqua vinyl ¾ ID, 100 pi roll](https://indoorfarmer.ca/products/active-aqua-black-vinyl-tubing-3-4-id) | 2 | 134,95 | 269,90 |
 | Shipping, quoted | | | 150,00 |
-| **Indoor Farmer** | | | **7 423,20** |
-
-## Running total
-
-| Date | Supplier | $ CA |
-|---|---|---|
-| 2026-09-07 | Dubois | ~380 |
-| 2026-09-07/08 | Amazon.ca | ~500 |
-| 2026-09-08 | Home Depot | 440,51 |
-| 2026-09-25 | Trimleaf | 3 099,25 |
-| 2026-09-25 | Indoor Farmer | 7 423,20 |
-| | **Total** | **~11 840** |

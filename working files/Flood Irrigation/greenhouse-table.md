@@ -57,9 +57,11 @@ vessels, Orisha, fill drops, shared purchases):
 | Dosatron 1:100-class (D25RE2 / D14MZ2) | 1 | stock B @1 %; landed price TBC |
 | 100-mesh suction strainer | 1 | stock B suction line |
 | Inline filter | 1 | post-injector |
-| [Senninger PSR-2 10 psi, ¾ po FPT, 0,5–15 GPM (IV PR-075-L-10)](https://duboisag.com/ca_fr/regulateur-de-pression-senninger.html) | 1 | after injectors, before fill valve; pins header at 0,7 bar; ~50 L/min = 13 GPM, inside range; Senninger 1 po starts at 20 psi — bush ¾ into the 1 po line |
+| [Senninger PSR-2 10 psi, ¾ po FPT, 0,5–15 GPM (IV PR-075-L-10)](https://duboisag.com/ca_fr/regulateur-de-pression-senninger.html) | 1 | after injectors; bush ¾ into 1 po line |
 | Check valve 1 po, spring | 1 | after inline filter, before fill valve |
 | 20 L bucket with lid | 1 | stock B, daily mix |
+
+PSR-2: pins header at 0,7 bar; ~50 L/min = 13 GPM inside range; Senninger 1 po starts at 20 psi.
 
 On hand: 1× 200 L lidded drum (stock A), Franklin Turf Boss
 pump + inline pressure controller.
@@ -68,8 +70,10 @@ pump + inline pressure controller.
 
 | Item | Qty | Note |
 |---|---|---|
-| Feed header: 1½ po poly line, capped far end | ~30 m (100 pi) | fed by Orisha fill valve; at 100 pi a 1 po header loses ~0,25 bar @50 L/min (breaks the ≥10× orifice rule vs 0,7 bar); 1½ po loses ~0,04 bar ✓ |
+| Feed header: 1½ po poly line, capped far end | ~30 m (100 pi) | fed by Orisha fill valve |
 | Tray fill drop (`tray-drop.md`) | 15 | 1/tray, punched in the header |
+
+Header size: 1 po loses ~0,25 bar @50 L/min over 100 pi (breaks ≥10× orifice rule vs 0,7 bar); 1½ po ~0,04 bar.
 
 
 ## Waste
@@ -115,18 +119,20 @@ pump + inline pressure controller.
 
 | Item | Qty | Note |
 |---|---|---|
-| Drain main: 2 po PVC sch 40 | ~30 m (100 pi) | along the table row, ~1 % slope to NO valve at far end |
-| [U.S. Solid motorized ball valve 1" SS full-port, normally open](https://www.amazon.ca/Motorized-Valve-Normally-U-S-Solid/dp/B0993GKRLT) | 1 | at the true low point; fails open |
+| Drain main: 2 po PVC sch 40 | ~30 m (100 pi) | along the row, ~1 % slope to NO valve |
+| [U.S. Solid motorized ball valve 1" SS full-port, NO](https://www.amazon.ca/Motorized-Valve-Normally-U-S-Solid/dp/B0993GKRLT) | 1 | at the true low point; fails open |
 | Threaded end cap 2 po | 1 | not glued — seasonal flush |
-| Shared waste run: 2 po PVC, buriable (DWV/SDR-35) | ~25 m (80 pi) | valve → drain; overflow merges just after the valve (high tee); may be buried — sand bedding, grade set by string/laser before backfill, no bellies (buried belly + frost = hidden crack); cleanout wye + riser at upstream end; keep valve + merge accessible |
+| Shared waste run: 2 po PVC, buriable (DWV/SDR-35) | ~25 m (80 pi) | valve → drain; overflow joins (high tee) |
 | Colle PVC + apprêt (quincaillerie) | 1 | both mains + waste run |
+
+Waste run if buried: sand bedding, grade by string/laser before backfill, no bellies (belly + frost = crack); cleanout wye + riser upstream; keep valve + merge accessible.
 
 **Overflow drop** (port → tee on the overflow line)
 
 | Item | Qty | Note |
 |---|---|---|
 | [Vinyl ¾ po ID (Active Aqua)](https://indoorfarmer.ca/products/active-aqua-black-vinyl-tubing-3-4-id) | ~0,4 m | port → tee |
-| Té réduit PVC sch 40 1½ × 1½ × ¾ po, slip × slip × FPT (quincaillerie) | 1 | on the overflow line |
+| Té réduit PVC sch 40 1½ × 1½ × ¾ po, slip × slip × FPT | 1 | on the overflow line |
 | [Adaptateur mâle ¾ po MPT × ¾ po insert](https://duboisag.com/ca_fr/adaptateur-male-mpt-x-insert.html) | 1 | screws in the tee FPT, vinyl on the barb |
 | [Collier inox 304 19–29 mm, 20-pack Amazon](https://www.amazon.ca/dp/B091GJWGHQ) | 2 | port barb, adapter barb |
 
@@ -137,13 +143,5 @@ pump + inline pressure controller.
 | Overflow line: 1½ po PVC sch 40 | ~30 m (100 pi) | merges into waste run after the drain valve |
 
 
-## Total
-
-- **~6 950 $ CA** — trays ~2 950, port kits ~195, station
-  ~2 900 (Dosatrons ~2 750 landed, quote Dubois), header +
-  drops ~160, drain drops + main + waste run ~480, overflow
-  drops + line ~245.
-
-- Shared kit (Orisha zone, tensiometer, pump on hand):
-  `common.md`.
+Shared kit (Orisha zone, tensiometer, pump on hand): `common.md`.
 

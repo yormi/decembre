@@ -25,6 +25,5 @@ port (vinyl, valve, tee into the zone line) is zone-specific: `nursery-racks.md`
 | [Active Aqua fill/drain fitting 3/4 po](https://indoorfarmer.ca/products/active-aqua-fill-drain-fitting-3-4) | 2 | 3,95 | bulkheads, take ¾ po vinyl |
 | [Active Aqua screen fitting](https://indoorfarmer.ca/products/active-aqua-fill-drain-screen-fitting) | 2 | 1,25 | 1 on the drain fitting, 1 on top of the standpipe |
 | [Active Aqua extension fitting](https://indoorfarmer.ca/products/active-aqua-fill-drain-extension-fitting) | 2 | 1,15 | overflow only; 1¼ po each ≈ 2,5 po standpipe |
-| **Kit est.** | | **~13** | |
 
 Per-zone quantities: zone files.

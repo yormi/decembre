@@ -29,8 +29,8 @@ design) → punch-in barbed valve on the header → 1,4 m MIXC
 
 | Item | Qty/drop | Unit ($ CA) | Note |
 |---|---|---|---|
-| [Valve barbée 0,18 po pour micro-tube (IS 42155)](https://duboisag.com/ca_fr/valve-barbee-en-plastique-0-18-pour-micro-tube-4-7.html) | 1 | 1,69 | punched into header/riser; 0,18 po barb fits MIXC 0,170 po ID |
-| [MIXC drip tubing 1/4 po OD noir, 200 pi](https://www.amazon.ca/MIXC-Distribution-Tubing-Irrigation-Watering/dp/B07NZTJ29D) | 1,4 m | ~20 / 200 pi roll | 0,170 po ID |
+| [Valve barbée 0,18 po pour micro-tube (IS 42155)](https://duboisag.com/ca_fr/valve-barbee-en-plastique-0-18-pour-micro-tube-4-7.html) | 1 | 1,69 | punched in header; fits 0,170 po ID |
+| [MIXC drip tubing 1/4 po OD noir, 200 pi](https://www.amazon.ca/MIXC-Distribution-Tubing-Irrigation-Watering/dp/B07NZTJ29D) | 1,4 m | ~20 / roll | 0,170 po ID |
 | [HORTIPOTS top-hat grommet ¼ po OD, pack of 25](https://www.amazon.ca/HORTIPOTS-Grommet-Hydroponic-Systems-Irrigation/dp/B07MDNB45Y) | 1 | ~15 / 25 | 3/8 po hole |
 | [Coude 1/4 po barbé (Dubois)](https://duboisag.com/ca_fr/barb-elbow-1-4.html) | 1 | 0,22 | inside the tray, aimed down |
 

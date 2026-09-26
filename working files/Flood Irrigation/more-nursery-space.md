@@ -5,10 +5,10 @@ retired. Week 5 stays on the greenhouse table (`greenhouse-table.md`).
 5 tiers per rack, one 2×4 rack tray per tier. Room plan: app `admin/croquis`.
 
 Why: seedlings pack and stretch by week 3 in the current footprint;
-re-spacing 2:1 at week 3 needs ~2× the shelf area. Rack design, water path,
-collector: `nursery-racks.md` (per-rack canonical tables — multiply by rack
-count). Supply + fertigation station: `nursery-common.md`. Drain:
-`nursery-floor-drain.md`.
+re-spacing 2:1 at week 3 needs ~2× the shelf area. One rack's contents:
+`rack.md` (multiply by rack count). Shared water path, collector:
+`nursery-racks.md`. Supply + fertigation station: `nursery-common.md`.
+Drain: `nursery-floor-drain.md`.
 
 ## Phases
 
@@ -25,7 +25,6 @@ count). Supply + fertigation station: `nursery-common.md`. Drain:
 | 2 | 31 | 8 | 1.6 |
 | 3, spaced 2:1 | 62 | 16 | 3.2 |
 | 4, spaced 4:1 | 124 | 31 | 6.2 |
-| **Total** | **248** | **63** | **~13** |
 
 Spacing schedule is fixed: 2:1 at week 3, 4:1 at week 4. 15 racks (8 on hand + 7) = 75 shelves → 12 spare. Phase 2 (21) could also absorb week 5 (124 flats → 31 rack trays → 7 racks) if the greenhouse table is ever dropped.
 
@@ -41,22 +40,13 @@ top-right (keep-out ring + heat cone → no rack under it).
 | Right wall column | 3 | 1 (top) | 25" to tables · 35" to island |
 | Central island 2 × 3 | 4 (top two rows) | 2 (bottom row) | tables 80 × 22 above + below |
 | Below corridor | 3 | 2 | 20" / 18" / 17" gaps |
-| **Total** | **14** | **7** | |
 
 Island racks back-to-back, 2 wide. Wall racks long side against the wall.
 Bottom row long side against the wall, corridor side open.
 
 ## Per rack
 
-| Item | Qty | Note |
-|---|---|---|
-| [Uline epoxy wire shelving 48 × 24 × 72, green (H-3819G)](https://www.uline.ca/Product/Detail/H-3819G) | 1 | 426 $ at 3+ ; ships with 4 shelves |
-| Uline add-on epoxy shelf 48 × 24, green | 1 | 5th tier ; ~90 $ (estimate) |
-| Levelling (slabs, shims) | 1 set | `nursery-racks.md` § Levelling |
-| Rack tray + port kit + fill drop + drain/overflow drops | 5 | `nursery-racks.md` per-shelf tables |
-| Downpipe + collector tee | 1 | `nursery-racks.md` § Waste |
-
-Tier pitch ~14" (tray 4,5" + pots + LED clearance). 72" post = 5 tiers.
+Full contents of one rack: `rack.md`.
 
 ## Water path scaling
 
@@ -70,13 +60,12 @@ Tier pitch ~14" (tray 4,5" + pots + LED clearance). 72" post = 5 tiers.
 
 ## Budget (rack shells only, before tax)
 
-| Phase | Racks | Shells | Slabs + shims | Total |
-|---|---|---|---|---|
-| 1 | 14 | 14 × ~516 = ~7 200 $ | ~350 $ | **~7 600 $** |
-| 2 | 7 | 7 × ~516 = ~3 600 $ | ~175 $ | **~3 800 $** |
+| Phase | Racks | Shell | Slabs + shims |
+|---|---|---|---|
+| 1 | 14 | ~516 $ each | ~25 $ each |
+| 2 | 7 | ~516 $ each | ~25 $ each |
 
-Trays, ports, drops, valves, collector: `nursery-racks.md` § Total,
-per rack ~1 200 $ hardware → phase 1 ~17 000 $, phase 2 ~8 400 $.
+Trays, ports, drops, valves, downpipe: `rack.md`.
 
 ## Order
 

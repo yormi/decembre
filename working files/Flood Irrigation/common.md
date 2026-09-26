@@ -111,19 +111,9 @@ Rack trays (4 flats each): wk 1 8 · wk 2 8 · wk 3 16 · wk 4 31 = 63 of 75.
 | Orisha tensiometer 6" mini | 4 | 400 | |
 | Dosatron rebuild/seal kit | 1 | ~100 | spare, warranty-distance hedge |
 | Wire 18/3 | — | ~100 | drain-valve runs |
-| [Libraton 2½ po ratcheting cutter, 2 adjustable ranges + spare blade + deburrer](https://www.amazon.ca/s?k=LIBRATON+2-1%2F2+ratchet+PVC+pipe+cutter+adjustable+ranges) | 1 | ~42 | one cutter for ALL tubing: ¼ drip, ¾ vinyl/poly, 1¼-1½ PE, 2 po PVC (3 po ABS collector = scie); range selector = fewer squeezes on small tubes; no PVC cuts below ~10 °C (shatters) |
+| [Libraton 2½ po ratcheting cutter + spare blade + deburrer](https://www.amazon.ca/s?k=LIBRATON+2-1%2F2+ratchet+PVC+pipe+cutter+adjustable+ranges) | 1 | ~42 | one cutter for all tubing |
 
-
-## Total
-
-**~23 900 $ CA**, all zones.
-
-| File | Est. ($ CA) |
-|---|---|
-| `nursery-racks.md` (hardware only) | ~6 150 |
-| `nursery-common.md` (supply, fertigation station, floor drain) | ~6 585 |
-| `greenhouse-table.md` (incl. its station) | ~6 950 |
-| Shared purchases above | ~4 260 |
+Cutter: ¼ drip → 2 po PVC (3 po ABS = scie); no PVC cuts below ~10 °C (shatters).
 
 
 ## Just in case
@@ -138,4 +128,6 @@ Rack trays (4 flats each): wk 1 8 · wk 2 8 · wk 3 16 · wk 4 31 = 63 of 75.
 
 | Item | Prix ($ CA) | Note |
 |---|---|---|
-| [Aquascape 82000 silicone aquarium clair, 10,1 oz](https://www.amazon.ca/s?k=aquascape+82000+silicone) | ~19 | Shim the drain bulkheads → eliminate puddle for algea; poser sur plateau sec, cure 24–48 h avant inondation |
+| [Aquascape 82000 silicone aquarium clair, 10,1 oz](https://www.amazon.ca/s?k=aquascape+82000+silicone) | ~19 | shim drain bulkheads → no algae puddle |
+
+Poser sur plateau sec, cure 24–48 h avant inondation.
