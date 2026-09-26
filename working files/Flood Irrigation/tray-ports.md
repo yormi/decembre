@@ -15,9 +15,6 @@ port (vinyl, valve, tee into the zone line) is zone-specific: `nursery/water-sup
 - Both take a ¾ po vinyl drop on the barb, 1 inox gear
   clamp — drop + clamps are in each zone's drop table.
 
-- Shim the bulkheads with [Aquascape 82000 aquarium silicone](https://www.amazon.ca/s?k=aquascape+82000+silicone)
-  (~19 $) → no puddle around the flange. Apply on a dry tray, cure 24–48 h before flooding.
-
 **Port kit — parts per tray** (drain + overflow)
 
 | Item | Qty | Unit ($ CA) | Note |
