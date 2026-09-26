@@ -1,6 +1,6 @@
 # Nursery floor drain — sewer tie-in
 
-Destination for the rack collectors (`../nursery/nursery-racks.md`). Ties into the existing
+Destination for the rack collectors (`waste.md`). Ties into the existing
 greenhouse → property sanitary sewer line, ~15 pi from the
 nursery, invert ~5 pi below grade. Municipal sewer: no
 volume limit.
@@ -22,20 +22,11 @@ volume limit.
 
 - Dig before ground freeze (October).
 
+Quote 2026-09-26, turnkey (plumber subbing the digger): 5 900 $ CA —
+floor drain + P-trap, 3 po ABS run, wye tie-in, clapet, excavation, backfill.
+Deposit before 2026-09-30; grant block 9 (`grant-purchase-2026-09.md`).
+
 **Open:**
 
 - Permit: private line, likely none — confirm with the
   municipality.
-
-- Two quotes: turnkey vs plumber-only + separate excavator.
-
-**Purchases — floor drain**
-
-| Item | Qty | Total est. ($ CA) | Note |
-|---|---|---|---|
-| Excavation, operator + mini-excavator | ½–1 day | 1 200–2 000 | 15 pi trench to 5 pi, expose line, backfill; rock or wet soil doubles it |
-| Plumber labour | 6–10 h | 800–1 500 | 120–150 $/h: floor drain, ABS run, wye tie-in, clapet |
-| Materials, contractor markup | — | 400–700 | drain, 3 po ABS, wye, Fernco, clapet, sand |
-| Permit | — | 0–200 | if required |
-| Line locate | — | 0–150 | if exact position unknown |
-| **Turnkey** | | **5 900 (quote 2026-09-26)** | plumber subbing the digger; DIY dig + plumber joints ~1 500–2 200 |

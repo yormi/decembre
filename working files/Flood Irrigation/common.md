@@ -6,12 +6,12 @@ the nursery feed (`STORED_RECIPE.nursery.fertigation`).
 Builds on `flood-tray-salinity-handoff.md` (high-rise flood
 trays, drain-to-waste, leach schedule).
 
-Per-zone files: `nursery/nursery-racks.md` (weeks 1–4),
-`greenhouse/greenhouse-table.md` (week 5).
+Per-zone files: `nursery/water-supply.md` (weeks 1–4),
+`greenhouse/table.md` (week 5).
 Tray fill drop, identical in all zones: `tray-fill-drop.md`.
 Tray drain + overflow ports, identical: `tray-ports.md`.
 Nursery-only infrastructure (water supply, fertigation
-station, floor drain): `nursery/nursery-common.md`.
+station, floor drain): `nursery/water-supply.md`.
 
 
 ## Zones (from `protocol/sequence-lettuce-full-production.md`)
@@ -67,7 +67,7 @@ Rack trays (4 flats each): wk 1 8 · wk 2 8 · wk 3 16 · wk 4 31 = 63 of 75.
 - **Week 1 exception**: germination is water-only,
   pour-through CE < 1. Own zone on a dedicated water-only
   line that tees off before the fertigation kit
-  (`nursery/nursery-common.md`) — never sees feed.
+  (`nursery/water-supply.md`) — never sees feed.
 
 - **Per-zone irrigation programs** (draft — to validate with
   tensiometer data): water demand differs per week, so each

@@ -16,10 +16,10 @@ tax, checked 2026-09-23 unless noted.
 | 6 | Tray port kits + vinyl ¾ | 75 trays | purchased |
 | 7 | Orisha zones + tensiometers | 5 + 4 | 6 zones (wk 4 split), 1 on hand |
 | 8 | Fertigation stations, nursery + greenhouse | 2 | 2 Dosatrons each |
-| 9 | Floor drain + sewer tie-in, plumber turnkey | 1 | `done/nursery-floor-drain.md` |
+| 9 | Floor drain + sewer tie-in, plumber turnkey | 1 | `nursery/floor-drain.md` |
 | 10 | Subpanel, 1 × 15 A per rack, load-shed relay | 15 circuits | main tripped winter; no 400 A |
 | 11 | Per-tray drops + rack plumbing | 75 trays / 15 racks | Dubois + Home Depot |
-| 12 | Drain-valve power | 3 PSU + wire | `nursery/nursery-racks.md` § Drain power |
+| 12 | Drain-valve power | 3 PSU + wire | `nursery/water-supply.md` § Drain power |
 
 Nothing deferred: this phase is the whole flood-irrigation build.
 
@@ -59,7 +59,7 @@ Power: 210 W/shelf → 47 × 210 = 9 870 W ≈ 82 A at 120 V continuous (PF 1);
 |---|---|---|---|
 | [U.S. Solid motorized ball valve ¾ SS full port, 9–24 V, 2-wire auto-return, NO](https://www.amazon.ca/dp/B0993GHNJT) | 60 | 70,28 | 4 217 |
 
-Adapters, vinyl, clamps: `nursery/rack.md` § Drain drops; PSU: `nursery/nursery-racks.md` § Drain power. Outside this phase.
+Adapters, vinyl, clamps: `nursery/rack.md` § Drain drops; PSU: `nursery/water-supply.md` § Drain power. Outside this phase.
 
 ## 6 — Tray ports + vinyl — PURCHASED 2026-09-25 → `purchased.md`
 

@@ -1,8 +1,8 @@
 # Flood irrigation — the build
 
 What the finished system is. Purchases: `purchased.md`, `grant-purchase-2026-09.md`.
-Per-unit design: `nursery/nursery-racks.md`, `greenhouse/greenhouse-table.md`, `tray-fill-drop.md`, `tray-ports.md`.
-Shared rules: `common.md`. Supply, stations, drain: `nursery/nursery-common.md`, `done/nursery-floor-drain.md`.
+Per-unit design: `nursery/water-supply.md`, `greenhouse/table.md`, `tray-fill-drop.md`, `tray-ports.md`.
+Shared rules: `common.md`. Supply, stations, drain: `nursery/water-supply.md`, `nursery/floor-drain.md`.
 
 ## Purpose
 
@@ -44,6 +44,10 @@ Racks on patio slabs, trays shimmed level. Room plan: app `admin/croquis`.
 - Rack: glued 1½ ABS downpipe, 2 tee branches per shelf (drain + overflow), Pro-Connect
   at the foot → 3 po ABS collector along the rack rows → nursery floor drain → sewer.
 - Greenhouse: 2 po drain main with NO valve + 1½ po overflow line → shared waste run → drain.
+- Floor drain: P-trap in the nursery floor, collectors discharge above the grate (air gap)
+  → cleanout wye + riser → 3 po ABS, ~2 % run, ~15 pi → wye + clapet anti-retour on the
+  existing sanitary line, invert ~5 pi. Turnkey plumber, dig before ground freeze
+  (`nursery/floor-drain.md`).
 - No shared wet path between cohorts. No recirculation.
 
 ## Light
@@ -77,3 +81,4 @@ its own schedule; drain-valve outputs; tensiometers 1 per rack zone + greenhouse
 | Fertigation stations | 2 |
 | Barrina T8 strips, new | 235 |
 | Subpanel circuits | 14 |
+| Floor drain + sewer tie-in | 1 |
