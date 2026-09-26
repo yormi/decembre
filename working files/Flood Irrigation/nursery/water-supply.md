@@ -1,7 +1,7 @@
 # Nursery water supply — bib → fill valves (weeks 1–4)
 
 Absolute quantities for 14 racks, 6 zones. Per-rack parts: `rack.md`. Waste side:
-`waste.md`. Shared rules: `../common.md`.
+`waste.md`. Zones, schedules, Orisha: `control.md`.
 
 ## Path
 
@@ -77,7 +77,7 @@ Per branch: Orisha valve → rack A → hop → rack B → … → end cap. 5 nu
 
 | Item | Qty | Note |
 |---|---|---|
-| Orisha fill valve 1 po | 5 | included in Orisha automation (`../common.md`); 1 on hand |
+| Orisha fill valve 1 po | 5 | included with the Orisha automation (`control.md`); 1 on hand |
 | [Adaptateur mâle réduit 1 po MPT × ¾ po insert](https://duboisag.com/ca_fr/adaptateur-male-reduit-mpt-x-insert.html) | 10 | valve in + out |
 | [Boyau PE standard ¾ po × 100 pi, 75 psi (BO CO-075-75-1)](https://duboisag.com/ca_fr/boyau-flexible-standard-en-polyethylene-bobine.html) | ~10 pi/rack → 140 pi | rack-to-rack hops |
 | [Coude 90 insertion ¾ po — cédule 40](https://duboisag.com/ca_fr/insert-ell-90-1399.html) | 14 | 1/rack |
@@ -86,6 +86,14 @@ Per branch: Orisha valve → rack A → hop → rack B → … → end cap. 5 nu
 | [Collier de serrage inox](https://duboisag.com/ca_fr/collet-acier-inoxydable.html) ¾ po | 55 | 1/barb + 25 % |
 
 Fill drops (1/tray, punched in the branch): `rack.md` § Fill drops.
+
+## Spares
+
+| Item | Qty | Note |
+|---|---|---|
+| Coude 45 insertion ¾ po | 3 | |
+| Mamelon insertion ¾ × ¾ po (PE coupling) | 2 | joins 2 PE lengths; 2 clamps each |
+| Dosatron rebuild / seal kit | 1 | warranty-distance hedge |
 
 ## Total
 
@@ -96,5 +104,4 @@ Fill drops (1/tray, punched in the branch): `rack.md` § Fill drops.
 | Water-only line | ~110 |
 | Station → main → manifold | ~120 |
 | Zone branches, less Orisha | ~250 |
-| Orisha zones × 4 new + 4 tensiometers | ~5 200 |
-| **Nursery supply** | **~8 770** |
+| **Nursery supply** | **~3 570** |

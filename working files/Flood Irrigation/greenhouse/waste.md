@@ -1,7 +1,7 @@
 # Greenhouse waste — drain main → drain (week 5)
 
 Absolute quantities for 16 tables. Per-table drain/overflow drops: `table.md`. Supply
-side: `water-supply.md`. Shared rules: `../common.md`.
+side: `water-supply.md`. Zone, drain output: `control.md`.
 
 ## Path
 
@@ -50,9 +50,7 @@ Overflow drops (1/table): `table.md` § Overflow drop.
 
 ## Drain-valve power
 
-| Item | Qty | Note |
-|---|---|---|
-| Relais 24 V + PSU share | 1 | Orisha output → NO valve; PSU in `../nursery/waste.md` if the runs allow, else a 2nd PSU |
+Relay in `control.md`; 24 V from a nursery PSU (`../nursery/waste.md`) if the run allows, else a 2nd PSU (~35 $).
 
 ## Total
 

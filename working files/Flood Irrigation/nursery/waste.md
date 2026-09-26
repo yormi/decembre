@@ -1,7 +1,7 @@
 # Nursery waste — downpipe foot → sewer (weeks 1–4)
 
 Absolute quantities for 14 racks. Per-rack drain/overflow drops, downpipe and collector
-tee: `rack.md`. Supply side: `water-supply.md`. Shared rules: `../common.md`.
+tee: `rack.md`. Supply side: `water-supply.md`. Zones, drain outputs: `control.md`.
 
 ## Path
 
@@ -34,7 +34,6 @@ Sanitary tee + stub per rack: `rack.md` § Collector tie-in. Remainder sticks:
 | Item | Qty | Note |
 |---|---|---|
 | [PSU 24 V / 10 A 240 W](https://www.amazon.ca/Adapter-100-240V-Portable-Transformers-Security/dp/B0CDWHH2T3) | 4 (1 bought) | ≤ 25 valves × 5 W ≈ 5,2 A held per PSU; barrel jack → terminal block; mount dry |
-| Relais 24 V | 6 | 1/zone, Orisha output → PSU bus |
 | Fil 18/3 | ~150 m | valve → bus |
 | WAGO 221, 90-pack | 2 (1 bought) | |
 

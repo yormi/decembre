@@ -1,7 +1,7 @@
 # Tray fill drop — one design, every tray, every zone
 
-Header at 0,7 bar (10 psi regulator, `common.md` § Shared
-design) → punch-in barbed valve on the header → 1,4 m MIXC
+Header at 0,7 bar (10 psi regulator, each zone's
+`water-supply.md`) → punch-in barbed valve on the header → 1,4 m MIXC
 ¼ po tube (the fixed orifice, ~3,3 L/min) → top-hat grommet
 ¼ po through the tray wall (3/8 po hole, above flood line)
 → barbed elbow ¼ po on the tube end inside, aimed down.

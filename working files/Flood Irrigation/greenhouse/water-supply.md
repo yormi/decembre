@@ -1,7 +1,7 @@
 # Greenhouse water supply — tank → fill drops (week 5)
 
 Absolute quantities for 16 tables, 1 zone. Per-table parts: `table.md`. Waste side:
-`waste.md`. Shared rules: `../common.md`.
+`waste.md`. Zone, schedule, Orisha: `control.md`.
 
 ## Path
 
@@ -36,7 +36,7 @@ On hand: 200 L lidded drum (stock A), Franklin Turf Boss pump + inline pressure 
 
 | Item | Qty | Note |
 |---|---|---|
-| Orisha fill valve 1 po | 1 | included in Orisha automation (`../common.md`) |
+| Orisha fill valve 1 po | 1 | included with the Orisha automation (`control.md`) |
 | Feed header: 1½ po poly line, capped far end | ~30 m (100 pi) | along the table row |
 | Adapters 1 po → 1½ po header | 2 | valve out, header in |
 
@@ -47,6 +47,5 @@ Fill drops (1/table, punched in the header): `table.md` § Fill drop.
 | Block | $ CA |
 |---|---|
 | Station | ~2 900 (Dosatrons quoted by Dubois) |
-| Fill valve + header | ~160 (valve in Orisha zone) |
-| Orisha zone + tensiometer | ~1 300 |
-| **Greenhouse supply** | **~4 360** |
+| Fill valve + header | ~160 (valve with the Orisha automation) |
+| **Greenhouse supply** | **~3 060** |
