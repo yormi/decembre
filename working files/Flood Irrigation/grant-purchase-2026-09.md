@@ -9,11 +9,11 @@ tax, checked 2026-09-23 unless noted.
 | # | Item | Qty | Basis |
 |---|---|---|---|
 | 1 | Uline epoxy racks 48 × 24 × 72, casters, 6 shelves | 7 | 8 on hand → 15 |
-| 2 | xTrays 3×6, greenhouse week 5 | 15 | `greenhouse-table.md` |
-| 3 | Flood trays 2×4, rack tiers | 60 | 63 shelves (8 · 8 · 16 · 31), 4 on hand |
+| 2 | xTrays 3×6, greenhouse week 5 | 15 | purchased |
+| 3 | Flood trays 2×4, rack tiers | 60 | purchased; 63 shelves (8 · 8 · 16 · 31) |
 | 4 | Lighting, 5 × T8 per shelf, weeks 3 + 4 | 47 shelves | 235 strips; wk 1–2 already lit |
 | 5 | Drain valves ¾ SS NO | 60 | 1 per new tray; 4 on hand |
-| 6 | Tray port kits + vinyl ¾ | 75 trays | 60 rack + 15 xTrays |
+| 6 | Tray port kits + vinyl ¾ | 75 trays | purchased |
 | 7 | Orisha zones + tensiometers | 5 + 4 | 6 zones (wk 4 split), 1 on hand |
 | 8 | Fertigation stations, nursery + greenhouse | 2 | 2 Dosatrons each |
 | 9 | Floor drain + sewer tie-in, plumber turnkey | 1 | `nursery-floor-drain.md` |
@@ -35,26 +35,7 @@ Nothing deferred: this phase is the whole flood-irrigation build.
 
 Existing 8 racks already have 6 shelves. Open: caster option/price on H-3819G.
 
-## 2 — xTrays (Trimleaf) — PURCHASED 2026-09-25
-
-| Item | Qty | Unit | Total |
-|---|---|---|---|
-| [xTrays Classic flood table 3×6, white, Canadian ABS](https://www.trimleaf.ca/products/xtrays-classic-flood-table-canadian-abs) | 15 | 196,95 | 2 954,25 |
-| Shipping | | | 145,00 |
-| **xTrays** | | | **3 099,25** |
-
-## 3 — Flood trays 2×4 (Indoor Farmer, same order as block 6) — PURCHASED 2026-09-25
-
-Quoted by Indoor Farmer 2026-09-25: 100 $/tray, 150 $ shipping for 60.
-Beats Bootstrap (~121 $ CAD + US freight) and keeps it domestic.
-
-| Item | Qty | Unit | Total |
-|---|---|---|---|
-| [Grow Rack Shallow Rack Tray 45,5 × 25,5 × 4,5 po](https://indoorfarmer.ca/products/grow-rack-shallow-flood-tray-for-wire-shelving), quoted price | 60 | 100 | 6 000 |
-| Shipping, quoted | | | 150 |
-| **Flood trays** | | | **6 150** |
-
-Fallback if they can't deliver 60: [Bootstrap Farmer 10-packs](https://www.bootstrapfarmer.com/products/rack-tray-2-ft-x-4-ft), 892,99 USD each, US freight.
+## 2, 3 — xTrays, flood trays 2×4 — PURCHASED 2026-09-25 → `purchased.md`
 
 ## 4 — Lighting (Amazon.ca, free shipping)
 
@@ -84,17 +65,7 @@ Power: 210 W/shelf → 47 × 210 = 9 870 W ≈ 82 A at 120 V continuous (PF 1);
 
 Adapters, vinyl, clamps, PSUs per valve: `nursery-racks.md` § Drain, outside this phase.
 
-## 6 — Tray ports + vinyl (Indoor Farmer, same order as block 3) — PURCHASED 2026-09-25
-
-| Item | Per tray | Qty | Unit | Total |
-|---|---|---|---|---|
-| [Active Aqua fill/drain fitting ¾](https://indoorfarmer.ca/products/active-aqua-fill-drain-fitting-3-4) | 2 (drain + overflow) | 158 (150 + 8 spare) | 3,95 | 624,10 |
-| [Active Aqua screen fitting](https://indoorfarmer.ca/products/active-aqua-fill-drain-screen-fitting) | 2 | 158 | 1,25 | 197,50 |
-| [Active Aqua extension fitting](https://indoorfarmer.ca/products/active-aqua-fill-drain-extension-fitting-copy) | 2 (overflow standpipe) | 158 | 1,15 | 181,70 |
-| [Active Aqua vinyl ¾ ID, 100 pi roll](https://indoorfarmer.ca/products/active-aqua-black-vinyl-tubing-3-4-id) | ~1 m → 246 pi, ~96 pi left from the prototype roll | 2 | 134,95 | 269,90 |
-| **Ports + vinyl** | | | | **~1 275** |
-
-Skip the combo kit (½ + ¾, not two ¾). Clamps: Amazon. Adapters, réduits, fill-drop valves: Dubois.
+## 6 — Tray ports + vinyl — PURCHASED 2026-09-25 → `purchased.md`
 
 ## 7 — Orisha (local)
 
@@ -164,11 +135,11 @@ service stays out of this phase.
 | Block | Low | High |
 |---|---|---|
 | 1 Racks | 5 550 | 5 550 |
-| 2 xTrays | 3 099 | 3 099 |
-| 3 Flood trays 2×4 | 6 150 | 6 150 |
+| 2 xTrays — purchased | 3 099 | 3 099 |
+| 3 Flood trays 2×4 — purchased | 6 150 | 6 150 |
 | 4 Lighting | 5 300 | 5 300 |
 | 5 Drain valves | 4 220 | 4 220 |
-| 6 Ports + vinyl | 1 275 | 1 275 |
+| 6 Ports + vinyl — purchased | 1 275 | 1 275 |
 | 7 Orisha | 6 400 | 6 400 |
 | 8 Fertigation stations | 5 850 | 5 850 |
 | 9 Floor drain | 5 900 | 5 900 |
@@ -177,7 +148,7 @@ service stays out of this phase.
 | 12 Valve power | 205 | 205 |
 | **Total** | **~52 060** | **~52 910** |
 
-Purchased (blocks 2, 3, 6): ~10 520. Gap to 61 500: ~8 600 – 9 450.
+Purchased (blocks 2, 3, 6, detail in `purchased.md`): ~10 520. Remaining to order: ~41 500 – 42 400. Gap to 61 500: ~8 600 – 9 450.
 Top-ups that are real project needs, in order: phase 2 racks (7 × Uline +
 shelves + casters ~5 550), lighting for their 35 shelves (30 × 6-pack
 ~3 980), fill-water heater (~600), spare rack trays (10 × 100).
