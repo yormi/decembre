@@ -114,14 +114,14 @@ Skip the combo kit (½ + ¾, not two ¾). Clamps: Amazon. Adapters, réduits, fi
 
 Quote Dubois for both Dosatron pairs; the ~2 750/pair landed figure is an estimate.
 
-## 9 — Floor drain (plumber, turnkey)
+## 9 — Floor drain (plumber, turnkey) — QUOTED 2026-09-26
 
 | Item | Total |
 |---|---|
-| Floor drain + P-trap, 3 po ABS run, wye tie-in, clapet, excavation, backfill | 3 000 – 4 500 |
-| **Floor drain** | **~3 500** |
+| Floor drain + P-trap, 3 po ABS run, wye tie-in, clapet, excavation, backfill | 5 900 |
+| **Floor drain** | **5 900** |
 
-Dated quote + deposit before the 30th; the dig must beat ground freeze.
+Quote in hand. Deposit before the 30th; the dig must beat ground freeze.
 
 ## 10 — Electrical (electrician + Hydro-Québec)
 
@@ -169,11 +169,11 @@ HQ timeline 2–4 months; the subpanel + relay can go in first and carry the rac
 | 6 Ports + vinyl | 1 275 | 1 275 |
 | 7 Orisha | 5 200 | 5 200 |
 | 8 Fertigation stations | 5 850 | 5 850 |
-| 9 Floor drain | 3 000 | 4 500 |
+| 9 Floor drain | 5 900 | 5 900 |
 | 10 Electrical | 9 000 | 18 500 |
 | 11 Drops + plumbing | 5 250 | 5 250 |
 | 12 Valve power | 205 | 205 |
-| **Total** | **~54 050** | **~65 000** |
+| **Total** | **~56 950** | **~66 400** |
 
 Purchased (blocks 2, 3, 6): ~10 520. Target 61 500 sits inside the range;
 the electrical quote decides where it lands. If electrical comes in low,
@@ -185,7 +185,7 @@ trays (10 × 100).
 
 - Grant: does a dated PO + deposit count, or final invoice only? Decides blocks 9 and 10.
 - Electrician: one visit → load calc + 400 A quote + subpanel + relay quote, all dated.
-- Plumber: dated quote + deposit.
+- Plumber: quote in hand (5 900), pay the deposit.
 - Dubois: Dosatron pair quote × 2.
 - Orisha: 4 zones + 4 tensiometers, invoice.
 - Uline, Amazon: order now, ship in days.

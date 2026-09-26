@@ -38,4 +38,4 @@ volume limit.
 | Materials, contractor markup | — | 400–700 | drain, 3 po ABS, wye, Fernco, clapet, sand |
 | Permit | — | 0–200 | if required |
 | Line locate | — | 0–150 | if exact position unknown |
-| **Turnkey** | | **~3 000–4 500** | plumber subbing the digger +15–20 %; DIY dig + plumber joints ~1 500–2 200 |
+| **Turnkey** | | **5 900 (quote 2026-09-26)** | plumber subbing the digger; DIY dig + plumber joints ~1 500–2 200 |
