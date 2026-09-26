@@ -86,7 +86,7 @@ On hand: 1× 200 L lidded drum (stock A).
 
 ## Nursery floor drain
 
-See `nursery-floor-drain.md` — sewer tie-in, ~3 500 $ CA
+See `nursery-floor-drain.md` — sewer tie-in, 5 900 $ CA
 turnkey. Rack collectors discharge above its grate (air
 gap).
 
@@ -98,4 +98,4 @@ gap).
 - **~2 950 $ CA** — fertigation station (phase 2); Dosatrons
   ~1 800 + ~950 landed, quote Dubois.
 
-- **~3 500 $ CA** — floor drain (`nursery-floor-drain.md`).
+- **5 900 $ CA** — floor drain (`nursery-floor-drain.md`, quote 2026-09-26).
