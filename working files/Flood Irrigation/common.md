@@ -3,15 +3,12 @@
 Replace manual watering of lettuce seedlings,
 sow (week 1) → transplant (week 5). Delivers plain water and
 the nursery feed (`STORED_RECIPE.nursery.fertigation`).
-Builds on `flood-tray-salinity-handoff.md` (high-rise flood
-trays, drain-to-waste, leach schedule).
 
-Per-zone files: `nursery/water-supply.md` (weeks 1–4),
-`greenhouse/table.md` (week 5).
+Per-zone files: `nursery/` (weeks 1–4: `rack.md`, `water-supply.md`,
+`waste.md`, `floor-drain.md`), `greenhouse/` (week 5: `table.md`,
+`water-supply.md`, `waste.md`). The build: `project.md`.
 Tray fill drop, identical in all zones: `tray-fill-drop.md`.
 Tray drain + overflow ports, identical: `tray-ports.md`.
-Nursery-only infrastructure (water supply, fertigation
-station, floor drain): `nursery/water-supply.md`.
 
 
 ## Zones (from `protocol/sequence-lettuce-full-production.md`)
