@@ -1,8 +1,8 @@
 # Nursery racks (weeks 1–4)
 
 Shared kit only — one rack's full contents: `rack.md`. Shared design:
-`common.md`. Water supply (bib → fill valves), fertigation station, floor
-drain: `nursery-common.md`. Rack count: `project.md`.
+`../common.md`. Water supply (bib → fill valves), fertigation station, floor
+drain: `nursery-common.md`. Rack count: `../project.md`.
 
 ## Fill
 
@@ -22,13 +22,13 @@ drain: `nursery-common.md`. Rack count: `project.md`.
 | [Coude 90 insertion ¾ po — cédule 40](https://duboisag.com/ca_fr/insert-ell-90-1399.html) | 5 + 1 | |
 | [Té insertion ¾ po — cédule 40 (II 1401007)](https://duboisag.com/ca_fr/te-insertion.html) | 2 | |
 | [Collier de serrage inox](https://duboisag.com/ca_fr/collet-acier-inoxydable.html) ¾ po | 23 | 125 % of 18 barbs |
-| Tray fill drop (`tray-fill-drop.md`) | 8 (9 in zone 3) | 1/tray, punched in the branch |
+| Tray fill drop (`../tray-fill-drop.md`) | 8 (9 in zone 3) | 1/tray, punched in the branch |
 
 **Zone branch** (Orisha valve → rack A → hop → rack B → end cap)
 
 | Item | Qty | Note |
 |---|---|---|
-| Orisha fill valve 1 po | 1 | included in Orisha automation (`common.md`) |
+| Orisha fill valve 1 po | 1 | included in Orisha automation (`../common.md`) |
 | [Adaptateur mâle réduit 1 po MPT × ¾ po insert](https://duboisag.com/ca_fr/adaptateur-male-reduit-mpt-x-insert.html) | 2 | valve in + out, PE on the barbs |
 | [Boyau PE standard ¾ po × 100 pi, 75 psi (BO CO-075-75-1)](https://duboisag.com/ca_fr/boyau-flexible-standard-en-polyethylene-bobine.html) | 10 pi | |
 | [Coude 90 insertion ¾ po — cédule 40](https://duboisag.com/ca_fr/insert-ell-90-1399.html) | 1 | |

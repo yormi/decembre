@@ -12,4 +12,4 @@
 ## Process rules
 
 Persona infrastructure + process-rule layers (`everyone/`, `lib/`, principles, procedures): `team/CLAUDE.md`. Derivation faithful-blueprint: `team/plant-nutrition-specialist/skills/to-specs.md § Derivation discipline`.
-- `working files/Flood Irrigation/prototype.md` is FROZEN (as-built record). Never edit; changes go to `nursery-racks.md` / `project.md`.
+- `working files/Flood Irrigation/prototype.md` is FROZEN (as-built record). Never edit; changes go to `working files/Flood Irrigation/nursery/nursery-racks.md` / `project.md`.

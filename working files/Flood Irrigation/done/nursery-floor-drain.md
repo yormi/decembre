@@ -1,6 +1,6 @@
 # Nursery floor drain — sewer tie-in
 
-Destination for the rack collectors (`nursery-racks.md`). Ties into the existing
+Destination for the rack collectors (`../nursery/nursery-racks.md`). Ties into the existing
 greenhouse → property sanitary sewer line, ~15 pi from the
 nursery, invert ~5 pi below grade. Municipal sewer: no
 volume limit.

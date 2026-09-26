@@ -1,8 +1,8 @@
 # Flood irrigation — the build
 
 What the finished system is. Purchases: `purchased.md`, `grant-purchase-2026-09.md`.
-Per-unit design: `nursery-racks.md`, `greenhouse-table.md`, `tray-fill-drop.md`, `tray-ports.md`.
-Shared rules: `common.md`. Supply, stations, drain: `nursery-common.md`, `nursery-floor-drain.md`.
+Per-unit design: `nursery/nursery-racks.md`, `greenhouse/greenhouse-table.md`, `tray-fill-drop.md`, `tray-ports.md`.
+Shared rules: `common.md`. Supply, stations, drain: `nursery/nursery-common.md`, `done/nursery-floor-drain.md`.
 
 ## Purpose
 

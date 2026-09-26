@@ -12,14 +12,24 @@ Admin page. Floor-plan sketch of the nursery room. French UI text.
   sits at (160, 30), 6 in clearance ring, 15 ft cone along the tilt. Source:
   `domain/nursery-room.md`
 
-- **Items**: rack 48 × 28 in (phase 1 or 2, optional cohort week 1–4) ·
+- **Items**: rack 48 × 28 in, 5 shelves of 4 trays, each shelf one cohort
+  week S1–S4 or Autre (new rack all Autre) ·
   table L × D in (default 72 × 30, editable 12–120). Rotation 0 / 90°.
 
 - **Default layout**: 21 racks (2 top wall, 4 left, 4 right, 6 central
   island 2 × 3, 5 below corridor) + 2 tables 80 × 22 above and below the
-  island. 14 phase 1 · 7 phase 2 · 0 blocked (phase 2 = top rack of each wall column + 2nd top-wall rack + island bottom row + 2nd and 4th below-corridor racks — `working files/Flood Irrigation/more-nursery-space-layout.png`). Loaded from localStorage `nursery-layout:aisle`
-  when saved, else the suggested layout.
+  island. All shelves Autre · 0 blocked (`working files/Flood Irrigation/pdf/more-nursery-space-layout.png`). Loaded from localStorage `nursery-layout:aisle`
+  when saved (a rack's single saved week → all its shelves; none → Autre), else the suggested layout.
 
+
+## layout
+
+- No page title; whole page fits the viewport without scrolling
+
+- Sketch fills the left half (scaled to width, capped at viewport height
+  minus 245 px); right half holds shelf panel + table size inputs, shelf
+  counts + stats at its bottom; sketch never moves when the inputs fill;
+  one column below 900 px
 
 ## interactions
 
@@ -28,25 +38,29 @@ Admin page. Floor-plan sketch of the nursery room. French UI text.
 
 - Drag selected items together, 2 in snap, clamped inside the room
 
-- Toolbar: **+ rack** · **+ table** · **Pivoter** · **Phase 1/2**
-  (racks only) · **Retirer** · **Réinitialiser** (saved layout, else
+- Toolbar: **+ rack** · **+ table** · **Pivoter** · **Retirer** · **Réinitialiser** (saved layout, else
   suggested) · **Enregistrer par défaut** (localStorage) → « Enregistré »
   / « Échec » 2 s
 
 - Table size inputs (L × D) show when a table is selected; apply to all
   selected tables
 
-- **Semaine** buttons S1–S4 + **Aucune** (enabled with a selection) set /
-  clear the cohort week on selected racks; tables ignored
+- **Rack entier** buttons S1–S4 + **Autre** (enabled with a selection) →
+  set every shelf of the selected racks
+
+- Shelf panel shows when a rack is selected: one row per shelf,
+  **Tablette 1 (haut)** … **Tablette 5 (bas)**, buttons S1–S4 + **Autre**
+  → set that shelf on all selected racks; a button is highlighted when
+  every selected rack has that week on that shelf; tables ignored
 
 
 ## drawing
 
-- Item colors: phase 1 `#c9d64f` · phase 2 `#5fc9a8` · table `#9ab8c9` ·
-  blocked `#e06c4f`; a rack with a week takes the week color instead of
-  the phase color: S1 `#7fb3e6` · S2 `#c49be8` · S3 `#f0b35a` · S4
-  `#f08cb0`; selected = white 2.5 px stroke; label `P1` / `P2`, prefixed
-  `S<week> · ` when set / `table L×D`
+- Item colors: table `#9ab8c9` · blocked `#e06c4f`; a rack is split
+  into 5 equal stripes along its length, one per shelf, top shelf first: S1 `#7fb3e6` · S2 `#c49be8` ·
+  S3 `#f0b35a` · S4 `#f08cb0` · Autre `#5fc9a8`; selected = white 2.5 px
+  stroke; label = weeks present, in week order, joined by `+` (`S1+Autre`) /
+  `table L×D`
 
 - **Blocked** = overlaps another item, or touches corridor / door zone
 
@@ -54,5 +68,9 @@ Admin page. Floor-plan sketch of the nursery room. French UI text.
   below (≥ 12 in overlap on the shared axis), plus gap to left / top wall
   when nothing sits between; shown only when 8–60 in; de-duplicated
 
-- Stats: racks phase 1 · phase 2 · total · plateaux (racks × 20) ·
-  bloqués (red when > 0) · racks S1..S4 (count per week, week color)
+- Stats: total · plateaux (racks × 20) · bloqués (red when > 0)
+
+- **Tablettes / requises** (right half, bottom): per week S1–S4
+  `<shelves on plan> / <required>`, required = `ceil(traysByNurseryWeek[week] / 4)`
+  at the Rendement default inputs; green when ≥ required, red below;
+  Autre shows its count only

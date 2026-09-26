@@ -1,9 +1,9 @@
 # Rack — everything in one nursery rack (5 tray tiers, 6 shelves)
 
 One rack = shell + 5 flooded tiers + one downpipe into the shared collector.
-Multiply by rack count (`project.md`). Shared kit (zone branches,
+Multiply by rack count (`../project.md`). Shared kit (zone branches,
 distribution, drain PSU, collector): `nursery-racks.md`. Port design:
-`tray-ports.md`. Fill-drop design: `tray-fill-drop.md`.
+`../tray-ports.md`. Fill-drop design: `../tray-fill-drop.md`.
 
 ## Shell
 
@@ -36,13 +36,13 @@ Never shim on bare soil: heaves in spring, settles under a flooded tray.
 | Item | Qty | Note |
 |---|---|---|
 | [Botanicare Grow Rack Shallow Rack Tray 45,5 × 25,5 × 4,5 po](https://indoorfarmer.ca/products/grow-rack-shallow-flood-tray-for-wire-shelving) | 5 | 1/tier; BOUGHT |
-| Tray port kit (`tray-ports.md`) | 5 | 1/tray; BOUGHT |
+| Tray port kit (`../tray-ports.md`) | 5 | 1/tray; BOUGHT |
 
 ## Fill drops (5)
 
 | Item | Qty | Note |
 |---|---|---|
-| Tray fill drop (`tray-fill-drop.md`) | 5 | 1/tray, punched in the zone branch |
+| Tray fill drop (`../tray-fill-drop.md`) | 5 | 1/tray, punched in the zone branch |
 | Attaches zip UV 8 po | ~10 | tube strain relief on the shelf |
 
 ## Drain drops (5)

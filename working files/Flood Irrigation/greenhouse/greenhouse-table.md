@@ -2,14 +2,14 @@
 
 Shared design (flood cycle, injection stations, stock
 vessels, Orisha, fill drops, shared purchases):
-`common.md` § Shared design.
+`../common.md` § Shared design.
 
 ## Trays
 
 - Tray × 15 (xTrays 3×6 pi lining the existing table)
 
 - **Per-tray leveling**: each xTray hydraulically
-  independent — overflow standpipe (`tray-ports.md`,
+  independent — overflow standpipe (`../tray-ports.md`,
   ≈ 2,5 po) sets each tray's own level. Only each 3×6 tray
   must be level on its own footprint (no 15-tray plane).
 
@@ -18,7 +18,7 @@ vessels, Orisha, fill drops, shared purchases):
 | Item | Qty | Note |
 |---|---|---|
 | [xTrays Classic flood table, Canadian ABS](https://www.trimleaf.ca/products/xtrays-classic-flood-table-canadian-abs) | 1 | 3×6 pi; single order with nursery table (min 10) |
-| Tray port kit (`tray-ports.md`) | 1 | |
+| Tray port kit (`../tray-ports.md`) | 1 | |
 
 
 ## Fill
@@ -33,7 +33,7 @@ vessels, Orisha, fill drops, shared purchases):
   dead-head risk) → Dosatron A → Dosatron B → inline filter
   → check valve → 10 psi preset regulator → Orisha fill
   valve → 1½ po feed header (100 pi) → one tray fill drop per
-  tray (`tray-fill-drop.md`, ~3,3 L/min). Water-hammer
+  tray (`../tray-fill-drop.md`, ~3,3 L/min). Water-hammer
   arrestor or flex section between fill valve and
   injectors.
 
@@ -47,7 +47,7 @@ vessels, Orisha, fill drops, shared purchases):
   loss ≥ 10× header end-to-end loss (1½ po header @50 L/min
   loses ~0,04 bar over the 100 pi run → 1,4 m tubes
   qualify; a 1 po header would lose ~0,25 bar and fail the
-  rule). Timer set from one measured drop (`tray-fill-drop.md`).
+  rule). Timer set from one measured drop (`../tray-fill-drop.md`).
 
 **Station** (tank → fill valve)
 
@@ -71,7 +71,7 @@ pump + inline pressure controller.
 | Item | Qty | Note |
 |---|---|---|
 | Feed header: 1½ po poly line, capped far end | ~30 m (100 pi) | fed by Orisha fill valve |
-| Tray fill drop (`tray-fill-drop.md`) | 15 | 1/tray, punched in the header |
+| Tray fill drop (`../tray-fill-drop.md`) | 15 | 1/tray, punched in the header |
 
 Header size: 1 po loses ~0,25 bar @50 L/min over 100 pi (breaks ≥10× orifice rule vs 0,7 bar); 1½ po ~0,04 bar.
 
@@ -84,13 +84,13 @@ Header size: 1 po loses ~0,25 bar @50 L/min over 100 pi (breaks ≥10× orifice 
 - Overflow main × 1 (keep-or-skip pending; protects against a mechanically stuck fill valve)
 
 - **Drain — two lines.** Valved line: drain port
-  (`tray-ports.md`) → ¾ po vinyl → 2 × 2 × ¾ PVC tee → 2 po PVC
+  (`../tray-ports.md`) → ¾ po vinyl → 2 × 2 × ¾ PVC tee → 2 po PVC
   main, ~1 % slope to the NO valve at the true low point →
   waste. 2 po carries ~100 L/min half-full vs ~50 needed
   (1 250 L in ~12 min); 1 po full-port NO valve ~130 L/min —
   the main is the limiter, not the valve. Threaded (not glued) end cap for
   seasonal flush. Overflow line: each tray's overflow port
-  (`tray-ports.md`) → 1½ po
+  (`../tray-ports.md`) → 1½ po
   unvalved line straight to waste — the drain valve is
   closed during fill/hold, so standpipes discharging into
   the valved main would back up and defeat the level cap;
@@ -143,5 +143,5 @@ Waste run if buried: sand bedding, grade by string/laser before backfill, no bel
 | Overflow line: 1½ po PVC sch 40 | ~30 m (100 pi) | merges into waste run after the drain valve |
 
 
-Shared kit (Orisha zone, tensiometer, pump on hand): `common.md`.
+Shared kit (Orisha zone, tensiometer, pump on hand): `../common.md`.
 

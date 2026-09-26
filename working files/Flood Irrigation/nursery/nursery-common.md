@@ -1,6 +1,6 @@
 # Nursery — common infrastructure (racks, weeks 1–4)
 
-Shared design for all zones: `common.md`. Served zone:
+Shared design for all zones: `../common.md`. Served zone:
 `nursery-racks.md`.
 
 
@@ -106,6 +106,6 @@ On hand: 1× 200 L lidded drum (stock A).
 
 ## Nursery floor drain
 
-See `nursery-floor-drain.md` — sewer tie-in, 5 900 $ CA
+See `../done/nursery-floor-drain.md` — sewer tie-in, 5 900 $ CA
 turnkey. Rack collectors discharge above its grate (air
 gap).
