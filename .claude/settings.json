@@ -34,8 +34,8 @@
   },
   "permissions": {
     "deny": [
-      "Edit(working files/Flood Irrigation/prototype.md)",
-      "Write(working files/Flood Irrigation/prototype.md)"
+      "Edit(Flood Irrigation/prototype.md)",
+      "Write(Flood Irrigation/prototype.md)"
     ]
   }
 }

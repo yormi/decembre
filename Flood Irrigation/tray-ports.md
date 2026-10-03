@@ -2,8 +2,8 @@
 
 Two bulkhead ports per tray, both Active Aqua ¾ po
 fill/drain fittings through the tray floor. The drop below the
-port (vinyl, valve, tee into the zone line) is zone-specific: `nursery/water-supply.md`,
-`greenhouse/table.md`.
+port (vinyl, valve, tee branch on the drain downpipe / drain main) is zone-specific:
+`nursery/rack-water.md` § Drain drops + § Overflow drops, `greenhouse/table-water.md`.
 
 - **Drain port**: fitting + screen (inside). Flush with the
   floor → complete drain-back.
@@ -19,7 +19,7 @@ port (vinyl, valve, tee into the zone line) is zone-specific: `nursery/water-sup
 
 | Item | Qty | Unit ($ CA) | Note |
 |---|---|---|---|
-| [Active Aqua fill/drain fitting 3/4 po](https://indoorfarmer.ca/products/active-aqua-fill-drain-fitting-3-4) | 2 | 3,95 | bulkheads, take ¾ po vinyl |
+| [Active Aqua fill/drain fitting 3/4 po](https://indoorfarmer.ca/products/active-aqua-fill-drain-fitting-3-4) | 2 | 3,95 | bulkheads |
 | [Active Aqua screen fitting](https://indoorfarmer.ca/products/active-aqua-fill-drain-screen-fitting) | 2 | 1,25 | 1 on the drain fitting, 1 on top of the standpipe |
 | [Active Aqua extension fitting](https://indoorfarmer.ca/products/active-aqua-fill-drain-extension-fitting) | 2 | 1,15 | overflow only; 1¼ po each ≈ 2,5 po standpipe |
 

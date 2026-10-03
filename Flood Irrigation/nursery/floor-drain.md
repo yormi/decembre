@@ -1,6 +1,6 @@
 # Nursery floor drain — sewer tie-in
 
-Destination for the rack collectors (`waste.md`). Ties into the existing
+Destination for the 3 rack collectors (`waste.md`), which end at the settling-box spot. Ties into the existing
 greenhouse → property sanitary sewer line, ~15 pi from the
 nursery, invert ~5 pi below grade. Municipal sewer: no
 volume limit.
@@ -17,16 +17,25 @@ volume limit.
   cycle → no insulation. Trap indoors, heated. Off-season:
   jug of water weekly or plug the drain.
 
-- Collectors discharge ABOVE the grate — air
+- Settling box: 3 collector inlets high on one side, outlet ~1 po lower on the opposite
+  side with an inside tee dipping down (floaters stay in the box).
+
+- Settling-box outlet discharges ABOVE the grate — air
   gap, never sealed in.
 
 - Dig before ground freeze (October).
 
 Quote 2026-09-26, turnkey (plumber subbing the digger): 5 900 $ CA —
-floor drain + P-trap, 3 po ABS run, wye tie-in, clapet, excavation, backfill.
-Deposit before 2026-09-30; grant block 9 (`grant-purchase-2026-09.md`).
+floor drain + P-trap, 3 po ABS run, wye tie-in, clapet, excavation, backfill, settling box.
+Deposit before 2026-09-30 (grant deadline, `../project.md`).
 
 **Open:**
 
 - Permit: private line, likely none — confirm with the
   municipality.
+
+## Total
+
+| Block | $ CA |
+|---|---|
+| **Settling box + floor drain + sewer tie-in, turnkey** | **5 900** |

@@ -18,7 +18,7 @@ Admin page. Floor-plan sketch of the nursery room. French UI text.
 
 - **Default layout**: 21 racks (2 top wall, 4 left, 4 right, 6 central
   island 2 × 3, 5 below corridor) + 2 tables 80 × 22 above and below the
-  island. All shelves Autre · 0 blocked (`working files/Flood Irrigation/pdf/more-nursery-space-layout.png`). Loaded from localStorage `nursery-layout:aisle`
+  island. All shelves Autre · 0 blocked (`Flood Irrigation/pdf/more-nursery-space-layout.png`). Loaded from localStorage `nursery-layout:aisle`
   when saved (a rack's single saved week → all its shelves; none → Autre), else the suggested layout.
 
 
