@@ -91,6 +91,18 @@ P₂O₅) is 4× Ocean's. Residual basis per `n-supply-half-demand-floor`.
 
 ---
 
+## default-recipe-ca-covers-full-demand
+
+**Statement:** `nurseryRecipeSupply(NURSERY_RECIPE_DEFAULT, NURSERY_FERTIGATION_DEFAULTS.trayVolumeL, NURSERY_FERTIGATION_DEFAULTS.applicationsPerWeek).perTray_mg.Ca`
+≥ `PlantNeedsNursery.demandPerTray('Ca')` — full gross demand, zero OM2
+substrate credit. At the 50 g default: demand ~448 mg Ca/tray/wk; weekly
+supply ~464 mg (gypsum 0.20 g/L). Cert 3.
+
+**Rationale:** OM2 Ca charge is an unpublished placeholder; Ca is the
+known tip-burn weak point.
+
+---
+
 ## products-schema-complete-organic-only
 
 **Statement:** Every entry in `NURSERY_PRODUCTS` has:

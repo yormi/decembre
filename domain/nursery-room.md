@@ -13,6 +13,7 @@ west wall, y from the north wall, inches.
 | Floor | 16'3" × 27' (195 × 324 in) |
 | Door | 36 × 36 in, north-west corner |
 | Corridor | 36 in deep, y 240–276, wall to wall |
+| Ceiling | joists east–west · 12 ft at the west wall → 8 ft at the east wall |
 
 
 ### Hot Dawg heater (measured 2026-09-22)

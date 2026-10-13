@@ -106,7 +106,7 @@
     'Gypsum': {
       // Gypse (CaSO₄·2H₂O), 23.2 % Ca. Continuous solution Ca — the tip-burn
       // lever (better than a one-time pulse; nursery-5wk-balance decision
-      // 2026-08-25). Dose 0.14 g/L sits far under the 2.4 g/L solubility and
+      // 2026-08-25). Dose 0.20 g/L sits under the 2.4 g/L solubility and
       // the Ca2+ × SO4-2 KSP threshold (2.4 g/L combined). Slow to dissolve —
       // add first, stir.
       mode: 'flux',
@@ -222,17 +222,18 @@
   // the per-feed leach (nothing runs off at 62 mL/pot). Doses are bucket
   // concentrations (g/L powders, mL/L ≈ g/L liquids at density ~1).
   //
-  // Per bucket (per tray, 2 L): N 102 / P 16 / K 250 / Ca 65 / Mg 12 mg
-  // → weekly ×5: N 511 / P 80 / K 1 248 / Ca 325 / Mg 58 mg — each ≈ the
-  // residual weekly need at the 50 g / 32-pot target. Math in derivation.md.
+  // Per bucket (per tray, 2 L): N 102 / P 16 / K 250 / Ca 93 / Mg 12 mg
+  // → weekly ×5: N 511 / P 80 / K 1 248 / Ca 464 / Mg 58 mg — each ≈ the
+  // residual weekly need at the 50 g / 32-pot target; Ca covers full demand
+  // (default-recipe-ca-covers-full-demand). Math in derivation.md.
   //
-  // Predicted CE: 0.1 + 0.20×0.29 + 0.15×0.39 + 1.5×0.29 + 0.9×0.14
-  //   + 0.75×0.058 + 1.2×0.015 + 0.01×0.1 = 0.84 mS/cm → predicted-ce-under-nursery-cap ✓ (headroom 0.16)
+  // Predicted CE: 0.1 + 0.20×0.29 + 0.15×0.39 + 1.5×0.29 + 0.9×0.20
+  //   + 0.75×0.058 + 1.2×0.015 + 0.01×0.1 = 0.89 mS/cm → predicted-ce-under-nursery-cap ✓ (headroom 0.11)
   // Predicted pH: 6.26 − 0.15×0.29 − 0.10×0.39 − 0.10×0.015 = 6.18 → predicted-tank-ph-in-nursery-envelope ✓
   // Key order = mixing order (slow-dissolving gypsum first; renders in this
   // order on the operator + Bilan cards).
   const NURSERY_RECIPE_DEFAULT = {
-    Gypsum:        0.14,                         // g/L — continuous solution Ca; dissolve FIRST, stir; cert 3
+    Gypsum:        0.20,                         // g/L — continuous solution Ca; dissolve FIRST, stir; cert 3
     Ocean_15_1_1:  0.29,                         // g/L — N, exact-solved on residual; cert 3
     AcadiePoisson: 0.39,                         // g/L (≈ mL/L) — P, exact-solved on residual; cert 3
     KSulfate:      0.29,                         // g/L — K workhorse (93 % of K need); cert 3

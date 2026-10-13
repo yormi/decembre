@@ -4,6 +4,10 @@ Append-only log of substantive changes (recipe edits, REQ additions, model archi
 
 Format: `YYYY-MM-DD HH:MM — brief description`. One line per change. Most recent at top. Keep ~10 entries; older history lives in `git log`.
 
+## 2026-09-26
+
+- 15:10 — **Semis : gypse 0,14 → 0,20 g/L** (`STORED_RECIPE.nursery.fertigation` + `NURSERY_RECIPE_DEFAULT`). La fertigation couvre seule le besoin Ca (464 ≥ 448 mg/plateau/sem) à crédit terreau OM2 nul. Snapshot capturé dans RECIPE_HISTORY. Nouvelle entrée spec `default-recipe-ca-covers-full-demand` + test. CE prédite 0,84 → 0,89 (plafond 1,0) ; stock A 1:10 = 2,0 g/L (≈ 400 g / 200 L). `npm run check` 151/2 (mêmes 2 rouges tomate pré-existants).
+
 ## 2026-09-14
 
 - 21:40 — **Registre : journal de pesées hebdo été 2026, cohortes H–S** (`yield-range/domain/doc/data-points.md`). Feuille « Poids des têtes de laitue » transcrite : 4 cohortes 50-cell (semis juin, champ 4r×6") + 8 cohortes pots 3 po (semis juil–août, champ 3r×8"), semaines pépinière 3-4-5 puis champ 1-2. Première série pépinière→champ. Pots 3 po : sem 5 18-26 g, champ sem 1 20-32 g, champ sem 2 32-47 g — le modèle donne 179 / 233 g aux mêmes jours (choc de transplant absent, taux champ ~4× trop rapide). Conditions notées : problèmes d'arrosage sur toute la série, fertigation 5×/sem depuis ~2026-08-31 (cohortes P–S seulement), montaison observée, ré-espacement 2:1 en semaine 4 → passe en semaine 3 dès la cohorte S. Données seules, aucun refit. ⚠ jours de lecture non datés, base de sélection et n non notés, colonnes Max/Average hors capture.
@@ -33,7 +37,3 @@ Format: `YYYY-MM-DD HH:MM — brief description`. One line per change. Most rece
 ## 2026-08-11
 
 - **2026-08-11 — Nouveau domaine `domain/lettuce/sequence.md` : séquence pépinière (fermeture de canopée, étapes de ré-espacement, motif ×6, densités banc vs champ).** Fermeture ~j19 en 32-pot serré (indépendante de la taille de pot — dynamique LAI par surface) ; ×2 damier à la touche des feuilles → re-fermeture ~j27–29 à DLI 21 ; second ré-espacement si maintien passé j28 : ×3 ouvert jusqu'à ~j32 · ×4 ~j33 · ×6 j35+. Motif ×6 = 2 rangées décalées de 3 par plateau 1020 (~17 cm entre voisins). Table de densités : banc serré 210/m² → ×6 35/m² = densité champ 4 rangs × 6 po (290 cm²/plant) — le ×6 pré-paie la surface champ sur le banc. Chiffres issus du moteur `seedling-thinning.js` (non validé — en attente `PLUG_DRY_MATTER_FRACTION`) ; les jours de fermeture sont robustes (surface foliaire, pas poids).
-
-## 2026-08-09
-
-- **2026-08-09 — `DLI_TARGET` 17 → 25 : la cible lit rejoint le plafond banc.** Décision Guillaume : 25 mol/m²/j vaut pour la pépinière ET les lits ; surface prioritaire = table DEL de #laitue/lundi (« Ajuster LED serre pour le mois », slot `lum-suppl-table`) et page Lumière, qui lisent `YR.DLI_TARGET` au rendu — aucune édition UI. Supersède la bande lit 14–16 (>17 tipburn) : `domain/lettuce/model.md` (ligne DLI → cible 25, bande 14–25) et `yield-range/domain/light/domain.md` (production head ~17 → 25) amendés en place. Le moteur de croissance champ tourne aussi sur `DLI_TARGET` → têtes plus lourdes au modèle. `npm run check` : 150/2 (mêmes 2 rouges pré-existants). Suite yield-range : **35/2 contre 34/3 avant** — aucun nouveau rouge, un pré-existant repasse vert.

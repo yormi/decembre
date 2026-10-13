@@ -15,7 +15,7 @@
   window.STORED_RECIPE = window.STORED_RECIPE || {};
   window.STORED_RECIPE.nursery = {
     fertigation: {
-      Gypsum:        0.14,   // g/L — dissolve first, stir
+      Gypsum:        0.20,   // g/L — dissolve first, stir
       Ocean_15_1_1:  0.29,   // g/L
       AcadiePoisson: 0.39,   // mL/L
       KSulfate:      0.29,   // g/L

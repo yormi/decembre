@@ -49,6 +49,16 @@
 // It also serves as the team-visible audit trail for organic certification.
 const RECIPE_HISTORY = [
   {
+    retired: '2026-09-26',
+    recipe: 'STORED_RECIPE.nursery.fertigation',
+    summary: 'Gypse 0,14 → 0,20 g/L — la fertigation seule couvre 100 % du Ca',
+    reason: 'Le crédit Ca du terreau OM2 (640 mg/plateau sur 5 sem, 29 % du besoin) repose sur un placeholder coupé de moitié — Berger ne publie rien. Le Ca est le point faible connu (brûlure de pointe). Gypse monté pour que la fertigation couvre seule le besoin 5 semaines (2 240 mg/plateau) à crédit terreau nul : 0,20 g/L → ~2 320 mg (104 %). CE prédite 0,84 → 0,89 (plafond 1,0) ; stock A au 1:10 = 2,0 g/L, sous la solubilité 2,4 g/L. Gypse Ecocert CAN/CGSB-32.311. Décision Guillaume.',
+    replacedBy: 'STORED_RECIPE.nursery.fertigation — gypse 0,20 g/L ; autres lignes inchangées.',
+    fullSnapshot: {
+      nursery: { Gypsum: 0.14, Ocean_15_1_1: 0.29, AcadiePoisson: 0.39, KSulfate: 0.29, MgSulfate: 0.058, IronSulfate: 0.015, MicroStock: 0.1 },
+    },
+  },
+  {
     retired: '2026-08-25',
     recipe: 'STORED_RECIPE.nursery.fertigation',
     summary: 'Semis rééquilibré — kelp retiré, K/Ca/Mg + stock micros ajoutés, 5 arrosages/sem à 2 L/plateau',

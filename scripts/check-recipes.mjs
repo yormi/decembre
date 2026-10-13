@@ -3775,6 +3775,25 @@ header('min-applications-solves-full-coverage — minimumApplicationsPerWeek ret
   }
 }
 
+header('default-recipe-ca-covers-full-demand — default recipe Ca ≥ gross demand, zero substrate credit');
+{
+  const FN = window.FertigationNursery;
+  const PNN = window.PlantNeedsNursery;
+  if (!FN || typeof FN.nurseryRecipeSupply !== 'function' || !PNN || typeof PNN.demandPerTray !== 'function') {
+    fail('default-recipe-ca-covers-full-demand — namespaces present', 'FertigationNursery.nurseryRecipeSupply or PlantNeedsNursery.demandPerTray missing');
+  } else {
+    const defaults = FN.NURSERY_FERTIGATION_DEFAULTS || {};
+    const supply = FN.nurseryRecipeSupply(FN.NURSERY_RECIPE_DEFAULT, defaults.trayVolumeL, defaults.applicationsPerWeek);
+    const calciumSupply = (supply.perTray_mg || {}).Ca || 0;
+    const calciumDemand = PNN.demandPerTray('Ca');
+    if (calciumDemand > 0 && calciumSupply >= calciumDemand) {
+      pass(`Ca ${calciumSupply.toFixed(0)} mg/plateau/sem ≥ besoin ${calciumDemand.toFixed(0)} mg`);
+    } else {
+      fail('default-recipe-ca-covers-full-demand — couverture Ca', `supply ${calciumSupply.toFixed(0)} mg < demand ${calciumDemand.toFixed(0)} mg`);
+    }
+  }
+}
+
 header('elements-sourced-vs-unsourced — nurseryElementsBySource splits sourced vs unsourced');
 {
   const FN = window.FertigationNursery;

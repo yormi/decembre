@@ -1,7 +1,7 @@
 # Barn rooms floor — office floor over the 3 rooms (~29 × 14 ft, ~400 ft²)
 
-Plywood on the ceiling joists of the 3 side-by-side rooms. Rooms, joists: `domain.md`.
-Germination room joists: `germination-room.md` § Framing.
+Plywood on the ceiling joists of the 3 side-by-side rooms. Rooms: `../../domain/barn-rooms.md`. Joists: `construction.md`.
+Germination room joists: `../germination-room/germination-room.md` § Framing.
 
 ## Joists
 

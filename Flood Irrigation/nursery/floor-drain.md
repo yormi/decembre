@@ -5,6 +5,8 @@ greenhouse → property sanitary sewer line, ~15 pi from the
 nursery, invert ~5 pi below grade. Municipal sewer: no
 volume limit.
 
+- Location: floor drain + settling box below the Hot Dawg heater, north-east corner (`../../domain/nursery-room.md`).
+
 - Floor drain with P-trap set in the nursery floor (concrete
   collar) → cleanout wye + riser inside the wall → 3 po ABS
   DWV → 45° drops to depth just outside the wall → ~2 % run
@@ -27,7 +29,6 @@ volume limit.
 
 Quote 2026-09-26, turnkey (plumber subbing the digger): 5 900 $ CA —
 floor drain + P-trap, 3 po ABS run, wye tie-in, clapet, excavation, backfill, settling box.
-Deposit before 2026-09-30 (grant deadline, `../project.md`).
 
 **Open:**
 

@@ -28,6 +28,12 @@ in its crop; shared soil chemistry + methods live here.
   **Reach for this when:** placing anything in the nursery room or
   changing the croquis fixed zones.
 
+- `barn-rooms.md` — barn rooms geometry: germination, cold + graft
+  rooms side by side, office floor above, inside dimensions,
+  germination room height + door.
+  **Reach for this when:** placing anything in the barn rooms or
+  sizing a room's equipment.
+
 - `spinach.md` — spinach irrigation domain.
   **Reach for this when:** working spinach water scheduling.
 

@@ -9,8 +9,8 @@ Racks wired in pairs: one 14/3 run per pair, quantities below = half a pair.
 - **Circuit (per pair):**
     - Eaton BR 2-pole 15 A (L1 → rack A, L2 → rack B)
     → AC90 14/3: black = A, red = B, 1 shared white (anti-short bushing at each cut end)
-    → box A (3 in deep) on the ceiling above rack A
-    → AC90 14/3 jumper (same coil, black capped) → box B above rack B, ≥ 3 in from box A
+    → box A (3 in deep): wall rack → on the wall at the rack centre, 85 in; island rack → on the joist above the rack centre
+    → AC90 14/3 jumper (same coil, black capped) → box B, same rule
     → 1 GFCI duplex per rack: own hot + white pigtail on LINE, LOAD empty
 
 | Item | Qty | Note |
@@ -21,14 +21,14 @@ Racks wired in pairs: one 14/3 run per pair, quantities below = half a pair.
 | [Manchon anti-court-circuit AC90 (quincaillerie)](https://www.homedepot.ca/product/iberville--0-anti-short-bushing-bag-of-35/1000431876) | 2 | 4 per pair: both run ends + both jumper ends; ~0,20 $ |
 | [Connecteur AC90 ⅜ po, sac de 5 (Iberville)](https://www.homedepot.ca/product/iberville-zinc-alloy-one-screw-fitting-3-8-in-1-2-in-ko-bag-of-5-units-/1000137918) | ½ | 1 per pair, run into the panel; boxes have built-in clamps; ~1 $ |
 | [Attache câble aluminium 14/3 (Iberville)](https://www.homedepot.ca/product/iberville-aluminum-cable-strap-nmd90-14-2-12-2-14-3-12-3-bag-of-25-units-/1000408055) | 11 | ~22 per pair: every 1,5 m + ≤ 300 mm from each box; bag of 25 |
-| Vis à bois #8 × 1¼ po | 2 | box to ceiling |
+| Vis à bois #8 × 1¼ po | 2 | box to wall or joist |
 | [Eaton BR disjoncteur 2 pôles 15 A](https://www.homedepot.ca/product/eaton-plug-in-replacement-br-breaker-2p-15a/1000410355) | ½ | 1 per pair, common trip (required with a shared white); 32,94 $ |
 | [Southwire AC90 14/3 armoured cable, 150 m](https://www.homedepot.ca/product/southwire-ac90-14-3-150m-armoured-cable/1000145735) | ~15 m | ~30 m run + ~0,5 m jumper per pair; 495 $ / 150 m |
 
 ## Lighting + power bar
 
 - **Lights:**
-    - ceiling duplex
+    - GFCI duplex
     → timer
     → power bar (cord hanging free)
     → 5 tier plugs

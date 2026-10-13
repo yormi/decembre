@@ -1,7 +1,7 @@
 # Barn rooms cladding — barn side of the 3 rooms (375 pi²)
 
 Board and batten, unfinished, on the barn-facing walls of the 3 side-by-side rooms
-(germination room: `germination-room.md`). Walls 10 pi. Plywood braces the walls.
+(germination room: `../germination-room/germination-room.md`). Walls 10 pi. Plywood braces the walls.
 
 - Sheets vertical, 4 × 8 pi + 2 pi top strip; blocking row at 8 pi under the seam.
 

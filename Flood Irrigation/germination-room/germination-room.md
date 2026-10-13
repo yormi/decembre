@@ -1,13 +1,15 @@
 # Germination room — framing, racks, outlets, lining
 
-Dimensions, walls, door: `domain.md`.
+Use: office for the winter → germination room from spring.
+
+Dimensions, door: `../../domain/barn-rooms.md`. Walls: `../barn-rooms/construction.md`. Climate: `climate.md`. Rodent closure: `rodent-closure.md`.
 
 ## Framing
 
 New walls: one 154 in + one 116 in side (22 ft 6 in), the door in them; the other two sides are
 existing walls. Studs 16 in, single bottom plate, double top plate. Ceiling joists 16 in
 across the 116 in span, on the top plate of the 154 in walls behind a 2×6 rim; toe-nailed to
-the plate + nailed through the rim (office floor above: `barn-rooms-floor.md`).
+the plate + nailed through the rim (office floor above: `../barn-rooms/floor.md`).
 
 | Member | 2 × 6 × 10 pi |
 |---|---|
@@ -35,7 +37,9 @@ the plate + nailed through the rim (office floor above: `barn-rooms-floor.md`).
 
 ## Lighting
 
-5 racks lit: `rack-lighting.md` § Lighting + power bar, 1 set per rack; each plugs into its own room outlet (§ Power).
+5 racks lit: `../nursery/rack-lighting.md` § Lighting + power bar, 1 set per rack; each plugs into its own room outlet (§ Power).
+
+Spring: racks + shelves boxed (`../on-hand.md`); 89 lights left after the nursery's 500 → 36 short.
 
 ## Power
 
@@ -56,7 +60,7 @@ face flush with the ½ in Trusscore.
 
 ## Outer cladding
 
-Shared with the 2 neighbouring rooms: `barn-rooms-cladding.md`.
+Shared with the 2 neighbouring rooms: `../barn-rooms/cladding.md`.
 
 ## Concrete
 
@@ -92,6 +96,7 @@ PVC liner screwed to studs at 16 in; insulation + poly behind.
 | [LePage PL Acousti-Seal 825 mL](https://www.homedepot.ca/product/lepage-pl-acousti-seal-sound-absorbing-vapor-barrier-adhesive-black-flexible-825ml/1000409510) | 1 | poly laps + perimeter; 14,87 $ |
 | [Tuck Tape 60 mm × 55 m](https://www.homedepot.ca/product/tuck-tape-60mm-x-55m-contractor-s-sheathing-tape/1001659553) | 1 | poly seams + box boots; 6,38 $ |
 | [DECKMATE vis à bois inox 316 #8 × 1½ in, tête cylindrique, 25 pc (Home Depot)](https://www.homedepot.ca/product/deckmate-8x1-1-2-inch-316-stainless-steel-pan-head-philips-drive-wood-screws-25pc/1001869856) | 16 packs | ~380: boards, trims, the 5 boxes; 9,98 $/pack |
+| [MONO 100 % silicone, kitchen + bath, white, 290 mL (Home Depot)](https://www.homedepot.ca/product/1001001923) | 6 | tongues, corners, boxes, wall–ceiling cove (Trusscore guide); 6,87 $ |
 
 ## Total
 

@@ -5,12 +5,26 @@
 #page-croquis-content .croquis-toolbar button:disabled { background: #2a332d; color: #5a665e; cursor: default; }
 #page-croquis-content .croquis-toolbar .croquis-save-message { font-size: 12px; align-self: center; }
 #page-croquis-content .croquis-toolbar .croquis-toolbar-label { font-size: 12px; color: var(--text-muted); align-self: center; margin-left: 8px; }
-#page-croquis-content .croquis-toolbar button[data-action="week"]:disabled { background: #2a332d; }
+#page-croquis-content .croquis-workspace { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+@media (max-width: 900px) { #page-croquis-content .croquis-workspace { grid-template-columns: 1fr; } }
+#page-croquis-content .croquis-side { display: flex; flex-direction: column; }
+#page-croquis-content .croquis-shelf-counts { margin-top: auto; padding-top: 16px; }
+#page-croquis-content .croquis-shelf-counts .croquis-toolbar-label { margin: 0 0 6px; }
+#page-croquis-content .croquis-shelf-counts td { padding: 3px 12px 3px 0; }
+#page-croquis-content .croquis-shelf-counts .croquis-count { font-size: 18px; font-weight: 700; font-family: 'DM Mono', monospace; }
+#page-croquis-content .croquis-week-chip { display: inline-block; min-width: 44px; text-align: center; padding: 2px 8px; border-radius: 3px; font-size: 12px; font-weight: 600; color: #1c2408; }
+#page-croquis-content .croquis-shelves { display: flex; flex-direction: column; gap: 4px; margin-bottom: 8px; }
+#page-croquis-content .croquis-shelves:empty { display: none; }
+#page-croquis-content .croquis-shelf-row { display: flex; gap: 6px; align-items: center; }
+#page-croquis-content .croquis-whole-rack { margin-bottom: 14px; }
+#page-croquis-content .croquis-shelf-row .croquis-toolbar-label { width: 110px; margin-left: 0; font-size: 12px; color: var(--text-muted); }
+#page-croquis-content .croquis-shelf-row button { padding: 4px 10px; border: 2px solid transparent; border-radius: 3px; font-family: inherit; font-size: 12px; font-weight: 600; cursor: pointer; color: #1c2408; opacity: 0.45; }
+#page-croquis-content .croquis-shelf-row button.active { opacity: 1; border-color: var(--text); }
 #page-croquis-content .croquis-table-size { display: flex; gap: 8px; align-items: center; margin-bottom: 8px; font-size: 12px; color: var(--text-muted); }
 #page-croquis-content .croquis-table-size:empty { display: none; }
 #page-croquis-content .croquis-table-size input { width: 54px; padding: 3px 6px; border: 1px solid var(--border); border-radius: 3px; font-family: inherit; font-size: 12px; }
-#page-croquis-content .croquis-canvas { background: #101613; padding: 16px; border-radius: 6px; overflow-x: auto; user-select: none; -webkit-user-select: none; }
-#page-croquis-content .croquis-canvas svg { display: block; margin: 0 auto; background: #1a231e; border: 1px solid #243029; border-radius: 4px; touch-action: none; }
+#page-croquis-content .croquis-canvas { min-width: 0; background: #101613; padding: 16px; border-radius: 6px; overflow-x: auto; user-select: none; -webkit-user-select: none; }
+#page-croquis-content .croquis-canvas svg { display: block; width: 100%; height: auto; max-height: calc(100vh - 245px); touch-action: none; }
 #page-croquis-content .croquis-stats { display: flex; gap: 16px; margin-top: 8px; font-size: 13px; flex-wrap: wrap; }
 #page-croquis-content .croquis-stats .croquis-stat-value { font-size: 18px; font-weight: 700; }
 #page-croquis-content .croquis-stats .croquis-stat-label { font-size: 11px; color: var(--text-muted); margin-left: 4px; }

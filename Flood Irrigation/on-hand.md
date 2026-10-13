@@ -5,7 +5,7 @@ Build quantities: `project.md` + zone files. Prototype as-built: `prototype.md` 
 
 ## Before the project
 
-- 8 Uline racks 72 po on casters, 6 shelves each
+- 8 Uline racks 72 po, 6 shelves each; 3 without casters, 3 without lights
 
 - 265 × Barrina T8 42 W 4 ft 5000 K (lights for 10.5 racks)
 
@@ -26,9 +26,11 @@ Build quantities: `project.md` + zone files. Prototype as-built: `prototype.md` 
 
 - 6 × relais 24 V, fil 18/3, pâte téflon
 
-- Vinyl ¾ ID — 300 pi total with the 2026-09-25 Indoor Farmer rolls
+- Vinyl ¾ ID — 300 pi total with the 2026-09-28 Indoor Farmer rolls
 
 - 20 × 2 × 6 × 10 ft SPF
+
+- Sand, bedding
 
 - Framing nailer + framing nails
 
@@ -78,7 +80,7 @@ Installed on the prototype supply: station → main (PSR-2, adaptateur, PE ¾ 10
 
 | Item | Qty | Total ($ CA) |
 |---|---|---|
-| [IPEX ABS DWV 3 po × 12 pi](https://www.homedepot.ca/product/ipex-cell-core-3-inch-x-12-feet-abs-dwv-pipe/1000120780) | 7 | 300,86 |
+| [IPEX ABS DWV 3 po × 12 pi](https://www.homedepot.ca/product/ipex-cell-core-3-inch-x-12-feet-abs-dwv-pipe/1000120780) | 3 (4 returned); 4 ft left over | 128,94 |
 | [LESSO manchon ABS 3 po hub × hub](https://www.homedepot.ca/product/lesso-3-in-abs-coupling-all-hub/1000116135) | 6 | 20,88 |
 | [LESSO coude 45 ABS 3 po](https://www.homedepot.ca/product/lesso-3-in-abs-45-degree-sr-elbow-all-hub/1000421136) | 1 | 5,14 |
 | [LESSO coude 90 long ABS 3 po](https://www.homedepot.ca/product/lesso-3-in-abs-long-turn-90-degree-elbow-h-x-h/1000116337) | 1 | 6,98 |
@@ -144,6 +146,8 @@ Installed on the prototype collector: cleanout adapter + plug (1 end of line), c
 | [Uline casters 5 po PU, locking, set of 4 (H-1205WH-BL)](https://www.uline.ca/Product/Detail/H-1205WH-BL) | 12 | 100,00 | 1 200,00 |
 | Shipping | | | 646,03 |
 
+12 racks + 12 shelf packs built this fall; 5 racks + 5 shelf packs stay boxed for the germination room.
+
 ## 2026-09-28 — Dubois (order #1000059201)
 
 | Item | Code | Qty | Unit | Total ($ CA) |
@@ -170,6 +174,7 @@ Installed on the prototype collector: cleanout adapter + plug (1 end of line), c
 | [Valve barbée 0,18 po pour micro-tube](https://duboisag.com/ca_fr/valve-barbee-en-plastique-0-18-pour-micro-tube-4-7.html) | IS 42155 | 80 | 1,69 | 135,20 |
 | [Coude ¼ barbé](https://duboisag.com/ca_fr/barb-elbow-1-4.html) | IB MI4-FEL250 | 80 | 0,22 | 17,60 |
 | Shipping | | | | 0,00 |
+| Refund 10 % | | | | −338,27 |
 
 ## 2026-09-28 — Home Depot (order 0243206147)
 
@@ -202,14 +207,15 @@ Installed on the prototype collector: cleanout adapter + plug (1 end of line), c
 | [xTrays Classic flood table 3×6, white, Canadian ABS](https://www.trimleaf.ca/products/xtrays-classic-flood-table-canadian-abs) | 15 | 196,95 | 2 954,25 |
 | Shipping | | | 145,00 |
 
-## 2026-09-25 — Indoor Farmer
+## 2026-09-28 — Indoor Farmer (order #98815)
 
 | Item | Qty | Unit | Total ($ CA) |
 |---|---|---|---|
-| [Grow Rack Shallow Rack Tray 45,5 × 25,5 × 4,5 po](https://indoorfarmer.ca/products/grow-rack-shallow-flood-tray-for-wire-shelving), special order | 60 | 100,00 | 6 000,00 |
-| [Active Aqua fill/drain fitting ¾](https://indoorfarmer.ca/products/active-aqua-fill-drain-fitting-3-4) | 158 | 3,36 | 530,49 |
-| [Active Aqua screen fitting](https://indoorfarmer.ca/products/active-aqua-fill-drain-screen-fitting) | 158 | 1,06 | 167,88 |
-| [Active Aqua extension fitting](https://indoorfarmer.ca/products/active-aqua-fill-drain-extension-fitting-copy) | 158 | 0,98 | 154,45 |
+| [Grow Rack Shallow Rack Tray 45,5 × 25,5 × 4,5 po](https://indoorfarmer.ca/products/grow-rack-shallow-flood-tray-for-wire-shelving), special order | 65 | 100,00 | 6 500,00 |
+| [Active Aqua fill/drain fitting ¾](https://indoorfarmer.ca/products/active-aqua-fill-drain-fitting-3-4) | 168 | 3,36 | 564,06 |
+| [Active Aqua fill/drain fitting ¾](https://indoorfarmer.ca/products/active-aqua-fill-drain-fitting-3-4), replacement for defective | 5 | 0,00 | 0,00 |
+| [Active Aqua screen fitting](https://indoorfarmer.ca/products/active-aqua-fill-drain-screen-fitting) | 168 | 1,06 | 178,50 |
+| [Active Aqua extension fitting](https://indoorfarmer.ca/products/active-aqua-fill-drain-extension-fitting-copy) | 168 | 0,98 | 164,22 |
 | [Active Aqua vinyl ¾ ID, 100 pi roll](https://indoorfarmer.ca/products/active-aqua-black-vinyl-tubing-3-4-id) | 2 | 114,71 | 229,42 |
 | Shipping | | | 150,00 |
 
@@ -220,7 +226,7 @@ Installed on the prototype collector: cleanout adapter + plug (1 end of line), c
 | [Dosatron D14MZ10VFBPHY, 1–10 %, Viton, bypass](https://www.irrigationdirect.ca/d14mz10vfbphy.html) | 2 | 1 950,00 | 3 900,00 |
 | Shipping | | | 0,00 |
 
-## 2026-10-03 — RONA
+## 2026-09-28 — RONA (order 44861542)
 
 | Item | Article | Qty | Unit | Total ($ CA) |
 |---|---|---|---|---|
@@ -252,7 +258,7 @@ Installed on the prototype collector: cleanout adapter + plug (1 end of line), c
 | [Iberville manchons anti-court-circuit, 30](https://www.rona.ca/fr/recherche?q=03205791) | 03205791 | 3 | 3,99 | 11,97 |
 | [Iberville attache-câble 2 trous alu, 25](https://www.rona.ca/fr/recherche?q=0320112) | 0320112 | 12 | 4,99 | 59,88 |
 | [IPEX tuyau ABS 1½ po × 12 pi](https://www.rona.ca/fr/recherche?q=00685475) | 00685475 | 21 | 13,19 | 276,99 |
-| [IPEX té sanitaire ABS 1½ po F×F×F](https://www.rona.ca/fr/recherche?q=0068087) | 0068087 | 85 | 1,99 | 169,15 |
+| [IPEX té sanitaire ABS 1½ po F×F×F](https://www.rona.ca/fr/recherche?q=0068087) | 0068087 | 85 (57 refunded) | 1,99 | 169,15 |
 | [IPEX coude 90 extra-long ABS 1½ po F×F](https://www.rona.ca/fr/recherche?q=00685775) | 00685775 | 42 | 2,79 | 117,18 |
 | [IPEX té sanitaire ABS 3 × 3 × 1½ po](https://www.rona.ca/fr/recherche?q=00685752) | 00685752 | 12 | 4,99 | 59,88 |
 | [IPEX raccord union ABS 1½ po](https://www.rona.ca/fr/recherche?q=00685892) | 00685892 | 6 | 4,39 | 26,34 |
@@ -273,6 +279,7 @@ Installed on the prototype collector: cleanout adapter + plug (1 end of line), c
 | [IPEX réduction ABS 1½ × ¾ po mâle × FPT](https://www.rona.ca/fr/recherche?q=00685815) | 00685815 | 126 | 2,39 | 301,14 |
 | [Contreplaqué épinette ¾ po 4 × 8 bouveté, standard](https://www.rona.ca/fr/recherche?q=0938007) | 0938007 | 5 | 63,09 | 315,45 |
 | [Aqua-Dynamic manchon flexible PVC 1½ × 1½ po, colliers inox](https://www.rona.ca/fr/recherche?q=0173005) | 0173005 | 26 | 3,89 | 101,14 |
+| Refund 10 % | | | | −621,27 |
 
 ## 2026-10-03 — Amazon.ca
 
@@ -289,3 +296,17 @@ Installed on the prototype collector: cleanout adapter + plug (1 end of line), c
 | [HydroMaxx flexible PVC 1½ in Sch 40, white, 25 ft](https://www.amazon.ca/dp/B01C4G5D1I) | 1 | 128,55 | 128,55 |
 | [DEWENWILS power bar 6 outlets, 6 ft, 14/3 SJT, 15 A, cUL, 2-pack](https://www.amazon.ca/dp/B094CBVLB5) | 10 | 28,21 | 282,10 |
 | [MAXSELL attaches inox 304 20 in, 100-pack](https://www.amazon.ca/MAXSELL-Stainless-Exhaust-Tensile-Strength/dp/B08T9LY384) | 1 | 23,51 | 23,51 |
+
+## 2026-10-10 — Canac, in store
+
+| Item | Qty | Unit | Total ($ CA) |
+|---|---|---|---|
+| [Té-y ABS 3 × 3 × 1½ po (F × F × F), 16839](http://www.canac.ca/fr/product/plomberie/tuyaux-et-raccords-devacuation/tuyaux-abs-et-accessoires/te-y-abs-br-3-po-x-3-po-x-1-12-po-br-br-_10440.aspx) | 6 | 3,79 | 22,74 |
+| [Té-y ABS 1½ po (F × F × F), 16801](https://www.canac.ca/fr/te-y-abs-1-1-2-po-f-x-f-x-f-16801) | 35 | 1,59 | 55,65 |
+| [Tuyau ABS 3 po × 12 pi, ABS312](http://b2b.canac.ca/fr/product/plomberie/tuyaux-et-raccords-devacuation/tuyaux-abs-et-accessoires/tuyau-plastique-abs-3-po-x-12-pi_9946.aspx) | 6 | 32,09 | 192,54 |
+| [Adaptateur ABS 3 po (F × F), 632207](https://www.canac.ca/fr/adaptateur-abs-3-po-f-x-f-632207) | 2 | 2,99 | 5,98 |
+| [Bouchon fileté ABS 3 po, 16704](https://www.canac.ca/en/abs-threaded-plug-3-in-16704) | 2 | 1,59 | 3,18 |
+| [Coude court 90° ABS 3 po (F × F), 632122](https://www.canac.ca/canac/fr/p/coude-court-90-abs-3-po-f-x-f/632122) | 3 | 3,09 | 9,27 |
+| [Té-y ABS 3 po (F × F × F), 16803](https://www.canac.ca/en/abs-tee-y-fitting-3-in-f-x-f-x-f-16803) | 1 | 5,29 | 5,29 |
+| [Capuchon permanent ABS 3 po, 632116](https://www.canac.ca/canac/fr/2/p/capuchon-permanent-abs-3-po/632116) | 1 | 3,79 | 3,79 |
+| [Capuchon permanent ABS 1½ po, 110683](https://www.canac.ca/en/abs-permanent-cap-1-1-2-in-110683) | 6 | 1,19 | 7,14 |

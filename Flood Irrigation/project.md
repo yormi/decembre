@@ -2,12 +2,7 @@
 
 What the finished system is. On hand: `on-hand.md`.
 Per zone: `nursery/` and `greenhouse/`, each `water-supply.md` · `fertigation-station.md` ·
-`waste.md` · `control.md`; nursery adds `rack.md` + `rack-water.md` + `rack-lighting.md`, `floor-drain.md`,
-`germination-room.md`, `barn-rooms-cladding.md`, `barn-rooms-floor.md`, `domain.md` (room dimensions); greenhouse adds `table.md` + `table-water.md`. Every-tray parts: `tray-fill-drop.md`, `tray-ports.md`. Open questions: `for-later.md`.
-
-## Grant
-
-Target **61 500 $ CA before tax**, invoiced by **2026-09-30**. Counts every expense after 2026-09-24.
+`waste.md` · `control.md`; nursery adds `rack.md` + `rack-water.md` + `rack-lighting.md`, `floor-drain.md`; greenhouse adds `table.md` + `table-water.md`. Every-tray parts: `tray-fill-drop.md`, `tray-ports.md`. Germination room: `germination-room/`. Barn rooms (construction, cladding, office floor, rodent closure): `barn-rooms/`; room dimensions: `../domain/barn-rooms.md`. Open questions: `for-later.md`. Build schedule: `schedule/`.
 
 ## Purpose
 
@@ -25,7 +20,7 @@ sowing week.
 | Week 4, spaced 4:1, two valves | Nursery racks | 6–7 racks | 31 shelves | 124 |
 | Week 5 | Greenhouse table | 16 xTrays 3×6 | 16 tables | 124 (cap 144) |
 | **Nursery, flood** | | **14 racks** | **63 of 70 shelves** | |
-| Dry, no flood | Nursery racks | 6 racks | 30 shelves | — |
+| Other, assigned later | Nursery racks | 6 racks | 30 shelves | — |
 
 Flood rack: 5 growing tiers, one 2×4 flood tray per used tier, 4 flats each; trays per rack
 follow the room plan.
@@ -35,9 +30,11 @@ Room plan: app `admin/croquis`.
 
 | Rack type | Files | Qty | $ CA / rack (5 trays) |
 |---|---|---|---|
-| Flood, lit | `nursery/rack.md` + `rack-water.md` + `rack-lighting.md` | 14 | ~2 613 |
-| Dry, lit | `nursery/rack.md` + `rack-lighting.md` | 6 | ~1 489 |
+| Week rack (wk 1–4), flood, lit | `nursery/rack.md` + `rack-water.md` + `rack-lighting.md` | 14 | ~2 613 |
+| Other rack, lit; flood gear on a later grant | `nursery/rack.md` + `rack-lighting.md` | 6 | ~1 489 |
 | **Total** | | **20** | |
+
+Sources: 8 existing + 12 new. 5 new racks stay boxed until needed (`on-hand.md`).
 
 Each tier without a tray: ~209 less (`nursery/rack-water.md`).
 

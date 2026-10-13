@@ -26,11 +26,11 @@ Totals per 32-pot tray over the 35-day cycle
 
 - K and Mg via mined salts (potassium sulfate 0-0-50, magnesium sulfate) — CAN/CGSB-32.311 ✓.
 
-- **2 L/tray per bucket (2026-08-25), which forces 5 fertigations/week** — operator reports 120 mL/pot mostly drips to the floor: ~2 L/tray (~62 mL/pot) is what the pots actually retain, so 2 L is the honest delivery volume, not a preference. At 2 L the weekly salt mass needs 5 buckets to stay under the CE cap (3 buckets at 2 L predict ~1.35 mS/cm; 4 predict ~1.04; 5 predict 0.84). Weekday-daily cadence, within the specced [1, 7] range. ⚠ Confirm with the team that 5 watering rounds/wk fits the bench routine.
+- **2 L/tray per bucket (2026-08-25), which forces 5 fertigations/week** — operator reports 120 mL/pot mostly drips to the floor: ~2 L/tray (~62 mL/pot) is what the pots actually retain, so 2 L is the honest delivery volume, not a preference. At 2 L the weekly salt mass needs 5 buckets to stay under the CE cap (3 buckets at 2 L predict ~1.35 mS/cm; 4 predict ~1.04; 5 predict 0.89). Weekday-daily cadence, within the specced [1, 7] range. ⚠ Confirm with the team that 5 watering rounds/wk fits the bench routine.
 
 - ⚠ Same fact retroactively: the diagnosis table's fertigation column assumed the full 3.84 L was retained — with ~half dripping through, the old recipe's real delivery was roughly half of what's shown. The shortages were worse than the table says; the N/P surpluses smaller (but front-load alone already covers ~79 % of N need, so the direction stands).
 
-- **Ca: gypsum in the bucket** (0.14 g/L, CAN/CGSB-32.311 ✓) — needs the salt-splitting of a high-frequency cadence (at 2 buckets/wk it saturated the CE cap; at potting the germination ceiling 5.45 g/L is 97 % occupied by feather meal). Continuous solution supply — better against tip-burn than a single pulse; the week-2 top-dress (2026-08-23 intermediate design) is withdrawn.
+- **Ca: gypsum in the bucket** (0.20 g/L, CAN/CGSB-32.311 ✓) — covers the full Ca need alone, zero OM2 credit — needs the salt-splitting of a high-frequency cadence (at 2 buckets/wk it saturated the CE cap; at potting the germination ceiling 5.45 g/L is 97 % occupied by feather meal). Continuous solution supply — better against tip-burn than a single pulse; the week-2 top-dress (2026-08-23 intermediate design) is withdrawn.
 
 - **Kelp dropped (2026-08-24)** — dominant Na source (555 of 960 mg/5 wk) for only 2-18 % of micros; its K (14 %) taken over by potassium sulfate. Replaced by a **micro stock solution**: Mn/Zn/Cu sulfates + Solubor (sodium borate). CAN/CGSB-32.311: allowed **with conditions** (documented deficiency required) — documentation = August tissue (Zn under floor) + this balance; Cu goes in the copper registry.
 
@@ -50,11 +50,11 @@ Totals per 32-pot tray over the 35-day cycle
 | Ocean 15-1-1 | 0.29 g | 27 g | 0.06 |
 | Acadie fish | 0.39 mL | 36 mL | 0.06 |
 | Potassium sulfate | 0.29 g | 27 g | 0.44 |
-| Gypsum | 0.14 g | 13 g | 0.12 |
+| Gypsum | 0.20 g | 19 g | 0.18 |
 | Magnesium sulfate | 0.058 g | 5.5 g | 0.04 |
 | Iron sulfate | 0.015 g | 1.4 g | 0.02 |
 | Micro stock (below) | 0.1 mL | 10 mL | <0.01 |
-| **Bucket total** | | | **≈ 0.84** ✓ cap 1.0 (headroom 0.16) |
+| **Bucket total** | | | **≈ 0.89** ✓ cap 1.0 (headroom 0.11) |
 
 Predicted tank pH ≈ 6.2 (band 4.5–6.5 ✓). Gypsum: slow to dissolve — add first, stir. Salt CE factors (K₂SO₄ 1.5; MgSO₄ 0.75; gypsum 0.9): cert 2 — verify with CE meter on the first bucket.
 
@@ -73,14 +73,14 @@ Per-bucket micro needs are sub-milligram per tray — unweighable directly; the 
 
 ## Need coverage by stage (mg/tray, 5-wk cycle)
 
-Conservative credits applied (feather meal 75 %, OM2 50 %, OM2 micros 0 %).
+Conservative credits applied (feather meal 75 %, OM2 50 %, OM2 micros 0 %, OM2 Ca 0 %).
 
 | Element | Total need | Potting OM2 | Potting feather meal | Fertigation (25 buckets) | Total | Coverage |
 |---|---:|---:|---:|---:|---:|---:|
 | N | 5,600 | 560 (10 %) | 2,486 (44 %) | 2,555 (46 %) | 5,601 | **100 %** |
 | P | 560 | 160 (29 %) | — | 400 (71 %) | 560 | **100 %** |
 | K | 6,720 | 480 (7 %) | — | 6,240 (93 %) | 6,720 | **100 %** |
-| Ca | 2,240 | 640 (29 %) | — | 1,600 (71 %, gypsum) | 2,240 | **100 %** |
+| Ca | 2,240 | 0 credited | — | 2,320 (gypsum) | 2,320 | **104 %** |
 | Mg | 448 | 160 (36 %) | — | 288 (64 %) | 448 | **100 %** |
 | Fe | 22 | ? | — | 150 | 150 | ~7× (concentration-dosed, ~3 ppm in bucket — intended; revisit if tissue reads excess) |
 | Mn | 5.6 | 0 credited | — | 5.6 (stock) | 5.6 | **100 %** |
