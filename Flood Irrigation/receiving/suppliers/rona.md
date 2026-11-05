@@ -23,13 +23,13 @@ Order 44861542 · 2026-09-28
 
 - [ ] IPEX tuyau ABS 1½ po × 12 pi · 11 · truck · `../../nursery/rack-water.md`
 
-- [ ] IPEX té sanitaire ABS 1½ po F×F×F · 69 · parcel · `../../nursery/rack-water.md`
+- [ ] IPEX té sanitaire ABS 1½ po F×F×F · 69 · parcel · to return · `../../nursery/rack-water.md`
 
-- [ ] IPEX coude 90 extra-long ABS 1½ po F×F · 42 · parcel · `../../nursery/rack-water.md`
+- [ ] IPEX coude 90 extra-long ABS 1½ po F×F · 42 · parcel · to return · `../../nursery/rack-water.md`
 
 - [ ] IPEX té sanitaire ABS 3 × 3 × 1½ po · 12 · parcel · `../../nursery/rack-water.md`
 
-- [ ] Aqua-Dynamic capuchon laiton ¾ po FIP · 6 · parcel · `../../nursery/water-supply.md`
+- [ ] Aqua-Dynamic capuchon laiton ¾ po FIP · 6 · parcel · to return · `../../nursery/water-supply.md`
 
 - [ ] IPEX té sanitaire ABS 3 po F×F×F · 2 · parcel · `../../nursery/waste.md`
 
@@ -93,13 +93,13 @@ Order 44861542 · 2026-09-28
 
 - [ ] Tuck Tape 60 mm × 55 m, rouge · 1 · parcel · `../../germination-room/germination-room.md`
 
-- [ ] Eaton prise double 15 A inviolable, blanc · 5 · parcel · `../../germination-room/germination-room.md`
+- [ ] Eaton prise double 15 A inviolable, blanc · 5 · parcel · to return · `../../germination-room/germination-room.md`
 
 - [ ] Iberville boîtier acier 3 × 2 × 2½ po · 5 · parcel · `../../germination-room/germination-room.md`
 
 - [ ] Iberville pare-vapeur (boîte 1 prise) · 5 · parcel · `../../germination-room/germination-room.md`
 
-- [ ] Cutler-Hammer disjoncteur BR 1 pôle 15 A · 5 · parcel · `../../germination-room/germination-room.md`
+- [ ] Cutler-Hammer disjoncteur BR 1 pôle 15 A · 5 · parcel · to return · `../../germination-room/germination-room.md`
 
 - [ ] Iberville manchons anti-court-circuit, 30 · 1 · parcel · `../../germination-room/germination-room.md`
 

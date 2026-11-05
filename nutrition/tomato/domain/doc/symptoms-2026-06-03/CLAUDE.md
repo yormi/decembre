@@ -4,7 +4,7 @@
 analyzed 2026-06-06 (one agent per photo → clustered synthesis).
 Two weeks after the 2026-05-21 symptom set
 (`../symptoms-2026-05-21/`) and contemporaneous with the 2026-06-04 SME
-retest (`nutrition/doc/SME - 2026-06-04 tomates.pdf`).
+retest (`nutrition/doc/SME - 2026-06-04 tomates chapelle 1.pdf`).
 
 Per-photo reads + ranked cluster diagnosis live in `diagnosis.md`.
 

@@ -12,20 +12,20 @@
 
 - **Always**: ≥ 8 lit racks in the nursery for production
 
-- **Cohort**: 31 trays sown per week (rendement, backup included)
+- **Cohort**: 29 trays sown per week (rendement, backup included)
 
 - **Nursery spacing**:
 
-    - tight · weeks 1–3 1:1 · week 4 2:1 → 155 trays
+    - tight · weeks 1–3 1:1 · week 4 2:1 → 145 trays
 
-    - full · week 1-2 1:1 · week 3 2:1 · week 4 4:1 → 248 trays
+    - full · week 1-2 1:1 · week 3 2:1 · week 4 4:1 → 232 trays
 
 Zones: `nursery.md` header. Steps: `samples.md`, `nursery.md`, `greenhouse.md`. Parts: `../on-hand.md`.
 
 
 ## Stages
 
-- **1 · collector ends ready for the plumber** · Oct 5 → Oct 10
+- **1 · collector ends ready for the plumber** · Oct 5 → Oct 10 · done
 
     - Racks at start: 8 existing · current spots · flooded: none · spacing: tight
 
@@ -53,7 +53,7 @@ Zones: `nursery.md` header. Steps: `samples.md`, `nursery.md`, `greenhouse.md`. 
 
     - Racks at start: 8 existing · south 5 + east 3 · flooded: none · spacing: tight
 
-    - Needs: manifold valve → Dosatron A fitting, thread unknown (`../for-later.md`)
+    - Needs: manifold tee, size unknown (`../for-later.md`)
 
 - **6 · east zone + 6 new racks → 14 flooding, full spacing** · Nov 9 → Dec 7
 
@@ -62,50 +62,21 @@ Zones: `nursery.md` header. Steps: `samples.md`, `nursery.md`, `greenhouse.md`. 
     - Needs: rented wet masonry saw, 14 in
 
 
-## W1 · Oct 5–11
-
-- **Stage 1 · collector ends ready for the plumber**
-
-    - Team · Receiving checklists (`../receiving/`)
-
-    - Team · Clear the floor
-
-    - Luce · Lights on the 3 existing racks without lights
-
-    - Richard · Remove HPS
-
-- **Stage 2 · rest zone floor, power + collector**
-
-    - Michel & Catherine · Rack power: all 10 runs pulled · west + north live
-
-    - Guillaume · Sample 2 outlets
-
-    - Michel & Catherine · Wire outlets · west + north + island
-
-    - Guillaume · Breaker + test as we go
-
-    - Michel & Catherine · Coil south + east
-
-- **Stage 3 · 8 existing racks flooding → first sowing**
-
-    - Guillaume · Sample: rack wiring (`week1.pdf` p. 17–25)
-
-    - Guillaume · Sample: flood rack + downpipe (`week1.pdf` p. 2–10)
-
-- **Stage 4 · greenhouse table area clear**
-
-    - Guillaume · Sample: greenhouse table + 3 main lines (`week1.pdf` p. 31–37) · after the 2 rack samples
-
-
 ## W2 · Oct 12–18
 
 - **Stage 2 · rest zone floor, power + collector**
+
+    - Michel & Catherine · Rack power: all 2 runs pulled · west
+
+    - Guillaume (Michel) · Wire outlets · south + west + north
 
     - Richard · Dig Island trench
 
     - Richard · Lay West collector and connect to North bit
 
     - Richard · Lay Island collector and connect to South collector
+
+    - Michel · Add the 3" tee for the germination room (`../nursery/waste.md` § Germination room extension) · before the trenches are filled
 
     - Richard · Fill trenches with dirt
 
@@ -114,6 +85,14 @@ Zones: `nursery.md` header. Steps: `samples.md`, `nursery.md`, `greenhouse.md`. 
     - Michel & Luce · Tray ports, 40 existing-rack trays
 
     - Michel & Luce · Drain-drop pre-assembly, 40
+
+    - Luce · Rack wiring: replicate the sample (`week1.pdf` p. 17–25)
+
+    - Guillaume · Sample: flood rack + downpipe (`week1.pdf` p. 2–10)
+
+- **Stage 4 · greenhouse table area clear**
+
+    - Guillaume · Sample: greenhouse table + 3 main lines (`week2.pdf` p. 16–22) · after the flood rack sample
 
 
 ## W3 · Oct 19–25
@@ -141,8 +120,6 @@ Zones: `nursery.md` header. Steps: `samples.md`, `nursery.md`, `greenhouse.md`. 
 
     - Team · Island + south branch
 
-    - Team · South zone power
-
 
 ## W5 · Nov 2–8
 
@@ -164,8 +141,6 @@ Zones: `nursery.md` header. Steps: `samples.md`, `nursery.md`, `greenhouse.md`. 
     - Team · East collector run
 
     - Team · East zone floor
-
-    - Team · East zone power
 
 
 ## W7 · Nov 16–22

@@ -7,7 +7,9 @@ Build quantities: `project.md` + zone files. Prototype as-built: `prototype.md` 
 
 - 8 Uline racks 72 po, 6 shelves each; 3 without casters, 3 without lights
 
-- 265 × Barrina T8 42 W 4 ft 5000 K (lights for 10.5 racks)
+- 116 × Barrina T8 42 W 4 ft 5000 K
+
+- T8 status (all orders): 440 owned → 380 installed (8 racks × 5/shelf + 6 racks × 6/shelf), 60 boxed (10 packs)
 
 - 4 Botanicare 2×4 trays, 4 port kits
 
@@ -182,10 +184,6 @@ Installed on the prototype collector: cleanout adapter + plug (1 end of line), c
 |---|---|---|---|
 | [LePage PL Premium 825 mL](https://www.homedepot.ca/product/lepage-pl-premium-polyurethane-construction-adhesive-interior-exterior-waterproof-825-ml/1000403477) | 4 | 15,17 | 60,68 |
 | [LePage PL 400 subfloor 825 mL](https://www.homedepot.ca/product/lepage-pl-400-subfloor-deck-adhesive-825ml/1000403471) | 5 | 8,77 | 43,85 |
-| [Trusscore 16 in × 10 ft, white](https://www.homedepot.ca/product/trusscore-0-5-inch-x-16-inch-x-10-ft-wall-ceilingboard-white/1001979771) | 36 | 39,79 | 1 432,44 |
-| [Trusscore 16 in × 16 ft, white](https://www.homedepot.ca/product/trusscore-0-5-inch-x-16-inch-x-16-ft-wall-and-ceiling-board-white/1001979766) | 8 | 63,68 | 509,44 |
-| [Trusscore snap-in J-trim 10 ft, white](https://www.homedepot.ca/product/trusscore-snap-in-j-trim-10-ft-white/1001979789) | 7 | 10,56 | 73,92 |
-| [Trusscore snap-in inside cove corner 10 ft, white](https://www.homedepot.ca/product/trusscore-10-ft-snap-in-inside-cove-corner-trim-white/1001979778) | 9 | 13,32 | 119,88 |
 | [Leviton plaque 1 prise duplex, blanc](https://www.homedepot.ca/product/leviton-wall-plate-1-gang-duplex-white/1000108150) | 5 | 0,81 | 4,05 |
 | [Southwire AC90 14/2, 30 m](https://www.homedepot.ca/product/southwire-armoured-electrical-cable-copper-electrical-wire-gauge-14-2-ac90-14-2-30m/1000417711) | 5 | 104,00 | 520,00 |
 | [Iberville boîte 1 prise 3 × 2 × 3 in, métal](https://www.homedepot.ca/product/iberville-device-box-3-inches-deep-with-flush-ears-gangable-nmd90-and-bx90/1000165861) | 20 | 9,74 | 194,80 |
@@ -248,18 +246,18 @@ Installed on the prototype collector: cleanout adapter + plug (1 end of line), c
 | [Precision vis à bois #8 × 1¼ po zinguées, 100](https://www.rona.ca/fr/recherche?q=63869086) | 63869086 | 1 | 5,19 | 5,19 |
 | [PWR Drive vis structurales 5/16 × 3 po, 50](https://www.rona.ca/fr/recherche?q=13998181) | 13998181 | 6 | 29,99 | 179,94 |
 | [Tuck Tape 60 mm × 55 m, rouge](https://www.rona.ca/fr/recherche?q=00545090) | 00545090 | 1 | 7,39 | 7,39 |
-| [Eaton prise double 15 A inviolable, blanc](https://www.rona.ca/fr/recherche?q=04805856) | 04805856 | 5 | 1,69 | 8,45 |
+| [Eaton prise double 15 A inviolable, blanc](https://www.rona.ca/fr/recherche?q=04805856) | 04805856 | 5 (to return) | 1,69 | 8,45 |
 | [Iberville boîtier acier 3 × 2 × 2½ po](https://www.rona.ca/fr/recherche?q=0320002) | 0320002 | 5 | 1,59 | 7,95 |
 | [Iberville pare-vapeur (boîte 1 prise)](https://www.rona.ca/fr/recherche?q=0320299) | 0320299 | 5 | 1,99 | 9,95 |
-| [Cutler-Hammer disjoncteur BR 1 pôle 15 A](https://www.rona.ca/fr/recherche?q=1334012) | 1334012 | 5 | 8,69 | 43,45 |
+| [Cutler-Hammer disjoncteur BR 1 pôle 15 A](https://www.rona.ca/fr/recherche?q=1334012) | 1334012 | 5 (to return) | 8,69 | 43,45 |
 | [Eaton prise DDFT inviolable 15 A blanc, 3-pack](https://www.rona.ca/fr/recherche?q=04806096) | 04806096 | 7 | 43,99 | 307,93 |
 | [Eaton plaque Decora 1 élément blanc, 10-pack](https://www.rona.ca/fr/recherche?q=04805768) | 04805768 | 2 | 5,99 | 11,98 |
 | [Cutler-Hammer disjoncteur BR 2 pôles 15 A](https://www.rona.ca/fr/recherche?q=1334013) | 1334013 | 10 | 19,54 | 195,40 |
 | [Iberville manchons anti-court-circuit, 30](https://www.rona.ca/fr/recherche?q=03205791) | 03205791 | 3 | 3,99 | 11,97 |
 | [Iberville attache-câble 2 trous alu, 25](https://www.rona.ca/fr/recherche?q=0320112) | 0320112 | 12 | 4,99 | 59,88 |
 | [IPEX tuyau ABS 1½ po × 12 pi](https://www.rona.ca/fr/recherche?q=00685475) | 00685475 | 21 | 13,19 | 276,99 |
-| [IPEX té sanitaire ABS 1½ po F×F×F](https://www.rona.ca/fr/recherche?q=0068087) | 0068087 | 85 (57 refunded) | 1,99 | 169,15 |
-| [IPEX coude 90 extra-long ABS 1½ po F×F](https://www.rona.ca/fr/recherche?q=00685775) | 00685775 | 42 | 2,79 | 117,18 |
+| [IPEX té sanitaire ABS 1½ po F×F×F](https://www.rona.ca/fr/recherche?q=0068087) | 0068087 | 85 (57 refunded; to return) | 1,99 | 169,15 |
+| [IPEX coude 90 extra-long ABS 1½ po F×F](https://www.rona.ca/fr/recherche?q=00685775) | 00685775 | 42 (to return) | 2,79 | 117,18 |
 | [IPEX té sanitaire ABS 3 × 3 × 1½ po](https://www.rona.ca/fr/recherche?q=00685752) | 00685752 | 12 | 4,99 | 59,88 |
 | [IPEX raccord union ABS 1½ po](https://www.rona.ca/fr/recherche?q=00685892) | 00685892 | 6 | 4,39 | 26,34 |
 | [IPEX adaptateur femelle ABS 2 po F × FPT](https://www.rona.ca/fr/recherche?q=00685834) | 00685834 | 4 | 2,19 | 8,76 |
@@ -268,7 +266,7 @@ Installed on the prototype collector: cleanout adapter + plug (1 end of line), c
 | [IPEX coude 90 ABS 2 po F×F](https://www.rona.ca/fr/recherche?q=00685763) | 00685763 | 2 | 1,49 | 2,98 |
 | [IPEX coude 45 ABS 2 po F×F](https://www.rona.ca/fr/recherche?q=0068125) | 0068125 | 1 | 1,29 | 1,29 |
 | [IPEX Y 45 ABS 2 po F×F×F](https://www.rona.ca/fr/recherche?q=00685779) | 00685779 | 1 | 3,79 | 3,79 |
-| [Aqua-Dynamic capuchon laiton ¾ po FIP](https://www.rona.ca/fr/recherche?q=01735456) | 01735456 | 6 | 5,69 | 34,14 |
+| [Aqua-Dynamic capuchon laiton ¾ po FIP](https://www.rona.ca/fr/recherche?q=01735456) | 01735456 | 6 (to return) | 5,69 | 34,14 |
 | [IPEX tuyau ABS 2 po × 12 pi](https://www.rona.ca/fr/recherche?q=00685472) | 00685472 | 18 | 17,49 | 314,82 |
 | [IPEX té sanitaire ABS 2 × 2 × 1½ po F×F×F](https://www.rona.ca/fr/recherche?q=00685749) | 00685749 | 17 | 2,29 | 38,93 |
 | [IPEX raccord ABS 2 po F×F](https://www.rona.ca/fr/recherche?q=0068161) | 0068161 | 6 | 0,59 | 3,54 |
@@ -310,3 +308,27 @@ Installed on the prototype collector: cleanout adapter + plug (1 end of line), c
 | [Té-y ABS 3 po (F × F × F), 16803](https://www.canac.ca/en/abs-tee-y-fitting-3-in-f-x-f-x-f-16803) | 1 | 5,29 | 5,29 |
 | [Capuchon permanent ABS 3 po, 632116](https://www.canac.ca/canac/fr/2/p/capuchon-permanent-abs-3-po/632116) | 1 | 3,79 | 3,79 |
 | [Capuchon permanent ABS 1½ po, 110683](https://www.canac.ca/en/abs-permanent-cap-1-1-2-in-110683) | 6 | 1,19 | 7,14 |
+
+## ~2026-10-19 — Canac, in store
+
+| Item | Qty | Unit | Total ($ CA) |
+|---|---|---|---|
+| Coude court 90° ABS 1½ po (F × F) | 42 | ? | ? |
+
+## 2026-10-25 — Canac, in store
+
+| Item | Qty | Unit | Total ($ CA) |
+|---|---|---|---|
+| Manchon flexible 3 po pour ABS | 2 | ? | ? |
+| Réduit ABS 1½ × ¾ po | 5 | ? | ? |
+| [Capuchon permanent ABS 1½ po, 110683](https://www.canac.ca/en/abs-permanent-cap-1-1-2-in-110683) | 12 | ? | ? |
+| Adaptateur ¾ po MPT | 10 | ? | ? |
+| [Té-y ABS 1½ po (F × F × F), 16801](https://www.canac.ca/fr/te-y-abs-1-1-2-po-f-x-f-x-f-16801) | 63 | ? | ? |
+
+## 2026-11 — Canac, in store (purchase list)
+
+| Item | Qty | Unit | Total ($ CA) |
+|---|---|---|---|
+| [Espaceurs pour la céramique 1/8 po A. Richard, pqt de 200](https://www.canac.ca/canac/fr/8/p/espaceurs-pour-la-ceramique-1-8-po/17492) | 3 | 2,65 | 7,95 |
+| [Adaptateur ABS 3 po (F × F)](https://www.canac.ca/fr/adaptateur-abs-3-po-f-x-f-632207) | 2 | 2,99 | 5,98 |
+| [Coude court 90° ABS 3 po (F × F)](https://www.canac.ca/canac/fr/p/coude-court-90-abs-3-po-f-x-f/632122) | 2 | 3,09 | 6,18 |

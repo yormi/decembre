@@ -143,7 +143,6 @@ function setPage(page) {
   document.getElementById('page-diagnostic-practice-content').style.display = page === 'diagnostic-practice' ? 'block' : 'none';
   document.getElementById('page-nutriment-content').style.display = page === 'nutriment' ? 'block' : 'none';
   document.getElementById('page-historique-nutriments-content').style.display = page === 'historique-nutriments' ? 'block' : 'none';
-  document.getElementById('page-rendement-content').style.display = page === 'rendement' ? 'block' : 'none';
   document.getElementById('page-croquis-content').style.display = page === 'croquis' ? 'block' : 'none';
   document.getElementById('page-laitue-content').style.display = page === 'laitue' ? 'block' : 'none';
   // Highlight the active admin tool button
@@ -153,11 +152,6 @@ function setPage(page) {
   const histBtn = document.getElementById('page-historique-nutriments');
   histBtn.style.color = page === 'historique-nutriments' ? 'var(--text)' : 'var(--text-muted)';
   histBtn.style.fontWeight = page === 'historique-nutriments' ? '600' : '500';
-  const rendBtn = document.getElementById('page-rendement');
-  if (rendBtn) {
-    rendBtn.style.color = page === 'rendement' ? 'var(--text)' : 'var(--text-muted)';
-    rendBtn.style.fontWeight = page === 'rendement' ? '600' : '500';
-  }
   const croquisBtn = document.getElementById('page-croquis');
   if (croquisBtn) {
     croquisBtn.style.color = page === 'croquis' ? 'var(--text)' : 'var(--text-muted)';
@@ -167,18 +161,17 @@ function setPage(page) {
   // the header) is the back-nav primitive that returns to the operational pages
   // from any admin/tool view. The secondary page-toggle additionally only shows
   // inside the Nutriments section (Effeuillage / Irrigation are single-page).
-  // Rendement lays three cards side by side — it needs more than the 480 px
+  // Croquis (sketch + Rendement cards side by side) needs more than the 480 px
   // phone column the rest of the app uses.
-  document.querySelector('.container').classList.toggle('container-wide', page === 'rendement' || page === 'croquis');
-  const isToolPage = (page === 'week' || page === 'diagnostic' || page === 'diagnostic-practice' || page === 'nutriment' || page === 'historique-nutriments' || page === 'rendement' || page === 'croquis');
+  document.querySelector('.container').classList.toggle('container-wide', page === 'croquis');
+  const isToolPage = (page === 'week' || page === 'diagnostic' || page === 'diagnostic-practice' || page === 'nutriment' || page === 'historique-nutriments' || page === 'croquis');
   document.getElementById('section-toggle').style.display = isToolPage ? 'none' : 'flex';
   document.getElementById('page-toggle').style.display = (isToolPage || section !== 'nutriments') ? 'none' : 'flex';
   if (page === 'foliar') buildFoliar();
   if (page === 'week') buildWeek();
   if (page === 'nutriment') buildNutriment();
   if (page === 'historique-nutriments') buildHistoriqueNutriments();
-  if (page === 'rendement') buildYieldRange();
-  if (page === 'croquis') buildCroquis();
+  if (page === 'croquis') { buildCroquis(); buildYieldRange(); }
   if (page === 'diagnostic-practice') buildDiagnosticPractice();
   if (page === 'diagnostic') {
     // Apply the diagnostic crop's accent color when entering the page,
@@ -197,7 +190,7 @@ function setPage(page) {
 // Default page (fertigation) + default crop (tomato) collapse to `/` (no hash).
 // Why: lets hot-reload / bookmarks land on the same page+crop, and keeps
 // `admin` orthogonal to navigation rather than buried in a comma list.
-const PAGES = ['fertigation','sol','foliar','effeuillage','laitue','irrigation','week','diagnostic','diagnostic-practice','nutriment','historique-nutriments','rendement','croquis'];
+const PAGES = ['fertigation','sol','foliar','effeuillage','laitue','irrigation','week','diagnostic','diagnostic-practice','nutriment','historique-nutriments','croquis'];
 const DEFAULT_PAGE = 'fertigation';
 const DEFAULT_CROP = 'tomato';
 // Primary nav sections. Each operational page belongs to exactly one section;
@@ -222,7 +215,7 @@ function setSection(section) {
 // irrigation is admin-gated: its toggle button lives in the operational
 // page-toggle bar but only shows in admin mode (applyAdminMode hides it
 // otherwise; setPage/redirect guards below block non-admin access).
-const ADMIN_PAGES = ['irrigation','week','diagnostic','diagnostic-practice','nutriment','historique-nutriments','rendement','croquis'];
+const ADMIN_PAGES = ['irrigation','week','diagnostic','diagnostic-practice','nutriment','historique-nutriments','croquis'];
 // Pages whose crop is part of the URL. foliar omitted (only tomato is valid;
 // the page auto-redirects lettuce/nursery to tomato). Crop comes from
 // `currentCrop`, except diagnostic which has its own page-local crop state
@@ -318,8 +311,6 @@ function applyAdminMode() {
   document.getElementById('page-diagnostic').style.display = admin ? 'inline-block' : 'none';
   document.getElementById('page-nutriment').style.display = admin ? 'inline-block' : 'none';
   document.getElementById('page-historique-nutriments').style.display = admin ? 'inline-block' : 'none';
-  const rendNavBtn = document.getElementById('page-rendement');
-  if (rendNavBtn) rendNavBtn.style.display = admin ? 'inline-block' : 'none';
   const croquisNavBtn = document.getElementById('page-croquis');
   if (croquisNavBtn) croquisNavBtn.style.display = admin ? 'inline-block' : 'none';
   // Irrigation is a primary section tab but admin-only.

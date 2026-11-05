@@ -4,7 +4,7 @@
 **Status:** accepted
 
 Element-by-element read of SME-solution vs TOM #1 leaf
-(`SME - 2026-04-10.pdf` report 39087, `tissus - 2026-05-22.pdf`
+(`SME - 2026-04-10 laitue + tomates chapelle 1.pdf` report 39087, `tissus - 2026-05-22.pdf`
 TI-0025332) to separate three competing stories for the tomato
 tissue deficiencies: **supply short**, **cation antagonism**, or
 **root uptake impaired**. Verdict: N/K/Ca are **uptake-limited**;

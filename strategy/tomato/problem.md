@@ -35,7 +35,7 @@ Tissue: `nutrition/tomato/domain/doc/tomato-t5-tissue-analysis-2026-05-23.md`
 `nutrition/tomato/domain/soil-ph/learnings/supply-vs-uptake-cation-test-rules-out-antagonism.md`.
 Aeration ruled out (live roots).
 
-## Latest SME — 2026-06-04 (`nutrition/doc/SME - 2026-06-04 tomates.pdf`)
+## Latest SME — 2026-06-04 (`nutrition/doc/SME - 2026-06-04 tomates chapelle 1.pdf`)
 
 | Read | Value | Meaning |
 |---|---|---|

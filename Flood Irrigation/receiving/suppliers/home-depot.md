@@ -29,13 +29,13 @@ Orders: 0243206147 (2026-09-28) + delivery 0617970891 (2026-09-28) · not ordere
 
 ## Germination room
 
-- [ ] Trusscore 16 in × 10 ft, white · 36 · 0243206147 · `../../germination-room/germination-room.md`
+- [ ] Trusscore 16 in × 10 ft, white · 36 · not ordered (HD cancelled 0243206147) · `../../germination-room/germination-room.md`
 
-- [ ] Trusscore 16 in × 16 ft, white · 8 · 0243206147 · `../../germination-room/germination-room.md`
+- [ ] Trusscore 16 in × 16 ft, white · 8 · not ordered (HD cancelled 0243206147) · `../../germination-room/germination-room.md`
 
-- [ ] Trusscore snap-in J-trim 10 ft, white · 7 · 0243206147 · `../../germination-room/germination-room.md`
+- [ ] Trusscore snap-in J-trim 10 ft, white · 7 · not ordered (HD cancelled 0243206147) · `../../germination-room/germination-room.md`
 
-- [ ] Trusscore snap-in inside cove corner 10 ft, white · 9 · 0243206147 · `../../germination-room/germination-room.md`
+- [ ] Trusscore snap-in inside cove corner 10 ft, white · 9 · not ordered (HD cancelled 0243206147) · `../../germination-room/germination-room.md`
 
 - [ ] Leviton plaque 1 prise duplex, blanc · 5 · 0243206147 · `../../germination-room/germination-room.md`
 

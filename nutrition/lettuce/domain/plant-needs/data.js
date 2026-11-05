@@ -42,7 +42,7 @@ const LETTUCE_FRONTLOAD_DEFAULTS = {
 };
 
 // SME lettuce bed (Berger sample 596616, laitue 1, 2026-04-10).
-// Source: farm info/SME - 2026-04-10.pdf
+// Source: farm info/SME - 2026-04-10 laitue + tomates chapelle 1.pdf
 // Per-element ppm with in-spec / lockout annotation per element.
 const SME_LETTUCE_PPM = {
   N:  72.6,    // NO₃ 68.8 + NH₄ 3.8 (in spec range 35-180 / 0-20)

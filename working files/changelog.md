@@ -4,6 +4,16 @@ Append-only log of substantive changes (recipe edits, REQ additions, model archi
 
 Format: `YYYY-MM-DD HH:MM — brief description`. One line per change. Most recent at top. Keep ~10 entries; older history lives in `git log`.
 
+## 2026-10-30
+
+- **SME tomates chapelle 3 (2026-09-23) versée dans `nutrition/doc/`** (Agro-Enviro-Lab SO-0932654, étiquette « Serre T2 ») — **premier test de la chapelle 3 ; tous les tests tomate précédents = chapelle 1**, ne pas enchaîner en tendance. pH **7,21**, CE **0,53** ; RAS 6 ; Mn/Zn/Mo sous détection. Index `doc/CLAUDE.md` amendé.
+
+- **Analyses sol laitue du 2026-10-20 versées dans `nutrition/doc/`** (Berger 40844 Mehlich-3 + 40845 SME, Laitue-sol). pH 6,07–6,08 (août 6,65) ; **CE SME 5,91** (août 2,30 — record, nitrate 538 + sulfate 1561) ; RAS 0,62 ; P SME 4 ; B M3 0,5 ppm toujours maigre. Index `doc/CLAUDE.md` amendé.
+
+## 2026-10-21
+
+- **Réserve semis laitue 10 % → 3 %** (`NURSERY_BACKUP_FRACTION`, `yield-range/domain/data.js` + spec). Décision Guillaume : 29 plateaux semés/sem au lieu de 31 (3r8, 2 planches = 900 têtes → 927 cellules). Cascade : sem. 1-2 29 · sem. 3 58 · sem. 4-5 116 ; tablettes requises S3 15 · S4a 15 · S4b 14 (croquis, auto). Build inchangé : 63 bacs inondés, 3 en surplus. Docs : `domain/lettuce/sequence.md` § Tray demand, `protocol/sequence-lettuce-full-production.md`, `Flood Irrigation/project.md` § Footprint, `schedule/timeline.md`.
+
 ## 2026-09-26
 
 - 15:10 — **Semis : gypse 0,14 → 0,20 g/L** (`STORED_RECIPE.nursery.fertigation` + `NURSERY_RECIPE_DEFAULT`). La fertigation couvre seule le besoin Ca (464 ≥ 448 mg/plateau/sem) à crédit terreau OM2 nul. Snapshot capturé dans RECIPE_HISTORY. Nouvelle entrée spec `default-recipe-ca-covers-full-demand` + test. CE prédite 0,84 → 0,89 (plafond 1,0) ; stock A 1:10 = 2,0 g/L (≈ 400 g / 200 L). `npm run check` 151/2 (mêmes 2 rouges tomate pré-existants).
@@ -24,16 +34,4 @@ Format: `YYYY-MM-DD HH:MM — brief description`. One line per change. Most rece
 
 ## 2026-08-20
 
-- **2026-08-20 — Panel labo complet du 2026-08-04 versé dans `nutrition/doc/` (3 PDF + index).** Même échantillonnage pour les trois : `mehlich-3 - 2026-08-05.pdf` (SO-0923478 Laitue-sol / SO-0923479 Tomate-sol — P/K/Ca/Mg/S/Zn/Mn tous TR, seul B maigre ; cases pH/CEC vides à vérifier), `SME - 2026-08-05.pdf` (pH 6.65/6.62, CE laitue 4.01 → **2.30**, P-PO4 3/2 — remonte à peine, RAS 5/8), `tissus - 2026-08-05.pdf` (TI-0026059 tomate : déficient P/Ca/Zn ; TI-0026060 laitue : déficient P/K/Ca/Mg/Zn, **Na 3116 ppm**). Premier trio sol-banque + sol-disponible + feuille du même jour — base de la lecture avril → août.
-
-## 2026-08-16
-
-- **2026-08-16 — Protocole biocontrôle pucerons réécrit : *Micromus variegatus* remplace *Aphidoletes*.** `protocol/aphids/weekly-biocontrol.md` de zéro : 50 adultes/sem NIC (92,99 $), passage à 100 au-dessus de 30 pucerons/10 feuilles comptés avant bubbler (retour à 50 après 2 sem ≤ 30) ; lâcher = gobelet ouvert couché à l'ombre de la canopée d'un lit transplanté depuis < 1 sem, tôt le matin (jamais frigo, jamais au-delà du lendemain matin — 48 h) ; secours Chrysoperla si 2 sem > 30 à 100 adultes ou semaine manquée. `shipment-check.md` (test d'émergence Aphidoletes) supprimé — vérification de vie à l'œil dans le gobelet ; pointeur d'`aphidoletes.md` remplacé en place, PDF obsolète supprimé, `aphid-biocontrol-protocol.pdf` re-rendu, index `doc/CLAUDE.md` amendé. `domain/aphids/micromus.md` enrichi cette session : cycle complet (~20 °C, gén. 2 ≈ 6–7 sem), table de prix par fournisseur, bullet d'erreur d'unité Anatis retiré.
-
-## 2026-08-12
-
-- **2026-08-12 — Tête 180 g : ancre complétée + borne réfutante sur la sénescence d'entassement.** Guillaume confirme : lit **5 rangs × 6 po** (~232 cm²/plant), transplants faibles 10–20 g, ~6 semaines au lit, soleil de juillet, tête saine malgré pression pucerons. Registre `yield-range/domain/doc/data-points.md` § Field head enrichi ; 2 photos du lit (2026-06-29, EXIF) versées dans `doc/field-bed-5r6-mixed-2026-06-29/` + index. Nouveau learning `180g-head-bounds-crowding-senescence.md` : ~4 semaines canopée fermée → tête saine 180 g réfute onset 1,7 j / −4 %/j comme dynamique de tête entière ; bilan carbone OK (~0,6 g MS/j dispo, 9–13 g MS requis) ; implique aussi SLA plantule + MS 7 % (LAI impliqué ~8 → ~4–5 aux valeurs matures soupçonnées). **Pas de refit** avant mesure `PLUG_DRY_MATTER_FRACTION` + SLA mature ; toute refit doit passer la borne « fermé ≥3 sem → ≥180 g sain à 232 cm² ». Sorties post-fermeture du moteur (plateau champ, jour de récolte pic, kg/lit tenus) biaisées basses en attendant ; géométrie pré-fermeture (`domain/lettuce/sequence.md`) intacte.
-
-## 2026-08-11
-
-- **2026-08-11 — Nouveau domaine `domain/lettuce/sequence.md` : séquence pépinière (fermeture de canopée, étapes de ré-espacement, motif ×6, densités banc vs champ).** Fermeture ~j19 en 32-pot serré (indépendante de la taille de pot — dynamique LAI par surface) ; ×2 damier à la touche des feuilles → re-fermeture ~j27–29 à DLI 21 ; second ré-espacement si maintien passé j28 : ×3 ouvert jusqu'à ~j32 · ×4 ~j33 · ×6 j35+. Motif ×6 = 2 rangées décalées de 3 par plateau 1020 (~17 cm entre voisins). Table de densités : banc serré 210/m² → ×6 35/m² = densité champ 4 rangs × 6 po (290 cm²/plant) — le ×6 pré-paie la surface champ sur le banc. Chiffres issus du moteur `seedling-thinning.js` (non validé — en attente `PLUG_DRY_MATTER_FRACTION`) ; les jours de fermeture sont robustes (surface foliaire, pas poids).
+- **2026-08-20 — Panel labo complet du 2026-08-04 versé dans `nutrition/doc/` (3 PDF + index).** Même échantillonnage pour les trois : `mehlich-3 - 2026-08-05 laitue + tomates chapelle 1.pdf` (SO-0923478 Laitue-sol / SO-0923479 Tomate-sol — P/K/Ca/Mg/S/Zn/Mn tous TR, seul B maigre ; cases pH/CEC vides à vérifier), `SME - 2026-08-05 laitue + tomates chapelle 1.pdf` (pH 6.65/6.62, CE laitue 4.01 → **2.30**, P-PO4 3/2 — remonte à peine, RAS 5/8), `tissus - 2026-08-05.pdf` (TI-0026059 tomate : déficient P/Ca/Zn ; TI-0026060 laitue : déficient P/K/Ca/Mg/Zn, **Na 3116 ppm**). Premier trio sol-banque + sol-disponible + feuille du même jour — base de la lecture avril → août.

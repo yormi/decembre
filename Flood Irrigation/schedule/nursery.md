@@ -123,7 +123,9 @@ Needs: rented wet masonry saw, 14 in.
 
 - Lay 5 zone lines with Orisha valves, all 14 rack spots
 
-- Punch fill drops, 8 existing racks → seat tubes
+- Fit rack fill connections: tee → vinyl → cam-locks → sub-header + cap, 8 existing racks
+
+- Punch fill drops into sub-headers, 8 existing racks → seat tubes
 
 - Set up stock A drum + stock B bucket
 

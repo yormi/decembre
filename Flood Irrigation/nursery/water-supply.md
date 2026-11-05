@@ -79,12 +79,12 @@ For each zone, add the items in the zone line lib to the items below.
 
 | Zone | PE ¾ po (pi) | Coude 90 insertion ¾ po | Té insertion ¾ po | Colliers |
 |---|---|---|---|---|
-| wk 1 | 25 | 6 | 0 | 19 |
-| wk 2 | 20 | 1 | 0 | 6 |
-| wk 3 | 40 | 6 | 1 | 23 |
-| wk 4a | 30 | 0 | 0 | 4 |
-| wk 4b | 30 | 4 | 1 | 18 |
-| **Total** | **145** | **17** | **2** | **70** |
+| wk 1 | 25 | 6 | 0 | 18 |
+| wk 2 | 20 | 1 | 0 | 5 |
+| wk 3 | 40 | 6 | 1 | 22 |
+| wk 4a | 30 | 0 | 0 | 3 |
+| wk 4b | 30 | 4 | 1 | 17 |
+| **Total** | **145** | **17** | **2** | **65** |
 
 ## Zone line lib (For 1 zone)
 
@@ -93,8 +93,8 @@ For each zone, add the items in the zone line lib to the items below.
     → Orisha fill valve 1 po FPT × FPT
     → adaptateur mâle réduit 1 po MPT × ¾ po insert
     → ¾ PE
-    → adaptateur ¾ MPT × insert (line end)
-    → bouchon ¾ FPT
+    → last rack elbow (`rack-water.md` § Fill connection)
+- **Zone line flush:** pump on → open the last rack's cam-lock → run until clear.
 
 | Item | Qty | Note |
 |---|---|---|
@@ -103,8 +103,6 @@ For each zone, add the items in the zone line lib to the items below.
 | [Boyau PE standard ¾ po × 100 pi, 75 psi (BO CO-075-75-1)](https://duboisag.com/ca_fr/boyau-flexible-standard-en-polyethylene-bobine.html) | zone table | |
 | [Coude 90 insertion ¾ po — cédule 40](https://duboisag.com/ca_fr/insert-ell-90-1399.html) | zone table | 2 barbs each |
 | [Té insertion ¾ po — cédule 40 (II 1401007)](https://duboisag.com/ca_fr/te-insertion.html) | zone table | 3 barbs each |
-| [Adaptateur mâle ¾ po MPT × ¾ po insert](https://duboisag.com/ca_fr/adaptateur-male-mpt-x-insert.html) | 1 | |
-| [Bouchon femelle ¾ po FPT (cap)](https://www.homedepot.ca/product/lesso-3-4-in-pvc-schedule-40-cap-fipt/1000164432) | 1 | unscrew to flush; téflon |
 | [Collier de serrage inox](https://duboisag.com/ca_fr/collet-acier-inoxydable.html) ¾ po | zone table | 1/barb + 25 % |
 
 ## Spares
@@ -112,8 +110,8 @@ For each zone, add the items in the zone line lib to the items below.
 | Item | Qty | Note |
 |---|---|---|
 | [Mamelon insertion ¾ × ¾ po (PE coupling)](https://duboisag.com/us_en/insert-coupling-1446.html) | 5 | joins 2 PE lengths; 2 clamps each |
-| [Adaptateur mâle ¾ po MPT × ¾ po insert](https://duboisag.com/ca_fr/adaptateur-male-mpt-x-insert.html) | 1 | spare line-end closure |
-| [Bouchon femelle ¾ po FPT (cap)](https://www.homedepot.ca/product/lesso-3-4-in-pvc-schedule-40-cap-fipt/1000164432) | 1 | on the spare adapter |
+| [Adaptateur mâle ¾ po MPT × ¾ po insert](https://duboisag.com/ca_fr/adaptateur-male-mpt-x-insert.html) | 1 | spare sub-header end closure |
+| [Capuchon femelle ¾ po PVC série 40 IPEX (RONA 00685622)](https://www.rona.ca/fr/produit/capuchon-femelle-3-4-po-en-pvc-de-serie-40-ipex-635424-00685622) | 1 | on the spare adapter |
 
 ## Total
 
@@ -122,5 +120,5 @@ For each zone, add the items in the zone line lib to the items below.
 | Bib → station | ~220 |
 | Water-only line | ~50 |
 | Station → main | ~90 |
-| Zone lines, less Orisha | ~255 |
-| **Nursery supply** | **~615** (station in `fertigation-station.md`) |
+| Zone lines, less Orisha | ~240 |
+| **Nursery supply** | **~600** (station in `fertigation-station.md`) |

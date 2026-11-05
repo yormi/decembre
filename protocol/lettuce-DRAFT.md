@@ -25,8 +25,8 @@ first 2.5" tray confirms it.
 
 | Day | Move / act | Zone | Light | Source |
 |---|---|---|---|---|
-| 1 | Sow in OM2 + feather meal | Germination rack | 8× cheap LED **off** | `../domain/lighting-zones.md` |
-| ~3 | First germination sign → LED on | Germination rack | 8× cheap LED, 18 h/d → ~10 mol/m²/d | `../domain/lighting-zones.md` |
+| 1 | Sow in OM2 + feather meal | Germination rack | 10× cheap LED **off** | `../domain/lighting-zones.md` |
+| ~3 | First germination sign → LED on | Germination rack | 10× cheap LED, 18 h/d → ~12.5 mol/m²/d | `../domain/lighting-zones.md` |
 | 8 | Move trays | Nursery growth rack | 4× SunBlaster T5HO, 18 h/d → ~14 mol/m²/d | `../domain/lighting-zones.md` |
 | 15 | Move to greenhouse | Greenhouse table | LED 280 µmol, sun-aligned → hold 20–25 mol/m²/d | `../domain/lighting-zones.md` |
 | 28 | Checkerboard trays | Greenhouse table | — | — |
@@ -39,7 +39,7 @@ first 2.5" tray confirms it.
 - Feather-meal front-load: **2 cups / 50 L OM2 sac ≈ 5.3 g/L**
   (volume-based; germination-salt cap).
 
-- Place trays on germination rack; **8× cheap LED off**.
+- Place trays on germination rack; **10× cheap LED off**.
 
 - Insert soil thermometer in a representative 2.5" pot.
 
@@ -51,7 +51,7 @@ first 2.5" tray confirms it.
 
 ## d3 — Germination signal
 
-- On first germination sign → **8× cheap LED to 18 h/d**.
+- On first germination sign → **10× cheap LED to 18 h/d**.
 
 
 ## d8 — Nursery growth rack

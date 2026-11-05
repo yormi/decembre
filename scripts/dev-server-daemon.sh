@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Persistent dev server via user-systemd.
+# Persistent dev server via user-systemd (permanent enabled unit).
 # Survives terminal exits, Claude Code session restarts, etc. Use this instead
 # of dev-server.sh for long sessions.
 #
@@ -15,14 +15,8 @@ REPO_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 
 case "${1:-start}" in
   start)
-    systemctl --user stop "${UNIT}.service" 2>/dev/null || true
-    # Restart=always: if dev-server.sh exits (a child died), relaunch the unit.
-    systemd-run --user --unit="${UNIT}" \
-      --working-directory="${REPO_DIR}" \
-      --description="Décembre live-server" \
-      --property=Restart=always \
-      --property=RestartSec=3 \
-      "${REPO_DIR}/scripts/dev-server.sh"
+    # Unit file: ~/.config/systemd/user/decembre-devserver.service (enabled, Restart=always).
+    systemctl --user restart "${UNIT}.service"
     # Poll the port instead of a fixed sleep (first build + live-server boot
     # can take >5s, which used to print a false "Failed to start").
     for _ in $(seq 1 20); do

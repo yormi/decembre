@@ -1,4 +1,4 @@
-  <!-- ═══════════════ RENDEMENT PAGE (admin) ═══════════════ -->
+  <!-- ═══════════════ RENDEMENT SECTION (croquis page, below the sketch) ═══════════════ -->
   <!-- Salanova full-cycle yield model. Spec: app/admin/rendement/user-stories.md.
        Four operator inputs (field spacing · labor routine · thin week 4 ·
        thin week 5) → yearly sales, kg/week, trays in nursery, heads per bed,
@@ -6,9 +6,9 @@
        window.YieldRange.predictYield (yield-range/domain/spec.md,
        carbon-balance). Spacing/routine options auto-derived from
        FIELD_SPACING_CONFIGS / LABOR_ROUTINES — no option text hardcoded here.
-       Wired via setPage('rendement') → buildYieldRange() in
+       Wired via setPage('croquis') → buildYieldRange() in
        app/admin/rendement/logic.js. -->
-  <div id="page-rendement-content" class="page-content" style="display:none;">
+  <div id="rendement-section">
 
     <!-- Desktop (see page.css .yr-row): narrow side column (Configuration over
          Rendement) + chart filling the rest of the viewport. Stacked under 1000px. -->
@@ -41,4 +41,4 @@
 
     </div><!-- end .yr-row -->
 
-  </div><!-- end page-rendement-content -->
+  </div><!-- end rendement-section -->

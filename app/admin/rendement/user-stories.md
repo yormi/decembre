@@ -1,9 +1,9 @@
 # Yield Range — app UI specs
 
-UI contract for the Rendement admin page. Yield model:
+UI contract for the Rendement section, below the sketch on the Croquis pépinière admin page. Yield model:
 `yield-range/domain/spec.md` (carbon-balance `predictYield`).
 
-Admin page. Salanova. French UI text.
+Admin. Salanova. French UI text.
 
 ## Contract
 
@@ -30,8 +30,9 @@ Five toggle groups, state held in the `.active` button:
 Thin = re-potting into trays of N pots. Derived:
 `thinEvents = [{15, 32/p3}, {22, 32/min(p3, p4)}, {29, 32/min(p3, p4, p5)}]`
 — areaFactor = cells ÷ pots/tray, absolute; each week is clamped down to the
-tightest earlier week (never re-crowd). Defaults: `3r8` · `2wk` · S3 16 pots ·
-S4 8 pots · S5 8 pots.
+tightest earlier week (never re-crowd). Defaults: `4r8` · `2wk` · S3 16 pots ·
+S4 8 pots · S5 8 pots; the croquis **Enregistrer par défaut** saves the current
+selection (localStorage `rendement-inputs`), which replaces them as the starting selection.
 
 Every J-number on this page is a day from sowing, day 1 = the sowing day.
 
@@ -44,14 +45,15 @@ Rendered from `predictYield(inputs)`:
 - Six stat tiles: **Ventes / an** (`yearlySalesDollars` en k$, tronqué, green),
   **Récolte / semaine** (`kgPerWeek`), **Plateaux pépinière** (`traysInNursery`),
   **Plateaux à semer / sem** (`traysSeededPerWeek`),
-  **Racks semaines 1-4** (`ceil(Σ traysByNurseryWeek[week ≤ 4] / 20)`),
+  **Racks semaines 1-5** (`ceil((Σ trays weeks 1-4 + max(0, week 5 trays − 16 xTrays × 9)) / 20)`),
   **Têtes / planche** (`headsPerBed`)
 - Detail rows: seedling (transplant) weight, harvest weight
 - **Plateaux par semaine de pépinière** table: one column per nursery week
   (headers `1`..`5`, bare numbers); row 1 trays on the bench for that cohort
   age (`traysByNurseryWeek`), row 2 weeks 1-4 `<floor(trays / 20)>-<ceil(remainder / 4)>` (full racks of 20,
-  then extra shelves of 4), week 5 `ceil(trays / 9)` (xTrays of 9), caption
-  **`2ᵉ ligne : racks pleins de 20 plateaux - tablettes de 4 en plus · sem. 5 : xTrays de 9 plateaux`**
+  then extra shelves of 4), week 5 same format on the trays past 16 xTrays × 9 = 144 (empty when none);
+  row 3 week 5 `min(16, ceil(trays / 9))` (xTrays of 9), other cells empty; caption
+  **`2ᵉ ligne : racks pleins de 20 plateaux - tablettes de 4 en plus · 3ᵉ ligne : xTrays de 9 plateaux (16 max, surplus sem. 5 en racks)`**
 - Assumptions note: transplant day, pots/tray + days, tray, sowing backup
   % (tray counts), bed geometry, price/kg
 
@@ -64,7 +66,7 @@ Thousands grouped with a space; no value computed in the renderer.
 
 ## layout
 
-This page runs full-width: `setPage('rendement')` puts `.container-wide`
+Full-width with the croquis page: `setPage('croquis')` puts `.container-wide`
 (no max width, 24 px side padding) on the app container, and drops it on
 every other page. From 1000 px up: a 340–420 px side column holds
 **Configuration** over **Rendement**; **Trajectoire de croissance** fills the

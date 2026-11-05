@@ -190,7 +190,7 @@ traysByNurseryWeek = [{ week, trays }] for week 1..⌈(nurseryDays − 1) / 7⌉
                      start day ((week − 1) × 7 + 1)
 ```
 
-Every tray count carries the `NURSERY_BACKUP_FRACTION = 0.10` sowing margin
+Every tray count carries the `NURSERY_BACKUP_FRACTION = 0.03` sowing margin
 (germination misses, culls); heads/kg/sales do not — backup plants are not
 sold.
 

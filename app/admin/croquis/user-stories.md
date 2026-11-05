@@ -7,7 +7,7 @@ Admin page. Floor-plan sketch of the nursery room. French UI text.
 - **Room** 16'3" × 27' (195 × 324 in), 1 ft grid, 2 px/in
 
 - **Fixed zones** (drawn, keep-out for racks/tables): corridor 36 in deep
-  across the room and the germination room at y 240–276 · door 36 × 36 in top-left · Hot Dawg heater
+  across the room and the germination room, 15 ft below the door zone (y 229–265) · door 24 × 49 in top-left · Hot Dawg heater
   33 × 17 in, unrotated top-left (125, 22), tilted 25° so its east corner
   sits at (160, 30), 6 in clearance ring, 15 ft cone along the tilt. Source:
   `domain/nursery-room.md`
@@ -15,8 +15,9 @@ Admin page. Floor-plan sketch of the nursery room. French UI text.
 - **Germination room** 154 × 116 in (landscape), drawn west of the room, top 8 in above the corridor;
   corridor's west end = its door. Items placeable there like in the room
 
-- **Weeks**: S1 · S2 · S3 · S4a · S4b · Autre — week 4 = two irrigation
-  zones (`Flood Irrigation/nursery/control.md`)
+- **Weeks**: S1 · S2 · S3 · S4a · S4b · S5 · Autre — week 4 = two irrigation
+  zones (`Flood Irrigation/nursery/control.md`) · S5 = week 5 trays past the
+  greenhouse xTrays
 
 - **Items**: rack 48 × 28 in, 5 shelves of 4 trays, each shelf one week
   (new rack all Autre) ·
@@ -24,17 +25,20 @@ Admin page. Floor-plan sketch of the nursery room. French UI text.
   fill valve 10 in circle, one week S1–S4b or unassigned (new valve
   unassigned). Rotation 0 / 90°.
 
-- **Default layout**: 20 racks (1 top wall, 4 left, 4 right, 6 central
-  island 2 × 3, 5 below corridor) + 2 tables 80 × 22 above and below the
-  island · 0 blocked. Shelves (top → bottom): top wall S1 · left S2 S2 S1 S1 S1,
-  S2, S2 S3 Autre ×3, Autre · right S4a, S4a, S4a, S4a Autre ×4 · island left column
-  S3, right column S4b · below corridor Autre · no valves → S1 8 · S2 8 · S3 16 · S4a 16 · S4b 15 · Autre 37. Loaded from localStorage `nursery-layout:aisle`
+- **Default layout**: 26 racks (2 top wall, 3 left + 1 crosswise below them, 4 right, 6 central
+  island 2 × 3, 5 below corridor, 5 in the germination room) + tables 80 × 22 above the island and 62 × 22 over its
+  bottom row + 5 valves (S1 top wall · S3, S2 by the door · S4b, S4a top-right corner) · 3 blocked (table 62 × 22 +
+  the island's 2 bottom racks). Shelves (top → bottom): top wall S1, S1 · left S1 S1 S1 S2 S2, S2, S2, crosswise
+  S2 S3 S3 S3 Autre · right S4b Autre ×4, S4b, S4b, S4b S4b S4a S4a S4a · island left column S3 S3 Autre, right
+  column S4a S4a Autre · below corridor Autre, S5 Autre ×4, S5, S5, S5 · germination room Autre (4 racks at y 300
+  run 11 in past its south wall) → S1 13 · S2 13 · S3 13 · S4a 13 · S4b 13 · S5 16 · Autre 49. Loaded from localStorage `nursery-layout:aisle`
   when saved (a rack's single saved week → all its shelves; none → Autre; saved S4 → S4a), else the suggested layout.
 
 
 ## layout
 
-- No page title; whole page fits the viewport without scrolling
+- No page title; sketch card fits the viewport without scrolling; Rendement section
+  (`app/admin/rendement/user-stories.md`) below it
 
 - Sketch fills the left half (scaled to width, capped at viewport height
   minus 245 px); right half holds shelf panel + table size inputs, shelf
@@ -51,7 +55,7 @@ Admin page. Floor-plan sketch of the nursery room. French UI text.
   once it fits there whole
 
 - Toolbar: **+ rack** · **+ table** · **+ vanne** · **Pivoter** · **Retirer** · **Réinitialiser** (saved layout, else
-  suggested) · **Enregistrer par défaut** (localStorage) → « Enregistré »
+  suggested) · **Enregistrer par défaut** (localStorage: layout + Rendement inputs) → « Enregistré »
   / « Échec » 2 s
 
 - Table size inputs (L × D) show when a table is selected; apply to all
@@ -91,7 +95,8 @@ Admin page. Floor-plan sketch of the nursery room. French UI text.
 
 - Stats: total · plateaux (racks × 20) · bloqués (red when > 0)
 
-- **Tablettes / requises** (right half, bottom): per week S1–S4b
-  `<shelves on plan> / <required>`, required = `ceil(traysByNurseryWeek[week] / 4)`
-  at the Rendement default inputs, week 4 split S4a = ceil(half) · S4b = floor(half); green when ≥ required, red below;
+- **Tablettes / requises** (right half, bottom): per week S1–S5
+  `<shelves on plan> / <required>`, required = `ceil(rack trays / 4)` at the Rendement
+  inputs currently selected below (updates on every change) — rack trays = `traysByNurseryWeek[week]`, week 5 only past 16 xTrays × 9 = 144 —
+  week 4 split S4a = ceil(half) · S4b = floor(half); green when ≥ required, red below;
   Autre shows its count only

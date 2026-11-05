@@ -2,13 +2,13 @@
 
 
 
-| Generation | Zone | Place | Trays + 10% backup |
+| Generation | Zone | Place | Trays + 3% backup |
 |---|---|---|---|
-| Week 1 | Nursery | Germination rack | 31 |
-| Week 2 | Nursery | Racks week 2 | 31 |
-| Week 3 | Nursery | Racks week 3, spaced 2:1 | 62 |
-| Week 4 | Nursery | Racks week 4, spaced 4:1 | 124 |
-| Week 5 | Greenhouse | Nursery table | 124 |
+| Week 1 | Nursery | Germination rack | 29 |
+| Week 2 | Nursery | Racks week 2 | 29 |
+| Week 3 | Nursery | Racks week 3, spaced 2:1 | 58 |
+| Week 4 | Nursery | Racks week 4, spaced 4:1 | 116 |
+| Week 5 | Greenhouse | Nursery table | 116 |
 
 
 
@@ -32,10 +32,19 @@ across tray edges, 5.6 in on A↔C diagonals.
 | Zone | Fixture | Count |
 |---|---|---|
 | Germination rack |  |  |
-| -- v1 | Barrina T5 20W | 8 |
-| -- v2 | SunBlaster T5HO 54W + reflector | 3 |
-| -- v3 | Barrina T8 42W | 3 |
-| Nursery week 2 rack | Barrina T8 42W | 4 |
-| Nursery week 3 rack | Barrina T8 42W | 5 |
-| Nursery week 4 rack | Barrina T8 42W | 5 |
+| -- v1 | Barrina T5 20W | 10 |
+| -- v2 | Barrina T8 42W | 4 |
+| -- v3 | SunBlaster T5HO 54W + reflector | 4 |
+| Nursery week 2 rack |  |  |
+| -- v1 | Barrina T5 20W | 12 |
+| -- v2 | Barrina T8 42W | 4 |
+| -- v3 | SunBlaster T5HO 54W + reflector | 4 |
+| Nursery week 3 rack |  |  |
+| -- v1 | Barrina T5 20W | 17 |
+| -- v2 | Barrina T8 42W | 5 |
+| -- v3 | SunBlaster T5HO 54W + reflector | 6 |
+| Nursery week 4 rack |  |  |
+| -- v1 | Barrina T5 20W | 21 |
+| -- v2 | Barrina T8 42W | 5 |
+| -- v3 | SunBlaster T5HO 54W + reflector | 8 |
 | Greenhouse table (nursery use) | LED |  |

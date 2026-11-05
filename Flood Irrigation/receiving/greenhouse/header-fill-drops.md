@@ -5,7 +5,9 @@ Steps: `../../schedule/greenhouse.md` § Header + fill drops.
 
 - [ ] PE 1½ in × 100 ft · 1 · on hand
 
-- [ ] Bouchon insertion 1½ in · 1 · Dubois 2026-09-28
+- [ ] Adaptateur mâle 1½ in MPT × insert · 1 · to buy
+
+- [ ] Bouchon femelle 1½ in FPT · 1 · to buy
 
 - [ ] Inox clamp 40–63 mm · 2 · on hand
 

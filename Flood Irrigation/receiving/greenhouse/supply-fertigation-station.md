@@ -3,7 +3,7 @@
 Steps: `../../schedule/greenhouse.md` § Supply + fertigation station.
 
 
-- [ ] Manifold valve → Dosatron A fitting · ? · not ordered (`../../for-later.md`)
+- [ ] Manifold tee, ¾ FPT branch · 1 · not ordered (`../../for-later.md`)
 
 - [ ] Dosatron D14MZ10VFBPHY · 1 · Irrigation Direct 2026-09-26
 
@@ -11,23 +11,23 @@ Steps: `../../schedule/greenhouse.md` § Supply + fertigation station.
 
 - [ ] Filtre à tamis ¾ MPT, 150 mesh · 1 · Dubois 2026-09-28
 
-- [ ] Adaptateur femelle ¾ FPT × ¾ insert · 4 · Dubois 2026-09-28
+- [ ] Adaptateur femelle ¾ FPT × ¾ insert · 5 · Dubois 2026-09-28
 
-- [ ] PE ¾ in · ~3 ft · on hand
+- [ ] PE ¾ in · ~4 ft · on hand
 
-- [ ] Inox clamp 19–29 mm · 4 · Amazon 2026-10-03
+- [ ] Inox clamp 19–29 mm · 6 · Amazon 2026-10-03
 
 - [ ] Clapet anti-retour PVC ¾ · 1 · Dubois 2026-09-28
 
-- [ ] Mamelon fileté ¾ in, sch 80 · 2 · Dubois 2026-09-28
+- [ ] Mamelon fileté ¾ in, sch 80 · 3 · Dubois 2026-09-28 (2) + to buy (1)
 
 - [ ] Senninger PSR-2 10 psi ¾ FPT · 1 · Dubois 2026-09-28
 
-- [ ] Réduit 1 in MPT × ¾ FPT · 1 · Dubois 2026-09-28
+- [ ] Réduit 1 in MPT × ¾ FPT · 3 · Dubois 2026-09-28 (1) + to buy (2)
+
+- [ ] Adaptateur mâle ¾ MPT × ¾ insert · 1 · on hand
 
 - [ ] Orisha fill valve 1 in · 1 · Orisha 2026-09-28
-
-- [ ] Mamelon fileté 1 in, sch 80 · 1 · Dubois 2026-09-28
 
 - [ ] Réduit 1½ in MPT × 1 in FPT · 1 · Dubois 2026-09-28
 

@@ -1,15 +1,15 @@
-/* Rendement admin page. The container goes full-width on this page
-   (.container-wide, core/logic.js setPage). From 1000px up: side column
+/* Rendement section, below the croquis sketch (full-width container,
+   .container-wide, core/logic.js setPage). From 1000px up: side column
    (Configuration over Rendement) + chart taking the remaining width, chart
    card fills the viewport height. Stacked below 1000px. */
 @media (min-width: 1000px) {
-  #page-rendement-content .yr-row {
+  #rendement-section .yr-row {
     display: grid;
     grid-template-columns: minmax(340px, 420px) minmax(0, 1fr);
     gap: 20px;
     align-items: start;
   }
-  #page-rendement-content .yr-side > .card { margin-bottom: 16px; }
-  #page-rendement-content .yr-row > .card { margin-bottom: 0; }
-  #page-rendement-content #yr-chart-container svg { max-height: calc(100vh - 200px); }
+  #rendement-section .yr-side > .card { margin-bottom: 16px; }
+  #rendement-section .yr-row > .card { margin-bottom: 0; }
+  #rendement-section #yr-chart-container svg { max-height: calc(100vh - 200px); }
 }

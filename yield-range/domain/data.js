@@ -104,7 +104,7 @@ const NURSERY_TRAY_CELLS = [50, 32, 18];
 
 // Backup sown on top of the field need — covers germination misses and culls.
 // All tray counts (seeded, on-bench, per-week) carry this margin.
-const NURSERY_BACKUP_FRACTION = 0.10;
+const NURSERY_BACKUP_FRACTION = 0.03;
 
 // ── Supplemental-lighting feasibility (Lumière page) ─────────────────
 const LED_PPFD = 200;

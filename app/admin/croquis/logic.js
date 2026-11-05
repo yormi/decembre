@@ -21,10 +21,11 @@ const CROQUIS_COLORS = {
   grid: '#243029', rackEdge: '#8a9a2e',
   rackBad: '#e06c4f', text: '#e8eee6', dim: '#7d8a80', heat: '#e0904f', table: '#9ab8c9', measure: '#8fd0e8',
 };
-// Cohort week each shelf holds (1-3, '4a', '4b' or 'other'); fill + edge per week.
+// Cohort week each shelf holds (1-3, '4a', '4b', 5 or 'other'); fill + edge per week.
 // Week 4 = two irrigation zones 4a / 4b (Flood Irrigation/nursery/control.md).
-const CROQUIS_WEEKS = [1, 2, 3, '4a', '4b', 'other'];
-const CROQUIS_VALVE_WEEKS = CROQUIS_WEEKS.filter(week => week !== 'other');
+// Week 5 = trays past the greenhouse xTrays; no fill valve.
+const CROQUIS_WEEKS = [1, 2, 3, '4a', '4b', 5, 'other'];
+const CROQUIS_VALVE_WEEKS = CROQUIS_WEEKS.filter(week => week !== 'other' && week !== 5);
 const CROQUIS_VALVE_SIZE = 10;
 const croquisShelves = week => Array(CROQUIS_SHELVES_PER_RACK).fill(week);
 const croquisParseWeek = value => /^\d+$/.test(value) ? parseInt(value, 10) : value;
@@ -36,13 +37,14 @@ const CROQUIS_WEEK_COLORS = {
   3: { fill: '#f0b35a', edge: '#b87a1e' },
   '4a': { fill: '#f08cb0', edge: '#b8497a' },
   '4b': { fill: '#e8607a', edge: '#a8324a' },
+  5: { fill: '#e2d65c', edge: '#a39a24' },
   other: { fill: '#5fc9a8', edge: '#3a8a70' },
 };
 
+const CROQUIS_DOOR = { x: 0, y: 0, w: 24, h: 49 };
 const CROQUIS_CORRIDOR_WIDTH = 36;
-const CROQUIS_CORRIDOR_Y1 = CROQUIS_ROOM_HEIGHT - 48 - CROQUIS_CORRIDOR_WIDTH;
-const CROQUIS_CORRIDOR_Y2 = CROQUIS_ROOM_HEIGHT - 48;
-const CROQUIS_DOOR = { x: 0, y: 0, w: 36, h: 36 };
+const CROQUIS_CORRIDOR_Y1 = CROQUIS_DOOR.y + CROQUIS_DOOR.h + 180;
+const CROQUIS_CORRIDOR_Y2 = CROQUIS_CORRIDOR_Y1 + CROQUIS_CORRIDOR_WIDTH;
 // Germination room west of the nursery, top 8 in above the corridor; corridor ends at its door.
 const CROQUIS_GERMINATION_ROOM = { x: -154, y: CROQUIS_CORRIDOR_Y1 - 8, w: 154, h: 116 };
 const CROQUIS_ROOMS = [{ x: 0, y: 0, w: CROQUIS_ROOM_WIDTH, h: CROQUIS_ROOM_HEIGHT }, CROQUIS_GERMINATION_ROOM];
@@ -98,24 +100,28 @@ function croquisRoomOf(item) {
 function croquisInCorridor(item) { return croquisInZone(item, CROQUIS_GERMINATION_ROOM.x, CROQUIS_CORRIDOR_Y1, CROQUIS_ROOM_WIDTH - CROQUIS_GERMINATION_ROOM.x, CROQUIS_CORRIDOR_WIDTH); }
 function croquisInDoor(item) { return croquisInZone(item, CROQUIS_DOOR.x, CROQUIS_DOOR.y, CROQUIS_DOOR.w, CROQUIS_DOOR.h); }
 
-// 20 racks + 2 work tables (80 × 22) bracketing a 2 × 3 central island.
-// Shelves top → bottom.
+// 26 racks (5 in the germination room) + 2 work tables + 5 fill valves. Shelves top → bottom.
 function croquisSuggestedLayout() {
   const rack = (x, y, rotation, shelves) => ({ id: croquisIdCounter++, x, y, rotation, shelves });
-  const table = (x, y) => ({ id: croquisIdCounter++, x, y, rotation: 0, kind: 'table', tableLength: 80, tableDepth: 22 });
+  const table = (x, y, tableLength) => ({ id: croquisIdCounter++, x, y, rotation: 0, kind: 'table', tableLength, tableDepth: 22 });
+  const valve = (x, y, week) => ({ id: croquisIdCounter++, x, y, rotation: 0, kind: 'valve', week });
   const all = week => croquisShelves(week);
   return [
-    rack(68, 0, 0, all(1)),
-    rack(0, 46, 90, [2, 2, 1, 1, 1]), rack(0, 94, 90, all(2)),
-    rack(0, 142, 90, [2, 3, 'other', 'other', 'other']), rack(0, 190, 90, all('other')),
-    rack(167, 48, 90, all('4a')), rack(167, 96, 90, all('4a')), rack(167, 144, 90, all('4a')),
-    rack(167, 192, 90, ['4a', 'other', 'other', 'other', 'other']),
-    table(62, 52),
-    rack(76, 74, 90, all(3)), rack(104, 74, 90, all('4b')),
-    rack(76, 122, 90, all(3)), rack(104, 122, 90, all('4b')),
-    rack(76, 170, 90, all(3)), rack(104, 170, 90, all('4b')),
-    table(62, 218),
-    ...[20, 48, 94, 122, 167].map(x => rack(x, 276, 90, all('other'))),
+    rack(28, 0, 0, all(1)), rack(76, 0, 0, all(1)),
+    rack(0, 50, 90, [1, 1, 1, 2, 2]), rack(0, 98, 90, all(2)), rack(0, 146, 90, all(2)),
+    rack(0, 194, 0, [2, 3, 3, 3, 'other']),
+    rack(167, 28, 90, ['4b', 'other', 'other', 'other', 'other']), rack(167, 76, 90, all('4b')), rack(167, 124, 90, all('4b')),
+    rack(167, 172, 90, ['4b', '4b', '4a', '4a', '4a']),
+    table(62, 52, 80),
+    rack(76, 74, 90, all(3)), rack(104, 74, 90, all('4a')),
+    rack(76, 122, 90, all(3)), rack(104, 122, 90, all('4a')),
+    rack(76, 170, 90, all('other')), rack(104, 170, 90, all('other')),
+    table(74, 170, 62),
+    rack(20, 276, 90, all('other')), rack(48, 276, 90, [5, 'other', 'other', 'other', 'other']),
+    ...[94, 122, 167].map(x => rack(x, 276, 90, all(5))),
+    rack(-100, 272, 0, all('other')),
+    ...[-154, -104, -76, -28].map(x => rack(x, 300, 90, all('other'))),
+    valve(118, 0, 1), valve(0, 26, 3), valve(0, 36, 2), valve(184, 2, '4b'), valve(184, 12, '4a'),
   ];
 }
 
@@ -138,19 +144,21 @@ const CROQUIS = { items: null, requiredShelves: null, selected: new Set(), saveM
 
 function buildCroquis() {
   if (!CROQUIS.items) CROQUIS.items = croquisLoadSaved() || croquisSuggestedLayout();
-  if (!CROQUIS.requiredShelves && window.YieldRange && window.YieldRange.predictYield) {
-    const model = window.YieldRange.predictYield(yrInputs(name => YR_DEFAULTS[name]));
-    CROQUIS.requiredShelves = croquisRequiredShelves(model);
-  }
   croquisWire();
   renderCroquis();
 }
 
-// Rendement model (default inputs) → { week: shelves } for weeks 1-3, 4a, 4b;
+// Called by renderYieldRange on every Rendement input change.
+function croquisSetRequiredShelves(model) {
+  CROQUIS.requiredShelves = croquisRequiredShelves(model);
+  if (CROQUIS.items) renderCroquisShelfCounts();
+}
+
+// Rendement model (selected inputs) → { week: shelves } for weeks 1-3, 4a, 4b, 5;
 // week 4 split in halves, 4a takes the odd shelf.
 function croquisRequiredShelves(model) {
-  const shelves = Object.fromEntries(model.traysByNurseryWeek.filter(entry => entry.week <= 4)
-    .map(entry => [entry.week, Math.ceil(entry.trays / YR_TRAYS_PER_SHELF)]));
+  const shelves = Object.fromEntries(model.traysByNurseryWeek
+    .map(entry => [entry.week, Math.ceil(yrRackTrays(entry) / YR_TRAYS_PER_SHELF)]));
   const { 4: weekFour, ...rest } = shelves;
   return { ...rest, '4a': Math.ceil(weekFour / 2), '4b': Math.floor(weekFour / 2) };
 }
@@ -199,7 +207,11 @@ function croquisReset() {
   renderCroquis();
 }
 function croquisSave() {
-  try { localStorage.setItem(CROQUIS_STORAGE_KEY, JSON.stringify(CROQUIS.items)); CROQUIS.saveMessage = 'Enregistré'; }
+  try {
+    localStorage.setItem(CROQUIS_STORAGE_KEY, JSON.stringify(CROQUIS.items));
+    localStorage.setItem(YR_STORAGE_KEY, JSON.stringify(yrSelectedValues()));
+    CROQUIS.saveMessage = 'Enregistré';
+  }
   catch (error) { CROQUIS.saveMessage = 'Échec'; }
   renderCroquis();
   setTimeout(() => { CROQUIS.saveMessage = ''; renderCroquisToolbar(); }, 2000);
@@ -495,8 +507,8 @@ function renderCroquisStats() {
     + stat(blockedCount, 'bloqués', blockedCount > 0 ? CROQUIS_COLORS.rackBad : 'var(--text)');
 }
 
-// Shelves per week on the plan over shelves the Rendement defaults need
-// (trays ÷ 4, rounded up); Autre has no need.
+// Shelves per week on the plan over shelves the selected Rendement inputs need
+// (rack trays ÷ 4, rounded up); Autre has no need.
 function renderCroquisShelfCounts() {
   const container = document.getElementById('croquis-shelf-counts');
   const racks = CROQUIS.items.filter(croquisIsRack);

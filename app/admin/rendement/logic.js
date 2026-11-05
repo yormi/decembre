@@ -55,6 +55,7 @@ const YR_TRAY_CELLS = 32;
 const YR_TRAYS_PER_RACK = 20;
 const YR_TRAYS_PER_SHELF = 4;
 const YR_TRAYS_PER_XTRAY = 9;
+const YR_XTRAYS_AVAILABLE = 16;
 // Thin events fire at the start of growth weeks 3, 4 and 5 (days 15, 22, 29).
 // Thin = re-potting into trays holding N pots (32 = no thin); areaFactor
 // fed to the model is cells ÷ N.
@@ -64,13 +65,34 @@ const YR_THIN_WEEKS = [
   { week: 5, day: 29, key: 'thin5', pots: [16, 10, 8, 7, 6, 5] },
 ];
 
-const YR_DEFAULTS = { spacing: '3r8', routine: '2wk', thin3: '16', thin4: '8', thin5: '8' };
+const YR_DEFAULTS = { spacing: '4r8', routine: '2wk', thin3: '16', thin4: '8', thin5: '8' };
+// Inputs saved by the croquis « Enregistrer par défaut »; override YR_DEFAULTS as the starting selection.
+const YR_STORAGE_KEY = 'rendement-inputs';
+
+function yrStartingValues() {
+  try { return { ...YR_DEFAULTS, ...(JSON.parse(localStorage.getItem(YR_STORAGE_KEY)) || {}) }; }
+  catch (error) { return { ...YR_DEFAULTS }; }
+}
+
+// Active toggle value per group, e.g. { spacing: '4r8', thin3: '16', … }.
+function yrSelectedValues() {
+  const starting = yrStartingValues();
+  return Object.fromEntries(Object.keys(YR_DEFAULTS).map(name => {
+    const button = document.querySelector(`#yr-inputs [data-yr-group="${name}"].active`);
+    return [name, button ? button.dataset.yrValue : starting[name]];
+  }));
+}
 
 // A later week never re-crowds: its effective pots/tray is clamped down to
 // the tightest earlier week.
 function yrEffectivePots(potsByWeek) {
   let tightest = Infinity;
   return potsByWeek.map(pots => (tightest = Math.min(tightest, pots)));
+}
+
+// Trays a nursery week puts on racks: weeks 1-4 all, week 5 the overflow past the xTrays.
+function yrRackTrays(weekEntry) {
+  return weekEntry.week <= 4 ? weekEntry.trays : Math.max(0, weekEntry.trays - YR_XTRAYS_AVAILABLE * YR_TRAYS_PER_XTRAY);
 }
 
 function yrThinEvents(potsByWeek) {
@@ -88,7 +110,7 @@ function renderYieldRangeInputs() {
 
   const group = (title, name, options) => {
     const btns = options.map(o =>
-      `<button class="stage-btn${o.value === YR_DEFAULTS[name] ? ' active' : ''}" data-yr-group="${name}" data-yr-value="${o.value}">`
+      `<button class="stage-btn${o.value === starting[name] ? ' active' : ''}" data-yr-group="${name}" data-yr-value="${o.value}">`
       + `<span class="stage-label">${o.label}</span>`
       + (o.sub ? `<span class="stage-weeks">${o.sub}</span>` : '')
       + `</button>`).join('');
@@ -97,6 +119,7 @@ function renderYieldRangeInputs() {
       + `<div class="stage-selector" style="flex-wrap:wrap;">${btns}</div></div>`;
   };
 
+  const starting = yrStartingValues();
   const potsOptions = pots => pots.map(p => ({ value: String(p), label: `${p}` }));
   container.innerHTML =
     group('Espacement (planche 30 po)', 'spacing',
@@ -115,13 +138,10 @@ function renderYieldRangeInputs() {
   container.dataset.wired = '1';
 }
 
-// Read the active toggle in each group → predictYield input object. Falls back
-// to the defaults when a group has no active button (first render safety).
+// Active toggles → predictYield input object.
 function readYieldRangeInputs() {
-  return yrInputs(name => {
-    const button = document.querySelector(`#yr-inputs [data-yr-group="${name}"].active`);
-    return button ? button.dataset.yrValue : YR_DEFAULTS[name];
-  });
+  const values = yrSelectedValues();
+  return yrInputs(name => values[name]);
 }
 
 // valueOf(groupName) → toggle value string.
@@ -145,6 +165,7 @@ function renderYieldRange() {
   if (results) results.innerHTML = renderYieldResults(model);
   const chart = document.getElementById('yr-chart-container');
   if (chart) chart.innerHTML = renderYieldChart(inputs, yrSelectedDay);
+  croquisSetRequiredShelves(model);
 }
 
 // Headline stat tiles (yearly sales · kg/week · trays · racks weeks 1-4 · heads per bed) + a secondary detail
@@ -165,7 +186,7 @@ function renderYieldResults(m) {
     + tile(fmtInt(m.kgPerWeek), 'kg', 'Récolte / semaine')
     + tile(fmtInt(m.traysInNursery), '', 'Plateaux pépinière')
     + tile(fmtInt(m.traysSeededPerWeek), '', 'Plateaux à semer / sem')
-    + tile(Math.ceil(m.traysByNurseryWeek.filter(w => w.week <= 4).reduce((sum, w) => sum + w.trays, 0) / YR_TRAYS_PER_RACK), '', 'Racks semaines 1-4')
+    + tile(Math.ceil(m.traysByNurseryWeek.reduce((sum, w) => sum + yrRackTrays(w), 0) / YR_TRAYS_PER_RACK), '', 'Racks semaines 1-5')
     + tile(fmtInt(m.headsPerBed), '', 'Têtes / planche')
     + `</div>`;
 
@@ -179,23 +200,28 @@ function renderYieldResults(m) {
     + row('Poids tête récolte', `${fmtInt(m.harvestWeightG)} g`)
     + `</div>`;
 
-  // Trays on the bench per cohort age week, from the model, + full racks-extra shelves needed (weeks 1-4) or xTrays (week 5).
+  // Trays on the bench per cohort age week, from the model, + full racks-extra shelves needed (weeks 1-4) + xTrays (week 5).
   const weekCell = value => `<td style="text-align:center; font-family:'DM Mono',monospace; padding:5px 4px;">${value}</td>`;
   const weekCells = m.traysByNurseryWeek.map(w => weekCell(fmtInt(w.trays))).join('');
   const racksAndShelves = trays => {
     const fullRacks = Math.floor(trays / YR_TRAYS_PER_RACK);
     return `${fullRacks}-${Math.ceil((trays - fullRacks * YR_TRAYS_PER_RACK) / YR_TRAYS_PER_SHELF)}`;
   };
-  const shelfCells = m.traysByNurseryWeek.map(w =>
-    weekCell(w.week <= 4 ? racksAndShelves(w.trays) : Math.ceil(w.trays / YR_TRAYS_PER_XTRAY))).join('');
+  const shelfCells = m.traysByNurseryWeek.map(w => {
+    const rackTrays = yrRackTrays(w);
+    return weekCell(rackTrays > 0 ? racksAndShelves(rackTrays) : '');
+  }).join('');
+  const xTrayCells = m.traysByNurseryWeek.map(w =>
+    weekCell(w.week <= 4 ? '' : Math.min(YR_XTRAYS_AVAILABLE, Math.ceil(w.trays / YR_TRAYS_PER_XTRAY)))).join('');
   const weekHeaders = m.traysByNurseryWeek.map(w =>
     `<th style="text-align:center; font-weight:600; color:var(--text-muted); padding:5px 4px;">${w.week}</th>`).join('');
   const weekTable = `<div style="margin-top:16px; font-size:12px;">`
     + `<div style="font-size:10px; text-transform:uppercase; letter-spacing:1px; color:var(--text-muted); margin-bottom:6px;">Plateaux par semaine de pépinière</div>`
     + `<table style="width:100%; border-collapse:collapse; border:1px solid var(--border);">`
     + `<tr style="border-bottom:1px solid var(--border);">${weekHeaders}</tr>`
-    + `<tr>${weekCells}</tr><tr style="border-top:1px solid var(--border); color:var(--text-muted);">${shelfCells}</tr></table>`
-    + `<div style="font-size:10px; color:var(--text-muted); margin-top:4px;">2ᵉ ligne : racks pleins de ${YR_TRAYS_PER_RACK} plateaux - tablettes de ${YR_TRAYS_PER_SHELF} en plus · sem. 5 : xTrays de ${YR_TRAYS_PER_XTRAY} plateaux</div></div>`;
+    + `<tr>${weekCells}</tr><tr style="border-top:1px solid var(--border); color:var(--text-muted);">${shelfCells}</tr>`
+    + `<tr style="border-top:1px solid var(--border); color:var(--text-muted);">${xTrayCells}</tr></table>`
+    + `<div style="font-size:10px; color:var(--text-muted); margin-top:4px;">2ᵉ ligne : racks pleins de ${YR_TRAYS_PER_RACK} plateaux - tablettes de ${YR_TRAYS_PER_SHELF} en plus · 3ᵉ ligne : xTrays de ${YR_TRAYS_PER_XTRAY} plateaux (${YR_XTRAYS_AVAILABLE} max, surplus sem. 5 en racks)</div></div>`;
 
   const inputs = readYieldRangeInputs();
   const note = `<div style="margin-top:12px; font-size:10.5px; color:var(--text-muted); line-height:1.5;">`

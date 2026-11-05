@@ -12,14 +12,14 @@ sowing week.
 
 ## Footprint
 
-| Zone | Where | Units | Growing shelves / tables | Flats (+10 %) |
+| Zone | Where | Units | Growing shelves / tables | Flats (+3 %) |
 |---|---|---|---|---|
-| Week 1, water only | Nursery racks | 2 racks | 8 shelves | 31 |
-| Week 2 | Nursery racks | 2 racks | 8 shelves | 31 |
-| Week 3, spaced 2:1 | Nursery racks | 3–4 racks | 16 shelves | 62 |
-| Week 4, spaced 4:1, two valves | Nursery racks | 6–7 racks | 31 shelves | 124 |
-| Week 5 | Greenhouse table | 16 xTrays 3×6 | 16 tables | 124 (cap 144) |
-| **Nursery, flood** | | **14 racks** | **63 of 70 shelves** | |
+| Week 1, water only | Nursery racks | 2 racks | 8 shelves | 29 |
+| Week 2 | Nursery racks | 2 racks | 8 shelves | 29 |
+| Week 3, spaced 2:1 | Nursery racks | 3–4 racks | 15 shelves | 58 |
+| Week 4, spaced 4:1, two valves | Nursery racks | 6–7 racks | 29 shelves | 116 |
+| Week 5 | Greenhouse table | 16 xTrays 3×6 | 16 tables | 116 (cap 144) |
+| **Nursery, flood** | | **14 racks** | **63 of 70 shelves** · 3 spare | |
 | Other, assigned later | Nursery racks | 6 racks | 30 shelves | — |
 
 Flood rack: 5 growing tiers, one 2×4 flood tray per used tier, 4 flats each; trays per rack

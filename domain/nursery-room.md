@@ -11,8 +11,8 @@ west wall, y from the north wall, inches.
 | Item | Value |
 |---|---|
 | Floor | 16'3" × 27' (195 × 324 in) |
-| Door | 36 × 36 in, north-west corner |
-| Corridor | 36 in deep, y 240–276, wall to wall |
+| Door | 24 × 49 in, north-west corner |
+| Corridor | 36 in deep, y 229–265 (15 ft below the door zone), wall to wall |
 | Ceiling | joists east–west · 12 ft at the west wall → 8 ft at the east wall |
 
 

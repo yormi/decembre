@@ -107,32 +107,32 @@ Two staggered rows of 3, nearest neighbours ~17 cm — field in-row spacing:
 - Bench ×3 = 2× field density → holds an open canopy about half as long
 
 
-### Tray demand — 2 beds per weekly sowing, +10% backup
+### Tray demand — 2 beds per weekly sowing, +3% backup
 
 Trays per generation of 2 beds (100 pi, 30 po bedtop), 32-pot 2,5 po:
 
-| Field config | Plants +10% | Packed (32) | ×2 (16) | ×3 | ×4 | ×5 | ×6 |
+| Field config | Plants +3% | Packed (32) | ×2 (16) | ×3 | ×4 | ×5 | ×6 |
 |---|---|---|---|---|---|---|---|
-| 4 rangs × 6 po | 1 760 | 55 | 110 | 165 | 220 | 275 | 330 |
-| 3 rangs × 6 po | 1 320 | 42 | 83 | 124 | 165 | 207 | 248 |
-| 3 rangs × 8 po | 990 | 31 | 62 | 93 | 124 | 155 | 186 |
+| 4 rangs × 6 po | 1 648 | 52 | 103 | 155 | 206 | 258 | 309 |
+| 3 rangs × 6 po | 1 236 | 39 | 78 | 116 | 155 | 194 | 232 |
+| 3 rangs × 8 po | 927 | 29 | 58 | 87 | 116 | 145 | 174 |
 
 Total standing trays, 5 generations at once
 (3 packed + 1 at ×2 + 1 at final):
 
 | Field config | ×2 only | ×3 final | ×4 final | ×5 final | ×6 final |
 |---|---|---|---|---|---|
-| 4 rangs × 6 po | 385 | 440 | 495 | 550 | 605 |
-| 3 rangs × 6 po | 292 | 333 | 374 | 416 | 457 |
-| 3 rangs × 8 po | 217 | 248 | 279 | 310 | 341 |
+| 4 rangs × 6 po | 362 | 414 | 465 | 517 | 568 |
+| 3 rangs × 6 po | 273 | 311 | 350 | 389 | 427 |
+| 3 rangs × 8 po | 203 | 232 | 261 | 290 | 319 |
 
 Same, as bench area (trays × 0,15 m²):
 
 | Field config | ×2 only | ×3 | ×4 | ×5 | ×6 |
 |---|---|---|---|---|---|
-| 4 rangs × 6 po | 59 m² | 67 m² | 76 m² | 84 m² | 92 m² |
-| 3 rangs × 6 po | 45 m² | 51 m² | 57 m² | 63 m² | 70 m² |
-| 3 rangs × 8 po | 33 m² | 38 m² | 43 m² | 47 m² | 52 m² |
+| 4 rangs × 6 po | 55 m² | 63 m² | 71 m² | 79 m² | 87 m² |
+| 3 rangs × 6 po | 42 m² | 47 m² | 53 m² | 59 m² | 65 m² |
+| 3 rangs × 8 po | 31 m² | 35 m² | 40 m² | 44 m² | 49 m² |
 
 - Weeks 4–5 hold 57–75 % of the standing trays — the packed generations are cheap
 

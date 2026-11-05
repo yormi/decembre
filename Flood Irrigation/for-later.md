@@ -1,7 +1,9 @@
 # For later — flood irrigation
 
-## Manifold valve → Dosatron A (greenhouse fertigation station)
+## Manifold tee (greenhouse fertigation station)
 
-- Connect one pump manifold valve to Dosatron A in (¾ MNPT): `greenhouse/fertigation-station.md`.
+- Add a tee to the pump manifold for the Orisha fill valve: `greenhouse/fertigation-station.md`.
 
-- Unknown: valve outlet thread + size.
+- Unknown: manifold pipe OD (1.90 in = 1½, 2.375 in = 2) → tee size; branch assumed ¾ FPT.
+
+- Confirm with Orisha: fill valve rated for manifold pressure (~50–60 psi).

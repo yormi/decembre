@@ -8,16 +8,16 @@ Crisis context for most of these: pH 7.28-7.48 root-zone lockout (P/Mn/Zn unavai
 
 ## Soil tests — current crisis (Berger Labs, April 2026)
 
-### `mehlich-3 - 2026-04-10.pdf`
+### `mehlich-3 - 2026-04-10 laitue + tomates chapelle 1.pdf`
 Report 39088. Mehlich-3 = total soil nutrient bank for tomato 2 + lettuce 2 beds. pH 7.28/7.48, Ca ~10,600-10,989 kg/ha, CEC 28-33 meq/100g, P 558-678 kg/ha (banked, locked).
 **Reach for:** total soil reserves, March → April trends, whether Mehlich-3 P "vault" backs the SME-low-P read.
 
-### `SME - 2026-04-10.pdf`
+### `SME - 2026-04-10 laitue + tomates chapelle 1.pdf`
 Report 39087. Saturated Media Extract = root-zone PLANT-AVAILABLE for tomato 1 + lettuce 1. Lockout evidence: SME pH 6.99/7.09 (above spec 5.2-6.5), P 0.8-1.1 ppm (below spec 5-50), Mn/Zn <0.03 ppm, Al elevated.
 **Reach for:** what roots actually see, foliar-only Mn/Zn justification, baseline for future retests every 4-6 weeks.
 **Caveat:** SME spec ranges are soilless/hydroponic. P "lockout" overstated; Mn/Zn lockouts real.
 
-### `SME - 2026-06-04 tomates.pdf`
+### `SME - 2026-06-04 tomates chapelle 1.pdf`
 Report 39463, tomato soil sampled 2026-06-01. First SME retest since April. SME pH **6.90** (down from April 6.99/7.09 and the ~7.4 root-zone — sulphur drawdown progressing), P still **0.9 ppm** (locked, unchanged), CE **3.96** + Sulfate **1786.8** (salt creep from the S program), Ca 487 / K 302 / Mg 158 (abundant — uptake-limited), B 0.27 + Mo 0.02 (mid/adequate), Fe/Mn/Zn low (high-pH lockout, foliar-delivered), Al 0.07 low.
 **Reach for:** sulphur-drawdown pH progress vs the April SME baseline; EC/sulfate salinity watch as S dosing continues; corroboration of hold-B-at-10g + Mo-to-fertigation calls; P-still-locked confirmation (judge P recovery on tissue, not SME).
 **Caveat:** SME spec ranges are soilless/hydroponic — Ca/Mg/K/CE "high" flags partly reflect calcareous soil, not actionable surplus. pH trend + P + CE are the real reads.
@@ -27,15 +27,30 @@ Report 39580, lettuce-under-lamps root-zone SME (sample "laitue 15 juin", reques
 **Reach for:** lettuce root-zone salinity climb April → June; whether the salt is leachable (SAR check) before recommending a flush vs a program cut; corroboration of field tip-burn; pH-drawdown progress on the lettuce side.
 **Caveat:** SME spec ranges are soilless/hydroponic — Ca/Mg/CE "high" flags partly reflect calcareous soil. pH 6.68 is a secondary guardrail, **not** a new anchor. P read via Mehlich-3 + tissue, not SME.
 
-### `mehlich-3 - 2026-08-05.pdf`
+### `mehlich-3 - 2026-08-05 laitue + tomates chapelle 1.pdf`
 Agro-Enviro-Lab SO-0923478 (**Laitue-sol**) + SO-0923479 (**Tomate-sol**), sampled 2026-08-04, received 08-05, report 08-14. First Mehlich-3 retest since April 2026. Laitue/Tomate: P **608/524** TR (April 558-678 — vault unchanged), K 597 TR / 394 R, Ca **9227/9869** TR (April ~10,600-10,989 — slight drawdown), Mg 1021/1182 TR, S 201/532 TR (S program visible on tomato side), Zn 12.3/11.8 TR, Mn 61/53 TR, B **1.16 P / 1.73 MB** (only non-rich macro/micro), Na 62/137, P/Al 53.3/53.5 (riche env.).
 **Reach for:** April → August Mehlich-3 trend (Ca drawdown pace, P vault, S accumulation), B-is-the-only-lean-element read, pairing with same-date tissue panel.
 **Caveat:** pH, pH tampon, OM, CEC and base-saturation cells came back **blank** on text extraction — verify against the PDF before claiming a pH trend from this report; the same-soil SME below carries the August pH read.
 
-### `SME - 2026-08-05.pdf`
+### `SME - 2026-08-05 laitue + tomates chapelle 1.pdf`
 Agro-Enviro-Lab SSE on the **same samples** as the August Mehlich-3 (SO-0923478 Laitue-sol / SO-0923479 Tomate-sol), sampled 2026-08-04, report 08-19. First same-day paired SME on both crops. Laitue/Tomate: pH **6.65/6.62** (lettuce June 6.68 → holding; tomato June 6.90 → still drifting down), CE **2.30/3.75** (lettuce June 4.01 → **halved**; tomato June 3.96 → flat), P-PO4 **3/2** mg/L (June 1.7/0.9 — inching up, still low), Nitrate 111/125, Sulfate 264/579, Ca 332/597, Mg 78/163, K 75/61, Na **67/161** (lettuce June 124 → down), **RAS 5/8** (June lettuce 1.29 — sodicity ratio up as Ca/CE fell), Fe 0.31/0.58, Mn 0.03/0.12, Zn ≤0.03 (micros still pH-locked), B 0.12/0.33.
 **Reach for:** August root-zone pH + salinity state; lettuce CE-halving after the June salinity alarm; whether P availability is finally moving; RAS trend check before any flush/gypsum debate; pairing plant-available vs the same-day Mehlich-3 bank.
 **Caveat:** SME spec ranges are soilless/hydroponic — read pH, CE, P and trends, not absolute Ca/Mg/K flags. P recovery still judged on tissue first.
+
+### `SME - 2026-09-23 tomates chapelle 3.pdf`
+Agro-Enviro-Lab request 333768, SO-0932654, tomato soil in **bay 3** (lab label "Serre T2") — **first test of bay 3; every other tomato soil test in this index is bay 1**, sampled 2026-09-23, report 10-09. pH **7.21**, CE **0.53**, Nitrate 22, P-PO4 2, K 20, Ca 34, Mg 10, Sulfate 37, Na 27, **RAS 6**, Cl 9, Fe 0.58, Al 0.92, Mn/Zn/Mo below detection, B 0.09.
+**Reach for:** bay 3 tomato root-zone baseline; bay 3 vs bay 1 contrast.
+**Caveat:** not a point on the bay 1 trend — never chain with the April/June/August tomato SMEs. Lab label "Serre T2" vs bay 3 per Guillaume. SME spec ranges are soilless/hydroponic — read pH, CE, P, RAS and trends.
+
+### `mehlich-3 - 2026-10-20 laitue.pdf`
+Berger report 40844, sample 626276 **Laitue-sol**, sampled 2026-10-20, received 10-23, completed 10-26. Lettuce-only Mehlich-3. pH-eau **6.07** (April 7.48), pH SMP 7.02, CEC 30.2, P **785** kg/ha (vault still growing), K 940, Ca 11,239, Mg 1279, Na 196 kg/ha, B **0.5** ppm (still the lean element), Zn 14.9, Mn 54.6, Fe 306.5, Al 685.6.
+**Reach for:** lettuce soil-bank trend April → August → October; pH drawdown reaching ~6; B-still-lean read.
+**Caveat:** NO3/NH4/CE on this report are SME-method (identical to the paired SME) — don't count them twice.
+
+### `SME - 2026-10-20 laitue.pdf`
+Berger report 40845, sample 626277 **Laitue-sol**, same sampling as the October Mehlich-3. pH **6.08** (August 6.65), CE **5.91** (August 2.30 → highest yet, above June 4.01), Nitrate **538**, Sulfate **1561**, Ca 859 / Mg 230 / K 224, P **4.0** (August 3 — still low), Na 79, **RAS 0.62** (August 5 → saline, not sodic), Fe <0.05, Mn 0.08, Zn 0.04, B 0.36, Mo <0.02.
+**Reach for:** October lettuce root-zone salinity spike (nitrate + sulfate driven); flush-vs-program-cut decision; pH ~6 milestone; whether micros unlock at lower pH (not yet).
+**Caveat:** SME spec ranges are soilless/hydroponic — read pH, CE, P, RAS and trends, not absolute Ca/Mg/K flags.
 
 ## Soil tests — pre-greenhouse (Agriquanta, July 2024)
 
@@ -165,7 +180,7 @@ Branding asset.
 
 ## Conventions
 
-- Lab reports: lab name + date in filename (`mehlich-3 - 2026-04-10.pdf`).
+- Lab reports: lab name + date in filename (`mehlich-3 - 2026-04-10 laitue + tomates chapelle 1.pdf`).
 - Datasheets: manufacturer's product name.
 - Agronomist emails: sender initials + date.
 - When you add a doc, add a one-paragraph entry under the right category. State freshness if relevant ("NOT currently in use").

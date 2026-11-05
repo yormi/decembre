@@ -52,18 +52,20 @@ When: `timeline.md`. Spec: `../greenhouse/`. Receiving checklists: `../receiving
 
 ## Supply + fertigation station
 
-- Connect the manifold valve → Dosatron A (`../for-later.md`)
+- Glue a tee into the pump manifold (`../for-later.md`)
+
+- Plumb the tee → Orisha fill valve → Dosatron A
 
 - Plumb Dosatron A → B → filter → check valve
 
-- Plumb the 10 psi regulator → Orisha fill valve → 1½ in header
+- Plumb the 10 psi regulator → 1½ in header
 
 - Set up stock A drum + stock B bucket → set the Dosatrons
 
 
 ## Header + fill drops · Richard
 
-- Zip-tie the 100 ft header to the table legs → plug the far end
+- Zip-tie the 100 ft header to the table legs → cap the far end (male adapter + threaded cap)
 
 - Punch + fit 16 fill drops
 

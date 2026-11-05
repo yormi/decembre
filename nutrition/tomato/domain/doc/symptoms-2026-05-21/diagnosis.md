@@ -4,7 +4,7 @@
 **Photos:** `nutrition/tomato/domain/doc/symptoms-2026-05-21/PXL_20260521_*.jpg`
 **Anchors:**
 - Tissue panel — `nutrition/tomato/domain/doc/tomato-t5-tissue-analysis-2026-05-23.md` (TOM #1 T5, sampled 14 mai, reported 22 mai)
-- SME/Mehlich — `nutrition/doc/SME - 2026-04-10.pdf`, `nutrition/doc/mehlich-3 - 2026-04-10.pdf`
+- SME/Mehlich — `nutrition/doc/SME - 2026-04-10 laitue + tomates chapelle 1.pdf`, `nutrition/doc/mehlich-3 - 2026-04-10 laitue + tomates chapelle 1.pdf`
 - BER / Ca investigation — `nutrition/tomato/domain/doc/ca-ber-investigation-tests-2026-05-24.md`
 - STORED foliar Spray A — `nutrition/tomato/protocol/foliar/stored.js`
 
